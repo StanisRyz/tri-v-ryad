@@ -2,7 +2,7 @@
 
 Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
-The project is currently in the Character upgrade screen v0.2 from the menu stage. It defines the app shell, simple screen navigation, a level select flow, a saved 5-hero roster/team selection flow, a menu-accessible full roster hero upgrade screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, first line special tiles, roster ability mappings, data-driven test battles, local hero upgrades, saved campaign progress, and lightweight swap, clear, and refill feedback for a vertical 9:16 game.
+The project is currently through Stage 16: Balance and content expansion v0.1. It defines the app shell, simple screen navigation, a level select flow, a 10-level early campaign slice, a saved 5-hero roster/team selection flow, a menu-accessible full roster hero upgrade screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, first line special tiles, roster ability mappings, local hero upgrades, saved campaign progress, and lightweight swap, clear, and refill feedback for a vertical 9:16 game.
 
 ## Project Direction
 
@@ -30,7 +30,7 @@ This stage includes:
 - A Godot project with `scenes/app/App.tscn` as the main scene.
 - A minimal screen router.
 - A main menu placeholder with a Play button.
-- A simple `LevelSelectScreen` with 5 test level buttons.
+- A simple `LevelSelectScreen` with 10 early campaign level buttons.
 - A Team button on `LevelSelectScreen` that opens `TeamSelectScreen`.
 - A Heroes button on `LevelSelectScreen` that opens `UpgradeScreen`.
 - `TeamSelectScreen` shows 5 placeholder roster heroes and lets the player save exactly 3 unique selected heroes.
@@ -47,6 +47,7 @@ This stage includes:
 - `TileView` shows simple placeholder `H`/`V` markers for special tiles.
 - UI-independent battle logic under `scripts/game/battle/`: heroes, enemy, battle state, Hero Lane activation, damage, ability charge, enemy intent/action, and turn results.
 - Data-driven configs under `scripts/game/config/`: `HeroConfig`, `EnemyConfig`, `LevelConfig`, and `LevelCatalog`.
+- `LevelCatalog` contains a 10-level early campaign slice from Training Dummy through Gatekeeper.
 - Hero roster definitions under `scripts/game/config/` with `HeroCatalog`.
 - `HeroConfig` carries immutable base hero stats plus `ability_id`.
 - `BattleFactory` creates battle state from level configs or the saved selected team when `PlayerProgress` and `HeroCatalog` are available.
@@ -98,6 +99,7 @@ This stage includes:
 - Ability core tests in `scripts/tests/ability_core_test.gd`.
 - Ability presentation data tests in `scripts/tests/ability_presentation_data_test.gd`.
 - Level config tests in `scripts/tests/level_config_test.gd`.
+- Balance curve tests in `scripts/tests/balance_curve_test.gd`.
 - Battle factory tests in `scripts/tests/battle_factory_test.gd`.
 - Progression tests in `scripts/tests/progression_test.gd`.
 - Save manager tests in `scripts/tests/save_manager_test.gd`.
@@ -113,6 +115,14 @@ This stage excludes:
 - One-time rewards, stars-based rewards, level map, chapters, complex economy, max upgrade levels, scaling upgrade costs, reset upgrades, and complex objectives.
 - New heroes, hero unlocks, gacha, rarity, shards, ability upgrades, TeamSelectScreen rework, Yandex SDK, cloud save, ads, payments, sound, particles, and final art.
 - Cloud saves, ads, payments, Yandex SDK, RuStore, Android-specific code, and monetization.
+
+## Stage 16: Balance and Content Expansion v0.1
+
+Stage 16 is complete. The project now has a 10-level early campaign slice using the existing defeat-the-enemy objective, enemy HP/attack fields, move limits, and repeatable `reward_upgrade_points`.
+
+The curve is intentionally simple: levels 1-2 are forgiving intro fights, levels 3-4 are light challenge, levels 5-6 begin to reward upgrades, levels 7-9 are noticeably harder, and level 10 is an early Gatekeeper mini-boss. Balance is v0.1 and expected to change after playtesting.
+
+No new mechanics were introduced. Yandex SDK, cloud save, ads, payments, monetization, final art, sound, and particles remain out of scope. Next planned stage: Stage 17, Unified damage abilities v0.2.
 
 ## How To Open And Run
 
@@ -177,6 +187,12 @@ Run the level config test with:
 godot --headless --script res://scripts/tests/level_config_test.gd
 ```
 
+Run the balance curve test with:
+
+```bash
+godot --headless --script res://scripts/tests/balance_curve_test.gd
+```
+
 Run the battle factory test with:
 
 ```bash
@@ -239,5 +255,5 @@ godot --headless --script res://scripts/tests/character_upgrade_screen_data_test
 
 ## Next Planned Stages
 
-- Define the next 5 medium-sized stages after Character upgrade screen v0.2.
+- Stage 17, Unified damage abilities v0.2.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.

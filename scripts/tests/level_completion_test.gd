@@ -19,18 +19,20 @@ func _initialize() -> void:
 	_expect_equal(resolver.calculate_stars(level_1, int(ceil(level_1.moves * 0.25))), 2, "25 percent moves gives 2 stars")
 	_expect_equal(resolver.calculate_stars(level_1, int(ceil(level_1.moves * 0.5))), 3, "50 percent moves gives 3 stars")
 
-	var result = resolver.apply_victory_result(progress, level_1, 5)
+	var two_star_moves := int(ceil(level_1.moves * 0.25))
+	var three_star_moves := int(ceil(level_1.moves * 0.5))
+	var result = resolver.apply_victory_result(progress, level_1, two_star_moves)
 	_expect_true(result.completed, "victory marks level completed")
 	_expect_equal(result.stars, 2, "victory stores stars")
-	_expect_equal(result.best_moves_left, 5, "victory stores best moves")
+	_expect_equal(result.best_moves_left, two_star_moves, "victory stores best moves")
 
 	resolver.apply_victory_result(progress, level_1, 0)
 	_expect_equal(progress.get_level_stars("level_1"), 2, "worse replay does not downgrade stars")
-	_expect_equal(progress.get_level_progress("level_1").best_moves_left, 5, "worse replay preserves best moves")
+	_expect_equal(progress.get_level_progress("level_1").best_moves_left, two_star_moves, "worse replay preserves best moves")
 
-	resolver.apply_victory_result(progress, level_1, 10)
+	resolver.apply_victory_result(progress, level_1, three_star_moves)
 	_expect_equal(progress.get_level_stars("level_1"), 3, "better replay upgrades stars")
-	_expect_equal(progress.get_level_progress("level_1").best_moves_left, 10, "better replay improves best moves")
+	_expect_equal(progress.get_level_progress("level_1").best_moves_left, three_star_moves, "better replay improves best moves")
 
 	var fresh_progress = load(PLAYER_PROGRESS_SCRIPT).create_default()
 	_expect_true(resolver.is_level_unlocked(fresh_progress, catalog, "level_1"), "level_1 is unlocked by default")

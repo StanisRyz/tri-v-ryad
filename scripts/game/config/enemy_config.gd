@@ -29,20 +29,40 @@ func to_enemy_intent() -> EnemyIntent:
 
 
 static func training_dummy():
-	return load(SCRIPT_PATH).new("training_dummy", "Training Dummy", 260, 16, 3, 1)
+	return load(SCRIPT_PATH).new("training_dummy", "Training Dummy", 220, 10, 4, 1)
 
 
-static func weak_slime():
-	return load(SCRIPT_PATH).new("weak_slime", "Weak Slime", 220, 14, 4, 0)
+static func small_slime():
+	return load(SCRIPT_PATH).new("small_slime", "Small Slime", 260, 12, 4, 0)
 
 
-static func armored_guard():
-	return load(SCRIPT_PATH).new("armored_guard", "Armored Guard", 340, 22, 3, 2)
+static func goblin_scout():
+	return load(SCRIPT_PATH).new("goblin_scout", "Goblin Scout", 310, 15, 3, 2)
 
 
-static func wild_beast():
-	return load(SCRIPT_PATH).new("wild_beast", "Wild Beast", 390, 26, 2, 1)
+static func goblin_fighter():
+	return load(SCRIPT_PATH).new("goblin_fighter", "Goblin Fighter", 360, 18, 3, 1)
 
 
-static func first_boss():
-	return load(SCRIPT_PATH).new("first_boss", "First Boss", 520, 32, 2, 1)
+static func armored_goblin():
+	return load(SCRIPT_PATH).new("armored_goblin", "Armored Goblin", 430, 20, 3, 2)
+
+
+static func wild_wolf():
+	return load(SCRIPT_PATH).new("wild_wolf", "Wild Wolf", 470, 24, 2, 0)
+
+
+static func bandit():
+	return load(SCRIPT_PATH).new("bandit", "Bandit", 540, 27, 2, 1)
+
+
+static func orc_brute():
+	return load(SCRIPT_PATH).new("orc_brute", "Orc Brute", 620, 30, 2, 2)
+
+
+static func cave_shaman():
+	return load(SCRIPT_PATH).new("cave_shaman", "Cave Shaman", 680, 32, 3, 1)
+
+
+static func gatekeeper():
+	return load(SCRIPT_PATH).new("gatekeeper", "Gatekeeper", 820, 38, 2, 1)

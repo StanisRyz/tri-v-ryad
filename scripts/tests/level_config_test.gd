@@ -31,14 +31,14 @@ func _test_default_level(catalog) -> void:
 
 
 func _test_level_count(catalog) -> void:
-	_expect_equal(catalog.get_all_levels().size(), 5, "level count")
-	print("ok - catalog returns 5 levels")
+	_expect_equal(catalog.get_all_levels().size(), 10, "level count")
+	print("ok - catalog returns 10 levels")
 
 
 func _test_expected_level_ids(catalog) -> void:
-	for index in range(1, 6):
+	for index in range(1, 11):
 		_expect_true(catalog.has_level("level_%d" % index), "catalog has level_%d" % index)
-	print("ok - catalog has level_1 through level_5")
+	print("ok - catalog has level_1 through level_10")
 
 
 func _test_unknown_level_fallback(catalog) -> void:
@@ -57,8 +57,10 @@ func _test_level_contents(catalog) -> void:
 	for level_config in catalog.get_all_levels():
 		_expect_equal(level_config.hero_configs.size(), 3, "%s has 3 heroes" % level_config.level_id)
 		_expect_true(level_config.moves > 0, "%s has positive moves" % level_config.level_id)
+		_expect_true(level_config.display_name != "", "%s has display name" % level_config.level_id)
 		_expect_true(level_config.enemy_config != null, "%s has enemy config" % level_config.level_id)
 		_expect_true(level_config.enemy_config.max_hp > 0, "%s enemy has hp" % level_config.level_id)
+		_expect_true(level_config.reward_upgrade_points >= 0, "%s has non-negative reward" % level_config.level_id)
 	print("ok - each level has heroes, moves, and enemy config")
 
 

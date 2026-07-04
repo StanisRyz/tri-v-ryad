@@ -2,7 +2,7 @@
 
 This is a Godot match-3 battle project intended for Yandex Games. The default layout is vertical 9:16 portrait with a 720x1280 base resolution.
 
-The current stage is a playable battle prototype with board animation polish, saved level completion, stars, sequential unlocks, upgrade points, hero progression, character upgrade screen v0.2, and local save v0.1. `GameScreen` is allowed to wire `BattlePresenter`, `BoardView`, `BoardInputController`, `TurnFeedbackPresenter`, `AbilityFeedbackPresenter`, and result-flow reward/completion calls through `ProgressManager`, but the board core, battle core, config layer, progression layer, and save layer must remain separate from UI implementation details.
+The current stage is a playable battle prototype through Stage 16: Balance and content expansion v0.1, with a 10-level early campaign slice, enemy and reward curve, balance tests, board animation polish, saved level completion, stars, sequential unlocks, upgrade points, hero progression, character upgrade screen v0.2, and local save v0.1. `GameScreen` is allowed to wire `BattlePresenter`, `BoardView`, `BoardInputController`, `TurnFeedbackPresenter`, `AbilityFeedbackPresenter`, and result-flow reward/completion calls through `ProgressManager`, but the board core, battle core, config layer, progression layer, and save layer must remain separate from UI implementation details.
 
 ## Project Rules
 
@@ -17,6 +17,9 @@ The current stage is a playable battle prototype with board animation polish, sa
 - Do not add third-party plugins without explicit request.
 - Do not add generated heavy files.
 - `GameScreen` may use `BattlePresenter`, but must not directly own board or battle rule details.
+- Stage 16 is complete: 10-level early campaign slice, enemy/reward curve, and balance tests are in place without new mechanics.
+- Balance remains v0.1 and is expected to change after playtesting.
+- Next planned stage: Stage 17, Unified damage abilities v0.2.
 
 ## Gameplay Direction
 
@@ -120,6 +123,9 @@ The current stage is a playable battle prototype with board animation polish, sa
 - `BattlePresenter` starts levels but must not store hardcoded enemy or hero definitions.
 - `LevelSelectScreen` only selects `level_id`, displays level progress, and must not create `BattleState`.
 - `LevelSelectScreen` must not own unlock rules.
+- `LevelCatalog` contains exactly 10 early campaign levels for Stage 16.
+- All current levels use the same objective: defeat the enemy.
+- Stage 16 uses only existing enemy stats, moves, and `reward_upgrade_points`.
 - Rewards remain repeatable in v0.1.
 - Do not add one-time rewards, stars-based rewards, level map, chapters, or complex economy unless explicitly requested.
 - Upgrade screen spending belongs in `UpgradeScreen`, not in level select, team select, battle UI, or result overlays.

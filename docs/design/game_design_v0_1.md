@@ -177,11 +177,14 @@ Hero unlocks, rarity, gacha, hero shards, ability upgrades, max levels, scaling 
 ## Level System v0.1
 
 - Battles are created from data configs.
-- 5 test levels exist.
+- Stage 16 adds a 10-level early campaign slice.
+- Levels 1-2 are very easy intro battles, levels 3-4 add light challenge, levels 5-6 make upgrades feel useful, levels 7-9 are noticeably harder, and level 10 is the first early mini-boss gatekeeper.
 - Levels define enemy config, moves, enemy intent, and fixed hero configs.
 - `LevelSelectScreen` chooses a `level_id`.
 - `GameScreen` starts the selected level through `BattlePresenter`.
+- Every level uses the same objective: defeat the enemy.
 - Victory and defeat rules stay unchanged.
+- Balance is v0.1 content tuning and is expected to change after playtesting.
 
 Hero selection and complex objectives remain future work.
 
@@ -230,3 +233,13 @@ One-time rewards, level map, chapters, stars-based rewards, max upgrade levels, 
 - No full cascade animations.
 - No real tile movement.
 - No sound or particles.
+
+## Stage 16: Balance and Content Expansion v0.1
+
+- Stage 16 is implemented.
+- `LevelCatalog` now contains a 10-level early campaign slice from Training Dummy through Gatekeeper.
+- The campaign uses a simple enemy HP/attack, moves, and upgrade-point reward curve.
+- All levels still use the single objective: defeat the enemy.
+- Balance tests cover catalog size, unique IDs, required content fields, total reward range, and broad difficulty growth.
+- No new mechanics, objectives, heroes, abilities, special tiles, platform SDK, cloud save, ads, payments, monetization, final art, sound, or particles were added.
+- Next planned stage: Stage 17, Unified damage abilities v0.2.

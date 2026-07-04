@@ -28,8 +28,8 @@ func _initialize() -> void:
 
 	presenter.start_level("level_2")
 	_expect_equal(presenter.current_level_id, "level_2", "presenter starts requested level")
-	_expect_equal(presenter.state.enemy.id, "weak_slime", "level 2 enemy differs from default")
-	_expect_equal(presenter.state.moves_left, 18, "level 2 moves count")
+	_expect_equal(presenter.state.enemy.id, "small_slime", "level 2 enemy differs from default")
+	_expect_equal(presenter.state.moves_left, presenter.current_level_config.moves, "level 2 moves count")
 
 	if _failures == 0:
 		print("Playable battle smoke test passed.")
