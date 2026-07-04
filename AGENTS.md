@@ -2,7 +2,7 @@
 
 This is a Godot match-3 battle project intended for Yandex Games. The default layout is vertical 9:16 portrait with a 720x1280 base resolution.
 
-The current stage has a UI-independent 9x9 board core. Do not connect it to UI or implement battle gameplay unless a future task explicitly asks for it.
+The current stage has UI-independent 9x9 board core and battle core logic. Do not connect these systems to UI unless a future task explicitly asks for it.
 
 ## Project Rules
 
@@ -17,6 +17,7 @@ The current stage has a UI-independent 9x9 board core. Do not connect it to UI o
 - Do not add third-party plugins without explicit request.
 - Do not add generated heavy files.
 - Do not connect board core to `GameScreen` until explicitly requested.
+- Do not connect battle core to `GameScreen` until explicitly requested.
 
 ## Gameplay Direction
 
@@ -34,6 +35,13 @@ The current stage has a UI-independent 9x9 board core. Do not connect it to UI o
 - `MatchResult` must keep exact cell coordinates for future Hero Lanes.
 - `SwapResolver` must not handle damage, heroes, or visual animation.
 - `BoardResolver` must not know about battle state.
+- Battle logic lives under `scripts/game/battle/`.
+- Battle logic must remain UI-independent.
+- `BattleResolver` consumes `MatchResult` data but must not use `BoardModel` directly.
+- `HeroLaneResolver` owns Hero Lane column mapping rules.
+- `DamageResolver` must not implement UI animation.
+- `AbilityChargeResolver` must not implement real abilities yet.
+- `EnemyActionResolver` must stay deterministic and simple for now.
 
 ## Platform Boundaries
 
@@ -46,9 +54,10 @@ The current stage has a UI-independent 9x9 board core. Do not connect it to UI o
 
 ## Current Exclusions
 
-- No battle state.
-- No damage, HP, or abilities.
+- No GameScreen-driven battle state or visual battle integration.
+- No real abilities or upgrades.
 - No visual tiles or board input.
+- No GameScreen integration with board or battle core.
 - No save system.
 - No ads or monetization.
 - No Yandex SDK.

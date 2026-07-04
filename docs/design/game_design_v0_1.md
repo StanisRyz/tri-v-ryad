@@ -56,6 +56,19 @@ Exact activation, charge, targeting, and combo rules are intentionally not imple
 
 Hero Lanes remain future battle logic. The current board core stores exact match cell coordinates but does not activate heroes.
 
+## Battle Core v0.1
+
+- A battle has 3 heroes and 1 enemy.
+- The board has 3 Hero Lanes: columns 0-2, 3-5, and 6-8 in code.
+- Matched cells activate heroes by their column lanes.
+- Damage is `hero attack * matched tile count` for each lane.
+- Matched tiles charge hero abilities, but real abilities are future work.
+- Enemy intent counts down after player turns and triggers a simple attack.
+- Victory occurs when enemy HP reaches 0.
+- Defeat occurs when moves run out or all heroes are dead.
+
+Visual integration, animations, real abilities, hero selection, upgrades, and platform systems remain future work.
+
 ## Future Progression
 
 After battles, the player will later receive upgrade points. Upgrade points will improve hero attack and HP.
@@ -70,6 +83,6 @@ Complex meta progression is not part of the foundation stage.
 - No RuStore or Android-specific code.
 - No final art.
 - No complex meta progression.
-- No battle state.
-- No damage, HP, or abilities.
+- No real abilities.
 - No visual tiles or board input.
+- No GameScreen integration with board or battle core.

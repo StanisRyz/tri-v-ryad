@@ -2,7 +2,7 @@
 
 Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
-The project is currently in the clean 9x9 match-3 board core stage. It defines the app shell, simple screen navigation, structured placeholder battle UI, and UI-independent board logic for a vertical 9:16 game. Battle gameplay and visual tile interaction are intentionally not implemented yet.
+The project is currently in the Battle Core with Hero Lanes stage. It defines the app shell, simple screen navigation, structured placeholder battle UI, UI-independent board logic, and UI-independent battle logic for a vertical 9:16 game. GameScreen integration and visual tile interaction are intentionally not implemented yet.
 
 ## Project Direction
 
@@ -34,13 +34,16 @@ This stage includes:
 - Reusable UI components: `BattleHud`, `EnemyPanel`, `BoardFrame`, `HeroPartyPanel`, and `HeroCard`.
 - A lightweight `LayoutManager` for UI-only portrait and landscape layout decisions.
 - UI-independent board generation, match detection, swap validation, gravity/refill, and cascade resolution under `scripts/game/board/`.
+- UI-independent battle logic under `scripts/game/battle/`: heroes, enemy, battle state, Hero Lane activation, damage, ability charge, enemy intent/action, and turn results.
 - Headless board core tests in `scripts/tests/board_core_test.gd`.
+- Headless battle core tests in `scripts/tests/battle_core_test.gd`.
 - Documentation for future implementation rules.
 
 This stage excludes:
 
 - Visual tiles and player input.
-- Battle state, heroes, enemies, damage, HP, abilities, and progression.
+- GameScreen integration with board or battle core.
+- Real abilities, upgrades, hero selection UI, and progression.
 - Saves, ads, payments, Yandex SDK, RuStore, Android-specific code, and final art.
 
 ## How To Open And Run
@@ -59,9 +62,15 @@ Run the board core test script with:
 godot --headless --script res://scripts/tests/board_core_test.gd
 ```
 
+Run the battle core test script with:
+
+```bash
+godot --headless --script res://scripts/tests/battle_core_test.gd
+```
+
 ## Next Planned Stages
 
-- Battle Core: heroes, lanes, enemy, and damage.
+- First playable battle prototype.
 - Board model to tile view connection when explicitly requested.
 - Match input and visual tile interaction.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.
