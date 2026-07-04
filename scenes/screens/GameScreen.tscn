@@ -1,0 +1,112 @@
+[gd_scene load_steps=5 format=3 uid="uid://dsqit1j6lh7mq"]
+
+[ext_resource type="Script" path="res://scripts/screens/game_screen.gd" id="1_jyptq"]
+[ext_resource type="PackedScene" path="res://scenes/ui/EnemyPanelPlaceholder.tscn" id="2_vd3t4"]
+[ext_resource type="PackedScene" path="res://scenes/ui/BoardPlaceholder.tscn" id="3_tia7a"]
+[ext_resource type="PackedScene" path="res://scenes/ui/HeroCardPlaceholder.tscn" id="4_0ahsg"]
+
+[node name="GameScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_jyptq")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.055, 0.07, 0.1, 1)
+
+[node name="SafeMargin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 32
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 28
+
+[node name="RootLayout" type="VBoxContainer" parent="SafeMargin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="TopBar" type="HBoxContainer" parent="SafeMargin/RootLayout"]
+layout_mode = 2
+
+[node name="HudLabel" type="Label" parent="SafeMargin/RootLayout/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 22
+text = "Level 1    Moves: --"
+
+[node name="MenuButton" type="Button" parent="SafeMargin/RootLayout/TopBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(132, 52)
+layout_mode = 2
+text = "Menu"
+
+[node name="EnemyPanel" parent="SafeMargin/RootLayout" instance=ExtResource("2_vd3t4")]
+custom_minimum_size = Vector2(0, 150)
+layout_mode = 2
+
+[node name="BoardArea" type="CenterContainer" parent="SafeMargin/RootLayout"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BoardPlaceholder" parent="SafeMargin/RootLayout/BoardArea" instance=ExtResource("3_tia7a")]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="LaneLegend" type="HBoxContainer" parent="SafeMargin/RootLayout"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Lane1Label" type="Label" parent="SafeMargin/RootLayout/LaneLegend"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Hero 1: Cols 1-3"
+horizontal_alignment = 1
+
+[node name="Lane2Label" type="Label" parent="SafeMargin/RootLayout/LaneLegend"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Hero 2: Cols 4-6"
+horizontal_alignment = 1
+
+[node name="Lane3Label" type="Label" parent="SafeMargin/RootLayout/LaneLegend"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Hero 3: Cols 7-9"
+horizontal_alignment = 1
+
+[node name="HeroCards" type="HBoxContainer" parent="SafeMargin/RootLayout"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HeroCard1" parent="SafeMargin/RootLayout/HeroCards" instance=ExtResource("4_0ahsg")]
+layout_mode = 2
+size_flags_horizontal = 3
+hero_name = "Hero 1"
+lane_text = "Columns 1-3"
+
+[node name="HeroCard2" parent="SafeMargin/RootLayout/HeroCards" instance=ExtResource("4_0ahsg")]
+layout_mode = 2
+size_flags_horizontal = 3
+hero_name = "Hero 2"
+lane_text = "Columns 4-6"
+
+[node name="HeroCard3" parent="SafeMargin/RootLayout/HeroCards" instance=ExtResource("4_0ahsg")]
+layout_mode = 2
+size_flags_horizontal = 3
+hero_name = "Hero 3"
+lane_text = "Columns 7-9"
