@@ -130,6 +130,14 @@ func play_match_clear_feedback(cells: Array[Vector2i]) -> void:
 		tile.play_match_fade()
 
 
+func play_special_clear_feedback(cells: Array[Vector2i], activation_cells: Array[Vector2i] = []) -> void:
+	highlight_cells(cells)
+	for tile in get_tile_views(cells):
+		tile.play_special_flash()
+	for tile in get_tile_views(activation_cells):
+		tile.play_special_flash()
+
+
 func play_refill_feedback(cells: Array[Vector2i] = []) -> void:
 	var target_cells: Array[Vector2i] = cells.duplicate()
 	if target_cells.is_empty():

@@ -6,6 +6,7 @@ signal animation_finished
 const SWAP_DURATION := 0.14
 const INVALID_DURATION := 0.18
 const CLEAR_DURATION := 0.20
+const SPECIAL_CLEAR_DURATION := 0.24
 const REFILL_DURATION := 0.18
 const REFRESH_DURATION := 0.16
 
@@ -31,6 +32,14 @@ func play_match_clear_feedback(board_view: BoardView, cells: Array[Vector2i]) ->
 		board_view.play_match_clear_feedback(cells)
 
 	await _wait(board_view, CLEAR_DURATION)
+	animation_finished.emit()
+
+
+func play_special_clear_feedback(board_view: BoardView, cells: Array[Vector2i], activation_cells: Array[Vector2i] = []) -> void:
+	if board_view != null:
+		board_view.play_special_clear_feedback(cells, activation_cells)
+
+	await _wait(board_view, SPECIAL_CLEAR_DURATION)
 	animation_finished.emit()
 
 

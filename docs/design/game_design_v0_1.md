@@ -113,23 +113,27 @@ Full cascade animation, real tile movement, particles, sound, and deeper progres
 - Input remains locked during the full feedback sequence and unlocks only after `feedback_finished`.
 - Board rules, battle rules, progression, rewards, stars, unlocks, upgrades, and save format are unchanged.
 
-Color bombs, wrapped bombs, special combos, full falling animation, cascade damage, cascade-step animation, particles, sound, final art, and real tile movement remain future work.
+Wrapped bombs, special combos, full falling animation, cascade damage, cascade-step animation, particles, sound, final art, and real tile movement remain future work.
 
-## Special Tiles v0.1
+## Special Tiles v0.2
 
-- Match 4+ creates a line special tile on a deterministic cell inside the match.
-- Horizontal matches create horizontal line tiles.
-- Vertical matches create vertical line tiles.
+- Match 4 creates a line special tile on a deterministic cell inside the match.
+- Match 5+ creates a color bomb on a deterministic cell inside the match.
+- Horizontal match 4 creates horizontal line tiles.
+- Vertical match 4 creates vertical line tiles.
 - Horizontal line tiles clear their row when activated.
 - Vertical line tiles clear their column when activated.
+- Color bombs clear tiles of the activated bomb cell's selected/base tile type.
 - Special tile metadata is stored separately from the base tile type.
 - Special tile metadata moves with swaps and gravity.
 - Refilled tiles do not spawn with special metadata.
-- Special-cleared cells do not add extra hero damage in v0.1.
-- Special-cleared cells do not add extra ability charge in v0.1.
+- Special tiles affect board clearing only.
+- Special-cleared cells do not add extra hero damage in v0.2.
+- Special-cleared cells do not add extra ability charge in v0.2.
 - Special tiles use simple placeholder markers in `TileView`.
+- Special activation feedback uses board resolve result data and remains presentation-only.
 
-Color bombs, wrapped bombs, special + special combos, special battle rewards, cascade damage, particles, sound, and final art remain future work.
+Wrapped bombs, special + special combos, special battle rewards, cascade damage, particles, sound, and final art remain future work.
 
 ## Hero Abilities v0.2
 
@@ -262,5 +266,17 @@ One-time rewards, level map, chapters, stars-based rewards, max upgrade levels, 
 - Hero abilities do not consume moves.
 - Hero abilities do not advance enemy intent.
 - All levels still use the single objective: defeat the enemy.
-- No new heroes, battle objectives, healing abilities, shield abilities, buffs, debuffs, target selection, cooldowns, ability upgrades, skill trees, color bombs, new special tiles, platform SDK, cloud save, ads, payments, final art, sound, or particles were added.
-- Next planned stage: Stage 18, Special tiles v0.2: color bomb and activation polish.
+- No new heroes, battle objectives, healing abilities, shield abilities, buffs, debuffs, target selection, cooldowns, ability upgrades, skill trees, platform SDK, cloud save, ads, payments, final art, sound, or particles were added.
+
+## Stage 18: Special Tiles v0.2
+
+- Stage 18 is implemented.
+- Match 4 still creates line special tiles.
+- Match 5+ creates color bombs instead of line specials.
+- Color bombs clear tiles of the activated bomb cell's selected/base tile type.
+- Special tiles remain board-only effects.
+- Special-cleared cells do not add extra battle damage or ability charge.
+- No special + special combos were added.
+- No wrapped bombs were added.
+- No particles, sound, final art, Yandex SDK, cloud save, ads, or payments were added.
+- Next planned stage: Stage 19, Menu and battle flow restructure v0.1.

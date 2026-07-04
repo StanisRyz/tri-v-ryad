@@ -22,6 +22,10 @@ func is_vertical_line() -> bool:
 	return special_type == SPECIAL_TILE_TYPE_SCRIPT.LINE_VERTICAL
 
 
+func is_color_bomb() -> bool:
+	return special_type == SPECIAL_TILE_TYPE_SCRIPT.COLOR_BOMB
+
+
 func duplicate_data():
 	return get_script().new(special_type)
 

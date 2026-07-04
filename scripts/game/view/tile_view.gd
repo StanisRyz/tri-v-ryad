@@ -101,6 +101,11 @@ func play_match_fade() -> void:
 	_active_tween.parallel().tween_property(self, "scale", Vector2.ONE, 0.10)
 
 
+func play_special_flash() -> void:
+	set_highlighted(true)
+	_play_flash_tween(Color(1.35, 1.08, 0.45, 1.0), Vector2(1.12, 1.12))
+
+
 func play_refill_appear() -> void:
 	_stop_active_tween()
 	visible = true
@@ -174,7 +179,7 @@ func _apply_visuals() -> void:
 		border_color = Color(1.0, 1.0, 1.0, 1.0)
 	elif _is_highlighted:
 		border_width = 3
-		border_color = Color(1.0, 0.94, 0.36, 1.0)
+		border_color = Color(1.0, 0.86, 0.20, 1.0)
 
 	style.border_width_left = border_width
 	style.border_width_top = border_width
@@ -192,7 +197,7 @@ func _apply_visuals() -> void:
 	add_theme_color_override("font_color", Color.WHITE)
 	add_theme_color_override("font_hover_color", Color.WHITE)
 	add_theme_color_override("font_pressed_color", Color.WHITE)
-	add_theme_font_size_override("font_size", 22)
+	add_theme_font_size_override("font_size", 24 if _get_special_marker_text() == "B" else 22)
 
 
 func _get_special_marker_text() -> String:

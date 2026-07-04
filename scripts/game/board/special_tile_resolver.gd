@@ -11,6 +11,10 @@ func should_create_special(match_result: MatchResult) -> bool:
 func get_special_type_for_match(match_result: MatchResult) -> int:
 	if match_result == null:
 		return SPECIAL_TILE_TYPE_SCRIPT.NONE
+	if match_result.length() < 4:
+		return SPECIAL_TILE_TYPE_SCRIPT.NONE
+	if match_result.length() >= 5:
+		return SPECIAL_TILE_TYPE_SCRIPT.COLOR_BOMB
 
 	match match_result.direction:
 		MatchResult.Direction.HORIZONTAL:
@@ -39,6 +43,24 @@ func get_line_clear_cells(board: BoardModel, cell: Vector2i, special_data) -> Ar
 	elif special_data.is_vertical_line():
 		for y in range(board.height):
 			cells.append(Vector2i(cell.x, y))
+
+	return cells
+
+
+func get_color_bomb_clear_cells(board: BoardModel, cell: Vector2i, special_data) -> Array[Vector2i]:
+	var cells: Array[Vector2i] = []
+	if board == null or special_data == null or special_data.is_empty() or not board.is_inside(cell):
+		return cells
+	if not special_data.is_color_bomb():
+		return cells
+
+	var target_tile_type := board.get_tile(cell)
+	if target_tile_type == BoardModel.EMPTY or not TileType.is_valid_tile_type(target_tile_type):
+		return cells
+
+	for board_cell in board.get_all_cells():
+		if board.get_tile(board_cell) == target_tile_type:
+			cells.append(board_cell)
 
 	return cells
 

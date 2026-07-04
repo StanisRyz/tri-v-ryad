@@ -2,7 +2,7 @@
 
 This is a Godot match-3 battle project intended for Yandex Games. The default layout is vertical 9:16 portrait with a 720x1280 base resolution.
 
-The current stage is a playable battle prototype through Stage 17: Unified damage abilities v0.2, with damage-only hero abilities, a 10-level early campaign slice, enemy and reward curve, balance tests, board animation polish, saved level completion, stars, sequential unlocks, upgrade points, hero progression, character upgrade screen v0.2, and local save v0.1. `GameScreen` is allowed to wire `BattlePresenter`, `BoardView`, `BoardInputController`, `TurnFeedbackPresenter`, `AbilityFeedbackPresenter`, and result-flow reward/completion calls through `ProgressManager`, but the board core, battle core, config layer, progression layer, and save layer must remain separate from UI implementation details.
+The current stage is a playable battle prototype through Stage 18: Special tiles v0.2, with damage-only hero abilities, line special tiles, color bombs, a 10-level early campaign slice, enemy and reward curve, balance tests, board animation polish, saved level completion, stars, sequential unlocks, upgrade points, hero progression, character upgrade screen v0.2, and local save v0.1. `GameScreen` is allowed to wire `BattlePresenter`, `BoardView`, `BoardInputController`, `TurnFeedbackPresenter`, `AbilityFeedbackPresenter`, and result-flow reward/completion calls through `ProgressManager`, but the board core, battle core, config layer, progression layer, and save layer must remain separate from UI implementation details.
 
 ## Project Rules
 
@@ -20,7 +20,8 @@ The current stage is a playable battle prototype through Stage 17: Unified damag
 - Stage 16 is complete: 10-level early campaign slice, enemy/reward curve, and balance tests are in place without new mechanics.
 - Balance remains v0.1 and is expected to change after playtesting.
 - Stage 17 is complete: all hero abilities are damage-only, healing and board-clearing hero ability behavior was removed, ability use still does not consume moves or advance enemy intent, and hero abilities do not modify the board.
-- Next planned stage: Stage 18, Special tiles v0.2.
+- Stage 18 is complete: match 4 creates line special tiles, match 5+ creates color bombs, color bombs clear tiles of a target/base tile type, and special tiles remain board-only effects.
+- Next planned stage: Stage 19, Menu and battle flow restructure v0.1.
 
 ## Gameplay Direction
 
@@ -52,7 +53,12 @@ The current stage is a playable battle prototype through Stage 17: Unified damag
 - Special tile metadata must stay separate from UI.
 - `MatchFinder` must match by base tile type.
 - Special metadata must move with swap and gravity.
-- Special-cleared cells must not add hero damage or ability charge in v0.1.
+- Match 4 creates line special tiles.
+- Match 5+ creates color bombs.
+- Color bombs clear tiles of a target/base tile type.
+- Special tiles affect board clearing only.
+- Special-cleared cells must not add hero damage or ability charge in v0.2.
+- Special + special combos and wrapped bombs are not implemented.
 - Battle logic lives under `scripts/game/battle/`.
 - Battle logic must remain UI-independent.
 - `BattleResolver` consumes `MatchResult` data but must not use `BoardModel` directly.
@@ -85,7 +91,7 @@ The current stage is a playable battle prototype through Stage 17: Unified damag
 - Input unlock must remain tied to `feedback_finished`.
 - Do not implement full cascade animations unless explicitly requested.
 - Do not implement full manual board layout rewrite or full falling animation unless explicitly requested.
-- Do not add color bombs, wrapped bombs, or special combos unless explicitly requested.
+- Do not add wrapped bombs or special combos unless explicitly requested.
 - Do not add sound, particles, or final art in this stage.
 - Ability logic lives under `scripts/game/battle/`.
 - `AbilityResolver` must remain UI-independent.
@@ -150,7 +156,7 @@ The current stage is a playable battle prototype through Stage 17: Unified damag
 - No full cascade animations.
 - No full manual board layout rewrite.
 - No full falling animation.
-- No color bombs, wrapped bombs, or special combos.
+- No wrapped bombs or special combos.
 - No sound or particles.
 - No target selection, cooldowns, ability upgrades, or hero selection.
 - No one-time rewards, stars-based rewards, level map, chapters, complex economy, or complex objectives.

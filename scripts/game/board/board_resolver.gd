@@ -57,7 +57,7 @@ func _build_clear_step_data(board: BoardModel, matches: Array[MatchResult]) -> D
 		if _special_tile_resolver.should_create_special(match_result):
 			creation_cell = _special_tile_resolver.choose_special_cell(match_result)
 			var special_type := _special_tile_resolver.get_special_type_for_match(match_result)
-			if board.is_inside(creation_cell) and SPECIAL_TILE_TYPE_SCRIPT.is_line(special_type):
+			if board.is_inside(creation_cell) and SPECIAL_TILE_TYPE_SCRIPT.is_valid(special_type) and special_type != SPECIAL_TILE_TYPE_SCRIPT.NONE:
 				board.set_special_tile(creation_cell, SPECIAL_TILE_DATA_SCRIPT.from_type(special_type))
 				protected_special_cells[creation_cell] = true
 				created_special_tiles.append({
@@ -84,11 +84,17 @@ func _build_clear_step_data(board: BoardModel, matches: Array[MatchResult]) -> D
 			"cell": activation_cell,
 			"special_type": special_data.special_type,
 		})
-		for line_cell in _special_tile_resolver.get_line_clear_cells(board, activation_cell, special_data):
-			if protected_special_cells.has(line_cell):
+		var special_cells: Array[Vector2i] = []
+		if special_data.is_color_bomb():
+			special_cells = _special_tile_resolver.get_color_bomb_clear_cells(board, activation_cell, special_data)
+		else:
+			special_cells = _special_tile_resolver.get_line_clear_cells(board, activation_cell, special_data)
+
+		for special_cell in special_cells:
+			if protected_special_cells.has(special_cell):
 				continue
-			_add_unique_cell(cleared_cells, clear_seen, line_cell)
-			_add_unique_cell(special_cleared_cells, special_cleared_seen, line_cell)
+			_add_unique_cell(cleared_cells, clear_seen, special_cell)
+			_add_unique_cell(special_cleared_cells, special_cleared_seen, special_cell)
 
 	return {
 		"cleared_cells": cleared_cells,

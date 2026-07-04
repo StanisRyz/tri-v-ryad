@@ -2,7 +2,7 @@
 
 Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
-The project is currently through Stage 17: Unified damage abilities v0.2. It defines the app shell, simple screen navigation, a level select flow, a 10-level early campaign slice, a saved 5-hero roster/team selection flow, a menu-accessible full roster hero upgrade screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, first line special tiles, damage-only roster ability mappings, local hero upgrades, saved campaign progress, and lightweight swap, clear, and refill feedback for a vertical 9:16 game.
+The project is currently through Stage 18: Special tiles v0.2. It defines the app shell, simple screen navigation, a level select flow, a 10-level early campaign slice, a saved 5-hero roster/team selection flow, a menu-accessible full roster hero upgrade screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, damage-only roster ability mappings, local hero upgrades, saved campaign progress, and lightweight swap, clear, special activation, and refill feedback for a vertical 9:16 game.
 
 ## Project Direction
 
@@ -40,11 +40,14 @@ This stage includes:
 - UI-independent board generation, match detection, swap validation, gravity/refill, and cascade resolution under `scripts/game/board/`.
 - Special tile board logic under `scripts/game/board/`: `SpecialTileType`, `SpecialTileData`, and `SpecialTileResolver`.
 - `BoardModel` keeps base tile type storage as the match color/type and stores special tile metadata in a separate layer.
-- Match 4+ creates a line special tile at a deterministic match cell.
-- Horizontal matches create horizontal line specials, and vertical matches create vertical line specials.
+- Match 4 creates a line special tile at a deterministic match cell.
+- Match 5+ creates a color bomb at a deterministic match cell.
+- Horizontal match 4 creates a horizontal line special, and vertical match 4 creates a vertical line special.
 - Activated horizontal line specials clear their row; activated vertical line specials clear their column.
+- Activated color bombs clear all cells of their selected/base tile type.
 - Special metadata moves with tiles during swaps and gravity, and refilled tiles have no special metadata.
-- `TileView` shows simple placeholder `H`/`V` markers for special tiles.
+- Special tiles affect board clearing only; special-cleared cells do not add extra battle damage or ability charge yet.
+- `TileView` shows simple placeholder `H`/`V`/`B` markers for special tiles.
 - UI-independent battle logic under `scripts/game/battle/`: heroes, enemy, battle state, Hero Lane activation, damage, ability charge, enemy intent/action, and turn results.
 - Data-driven configs under `scripts/game/config/`: `HeroConfig`, `EnemyConfig`, `LevelConfig`, and `LevelCatalog`.
 - `LevelCatalog` contains a 10-level early campaign slice from Training Dummy through Gatekeeper.
@@ -111,7 +114,7 @@ This stage includes:
 
 This stage excludes:
 
-- Color bombs, wrapped bombs, special + special combos, special battle damage, cascade damage, full cascade-step animation, full falling animation, real tile movement, particles, sound, and final art.
+- Wrapped bombs, special + special combos, special battle damage, cascade damage, full cascade-step animation, full falling animation, real tile movement, particles, sound, and final art.
 - Target selection, cooldowns, ability upgrades, gacha, rarity, hero unlocks, hero shards, hero inventory, portraits, final art, drag-and-drop team UI, and complex ability additions.
 - One-time rewards, stars-based rewards, level map, chapters, complex economy, max upgrade levels, scaling upgrade costs, reset upgrades, and complex objectives.
 - New heroes, hero unlocks, gacha, rarity, shards, ability upgrades, TeamSelectScreen rework, Yandex SDK, cloud save, ads, payments, sound, particles, and final art.
@@ -123,7 +126,7 @@ Stage 16 is complete. The project now has a 10-level early campaign slice using 
 
 The curve is intentionally simple: levels 1-2 are forgiving intro fights, levels 3-4 are light challenge, levels 5-6 begin to reward upgrades, levels 7-9 are noticeably harder, and level 10 is an early Gatekeeper mini-boss. Balance is v0.1 and expected to change after playtesting.
 
-No new mechanics were introduced in Stage 16. Yandex SDK, cloud save, ads, payments, monetization, final art, sound, and particles remain out of scope. Stage 17 is now complete.
+No new mechanics were introduced in Stage 16. Yandex SDK, cloud save, ads, payments, monetization, final art, sound, and particles remain out of scope. Stage 18 is now complete.
 
 ## Stage 17: Unified Damage Abilities v0.2
 
@@ -131,7 +134,15 @@ Stage 17 is complete. All hero abilities now deal damage to the enemy using `her
 
 Healing hero abilities and board-clearing hero abilities were removed. Ability use still does not consume moves, does not advance enemy intent, and does not modify the board. All battle objectives remain defeat-the-enemy.
 
-No new heroes, objectives, target selection, cooldowns, ability upgrades, color bombs, special tiles, SDK, cloud save, ads, payments, final art, sound, or particles were added. Next planned stage: Stage 18, Special tiles v0.2.
+No new heroes, objectives, target selection, cooldowns, ability upgrades, SDK, cloud save, ads, payments, final art, sound, or particles were added.
+
+## Stage 18: Special Tiles v0.2
+
+Stage 18 is complete. Match 4 still creates line special tiles, while match 5+ now creates color bombs.
+
+Color bombs clear all tiles of the activated bomb cell's selected/base tile type. Special tiles remain board-only effects: special-cleared cells do not add extra battle damage or ability charge, and no special + special combos, wrapped bombs, particles, sound, final art, Yandex SDK, cloud save, ads, or payments were added.
+
+Next planned stage: Stage 19, Menu and battle flow restructure v0.1.
 
 ## How To Open And Run
 
@@ -238,6 +249,12 @@ Run the special tile test with:
 godot --headless --script res://scripts/tests/special_tile_test.gd
 ```
 
+Run the color bomb test with:
+
+```bash
+godot --headless --script res://scripts/tests/color_bomb_test.gd
+```
+
 Run the hero catalog test with:
 
 ```bash
@@ -264,5 +281,5 @@ godot --headless --script res://scripts/tests/character_upgrade_screen_data_test
 
 ## Next Planned Stages
 
-- Stage 18, Special tiles v0.2: color bomb and activation polish.
+- Stage 19, Menu and battle flow restructure v0.1.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.

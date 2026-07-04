@@ -15,9 +15,12 @@ var total_damage_to_enemy := 0
 var ability_charge_events: Array[Dictionary] = []
 var enemy_action: Dictionary = {}
 var battle_status := BattleState.Status.IN_PROGRESS
+var created_special_tiles: Array[Dictionary] = []
+var activated_special_tiles: Array[Dictionary] = []
+var special_cleared_cells: Array[Vector2i] = []
 
 
-static func from_valid_turn(from_cell: Vector2i, to_cell: Vector2i, matches: Array[MatchResult], result: BattleTurnResult):
+static func from_valid_turn(from_cell: Vector2i, to_cell: Vector2i, matches: Array[MatchResult], result: BattleTurnResult, board_result: BoardResolveResult = null):
 	var data = load(SCRIPT_PATH).new()
 	data.is_valid = true
 	data.swapped_from = from_cell
@@ -30,6 +33,10 @@ static func from_valid_turn(from_cell: Vector2i, to_cell: Vector2i, matches: Arr
 	data.ability_charge_events = result.ability_charge_events.duplicate()
 	data.enemy_action = result.enemy_action.duplicate()
 	data.battle_status = result.battle_status
+	if board_result != null:
+		data.created_special_tiles = board_result.created_special_tiles.duplicate()
+		data.activated_special_tiles = board_result.activated_special_tiles.duplicate()
+		data.special_cleared_cells = board_result.special_cleared_cells.duplicate()
 	return data
 
 
@@ -56,6 +63,9 @@ func to_dictionary() -> Dictionary:
 		"ability_charge_events": ability_charge_events.duplicate(),
 		"enemy_action": enemy_action.duplicate(),
 		"battle_status": battle_status,
+		"created_special_tiles": created_special_tiles.duplicate(),
+		"activated_special_tiles": activated_special_tiles.duplicate(),
+		"special_cleared_cells": special_cleared_cells.duplicate(),
 	}
 
 

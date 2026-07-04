@@ -37,9 +37,13 @@ func _test_special_tile_type_helpers() -> void:
 	_expect_true(SpecialTileType.is_valid(SpecialTileType.NONE), "NONE is valid")
 	_expect_true(SpecialTileType.is_valid(SpecialTileType.LINE_HORIZONTAL), "horizontal line is valid")
 	_expect_true(SpecialTileType.is_valid(SpecialTileType.LINE_VERTICAL), "vertical line is valid")
+	_expect_true(SpecialTileType.is_valid(SpecialTileType.COLOR_BOMB), "color bomb is valid")
 	_expect_false(SpecialTileType.is_valid(99), "unknown special type is invalid")
 	_expect_true(SpecialTileType.is_line(SpecialTileType.LINE_HORIZONTAL), "horizontal line helper")
+	_expect_false(SpecialTileType.is_line(SpecialTileType.COLOR_BOMB), "color bomb is not line")
+	_expect_true(SpecialTileType.is_color_bomb(SpecialTileType.COLOR_BOMB), "color bomb helper")
 	_expect_equal(SpecialTileType.get_marker_text(SpecialTileType.LINE_VERTICAL), "V", "vertical marker text")
+	_expect_equal(SpecialTileType.get_marker_text(SpecialTileType.COLOR_BOMB), "B", "color bomb marker text")
 
 	print("ok - SpecialTileType helpers")
 
@@ -123,11 +127,14 @@ func _test_special_resolver_match_rules() -> void:
 	var horizontal := MatchResult.new([Vector2i(0, 0), Vector2i(1, 0), Vector2i(2, 0), Vector2i(3, 0)], TileType.RED, MatchResult.Direction.HORIZONTAL)
 	var vertical := MatchResult.new([Vector2i(1, 0), Vector2i(1, 1), Vector2i(1, 2), Vector2i(1, 3)], TileType.BLUE, MatchResult.Direction.VERTICAL)
 	var short := MatchResult.new([Vector2i(0, 1), Vector2i(1, 1), Vector2i(2, 1)], TileType.GREEN, MatchResult.Direction.HORIZONTAL)
+	var long := MatchResult.new([Vector2i(0, 2), Vector2i(1, 2), Vector2i(2, 2), Vector2i(3, 2), Vector2i(4, 2)], TileType.YELLOW, MatchResult.Direction.HORIZONTAL)
 
 	_expect_true(resolver.should_create_special(horizontal), "match 4 creates special")
 	_expect_false(resolver.should_create_special(short), "match 3 does not create special")
 	_expect_equal(resolver.get_special_type_for_match(horizontal), SpecialTileType.LINE_HORIZONTAL, "horizontal match creates horizontal line")
 	_expect_equal(resolver.get_special_type_for_match(vertical), SpecialTileType.LINE_VERTICAL, "vertical match creates vertical line")
+	_expect_equal(resolver.get_special_type_for_match(short), SpecialTileType.NONE, "match 3 returns no special type")
+	_expect_equal(resolver.get_special_type_for_match(long), SpecialTileType.COLOR_BOMB, "match 5 creates color bomb")
 	_expect_equal(resolver.choose_special_cell(horizontal), Vector2i(2, 0), "middle cell chosen deterministically")
 
 	print("ok - SpecialTileResolver match rules")

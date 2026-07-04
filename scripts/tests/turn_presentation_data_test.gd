@@ -14,6 +14,7 @@ func _initialize() -> void:
 	_test_lane_activations_are_copied()
 	_test_damage_fields_are_copied()
 	_test_enemy_action_is_copied()
+	_test_board_special_fields_are_copied()
 	_test_invalid_turn_stores_reason()
 
 	if _failures == 0:
@@ -64,6 +65,23 @@ func _test_enemy_action_is_copied() -> void:
 	_expect_true(data.enemy_action["acted"], "enemy action acted copied")
 	_expect_equal(data.enemy_action["target_hero_id"], "hero_2", "enemy action target copied")
 	print("ok - enemy action is copied")
+
+
+func _test_board_special_fields_are_copied() -> void:
+	var matches: Array[MatchResult] = [_match([Vector2i(0, 0), Vector2i(1, 0), Vector2i(2, 0)])]
+	var result := BattleTurnResult.new()
+	var board_result := BoardResolveResult.new()
+	board_result.created_special_tiles = [{"cell": Vector2i(2, 0), "special_type": SpecialTileType.COLOR_BOMB}]
+	board_result.activated_special_tiles = [{"cell": Vector2i(1, 0), "special_type": SpecialTileType.COLOR_BOMB}]
+	board_result.special_cleared_cells = [Vector2i(0, 0), Vector2i(4, 4)]
+
+	var data = load(TURN_PRESENTATION_DATA_SCRIPT).from_valid_turn(Vector2i(1, 1), Vector2i(2, 1), matches, result, board_result)
+
+	_expect_equal(data.created_special_tiles.size(), 1, "created special tiles copied")
+	_expect_equal(data.activated_special_tiles[0]["special_type"], SpecialTileType.COLOR_BOMB, "activated special tiles copied")
+	_expect_true(Vector2i(4, 4) in data.special_cleared_cells, "special-cleared cells copied")
+
+	print("ok - board special fields are copied")
 
 
 func _test_invalid_turn_stores_reason() -> void:

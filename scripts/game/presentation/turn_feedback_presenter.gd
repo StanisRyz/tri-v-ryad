@@ -27,6 +27,8 @@ func _play_valid_feedback(data, board_view: BoardView, status_callback: Callable
 	await _wait(board_view, SHORT_DELAY)
 
 	await _board_motion_animator.play_match_clear_feedback(board_view, data.matched_cells)
+	if not data.special_cleared_cells.is_empty():
+		await _board_motion_animator.play_special_clear_feedback(board_view, data.special_cleared_cells, _get_activation_cells(data.activated_special_tiles))
 
 	await _board_motion_animator.play_board_refresh_feedback(board_view)
 
@@ -81,6 +83,16 @@ func _get_first_damage_event(events: Array[Dictionary]) -> Dictionary:
 			return event
 
 	return {}
+
+
+func _get_activation_cells(activated_special_tiles: Array[Dictionary]) -> Array[Vector2i]:
+	var cells: Array[Vector2i] = []
+	for activated_special in activated_special_tiles:
+		var cell = activated_special.get("cell", Vector2i(-1, -1))
+		if cell is Vector2i:
+			cells.append(cell)
+
+	return cells
 
 
 func _format_hero_id(hero_id: String) -> String:
