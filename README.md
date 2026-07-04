@@ -2,7 +2,7 @@
 
 Tri V Ryad is a Godot 4.x match-3 battle game foundation intended for Yandex Games and Web-first release targets.
 
-The project is currently in the foundation-only stage. It defines the app shell, simple screen navigation, placeholder UI, project settings, and design direction for a vertical 9:16 game. Gameplay systems are intentionally not implemented yet.
+The project is currently in the battle screen layout foundation stage. It defines the app shell, simple screen navigation, structured placeholder battle UI, project settings, and design direction for a vertical 9:16 game. Gameplay systems are intentionally not implemented yet.
 
 ## Project Direction
 
@@ -30,7 +30,9 @@ This stage includes:
 - A Godot project with `scenes/app/App.tscn` as the main scene.
 - A minimal screen router.
 - A main menu placeholder with a Play button.
-- A game screen placeholder with an enemy area, HUD, visual 9x9 board, lane divisions, hero cards, and a Menu button.
+- A structured battle screen placeholder with a HUD, enemy panel, visual 9x9 board frame, hero lane divisions, hero party panel, and a Menu button.
+- Reusable UI components: `BattleHud`, `EnemyPanel`, `BoardFrame`, `HeroPartyPanel`, and `HeroCard`.
+- A lightweight `LayoutManager` for UI-only portrait and landscape layout decisions.
 - Documentation for future implementation rules.
 
 This stage excludes:
@@ -51,8 +53,8 @@ This stage excludes:
 
 ## Next Planned Stages
 
-- Battle screen and adaptive layout foundation.
-- Board model and tile view split.
+- Clean 9x9 match-3 board core.
+- Board model and tile view split under `scripts/game/board/`.
 - Match input and match detection.
 - Hero lane activation rules.
 - Basic battle loop.

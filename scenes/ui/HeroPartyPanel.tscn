@@ -1,0 +1,34 @@
+[gd_scene load_steps=3 format=3 uid="uid://b5kfq68o6t8tf"]
+
+[ext_resource type="Script" path="res://scripts/ui/hero_party_panel.gd" id="1_o2sxj"]
+[ext_resource type="PackedScene" path="res://scenes/ui/HeroCard.tscn" id="2_1lc85"]
+
+[node name="HeroPartyPanel" type="HBoxContainer"]
+offset_right = 664.0
+offset_bottom = 132.0
+theme_override_constants/separation = 10
+script = ExtResource("1_o2sxj")
+
+[node name="HeroCard1" parent="." instance=ExtResource("2_1lc85")]
+layout_mode = 2
+size_flags_horizontal = 3
+hero_name = "Hero 1"
+lane_text = "Columns 1-3"
+hp_text = "HP: -- / --"
+charge_text = "Charge: --%"
+
+[node name="HeroCard2" parent="." instance=ExtResource("2_1lc85")]
+layout_mode = 2
+size_flags_horizontal = 3
+hero_name = "Hero 2"
+lane_text = "Columns 4-6"
+hp_text = "HP: -- / --"
+charge_text = "Charge: --%"
+
+[node name="HeroCard3" parent="." instance=ExtResource("2_1lc85")]
+layout_mode = 2
+size_flags_horizontal = 3
+hero_name = "Hero 3"
+lane_text = "Columns 7-9"
+hp_text = "HP: -- / --"
+charge_text = "Charge: --%"

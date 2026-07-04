@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3 uid="uid://c3c402kgdf7tv"]
+
+[ext_resource type="Script" path="res://scripts/ui/board_frame.gd" id="1_mijvn"]
+
+[node name="BoardFrame" type="Control"]
+custom_minimum_size = Vector2(560, 560)
+layout_mode = 3
+anchors_preset = 0
+size_flags_horizontal = 4
+size_flags_vertical = 4
+script = ExtResource("1_mijvn")

@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://dsqit1j6lh7mq"]
+[gd_scene load_steps=6 format=3 uid="uid://dsqit1j6lh7mq"]
 
 [ext_resource type="Script" path="res://scripts/screens/game_screen.gd" id="1_jyptq"]
-[ext_resource type="PackedScene" path="res://scenes/ui/EnemyPanelPlaceholder.tscn" id="2_vd3t4"]
-[ext_resource type="PackedScene" path="res://scenes/ui/BoardPlaceholder.tscn" id="3_tia7a"]
-[ext_resource type="PackedScene" path="res://scenes/ui/HeroCardPlaceholder.tscn" id="4_0ahsg"]
+[ext_resource type="PackedScene" path="res://scenes/ui/BattleHud.tscn" id="2_2dfvm"]
+[ext_resource type="PackedScene" path="res://scenes/ui/EnemyPanel.tscn" id="3_746sx"]
+[ext_resource type="PackedScene" path="res://scenes/ui/BoardFrame.tscn" id="4_f7wwi"]
+[ext_resource type="PackedScene" path="res://scenes/ui/HeroPartyPanel.tscn" id="5_uw1i4"]
 
 [node name="GameScreen" type="Control"]
 layout_mode = 3
@@ -31,82 +32,46 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_left = 28
-theme_override_constants/margin_top = 32
+theme_override_constants/margin_top = 28
 theme_override_constants/margin_right = 28
 theme_override_constants/margin_bottom = 28
 
-[node name="RootLayout" type="VBoxContainer" parent="SafeMargin"]
-layout_mode = 2
-theme_override_constants/separation = 16
-
-[node name="TopBar" type="HBoxContainer" parent="SafeMargin/RootLayout"]
+[node name="BattleCenter" type="CenterContainer" parent="SafeMargin"]
 layout_mode = 2
 
-[node name="HudLabel" type="Label" parent="SafeMargin/RootLayout/TopBar"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 22
-text = "Level 1    Moves: --"
-
-[node name="MenuButton" type="Button" parent="SafeMargin/RootLayout/TopBar"]
+[node name="BattleRoot" type="VBoxContainer" parent="SafeMargin/BattleCenter"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(132, 52)
+custom_minimum_size = Vector2(664, 0)
 layout_mode = 2
-text = "Menu"
+theme_override_constants/separation = 14
 
-[node name="EnemyPanel" parent="SafeMargin/RootLayout" instance=ExtResource("2_vd3t4")]
-custom_minimum_size = Vector2(0, 150)
-layout_mode = 2
-
-[node name="BoardArea" type="CenterContainer" parent="SafeMargin/RootLayout"]
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="BoardPlaceholder" parent="SafeMargin/RootLayout/BoardArea" instance=ExtResource("3_tia7a")]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-
-[node name="LaneLegend" type="HBoxContainer" parent="SafeMargin/RootLayout"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="Lane1Label" type="Label" parent="SafeMargin/RootLayout/LaneLegend"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Hero 1: Cols 1-3"
-horizontal_alignment = 1
-
-[node name="Lane2Label" type="Label" parent="SafeMargin/RootLayout/LaneLegend"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Hero 2: Cols 4-6"
-horizontal_alignment = 1
-
-[node name="Lane3Label" type="Label" parent="SafeMargin/RootLayout/LaneLegend"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Hero 3: Cols 7-9"
-horizontal_alignment = 1
-
-[node name="HeroCards" type="HBoxContainer" parent="SafeMargin/RootLayout"]
+[node name="TopBar" type="HBoxContainer" parent="SafeMargin/BattleCenter/BattleRoot"]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="HeroCard1" parent="SafeMargin/RootLayout/HeroCards" instance=ExtResource("4_0ahsg")]
+[node name="BattleHud" parent="SafeMargin/BattleCenter/BattleRoot/TopBar" instance=ExtResource("2_2dfvm")]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-hero_name = "Hero 1"
-lane_text = "Columns 1-3"
 
-[node name="HeroCard2" parent="SafeMargin/RootLayout/HeroCards" instance=ExtResource("4_0ahsg")]
+[node name="MenuButton" type="Button" parent="SafeMargin/BattleCenter/BattleRoot/TopBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(118, 70)
 layout_mode = 2
-size_flags_horizontal = 3
-hero_name = "Hero 2"
-lane_text = "Columns 4-6"
+text = "Menu"
 
-[node name="HeroCard3" parent="SafeMargin/RootLayout/HeroCards" instance=ExtResource("4_0ahsg")]
+[node name="EnemyPanel" parent="SafeMargin/BattleCenter/BattleRoot" instance=ExtResource("3_746sx")]
+unique_name_in_owner = true
 layout_mode = 2
-size_flags_horizontal = 3
-hero_name = "Hero 3"
-lane_text = "Columns 7-9"
+
+[node name="BoardArea" type="CenterContainer" parent="SafeMargin/BattleCenter/BattleRoot"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BoardFrame" parent="SafeMargin/BattleCenter/BattleRoot/BoardArea" instance=ExtResource("4_f7wwi")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="HeroPartyPanel" parent="SafeMargin/BattleCenter/BattleRoot" instance=ExtResource("5_uw1i4")]
+unique_name_in_owner = true
+layout_mode = 2

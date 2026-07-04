@@ -1,0 +1,35 @@
+[gd_scene load_steps=2 format=3 uid="uid://dgyetmlb8yxxp"]
+
+[ext_resource type="Script" path="res://scripts/ui/battle_hud.gd" id="1_44ljq"]
+
+[node name="BattleHud" type="PanelContainer"]
+custom_minimum_size = Vector2(0, 70)
+offset_right = 664.0
+offset_bottom = 70.0
+script = ExtResource("1_44ljq")
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 10
+
+[node name="Values" type="HBoxContainer" parent="Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="LevelLabel" type="Label" parent="Margin/Values"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 22
+text = "Level 1"
+
+[node name="MovesLabel" type="Label" parent="Margin/Values"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 22
+text = "Moves: --"
+horizontal_alignment = 2

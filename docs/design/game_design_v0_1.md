@@ -37,6 +37,14 @@ Examples:
 
 Exact activation, charge, targeting, and combo rules are intentionally not implemented in this stage.
 
+## Battle Screen Layout
+
+- Enemy panel at the top.
+- HUD near the top for level and moves placeholders.
+- 9x9 board frame in the center.
+- 3 hero cards below the board.
+- Board lanes visually map to the hero cards: Hero 1 left, Hero 2 center, Hero 3 right.
+
 ## Future Progression
 
 After battles, the player will later receive upgrade points. Upgrade points will improve hero attack and HP.

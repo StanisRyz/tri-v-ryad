@@ -12,6 +12,7 @@ The current stage is foundation only. Do not implement gameplay unless a future 
 - Do not use spaces or Russian characters in file paths.
 - Prefer Control-based UI, containers, and anchors.
 - Keep gameplay logic separate from UI.
+- Keep battle UI components separate from gameplay logic.
 - Keep platform SDK logic separate from gameplay.
 - Do not add third-party plugins without explicit request.
 - Do not add generated heavy files.
@@ -26,6 +27,8 @@ The current stage is foundation only. Do not implement gameplay unless a future 
 - Hero 3 owns columns 7-9.
 - Future matches will activate heroes based on affected columns.
 - Future progression will award upgrade points after battle for hero attack and HP.
+- `BoardFrame` is only a placeholder visual frame, not the match-3 board model.
+- Future board logic belongs under `scripts/game/board/`.
 
 ## Platform Boundaries
 
