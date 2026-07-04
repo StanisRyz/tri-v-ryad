@@ -2,7 +2,7 @@
 
 This is a Godot match-3 battle project intended for Yandex Games. The default layout is vertical 9:16 portrait with a 720x1280 base resolution.
 
-The current stage is foundation only. Do not implement gameplay unless a future task explicitly asks for it.
+The current stage has a UI-independent 9x9 board core. Do not connect it to UI or implement battle gameplay unless a future task explicitly asks for it.
 
 ## Project Rules
 
@@ -16,6 +16,7 @@ The current stage is foundation only. Do not implement gameplay unless a future 
 - Keep platform SDK logic separate from gameplay.
 - Do not add third-party plugins without explicit request.
 - Do not add generated heavy files.
+- Do not connect board core to `GameScreen` until explicitly requested.
 
 ## Gameplay Direction
 
@@ -29,6 +30,10 @@ The current stage is foundation only. Do not implement gameplay unless a future 
 - Future progression will award upgrade points after battle for hero attack and HP.
 - `BoardFrame` is only a placeholder visual frame, not the match-3 board model.
 - Future board logic belongs under `scripts/game/board/`.
+- Board logic must remain UI-independent.
+- `MatchResult` must keep exact cell coordinates for future Hero Lanes.
+- `SwapResolver` must not handle damage, heroes, or visual animation.
+- `BoardResolver` must not know about battle state.
 
 ## Platform Boundaries
 
@@ -41,11 +46,9 @@ The current stage is foundation only. Do not implement gameplay unless a future 
 
 ## Current Exclusions
 
-- No match detection.
-- No tile swapping.
-- No board model.
 - No battle state.
 - No damage, HP, or abilities.
+- No visual tiles or board input.
 - No save system.
 - No ads or monetization.
 - No Yandex SDK.

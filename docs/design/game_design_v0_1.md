@@ -45,6 +45,17 @@ Exact activation, charge, targeting, and combo rules are intentionally not imple
 - 3 hero cards below the board.
 - Board lanes visually map to the hero cards: Hero 1 left, Hero 2 center, Hero 3 right.
 
+## Board Core v0.1
+
+- Board size is 9x9.
+- The board uses 5 basic tile types.
+- Generated boards avoid starting matches.
+- Matches are horizontal or vertical lines of 3 or more matching tiles.
+- Swaps are accepted only when they create at least one match.
+- Resolve cycles clear matched cells, apply gravity, refill, and repeat cascades until stable.
+
+Hero Lanes remain future battle logic. The current board core stores exact match cell coordinates but does not activate heroes.
+
 ## Future Progression
 
 After battles, the player will later receive upgrade points. Upgrade points will improve hero attack and HP.
@@ -59,8 +70,6 @@ Complex meta progression is not part of the foundation stage.
 - No RuStore or Android-specific code.
 - No final art.
 - No complex meta progression.
-- No match detection.
-- No tile swapping.
-- No board state.
 - No battle state.
 - No damage, HP, or abilities.
+- No visual tiles or board input.

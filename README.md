@@ -1,8 +1,8 @@
 # Tri V Ryad
 
-Tri V Ryad is a Godot 4.x match-3 battle game foundation intended for Yandex Games and Web-first release targets.
+Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
-The project is currently in the battle screen layout foundation stage. It defines the app shell, simple screen navigation, structured placeholder battle UI, project settings, and design direction for a vertical 9:16 game. Gameplay systems are intentionally not implemented yet.
+The project is currently in the clean 9x9 match-3 board core stage. It defines the app shell, simple screen navigation, structured placeholder battle UI, and UI-independent board logic for a vertical 9:16 game. Battle gameplay and visual tile interaction are intentionally not implemented yet.
 
 ## Project Direction
 
@@ -33,14 +33,14 @@ This stage includes:
 - A structured battle screen placeholder with a HUD, enemy panel, visual 9x9 board frame, hero lane divisions, hero party panel, and a Menu button.
 - Reusable UI components: `BattleHud`, `EnemyPanel`, `BoardFrame`, `HeroPartyPanel`, and `HeroCard`.
 - A lightweight `LayoutManager` for UI-only portrait and landscape layout decisions.
+- UI-independent board generation, match detection, swap validation, gravity/refill, and cascade resolution under `scripts/game/board/`.
+- Headless board core tests in `scripts/tests/board_core_test.gd`.
 - Documentation for future implementation rules.
 
 This stage excludes:
 
-- Match-3 logic.
-- Tile swapping.
-- Board model/state.
-- Battle state, damage, HP, abilities, and progression.
+- Visual tiles and player input.
+- Battle state, heroes, enemies, damage, HP, abilities, and progression.
 - Saves, ads, payments, Yandex SDK, RuStore, Android-specific code, and final art.
 
 ## How To Open And Run
@@ -51,11 +51,17 @@ This stage excludes:
 4. Press Play on the main menu to view the placeholder game screen.
 5. Press Menu to return to the main menu.
 
+## Board Core Tests
+
+Run the board core test script with:
+
+```bash
+godot --headless --script res://scripts/tests/board_core_test.gd
+```
+
 ## Next Planned Stages
 
-- Clean 9x9 match-3 board core.
-- Board model and tile view split under `scripts/game/board/`.
-- Match input and match detection.
-- Hero lane activation rules.
-- Basic battle loop.
+- Battle Core: heroes, lanes, enemy, and damage.
+- Board model to tile view connection when explicitly requested.
+- Match input and visual tile interaction.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.
