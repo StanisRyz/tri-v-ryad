@@ -44,6 +44,7 @@ func refresh_all_tiles() -> void:
 		var tile := _tile_views.get(cell) as TileView
 		if tile != null:
 			tile.set_tile(cell, _board.get_tile(cell))
+			tile.set_special_tile(_board.get_special_tile(cell))
 			tile.set_selected(cell == _selected_cell)
 			tile.set_highlighted(cell in _highlighted_cells)
 			tile.set_invalid_feedback(cell in _invalid_feedback_cells)

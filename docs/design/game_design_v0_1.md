@@ -113,7 +113,23 @@ Full cascade animation, real tile movement, particles, sound, and deeper progres
 - Input remains locked during the full feedback sequence and unlocks only after `feedback_finished`.
 - Board rules, battle rules, progression, rewards, stars, unlocks, upgrades, and save format are unchanged.
 
-Special tiles, full falling animation, cascade damage, cascade-step animation, particles, sound, final art, and real tile movement remain future work.
+Color bombs, wrapped bombs, special combos, full falling animation, cascade damage, cascade-step animation, particles, sound, final art, and real tile movement remain future work.
+
+## Special Tiles v0.1
+
+- Match 4+ creates a line special tile on a deterministic cell inside the match.
+- Horizontal matches create horizontal line tiles.
+- Vertical matches create vertical line tiles.
+- Horizontal line tiles clear their row when activated.
+- Vertical line tiles clear their column when activated.
+- Special tile metadata is stored separately from the base tile type.
+- Special tile metadata moves with swaps and gravity.
+- Refilled tiles do not spawn with special metadata.
+- Special-cleared cells do not add extra hero damage in v0.1.
+- Special-cleared cells do not add extra ability charge in v0.1.
+- Special tiles use simple placeholder markers in `TileView`.
+
+Color bombs, wrapped bombs, special + special combos, special battle rewards, cascade damage, particles, sound, and final art remain future work.
 
 ## Hero Abilities v0.1
 

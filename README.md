@@ -2,7 +2,7 @@
 
 Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
-The project is currently in the Board Animation Polish v0.1 stage. It defines the app shell, simple screen navigation, a level select flow, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, three starter hero abilities, data-driven test battles, local hero upgrades, saved campaign progress, and lightweight swap, clear, and refill feedback for a vertical 9:16 game.
+The project is currently in the Special tiles v0.1 stage. It defines the app shell, simple screen navigation, a level select flow, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, first line special tiles, three starter hero abilities, data-driven test battles, local hero upgrades, saved campaign progress, and lightweight swap, clear, and refill feedback for a vertical 9:16 game.
 
 ## Project Direction
 
@@ -35,6 +35,13 @@ This stage includes:
 - Reusable UI components: `BattleHud`, `EnemyPanel`, `HeroPartyPanel`, `HeroCard`, and `BattleResultOverlay`.
 - A lightweight `LayoutManager` for UI-only portrait and landscape layout decisions.
 - UI-independent board generation, match detection, swap validation, gravity/refill, and cascade resolution under `scripts/game/board/`.
+- Special tile board logic under `scripts/game/board/`: `SpecialTileType`, `SpecialTileData`, and `SpecialTileResolver`.
+- `BoardModel` keeps base tile type storage as the match color/type and stores special tile metadata in a separate layer.
+- Match 4+ creates a line special tile at a deterministic match cell.
+- Horizontal matches create horizontal line specials, and vertical matches create vertical line specials.
+- Activated horizontal line specials clear their row; activated vertical line specials clear their column.
+- Special metadata moves with tiles during swaps and gravity, and refilled tiles have no special metadata.
+- `TileView` shows simple placeholder `H`/`V` markers for special tiles.
 - UI-independent battle logic under `scripts/game/battle/`: heroes, enemy, battle state, Hero Lane activation, damage, ability charge, enemy intent/action, and turn results.
 - Data-driven configs under `scripts/game/config/`: `HeroConfig`, `EnemyConfig`, `LevelConfig`, and `LevelCatalog`.
 - `BattleFactory` creates battle state from level configs.
@@ -81,11 +88,12 @@ This stage includes:
 - Save manager tests in `scripts/tests/save_manager_test.gd`.
 - Battle factory progress tests in `scripts/tests/battle_factory_progress_test.gd`.
 - Level completion tests in `scripts/tests/level_completion_test.gd`.
+- Special tile tests in `scripts/tests/special_tile_test.gd`.
 - Documentation for future implementation rules.
 
 This stage excludes:
 
-- Special tiles, cascade damage, full cascade-step animation, full falling animation, real tile movement, particles, sound, and final art.
+- Color bombs, wrapped bombs, special + special combos, special battle damage, cascade damage, full cascade-step animation, full falling animation, real tile movement, particles, sound, and final art.
 - Target selection, cooldowns, ability upgrades, and hero selection UI.
 - One-time rewards, stars-based rewards, level map, chapters, complex economy, upgrade screen rework, and complex objectives.
 - Cloud saves, ads, payments, Yandex SDK, RuStore, Android-specific code, and monetization.
@@ -182,7 +190,13 @@ Run the level completion test with:
 godot --headless --script res://scripts/tests/level_completion_test.gd
 ```
 
+Run the special tile test with:
+
+```bash
+godot --headless --script res://scripts/tests/special_tile_test.gd
+```
+
 ## Next Planned Stages
 
-- Special tiles v0.1.
+- Hero roster and team selection v0.1.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.

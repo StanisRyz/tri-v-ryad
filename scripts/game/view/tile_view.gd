@@ -4,6 +4,9 @@ class_name TileView
 signal tile_pressed(cell: Vector2i)
 signal tile_drag_released(cell: Vector2i, drag_delta: Vector2)
 
+const SPECIAL_TILE_DATA_SCRIPT := preload("res://scripts/game/board/special_tile_data.gd")
+const SPECIAL_TILE_TYPE_SCRIPT := preload("res://scripts/game/board/special_tile_type.gd")
+
 const TILE_COLORS := {
 	TileType.RED: Color(0.86, 0.22, 0.22, 1.0),
 	TileType.BLUE: Color(0.18, 0.42, 0.88, 1.0),
@@ -14,6 +17,7 @@ const TILE_COLORS := {
 
 var board_cell := Vector2i.ZERO
 var tile_type := BoardModel.EMPTY
+var special_tile_data
 var _is_selected := false
 var _is_highlighted := false
 var _is_invalid_feedback := false
@@ -35,6 +39,14 @@ func _ready() -> void:
 func set_tile(cell: Vector2i, new_tile_type: int) -> void:
 	board_cell = cell
 	tile_type = new_tile_type
+	_apply_visuals()
+
+
+func set_special_tile(special_data) -> void:
+	if special_data is SPECIAL_TILE_DATA_SCRIPT:
+		special_tile_data = special_data.duplicate_data()
+	else:
+		special_tile_data = null
 	_apply_visuals()
 
 
@@ -176,7 +188,18 @@ func _apply_visuals() -> void:
 	add_theme_stylebox_override("normal", style)
 	add_theme_stylebox_override("hover", style)
 	add_theme_stylebox_override("pressed", style)
-	text = ""
+	text = _get_special_marker_text()
+	add_theme_color_override("font_color", Color.WHITE)
+	add_theme_color_override("font_hover_color", Color.WHITE)
+	add_theme_color_override("font_pressed_color", Color.WHITE)
+	add_theme_font_size_override("font_size", 22)
+
+
+func _get_special_marker_text() -> String:
+	if special_tile_data is SPECIAL_TILE_DATA_SCRIPT:
+		return SPECIAL_TILE_TYPE_SCRIPT.get_marker_text(special_tile_data.special_type)
+
+	return ""
 
 
 func _play_flash_tween(flash_modulate: Color, flash_scale: Vector2) -> void:

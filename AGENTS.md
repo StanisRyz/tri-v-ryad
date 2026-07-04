@@ -34,6 +34,12 @@ The current stage is a playable battle prototype with board animation polish, sa
 - `MatchResult` must keep exact cell coordinates for future Hero Lanes.
 - `SwapResolver` must not handle damage, heroes, or visual animation.
 - `BoardResolver` must not know about battle state.
+- Special tile logic lives under `scripts/game/board/`.
+- Base tile type remains the match color/type.
+- Special tile metadata must stay separate from UI.
+- `MatchFinder` must match by base tile type.
+- Special metadata must move with swap and gravity.
+- Special-cleared cells must not add hero damage or ability charge in v0.1.
 - Battle logic lives under `scripts/game/battle/`.
 - Battle logic must remain UI-independent.
 - `BattleResolver` consumes `MatchResult` data but must not use `BoardModel` directly.
@@ -42,8 +48,9 @@ The current stage is a playable battle prototype with board animation polish, sa
 - `AbilityChargeResolver` must not implement real abilities yet.
 - `EnemyActionResolver` must stay deterministic and simple for now.
 - `BoardView` presents `BoardModel` but must not implement match rules.
-- `TileView` may detect pointer/touch gestures but must not validate gameplay rules.
+- `TileView` may detect pointer/touch gestures and display a special marker, but must not validate gameplay or special rules.
 - `BoardView` forwards input events and presents board state only.
+- `BoardView` may forward special metadata to `TileView` but must not create or activate specials.
 - `BoardInputController` owns click/drag selection logic, not swap validation.
 - `GameScreen` wires signals but must not implement input rules.
 - Drag/swipe input must not duplicate swap requests.
@@ -65,6 +72,7 @@ The current stage is a playable battle prototype with board animation polish, sa
 - Input unlock must remain tied to `feedback_finished`.
 - Do not implement full cascade animations unless explicitly requested.
 - Do not implement full manual board layout rewrite or full falling animation unless explicitly requested.
+- Do not add color bombs, wrapped bombs, or special combos unless explicitly requested.
 - Do not add sound, particles, or final art in this stage.
 - Ability logic lives under `scripts/game/battle/`.
 - `AbilityResolver` must remain UI-independent.
@@ -113,6 +121,7 @@ The current stage is a playable battle prototype with board animation polish, sa
 - No full cascade animations.
 - No full manual board layout rewrite.
 - No full falling animation.
+- No color bombs, wrapped bombs, or special combos.
 - No sound or particles.
 - No target selection, cooldowns, ability upgrades, or hero selection.
 - No one-time rewards, stars-based rewards, level map, chapters, complex economy, or complex objectives.
