@@ -12,6 +12,7 @@ const HERO_UPGRADE_VIEW_DATA_SCRIPT := preload("res://scripts/game/presentation/
 @onready var back_button: Button = %BackButton
 
 var _progress_manager
+var _settings_manager
 var _hero_catalog: HeroCatalog
 var _row_controls: Dictionary = {}
 
@@ -26,6 +27,13 @@ func _ready() -> void:
 func set_progress_manager(progress_manager) -> void:
 	_progress_manager = progress_manager
 	_hero_catalog = _progress_manager.get_hero_catalog() if _progress_manager != null else null
+	if is_inside_tree():
+		_build_rows()
+		_refresh()
+
+
+func set_settings_manager(settings_manager) -> void:
+	_settings_manager = settings_manager
 	if is_inside_tree():
 		_build_rows()
 		_refresh()
@@ -56,7 +64,7 @@ func _build_rows() -> void:
 		margin.add_child(content)
 
 		var title := Label.new()
-		title.text = "%s (%s)" % [hero_config.display_name, hero_config.hero_id]
+		title.text = _get_hero_title_text(hero_config)
 		title.add_theme_font_size_override("font_size", 22)
 		content.add_child(title)
 
@@ -156,3 +164,9 @@ func _get_hero_catalog() -> HeroCatalog:
 func _set_status(message: String) -> void:
 	if status_label != null:
 		status_label.text = message
+
+
+func _get_hero_title_text(hero_config: HeroConfig) -> String:
+	if _settings_manager != null and _settings_manager.get_settings().debug_labels_enabled:
+		return "%s (%s)" % [hero_config.display_name, hero_config.hero_id]
+	return hero_config.display_name

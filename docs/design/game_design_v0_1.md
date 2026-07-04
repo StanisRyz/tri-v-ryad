@@ -292,4 +292,18 @@ One-time rewards, level map, chapters, stars-based rewards, max upgrade levels, 
 - Back from `UpgradeScreen` returns to `MainMenu` for this stage, including when opened from `GameScreen`'s victory overlay Heroes link.
 - Team selection rules, level unlock/star/progression rules, battle rules, and save data formats were not changed.
 - No SettingsScreen, reset save, animation toggles, Yandex SDK, cloud save, ads, payments, new levels, new heroes, hero unlocks, gacha, rarity, hero shards, equipment, skill trees, new abilities, new special tiles, new battle objectives, final art, sound, or particles were added.
-- Next planned stage: Stage 20, UI/UX polish and settings v0.1.
+
+## Stage 20: UI/UX Polish and Settings v0.1
+
+- Stage 20 is implemented.
+- MainMenu now has Play, Heroes, and Settings buttons.
+- `SettingsScreen` is a new screen with toggles for Animations, Reduced Motion, Debug Labels, Music, and Sound Effects, and a Back button.
+- `PlayerSettings` and `SettingsManager` under `scripts/game/settings/` persist settings to `user://settings_v1.json`, fully separate from `user://save_v1.json` and `PlayerProgress`.
+- Missing or corrupted settings data falls back safely to defaults; `reset_settings_to_defaults()` resets settings only.
+- Animations and Reduced Motion settings are applied presentation-only in `TileView`, `BoardMotionAnimator`, `TurnFeedbackPresenter`, and `AbilityFeedbackPresenter`, using minimal delays and softer pulses without changing input-unlock timing or `feedback_finished` correctness.
+- Debug Labels, when enabled, show `level_id` in `LevelSelectScreen` and `hero_id` in `TeamSelectScreen`, `UpgradeScreen`, and battle `HeroCard`s; clean player-facing names are shown by default.
+- Music and Sound Effects toggles persist and are reflected in the UI; no audio assets were added, and `SettingsManager` only mutes/unmutes named audio buses if they exist.
+- `TeamSelectScreen` copy was clarified to read as a pre-battle confirmation screen.
+- Reset Progress was intentionally not added: no button, API, or settings action deletes, clears, or resets player progress.
+- No gameplay, board, battle, progression, hero, level, special tile, or save-progress-format rules were changed.
+- No Yandex SDK, cloud save, ads, payments, new levels, new heroes, hero unlocks, gacha, rarity, hero shards, equipment, skill trees, new abilities, new special tiles, new battle objectives, final art, audio assets, or particles were added.

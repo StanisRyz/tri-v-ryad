@@ -2,7 +2,7 @@
 
 This is a Godot match-3 battle project intended for Yandex Games. The default layout is vertical 9:16 portrait with a 720x1280 base resolution.
 
-The current stage is a playable battle prototype through Stage 19: Menu and battle flow restructure v0.1, with damage-only hero abilities, line special tiles, color bombs, a 10-level early campaign slice, enemy and reward curve, balance tests, board animation polish, saved level completion, stars, sequential unlocks, upgrade points, hero progression, character upgrade screen v0.2, local save v0.1, and a MainMenu/LevelSelect/TeamSelect/GameScreen navigation flow. `GameScreen` is allowed to wire `BattlePresenter`, `BoardView`, `BoardInputController`, `TurnFeedbackPresenter`, `AbilityFeedbackPresenter`, and result-flow reward/completion calls through `ProgressManager`, but the board core, battle core, config layer, progression layer, and save layer must remain separate from UI implementation details.
+The current stage is a playable battle prototype through Stage 20: UI/UX polish and settings v0.1, with damage-only hero abilities, line special tiles, color bombs, a 10-level early campaign slice, enemy and reward curve, balance tests, board animation polish, saved level completion, stars, sequential unlocks, upgrade points, hero progression, character upgrade screen v0.2, local save v0.1, a MainMenu/LevelSelect/TeamSelect/GameScreen navigation flow, and a persistent SettingsScreen. `GameScreen` is allowed to wire `BattlePresenter`, `BoardView`, `BoardInputController`, `TurnFeedbackPresenter`, `AbilityFeedbackPresenter`, `SettingsManager`, and result-flow reward/completion calls through `ProgressManager`, but the board core, battle core, config layer, progression layer, save layer, and settings layer must remain separate from UI implementation details.
 
 ## Project Rules
 
@@ -22,7 +22,7 @@ The current stage is a playable battle prototype through Stage 19: Menu and batt
 - Stage 17 is complete: all hero abilities are damage-only, healing and board-clearing hero ability behavior was removed, ability use still does not consume moves or advance enemy intent, and hero abilities do not modify the board.
 - Stage 18 is complete: match 4 creates line special tiles, match 5+ creates color bombs, color bombs clear tiles of a target/base tile type, and special tiles remain board-only effects.
 - Stage 19 is complete: MainMenu now has Play and Heroes, with Heroes opening UpgradeScreen directly from the main menu. Play opens LevelSelect, which now only shows levels and their locked/open/completed/star state. LevelSelect routes a selected level to TeamSelectScreen, which confirms/edits the saved team, requires exactly 3 unique heroes, and starts GameScreen with the selected level_id only after saving the team through `ProgressManager.set_selected_team_ids()`.
-- Next planned stage: Stage 20, UI/UX polish and settings v0.1.
+- Stage 20 is complete: MainMenu now also has a Settings button that opens `SettingsScreen`. `PlayerSettings`/`SettingsManager` under `scripts/game/settings/` persist animations_enabled, reduced_motion_enabled, debug_labels_enabled, music_enabled, and sound_effects_enabled to `user://settings_v1.json`, fully separate from `user://save_v1.json` and `PlayerProgress`. Animation/reduced-motion settings are applied presentation-only in `TileView`, `BoardMotionAnimator`, `TurnFeedbackPresenter`, and `AbilityFeedbackPresenter`. Debug labels optionally show `level_id`/`hero_id` in `LevelSelectScreen`, `TeamSelectScreen`, `UpgradeScreen`, and `HeroCard`. Reset Progress was intentionally not added. No gameplay, board, battle, progression, or save-format rules changed.
 
 ## Gameplay Direction
 
@@ -141,6 +141,14 @@ The current stage is a playable battle prototype through Stage 19: Menu and batt
 - Rewards remain repeatable in v0.1.
 - Do not add one-time rewards, stars-based rewards, level map, chapters, or complex economy unless explicitly requested.
 - Upgrade screen spending belongs in `UpgradeScreen`, not in level select, team select, battle UI, or result overlays.
+- Settings logic lives under `scripts/game/settings/`: `PlayerSettings` and `SettingsManager`.
+- `SettingsManager` is the boundary for reading, writing, and defaulting settings; screens must not read or write the settings file directly.
+- Settings persist to `user://settings_v1.json`, fully separate from `user://save_v1.json` and `PlayerProgress`.
+- `SettingsManager` must never mutate `PlayerProgress` or touch `user://save_v1.json`.
+- `SettingsManager.reset_settings_to_defaults()` resets settings only, never player progress.
+- Do not add a Reset Progress button, API, or action anywhere in the UI.
+- Animation/reduced-motion settings are presentation-only and must not change gameplay, input-unlock, or `feedback_finished` timing correctness.
+- Debug label display is UI-only and must not expose save file paths or internal save data.
 
 ## Platform Boundaries
 

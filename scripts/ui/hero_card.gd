@@ -1,6 +1,9 @@
 extends PanelContainer
+class_name HeroCard
 
 signal ability_pressed(lane_index: int)
+
+static var _debug_labels_enabled := false
 
 @export var hero_name := "Hero"
 @export var lane_text := "Columns 1-3"
@@ -22,6 +25,10 @@ func _ready() -> void:
 	refresh()
 
 
+static func set_debug_labels_enabled(value: bool) -> void:
+	_debug_labels_enabled = value
+
+
 func refresh() -> void:
 	hero_name_label.text = hero_name
 	lane_label.text = lane_text
@@ -41,6 +48,8 @@ func set_hero(hero: HeroData) -> void:
 	else:
 		_lane_index = hero.lane_index
 		hero_name = hero.display_name
+		if _debug_labels_enabled:
+			hero_name = "%s (%s)" % [hero.display_name, hero.id]
 		lane_text = _get_lane_text(hero.lane_index)
 		hp_text = "HP: %d / %d" % [hero.current_hp, hero.get_max_hp()]
 		charge_text = "Charge: %d / %d" % [hero.ability_charge, hero.ability_charge_required]

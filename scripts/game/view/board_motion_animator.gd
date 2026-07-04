@@ -9,6 +9,13 @@ const CLEAR_DURATION := 0.20
 const SPECIAL_CLEAR_DURATION := 0.24
 const REFILL_DURATION := 0.18
 const REFRESH_DURATION := 0.16
+const MINIMAL_DURATION := 0.01
+
+var _animations_enabled := true
+
+
+func configure_settings(animations_enabled: bool, _reduced_motion_enabled: bool = false) -> void:
+	_animations_enabled = animations_enabled
 
 
 func play_valid_swap_feedback(board_view: BoardView, from_cell: Vector2i, to_cell: Vector2i) -> void:
@@ -63,4 +70,5 @@ func _wait(board_view: BoardView, duration: float) -> void:
 	if board_view == null or board_view.get_tree() == null:
 		return
 
-	await board_view.get_tree().create_timer(duration).timeout
+	var effective_duration := duration if _animations_enabled else MINIMAL_DURATION
+	await board_view.get_tree().create_timer(effective_duration).timeout

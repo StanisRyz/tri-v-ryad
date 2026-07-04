@@ -2,7 +2,7 @@
 
 Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
-The project is currently through Stage 19: Menu and battle flow restructure v0.1. It defines the app shell, a MainMenu with Play and Heroes entry points, a level-select-only level flow, a pre-battle team confirmation flow, a menu-accessible full roster hero upgrade screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, damage-only roster ability mappings, local hero upgrades, saved campaign progress, and lightweight swap, clear, special activation, and refill feedback for a vertical 9:16 game.
+The project is currently through Stage 20: UI/UX polish and settings v0.1. It defines the app shell, a MainMenu with Play, Heroes, and Settings entry points, a level-select-only level flow, a pre-battle team confirmation flow, a menu-accessible full roster hero upgrade screen, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, damage-only roster ability mappings, local hero upgrades, saved campaign progress, and lightweight swap, clear, special activation, and refill feedback for a vertical 9:16 game.
 
 ## Project Direction
 
@@ -153,22 +153,39 @@ MainMenu now has Play and Heroes buttons. Heroes opens UpgradeScreen directly fr
 
 TeamSelectScreen is now the pre-battle team confirmation screen: it receives a `level_id` via `set_level_id()`, shows the currently saved team, and lets the player change selected heroes. Its Save button was renamed to Start Battle and is disabled unless exactly 3 unique heroes are selected and a level_id is set. Pressing Start Battle saves the team through `ProgressManager.set_selected_team_ids()` and, only on success, emits `start_battle_pressed(level_id)`, which App.gd routes to GameScreen with that level_id. TeamSelectScreen never creates BattleState, opens GameScreen directly, or touches save files itself.
 
-No battle, board, progression, save, hero upgrade, or special tile systems were changed in this stage. Settings remains a future Stage 20 item. Yandex SDK, cloud save, ads, payments, final art, sound, particles, gacha, hero unlocks, and new mechanics were not added.
+No battle, board, progression, save, hero upgrade, or special tile systems were changed in Stage 19.
 
-Next planned stage: Stage 20, UI/UX polish and settings v0.1.
+## Stage 20: UI/UX Polish and Settings v0.1
+
+Stage 20 is complete. MainMenu now has three entry points: Play, Heroes, and Settings.
+
+`SettingsScreen` is a new screen reachable from MainMenu. It exposes toggles for Animations, Reduced Motion, Debug Labels, Music, and Sound Effects, and a Back button that returns to MainMenu. Settings are read from and written through `SettingsManager`.
+
+`PlayerSettings` and `SettingsManager` under `scripts/game/settings/` persist settings separately from player progress, in `user://settings_v1.json`. This is a completely separate file from `user://save_v1.json`; loading, saving, or resetting settings never touches `PlayerProgress` or the save file. Missing or corrupted settings files fall back safely to defaults. `SettingsManager.reset_settings_to_defaults()` resets settings only and never resets player progress.
+
+Animations and Reduced Motion settings are applied presentation-only: `TileView`, `BoardMotionAnimator`, `TurnFeedbackPresenter`, and `AbilityFeedbackPresenter` read these settings (wired through `GameScreen.set_settings_manager()`) to use minimal delays when animations are disabled and softer scale/color pulses when reduced motion is enabled. Input unlock timing and `feedback_finished` behavior are unchanged.
+
+Debug Labels, when enabled, show `level_id` in `LevelSelectScreen`, `hero_id` in `TeamSelectScreen` and `UpgradeScreen`, and `hero_id` in battle `HeroCard`s. When disabled (the default), only clean player-facing names are shown.
+
+Music and Sound Effects toggles are persisted and reflected in the UI. No audio assets were added in this stage; `SettingsManager` mutes/unmutes the `Music`/`SFX` audio buses by name when those buses exist, and is a safe no-op otherwise.
+
+**Reset Progress was intentionally not added.** There is no Reset Progress button, API, or settings action that deletes, clears, or migrates player progress.
+
+No gameplay, board, battle, progression, save-progress-format, hero, level, or special tile rules were changed in this stage. Yandex SDK, cloud save, ads, payments, final art, audio assets, and particles remain out of scope.
 
 ## How To Open And Run
 
 1. Open Godot 4.x.
 2. Import or open this folder as a Godot project.
 3. Run the project. The configured main scene is `res://scenes/app/App.tscn`.
-4. Press Play on the main menu to open level select.
-5. Choose a level to start that battle.
-6. Click one tile, then click a neighboring tile to attempt a swap, or drag/swipe from a tile toward a neighbor.
-7. Win a battle to earn upgrade points, save completion, earn stars, and unlock the next level.
-8. Open Heroes from level select or the victory overlay.
-9. Open Team from level select to choose and save exactly 3 roster heroes.
-10. Press Menu to return to level select.
+4. From MainMenu, press Play to open LevelSelect.
+5. Choose an unlocked level to open TeamSelect.
+6. Confirm or change your team, then press Start Battle to open GameScreen with that level.
+7. Click one tile, then click a neighboring tile to attempt a swap, or drag/swipe from a tile toward a neighbor.
+8. Win a battle to earn upgrade points, save completion, earn stars, and unlock the next level.
+9. From MainMenu, press Heroes to open UpgradeScreen and spend upgrade points.
+10. From MainMenu, press Settings to open SettingsScreen and toggle Animations, Reduced Motion, Debug Labels, Music, and Sound Effects.
+11. Press Menu/Back to return to the previous screen.
 
 ## Board Core Tests
 
@@ -298,7 +315,18 @@ Run the navigation flow test with:
 godot --headless --script res://scripts/tests/navigation_flow_test.gd
 ```
 
+Run the settings manager test with:
+
+```bash
+godot --headless --script res://scripts/tests/settings_manager_test.gd
+```
+
+Run the settings screen data test with:
+
+```bash
+godot --headless --script res://scripts/tests/settings_screen_data_test.gd
+```
+
 ## Next Planned Stages
 
-- Stage 20, UI/UX polish and settings v0.1.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.

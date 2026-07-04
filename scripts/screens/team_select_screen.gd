@@ -11,6 +11,7 @@ signal start_battle_pressed(level_id: String)
 @onready var roster_grid: GridContainer = %RosterGrid
 
 var _progress_manager
+var _settings_manager
 var _hero_catalog: HeroCatalog
 var _selected_hero_ids: Array[String] = []
 var _hero_buttons: Dictionary = {}
@@ -28,6 +29,13 @@ func set_progress_manager(progress_manager) -> void:
 	_hero_catalog = _progress_manager.get_hero_catalog() if _progress_manager != null else HeroCatalog.new()
 	if is_inside_tree():
 		_refresh_from_progress()
+
+
+func set_settings_manager(settings_manager) -> void:
+	_settings_manager = settings_manager
+	if is_inside_tree():
+		_build_roster()
+		_refresh_controls("")
 
 
 func set_level_id(level_id: String) -> void:
@@ -145,12 +153,21 @@ func _on_back_button_pressed() -> void:
 
 
 func _get_hero_button_text(hero_config: HeroConfig) -> String:
+	var display_name := hero_config.display_name
+	if _is_debug_labels_enabled():
+		display_name = "%s (%s)" % [hero_config.display_name, hero_config.hero_id]
 	return "%s\nAttack: %d  HP: %d\nAbility: %s" % [
-		hero_config.display_name,
+		display_name,
 		hero_config.base_attack,
 		hero_config.base_max_hp,
 		hero_config.ability_id,
 	]
+
+
+func _is_debug_labels_enabled() -> bool:
+	if _settings_manager == null:
+		return false
+	return _settings_manager.get_settings().debug_labels_enabled
 
 
 func _has_duplicates(hero_ids: Array[String]) -> bool:

@@ -39,16 +39,23 @@ func _test_main_menu_signals() -> void:
 	root.add_child(screen)
 	await process_frame
 
+	_expect_true(screen.has_signal("settings_pressed"), "main menu exposes settings_pressed")
+	_expect_true(screen.has_node("%SettingsButton"), "main menu has a settings button")
+
 	var play_signals: Array = []
 	var heroes_signals: Array = []
+	var settings_signals: Array = []
 	screen.play_pressed.connect(func(): play_signals.append(true))
 	screen.heroes_pressed.connect(func(): heroes_signals.append(true))
+	screen.settings_pressed.connect(func(): settings_signals.append(true))
 
 	screen.get_node("%PlayButton").pressed.emit()
 	screen.get_node("%HeroesButton").pressed.emit()
+	screen.get_node("%SettingsButton").pressed.emit()
 
 	_expect_equal(play_signals.size(), 1, "main menu play button emits play_pressed")
 	_expect_equal(heroes_signals.size(), 1, "main menu heroes button emits heroes_pressed")
+	_expect_equal(settings_signals.size(), 1, "main menu settings button emits settings_pressed")
 
 	screen.queue_free()
 

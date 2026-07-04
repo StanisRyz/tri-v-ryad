@@ -44,7 +44,7 @@ theme_override_constants/separation = 10
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 34
-text = "Team Selection"
+text = "Confirm Your Team"
 
 [node name="SaveButton" type="Button" parent="SafeMargin/Root/TopBar"]
 unique_name_in_owner = true

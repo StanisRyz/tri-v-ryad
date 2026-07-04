@@ -27,6 +27,7 @@ var _feedback_active := false
 var _current_level_id := "level_1"
 var _current_level_name := "Level 1"
 var _progress_manager
+var _settings_manager
 var _reward_granted_for_current_battle := false
 var _last_reward_amount := 0
 var _completion_saved_for_current_battle := false
@@ -280,3 +281,22 @@ func set_progress_manager(progress_manager) -> void:
 	if _presenter != null and _progress_manager != null:
 		_presenter.set_progress(_progress_manager.get_progress())
 		_presenter.set_hero_catalog(_progress_manager.get_hero_catalog())
+
+
+func set_settings_manager(settings_manager) -> void:
+	_settings_manager = settings_manager
+	_apply_presentation_settings()
+
+
+func _apply_presentation_settings() -> void:
+	var settings = _settings_manager.get_settings() if _settings_manager != null else null
+	var animations_enabled: bool = settings.animations_enabled if settings != null else true
+	var reduced_motion_enabled: bool = settings.reduced_motion_enabled if settings != null else false
+	var debug_labels_enabled: bool = settings.debug_labels_enabled if settings != null else false
+
+	TileView.configure_presentation(animations_enabled, reduced_motion_enabled)
+	HeroCard.set_debug_labels_enabled(debug_labels_enabled)
+	if _turn_feedback_presenter != null:
+		_turn_feedback_presenter.configure_settings(animations_enabled, reduced_motion_enabled)
+	if _ability_feedback_presenter != null:
+		_ability_feedback_presenter.configure_settings(animations_enabled, reduced_motion_enabled)

@@ -11,6 +11,7 @@ signal back_pressed
 
 var _level_catalog = LEVEL_CATALOG_SCRIPT.new()
 var _progress_manager
+var _settings_manager
 
 
 func _ready() -> void:
@@ -20,6 +21,12 @@ func _ready() -> void:
 
 func set_progress_manager(progress_manager) -> void:
 	_progress_manager = progress_manager
+	if is_inside_tree():
+		_refresh()
+
+
+func set_settings_manager(settings_manager) -> void:
+	_settings_manager = settings_manager
 	if is_inside_tree():
 		_refresh()
 
@@ -45,7 +52,10 @@ func _build_level_buttons() -> void:
 			status = "Open"
 
 		button.custom_minimum_size = Vector2(420, 74)
-		button.text = "%s\n%s | Stars: %d/3" % [level_config.display_name, status, stars]
+		var title: String = level_config.display_name
+		if _is_debug_labels_enabled():
+			title = "%s (%s)" % [level_config.display_name, level_config.level_id]
+		button.text = "%s\n%s | Stars: %d/3" % [title, status, stars]
 		button.disabled = not unlocked
 		if unlocked:
 			button.pressed.connect(_on_level_button_pressed.bind(level_config.level_id))
@@ -84,3 +94,9 @@ func _get_level_stars(level_id: String) -> int:
 	if _progress_manager == null:
 		return 0
 	return _progress_manager.get_level_stars(level_id)
+
+
+func _is_debug_labels_enabled() -> bool:
+	if _settings_manager == null:
+		return false
+	return _settings_manager.get_settings().debug_labels_enabled

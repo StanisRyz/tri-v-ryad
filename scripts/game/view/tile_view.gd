@@ -15,6 +15,9 @@ const TILE_COLORS := {
 	TileType.PURPLE: Color(0.56, 0.28, 0.82, 1.0),
 }
 
+static var _animations_enabled := true
+static var _reduced_motion_enabled := false
+
 var board_cell := Vector2i.ZERO
 var tile_type := BoardModel.EMPTY
 var special_tile_data
@@ -25,6 +28,11 @@ var _press_start_position := Vector2.ZERO
 var _has_press_start := false
 var _suppress_next_pressed := false
 var _active_tween: Tween
+
+
+static func configure_presentation(animations_enabled: bool, reduced_motion_enabled: bool) -> void:
+	_animations_enabled = animations_enabled
+	_reduced_motion_enabled = reduced_motion_enabled
 
 
 func _ready() -> void:
@@ -94,11 +102,13 @@ func play_match_fade() -> void:
 	pivot_offset = size * 0.5
 	modulate = Color.WHITE
 	scale = Vector2.ONE
+	var fade_scale := _adjust_scale(Vector2(0.88, 0.88))
+	var step_duration := _adjust_duration(0.10)
 	_active_tween = create_tween()
-	_active_tween.tween_property(self, "modulate", Color(1.0, 1.0, 1.0, 0.22), 0.10)
-	_active_tween.parallel().tween_property(self, "scale", Vector2(0.88, 0.88), 0.10)
-	_active_tween.tween_property(self, "modulate", Color.WHITE, 0.10)
-	_active_tween.parallel().tween_property(self, "scale", Vector2.ONE, 0.10)
+	_active_tween.tween_property(self, "modulate", Color(1.0, 1.0, 1.0, 0.22), step_duration)
+	_active_tween.parallel().tween_property(self, "scale", fade_scale, step_duration)
+	_active_tween.tween_property(self, "modulate", Color.WHITE, step_duration)
+	_active_tween.parallel().tween_property(self, "scale", Vector2.ONE, step_duration)
 
 
 func play_special_flash() -> void:
@@ -111,10 +121,11 @@ func play_refill_appear() -> void:
 	visible = true
 	pivot_offset = size * 0.5
 	modulate = Color(1.0, 1.0, 1.0, 0.45)
-	scale = Vector2(0.90, 0.90)
+	scale = _adjust_scale(Vector2(0.90, 0.90))
+	var duration := _adjust_duration(0.12)
 	_active_tween = create_tween()
-	_active_tween.tween_property(self, "modulate", Color.WHITE, 0.12)
-	_active_tween.parallel().tween_property(self, "scale", Vector2.ONE, 0.12)
+	_active_tween.tween_property(self, "modulate", Color.WHITE, duration)
+	_active_tween.parallel().tween_property(self, "scale", Vector2.ONE, duration)
 
 
 func reset_visual_state() -> void:
@@ -213,11 +224,27 @@ func _play_flash_tween(flash_modulate: Color, flash_scale: Vector2) -> void:
 	modulate = Color.WHITE
 	scale = Vector2.ONE
 	pivot_offset = size * 0.5
+	var adjusted_modulate := _adjust_color(flash_modulate)
+	var adjusted_scale := _adjust_scale(flash_scale)
+	var flash_duration := _adjust_duration(0.06)
+	var settle_duration := _adjust_duration(0.14)
 	_active_tween = create_tween()
-	_active_tween.tween_property(self, "modulate", flash_modulate, 0.06)
-	_active_tween.parallel().tween_property(self, "scale", flash_scale, 0.06)
-	_active_tween.tween_property(self, "modulate", Color.WHITE, 0.14)
-	_active_tween.parallel().tween_property(self, "scale", Vector2.ONE, 0.14)
+	_active_tween.tween_property(self, "modulate", adjusted_modulate, flash_duration)
+	_active_tween.parallel().tween_property(self, "scale", adjusted_scale, flash_duration)
+	_active_tween.tween_property(self, "modulate", Color.WHITE, settle_duration)
+	_active_tween.parallel().tween_property(self, "scale", Vector2.ONE, settle_duration)
+
+
+func _adjust_duration(base_duration: float) -> float:
+	return base_duration if _animations_enabled else 0.01
+
+
+func _adjust_scale(base_scale: Vector2) -> Vector2:
+	return base_scale.lerp(Vector2.ONE, 0.6) if _reduced_motion_enabled else base_scale
+
+
+func _adjust_color(base_color: Color) -> Color:
+	return base_color.lerp(Color.WHITE, 0.5) if _reduced_motion_enabled else base_color
 
 
 func _stop_active_tween() -> void:

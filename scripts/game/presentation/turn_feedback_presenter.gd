@@ -7,8 +7,15 @@ const BOARD_MOTION_ANIMATOR_SCRIPT := preload("res://scripts/game/view/board_mot
 const SHORT_DELAY := 0.12
 const MEDIUM_DELAY := 0.24
 const LONG_DELAY := 0.34
+const MINIMAL_DELAY := 0.01
 
 var _board_motion_animator := BOARD_MOTION_ANIMATOR_SCRIPT.new()
+var _animations_enabled := true
+
+
+func configure_settings(animations_enabled: bool, reduced_motion_enabled: bool = false) -> void:
+	_animations_enabled = animations_enabled
+	_board_motion_animator.configure_settings(animations_enabled, reduced_motion_enabled)
 
 
 func play_turn_feedback(data, board_view: BoardView, status_callback: Callable) -> void:
@@ -111,4 +118,5 @@ func _wait(board_view: BoardView, duration: float) -> void:
 	if board_view == null or board_view.get_tree() == null:
 		return
 
-	await board_view.get_tree().create_timer(duration).timeout
+	var effective_duration := duration if _animations_enabled else MINIMAL_DELAY
+	await board_view.get_tree().create_timer(effective_duration).timeout
