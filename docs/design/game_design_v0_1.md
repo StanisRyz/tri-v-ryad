@@ -67,7 +67,7 @@ Hero Lanes remain future battle logic. The current board core stores exact match
 - Victory occurs when enemy HP reaches 0.
 - Defeat occurs when moves run out or all heroes are dead.
 
-Animations, real abilities, hero selection, upgrades, and platform systems remain future work.
+Animations, hero selection, and platform systems remain future work.
 
 ## First Playable Prototype v0.1
 
@@ -81,7 +81,7 @@ Animations, real abilities, hero selection, upgrades, and platform systems remai
 - Victory and defeat show a result overlay.
 - Restart starts a fresh fixed test battle.
 
-Animations, real abilities, upgrades, hero selection, and platform systems remain future work.
+Animations, hero selection, and platform systems remain future work.
 
 ## Mobile Input v0.1
 
@@ -102,7 +102,7 @@ Animation, advanced feedback, sound, and gesture polish remain future work.
 - Damage and enemy action are shown through short status messages.
 - Input remains locked during feedback and unlocks only after feedback completes.
 
-Full cascade animation, real tile movement, particles, sound, and progression remain future work.
+Full cascade animation, real tile movement, particles, sound, and deeper progression remain future work.
 
 ## Hero Abilities v0.1
 
@@ -116,7 +116,7 @@ Full cascade animation, real tile movement, particles, sound, and progression re
 - Ability use does not trigger enemy action.
 - Ability-cleared tiles do not grant charge or hero damage.
 
-Target selection, cooldowns, ability upgrades, new heroes, level configs, saves, and platform systems remain future work.
+Target selection, cooldowns, ability upgrades, new heroes, cloud saves, and platform systems remain future work.
 
 ## Level System v0.1
 
@@ -127,13 +127,21 @@ Target selection, cooldowns, ability upgrades, new heroes, level configs, saves,
 - `GameScreen` starts the selected level through `BattlePresenter`.
 - Victory and defeat rules stay unchanged.
 
-Progression, unlocks, stars, upgrade rewards, hero selection, and complex objectives remain future work.
+Unlocks, stars, hero selection, and complex objectives remain future work.
 
-## Future Progression
+## Progression v0.1
 
-After battles, the player will later receive upgrade points. Upgrade points will improve hero attack and HP.
+- Victory grants upgrade points from `LevelConfig.reward_upgrade_points`.
+- Rewards can be earned repeatedly in v0.1.
+- Upgrade points can improve hero attack or HP.
+- Attack level and HP level are stored per hero in `HeroUpgradeState`.
+- `PlayerProgress` stores upgrade points, hero upgrade state, and completed level ids.
+- Progress saves locally to `user://save_v1.json`.
+- `BattleFactory` applies saved attack and HP levels to future battle heroes.
+- `HeroConfig` remains base data and is not mutated by upgrades.
+- There are no level unlocks or stars yet.
 
-Complex meta progression is not part of the foundation stage.
+Cloud save, Yandex SDK integration, level unlocks, stars, one-time rewards, hero selection, and complex economy remain future work.
 
 ## MVP Exclusions
 
@@ -143,7 +151,8 @@ Complex meta progression is not part of the foundation stage.
 - No RuStore or Android-specific code.
 - No final art.
 - No complex meta progression.
-- No saved level completion, unlocks, stars, or upgrade rewards.
+- No level unlocks, stars, or one-time rewards.
+- No cloud save.
 - No target selection or ability upgrades.
 - No full cascade animations.
 - No real tile movement.

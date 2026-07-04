@@ -2,7 +2,7 @@
 
 Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
-The project is currently in the Level System and Data-Driven Battle Configs stage. It defines the app shell, simple screen navigation, a level select flow, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, three starter hero abilities, and data-driven test battles for a vertical 9:16 game.
+The project is currently in the Upgrade Points, Hero Progression, and Local Save v0.1 stage. It defines the app shell, simple screen navigation, a level select flow, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, three starter hero abilities, data-driven test battles, and a first local meta-progression layer for a vertical 9:16 game.
 
 ## Project Direction
 
@@ -21,7 +21,7 @@ The future battle board will be 9 columns by 9 rows. The player will bring 3 her
 - Hero 2: columns 4-6.
 - Hero 3: columns 7-9.
 
-Future match combinations will activate heroes based on the columns involved. Heroes may later charge abilities from matched tiles in their lanes. Upgrade points after battle will later improve hero attack and HP.
+Match combinations activate heroes based on the columns involved. Heroes charge abilities from matched tiles in their lanes. Victory rewards grant upgrade points that can improve hero attack and HP.
 
 ## Current Status
 
@@ -38,6 +38,13 @@ This stage includes:
 - UI-independent battle logic under `scripts/game/battle/`: heroes, enemy, battle state, Hero Lane activation, damage, ability charge, enemy intent/action, and turn results.
 - Data-driven configs under `scripts/game/config/`: `HeroConfig`, `EnemyConfig`, `LevelConfig`, and `LevelCatalog`.
 - `BattleFactory` creates battle state from level configs.
+- Local progression under `scripts/game/progression/`: `PlayerProgress`, `HeroUpgradeState`, `UpgradeResolver`, and `ProgressManager`.
+- Local save handling under `scripts/game/save/` with `SaveManager`.
+- Progress is saved locally to `user://save_v1.json`.
+- Victory grants `LevelConfig.reward_upgrade_points`, and rewards can be earned repeatedly in v0.1.
+- Upgrade points can raise each hero's attack level or HP level.
+- `UpgradeScreen` shows current points, hero upgrade levels, derived attack/HP values, and upgrade buttons.
+- `BattleFactory` combines base `HeroConfig` data with mutable `PlayerProgress` when creating battle heroes.
 - A `BattlePresenter` that coordinates the fixed prototype battle without platform, save, ad, or SDK code.
 - `BattlePresenter.start_level(level_id)` starts selected levels, and Restart preserves the current level.
 - Three starter abilities: Power Strike, Line Break, and Rally Heal.
@@ -58,14 +65,17 @@ This stage includes:
 - Ability presentation data tests in `scripts/tests/ability_presentation_data_test.gd`.
 - Level config tests in `scripts/tests/level_config_test.gd`.
 - Battle factory tests in `scripts/tests/battle_factory_test.gd`.
+- Progression tests in `scripts/tests/progression_test.gd`.
+- Save manager tests in `scripts/tests/save_manager_test.gd`.
+- Battle factory progress tests in `scripts/tests/battle_factory_progress_test.gd`.
 - Documentation for future implementation rules.
 
 This stage excludes:
 
 - Full cascade animations, real tile movement, particles, sound, and final art.
-- Target selection, cooldowns, ability upgrades, hero selection UI, level unlocks, and progression.
-- Saved level completion, unlocks, stars, upgrade rewards, and complex objectives.
-- Saves, ads, payments, Yandex SDK, RuStore, Android-specific code, and final art.
+- Target selection, cooldowns, ability upgrades, hero selection UI, and level unlocks.
+- Level unlocks, stars, one-time rewards, complex economy, and complex objectives.
+- Cloud saves, ads, payments, Yandex SDK, RuStore, Android-specific code, and final art.
 
 ## How To Open And Run
 
@@ -75,7 +85,8 @@ This stage excludes:
 4. Press Play on the main menu to open level select.
 5. Choose a level to start that battle.
 6. Click one tile, then click a neighboring tile to attempt a swap, or drag/swipe from a tile toward a neighbor.
-7. Press Menu to return to level select.
+7. Win a battle to earn upgrade points, then open Upgrades from level select or the victory overlay.
+8. Press Menu to return to level select.
 
 ## Board Core Tests
 
@@ -133,8 +144,26 @@ Run the battle factory test with:
 godot --headless --script res://scripts/tests/battle_factory_test.gd
 ```
 
+Run the progression test with:
+
+```bash
+godot --headless --script res://scripts/tests/progression_test.gd
+```
+
+Run the save manager test with:
+
+```bash
+godot --headless --script res://scripts/tests/save_manager_test.gd
+```
+
+Run the battle factory progress test with:
+
+```bash
+godot --headless --script res://scripts/tests/battle_factory_progress_test.gd
+```
+
 ## Next Planned Stages
 
-- Upgrade points, hero progression, and local save v0.1.
+- Saved level completion and unlocks.
 - Improve board animation polish for swap, clear, fall, and refill.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.

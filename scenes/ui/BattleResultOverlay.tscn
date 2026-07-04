@@ -11,9 +11,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -180.0
-offset_top = -116.0
+offset_top = -142.0
 offset_right = 180.0
-offset_bottom = 116.0
+offset_bottom = 142.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_yr18t")
@@ -36,20 +36,34 @@ theme_override_font_sizes/font_size = 34
 text = "Victory"
 horizontal_alignment = 1
 
+[node name="RewardLabel" type="Label" parent="Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Reward: +0 upgrade points"
+horizontal_alignment = 1
+
 [node name="Buttons" type="HBoxContainer" parent="Margin/Content"]
 layout_mode = 2
 theme_override_constants/separation = 12
 
 [node name="RestartButton" type="Button" parent="Margin/Content/Buttons"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(140, 56)
+custom_minimum_size = Vector2(104, 56)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Restart"
 
+[node name="UpgradesButton" type="Button" parent="Margin/Content/Buttons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(104, 56)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Upgrades"
+
 [node name="ResultMenuButton" type="Button" parent="Margin/Content/Buttons"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(140, 56)
+custom_minimum_size = Vector2(104, 56)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Menu"

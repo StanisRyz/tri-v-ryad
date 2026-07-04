@@ -1,6 +1,7 @@
 extends Control
 
 signal back_pressed
+signal upgrades_pressed
 
 const BATTLE_PRESENTER_SCRIPT := preload("res://scripts/game/presentation/battle_presenter.gd")
 const BOARD_INPUT_CONTROLLER_SCRIPT := preload("res://scripts/game/input/board_input_controller.gd")
@@ -25,6 +26,9 @@ var _pending_battle_status := -1
 var _feedback_active := false
 var _current_level_id := "level_1"
 var _current_level_name := "Level 1"
+var _progress_manager
+var _reward_granted_for_current_battle := false
+var _last_reward_amount := 0
 
 func _ready() -> void:
 	if not menu_button.pressed.is_connected(_on_menu_button_pressed):
@@ -74,6 +78,8 @@ func _apply_landscape_layout() -> void:
 
 func _setup_playable_battle() -> void:
 	_presenter = BATTLE_PRESENTER_SCRIPT.new()
+	if _progress_manager != null:
+		_presenter.set_progress(_progress_manager.get_progress())
 	_input_controller = BOARD_INPUT_CONTROLLER_SCRIPT.new()
 	_turn_feedback_presenter = TURN_FEEDBACK_PRESENTER_SCRIPT.new()
 	_ability_feedback_presenter = ABILITY_FEEDBACK_PRESENTER_SCRIPT.new()
@@ -99,12 +105,15 @@ func _setup_playable_battle() -> void:
 
 	result_overlay.restart_pressed.connect(_on_restart_pressed)
 	result_overlay.menu_pressed.connect(_on_menu_button_pressed)
+	result_overlay.upgrades_pressed.connect(_on_upgrades_pressed)
 	_start_new_battle()
 
 
 func _start_new_battle() -> void:
 	_pending_battle_status = -1
 	_feedback_active = false
+	_reward_granted_for_current_battle = false
+	_last_reward_amount = 0
 	result_overlay.hide_result()
 	board_view.clear_lane_highlights()
 	board_view.clear_cell_highlights()
@@ -173,11 +182,24 @@ func _on_feedback_finished() -> void:
 func _show_battle_result(status: int) -> void:
 	_input_controller.set_input_enabled(false)
 	if status == BattleState.Status.VICTORY:
+		_grant_victory_reward_once()
 		_set_status("Victory")
-		result_overlay.show_victory()
+		result_overlay.show_victory(_last_reward_amount)
 	elif status == BattleState.Status.DEFEAT:
 		_set_status("Defeat")
 		result_overlay.show_defeat()
+
+
+func _grant_victory_reward_once() -> void:
+	if _reward_granted_for_current_battle:
+		return
+
+	_reward_granted_for_current_battle = true
+	_last_reward_amount = 0
+	if _progress_manager == null or _presenter == null or _presenter.current_level_config == null:
+		return
+
+	_last_reward_amount = _progress_manager.add_victory_reward(_presenter.current_level_config)
 
 
 func _on_selection_changed(cell: Vector2i) -> void:
@@ -219,6 +241,10 @@ func _on_restart_pressed() -> void:
 	_start_new_battle()
 
 
+func _on_upgrades_pressed() -> void:
+	upgrades_pressed.emit()
+
+
 func _set_status(message: String) -> void:
 	status_label.text = message
 
@@ -227,3 +253,9 @@ func set_level_id(level_id: String) -> void:
 	_current_level_id = level_id if level_id != "" else "level_1"
 	if _presenter != null:
 		_start_new_battle()
+
+
+func set_progress_manager(progress_manager) -> void:
+	_progress_manager = progress_manager
+	if _presenter != null and _progress_manager != null:
+		_presenter.set_progress(_progress_manager.get_progress())

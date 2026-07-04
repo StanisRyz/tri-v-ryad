@@ -21,6 +21,7 @@ var board: BoardModel
 var state: BattleState
 var current_level_config
 var current_level_id := ""
+var progress
 
 var _board_generator := BoardGenerator.new()
 var _swap_resolver := SwapResolver.new()
@@ -41,10 +42,14 @@ func start_level(level_id: String) -> void:
 	current_level_config = _level_catalog.get_level(resolved_level_id)
 	current_level_id = current_level_config.level_id
 	board = _generate_playable_board()
-	state = _battle_factory.create_state(current_level_config)
+	state = _battle_factory.create_state(current_level_config, progress)
 	level_changed.emit(current_level_config)
 	board_changed.emit(board)
 	battle_state_changed.emit(state)
+
+
+func set_progress(player_progress) -> void:
+	progress = player_progress
 
 
 func request_swap(from_cell: Vector2i, to_cell: Vector2i) -> void:

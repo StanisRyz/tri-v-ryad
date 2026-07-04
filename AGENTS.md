@@ -2,7 +2,7 @@
 
 This is a Godot match-3 battle project intended for Yandex Games. The default layout is vertical 9:16 portrait with a 720x1280 base resolution.
 
-The current stage is a playable battle prototype with a level system and data-driven battle configs. `GameScreen` is allowed to wire `BattlePresenter`, `BoardView`, `BoardInputController`, `TurnFeedbackPresenter`, and `AbilityFeedbackPresenter`, but the board core, battle core, and config layer must remain separate from UI implementation details.
+The current stage is a playable battle prototype with upgrade points, hero progression, and local save v0.1. `GameScreen` is allowed to wire `BattlePresenter`, `BoardView`, `BoardInputController`, `TurnFeedbackPresenter`, `AbilityFeedbackPresenter`, and result-flow reward grants through `ProgressManager`, but the board core, battle core, config layer, progression layer, and save layer must remain separate from UI implementation details.
 
 ## Project Rules
 
@@ -27,7 +27,7 @@ The current stage is a playable battle prototype with a level system and data-dr
 - Hero 2 owns columns 4-6.
 - Hero 3 owns columns 7-9.
 - Future matches will activate heroes based on affected columns.
-- Future progression will award upgrade points after battle for hero attack and HP.
+- Progression awards upgrade points after victory for hero attack and HP.
 - `BoardFrame` is only a placeholder visual frame, not the match-3 board model.
 - Future board logic belongs under `scripts/game/board/`.
 - Board logic must remain UI-independent.
@@ -48,7 +48,7 @@ The current stage is a playable battle prototype with a level system and data-dr
 - `GameScreen` wires signals but must not implement input rules.
 - Drag/swipe input must not duplicate swap requests.
 - Input must be locked during turn processing.
-- `BattlePresenter` coordinates prototype flow but must keep SDK, saves, ads, and payments out.
+- `BattlePresenter` coordinates prototype flow but must keep SDK, direct save access, ads, and payments out.
 - Cascade damage is future work and must not be added unless explicitly requested.
 - `TurnPresentationData` is presentation-only and must not change core battle rules.
 - `TurnFeedbackPresenter` owns feedback sequencing.
@@ -69,18 +69,28 @@ The current stage is a playable battle prototype with a level system and data-dr
 - Configs live under `scripts/game/config/`.
 - Config classes must remain UI-independent.
 - `BattleFactory` creates `BattleState` from configs.
+- Progression logic lives under `scripts/game/progression/`.
+- Save logic lives under `scripts/game/save/`.
+- Screens must not read or write save files directly.
+- Use `ProgressManager` for progress operations.
+- `SaveManager` is local-only in v0.1.
+- `PlayerProgress` is mutable player data.
+- `HeroConfig` remains immutable base data.
+- `BattleFactory` combines `HeroConfig` with `PlayerProgress`.
+- Do not mutate `HeroConfig` for player upgrades.
 - `BattlePresenter` starts levels but must not store hardcoded enemy or hero definitions.
 - `LevelSelectScreen` only selects `level_id` and must not create `BattleState`.
-- Progression, saves, unlocks, stars, and upgrade points remain future work unless explicitly requested.
+- Do not add level unlocks, stars, one-time rewards, or complex economy unless explicitly requested.
 
 ## Platform Boundaries
 
 - The game is intended for Yandex Games / Web first.
 - Do not add Yandex SDK integration during the foundation stage.
+- Do not add Yandex cloud save until explicitly requested.
 - When Yandex SDK support is added later, isolate it under `scripts/platform/`.
 - Gameplay and UI scripts must never call the Yandex SDK directly.
 - Use platform adapter scripts or services as the boundary between SDK code and the rest of the project.
-- Do not add ads, saves, payments, RuStore, Android-specific code, or monetization during this stage.
+- Do not add ads, cloud saves, payments, RuStore, Android-specific code, or monetization during this stage.
 
 ## Current Exclusions
 
@@ -88,8 +98,8 @@ The current stage is a playable battle prototype with a level system and data-dr
 - No full cascade animations.
 - No sound or particles.
 - No target selection, cooldowns, ability upgrades, level unlocks, or hero selection.
-- No saved level completion, unlocks, stars, upgrade rewards, or complex objectives.
-- No save system.
+- No level unlocks, stars, one-time rewards, complex economy, or complex objectives.
+- No cloud save.
 - No ads or monetization.
 - No Yandex SDK.
 - No final art assets.
