@@ -2,7 +2,7 @@
 
 This is a Godot match-3 battle project intended for Yandex Games. The default layout is vertical 9:16 portrait with a 720x1280 base resolution.
 
-The current stage is a mobile-friendly playable battle prototype. `GameScreen` is allowed to wire `BattlePresenter`, `BoardView`, and `BoardInputController`, but the board core and battle core must remain separate from UI implementation details.
+The current stage is a playable battle prototype with basic board feedback. `GameScreen` is allowed to wire `BattlePresenter`, `BoardView`, `BoardInputController`, and `TurnFeedbackPresenter`, but the board core and battle core must remain separate from UI implementation details.
 
 ## Project Rules
 
@@ -50,7 +50,13 @@ The current stage is a mobile-friendly playable battle prototype. `GameScreen` i
 - Input must be locked during turn processing.
 - `BattlePresenter` coordinates prototype flow but must keep SDK, saves, ads, and payments out.
 - Cascade damage is future work and must not be added unless explicitly requested.
-- Animations remain future work unless explicitly requested.
+- `TurnPresentationData` is presentation-only and must not change core battle rules.
+- `TurnFeedbackPresenter` owns feedback sequencing.
+- `GameScreen` must not contain long animation sequences.
+- Input unlock must happen after feedback completes.
+- `TileView` visual feedback must remain lightweight.
+- Do not implement full cascade animations unless explicitly requested.
+- Do not add sound, particles, or final art in this stage.
 
 ## Platform Boundaries
 
@@ -64,6 +70,8 @@ The current stage is a mobile-friendly playable battle prototype. `GameScreen` i
 ## Current Exclusions
 
 - No tile swap, clear, fall, or refill animations.
+- No full cascade animations.
+- No sound or particles.
 - No real abilities or upgrades.
 - No save system.
 - No ads or monetization.

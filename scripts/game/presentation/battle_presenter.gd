@@ -1,9 +1,12 @@
 extends RefCounted
 class_name BattlePresenter
 
+const TURN_PRESENTATION_DATA_SCRIPT := preload("res://scripts/game/presentation/turn_presentation_data.gd")
+
 signal board_changed(board: BoardModel)
 signal battle_state_changed(state: BattleState)
 signal turn_resolved(result: BattleTurnResult)
+signal turn_presentation_ready(data)
 signal invalid_swap(reason: String)
 signal battle_finished(status: int)
 
@@ -29,16 +32,19 @@ func request_swap(from_cell: Vector2i, to_cell: Vector2i) -> void:
 
 	var swap_result := _swap_resolver.try_swap(board, from_cell, to_cell)
 	if not swap_result.accepted:
+		turn_presentation_ready.emit(TURN_PRESENTATION_DATA_SCRIPT.from_invalid_turn(from_cell, to_cell, swap_result.reason))
 		invalid_swap.emit(swap_result.reason)
 		board_changed.emit(board)
 		return
 
 	var battle_result := _battle_resolver.resolve_player_matches(state, swap_result.matches)
+	var presentation_data = TURN_PRESENTATION_DATA_SCRIPT.from_valid_turn(from_cell, to_cell, swap_result.matches, battle_result)
 	_board_resolver.resolve_board(board)
 
 	board_changed.emit(board)
 	battle_state_changed.emit(state)
 	turn_resolved.emit(battle_result)
+	turn_presentation_ready.emit(presentation_data)
 
 	if state.is_finished():
 		battle_finished.emit(state.status)

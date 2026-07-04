@@ -93,6 +93,17 @@ Animations, real abilities, upgrades, hero selection, and platform systems remai
 
 Animation, advanced feedback, sound, and gesture polish remain future work.
 
+## Basic Turn Feedback v0.1
+
+- Valid swaps briefly flash involved cells.
+- Invalid swaps show simple feedback.
+- Initial matched cells highlight before temporary feedback is cleared.
+- Activated Hero Lanes highlight after the turn.
+- Damage and enemy action are shown through short status messages.
+- Input remains locked during feedback and unlocks only after feedback completes.
+
+Full cascade animation, real tile movement, particles, sound, abilities, and progression remain future work.
+
 ## Future Progression
 
 After battles, the player will later receive upgrade points. Upgrade points will improve hero attack and HP.
@@ -108,4 +119,6 @@ Complex meta progression is not part of the foundation stage.
 - No final art.
 - No complex meta progression.
 - No real abilities.
-- No board animations.
+- No full cascade animations.
+- No real tile movement.
+- No sound or particles.

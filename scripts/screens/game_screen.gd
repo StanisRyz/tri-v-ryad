@@ -4,6 +4,7 @@ signal back_pressed
 
 const BATTLE_PRESENTER_SCRIPT := preload("res://scripts/game/presentation/battle_presenter.gd")
 const BOARD_INPUT_CONTROLLER_SCRIPT := preload("res://scripts/game/input/board_input_controller.gd")
+const TURN_FEEDBACK_PRESENTER_SCRIPT := preload("res://scripts/game/presentation/turn_feedback_presenter.gd")
 
 @onready var menu_button: Button = %MenuButton
 @onready var battle_root: VBoxContainer = %BattleRoot
@@ -17,6 +18,9 @@ const BOARD_INPUT_CONTROLLER_SCRIPT := preload("res://scripts/game/input/board_i
 var _layout_manager: LayoutManager
 var _presenter
 var _input_controller
+var _turn_feedback_presenter
+var _pending_battle_status := -1
+var _feedback_active := false
 
 func _ready() -> void:
 	if not menu_button.pressed.is_connected(_on_menu_button_pressed):
@@ -67,6 +71,7 @@ func _apply_landscape_layout() -> void:
 func _setup_playable_battle() -> void:
 	_presenter = BATTLE_PRESENTER_SCRIPT.new()
 	_input_controller = BOARD_INPUT_CONTROLLER_SCRIPT.new()
+	_turn_feedback_presenter = TURN_FEEDBACK_PRESENTER_SCRIPT.new()
 
 	board_view.tile_pressed.connect(_input_controller.handle_tile_pressed)
 	board_view.tile_drag_released.connect(_input_controller.handle_tile_drag_released)
@@ -78,8 +83,10 @@ func _setup_playable_battle() -> void:
 	_presenter.board_changed.connect(_on_board_changed)
 	_presenter.battle_state_changed.connect(_on_battle_state_changed)
 	_presenter.turn_resolved.connect(_on_turn_resolved)
+	_presenter.turn_presentation_ready.connect(_on_turn_presentation_ready)
 	_presenter.invalid_swap.connect(_on_invalid_swap)
 	_presenter.battle_finished.connect(_on_battle_finished)
+	_turn_feedback_presenter.feedback_finished.connect(_on_feedback_finished)
 
 	result_overlay.restart_pressed.connect(_on_restart_pressed)
 	result_overlay.menu_pressed.connect(_on_menu_button_pressed)
@@ -87,8 +94,11 @@ func _setup_playable_battle() -> void:
 
 
 func _start_new_battle() -> void:
+	_pending_battle_status = -1
+	_feedback_active = false
 	result_overlay.hide_result()
 	board_view.clear_lane_highlights()
+	board_view.clear_cell_highlights()
 	_input_controller.set_input_enabled(true)
 	_set_status("Select a tile")
 	_presenter.start_new_battle()
@@ -109,31 +119,39 @@ func _on_battle_state_changed(state: BattleState) -> void:
 		hero_party_panel.set_heroes(state.heroes)
 
 
-func _on_turn_resolved(result: BattleTurnResult) -> void:
-	if not _presenter.is_battle_finished():
-		_input_controller.set_input_enabled(true)
-
-	board_view.highlight_lanes(result.lane_activations)
-	if result.total_damage_to_enemy <= 0:
-		_set_status("Turn resolved")
-		return
-
-	var first_event := _get_first_damage_event(result.damage_events)
-	if first_event.is_empty():
-		_set_status("Heroes dealt %d damage" % result.total_damage_to_enemy)
-	else:
-		_set_status("%s dealt %d damage" % [first_event.get("hero_id", "Hero"), first_event.get("damage", 0)])
+func _on_turn_resolved(_result: BattleTurnResult) -> void:
+	pass
 
 
-func _on_invalid_swap(reason: String) -> void:
-	if not _presenter.is_battle_finished():
-		_input_controller.set_input_enabled(true)
-
-	board_view.clear_lane_highlights()
-	_set_status("No match" if reason == "no_match" else "Invalid swap")
+func _on_invalid_swap(_reason: String) -> void:
+	pass
 
 
 func _on_battle_finished(status: int) -> void:
+	_input_controller.set_input_enabled(false)
+	_pending_battle_status = status
+	if _feedback_active:
+		return
+
+	_show_battle_result(status)
+
+
+func _on_turn_presentation_ready(data) -> void:
+	_feedback_active = true
+	_turn_feedback_presenter.play_turn_feedback(data, board_view, Callable(self, "_set_status"))
+
+
+func _on_feedback_finished() -> void:
+	_feedback_active = false
+	if _pending_battle_status != -1:
+		_show_battle_result(_pending_battle_status)
+		return
+
+	if not _presenter.is_battle_finished():
+		_input_controller.set_input_enabled(true)
+
+
+func _show_battle_result(status: int) -> void:
 	_input_controller.set_input_enabled(false)
 	if status == BattleState.Status.VICTORY:
 		_set_status("Victory")
@@ -165,20 +183,13 @@ func _on_invalid_input(reason: String) -> void:
 func _on_swap_requested(from_cell: Vector2i, to_cell: Vector2i) -> void:
 	_input_controller.set_input_enabled(false)
 	board_view.clear_lane_highlights()
+	board_view.clear_cell_highlights()
 	_set_status("Resolving turn")
 	_presenter.request_swap(from_cell, to_cell)
 
 
 func _on_restart_pressed() -> void:
 	_start_new_battle()
-
-
-func _get_first_damage_event(events: Array[Dictionary]) -> Dictionary:
-	for event in events:
-		if event.get("damage", 0) > 0:
-			return event
-
-	return {}
 
 
 func _set_status(message: String) -> void:

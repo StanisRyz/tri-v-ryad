@@ -15,6 +15,8 @@ const TILE_COLORS := {
 var board_cell := Vector2i.ZERO
 var tile_type := BoardModel.EMPTY
 var _is_selected := false
+var _is_highlighted := false
+var _is_invalid_feedback := false
 var _press_start_position := Vector2.ZERO
 var _has_press_start := false
 var _suppress_next_pressed := false
@@ -38,6 +40,30 @@ func set_tile(cell: Vector2i, new_tile_type: int) -> void:
 func set_selected(selected: bool) -> void:
 	_is_selected = selected
 	_apply_visuals()
+
+
+func set_highlighted(enabled: bool) -> void:
+	_is_highlighted = enabled
+	if enabled:
+		_is_invalid_feedback = false
+	_apply_visuals()
+
+
+func set_invalid_feedback(enabled: bool) -> void:
+	_is_invalid_feedback = enabled
+	if enabled:
+		_is_highlighted = false
+	_apply_visuals()
+
+
+func play_flash() -> void:
+	set_highlighted(true)
+	_play_flash_tween(Color(1.25, 1.25, 1.25, 1.0), Vector2(1.07, 1.07))
+
+
+func play_invalid_flash() -> void:
+	set_invalid_feedback(true)
+	_play_flash_tween(Color(1.25, 0.55, 0.55, 1.0), Vector2(1.04, 1.04))
 
 
 func _on_pressed() -> void:
@@ -82,12 +108,24 @@ func _release_pointer(pointer_position: Vector2) -> void:
 func _apply_visuals() -> void:
 	var base_color: Color = TILE_COLORS.get(tile_type, Color(0.20, 0.22, 0.26, 1.0))
 	var style := StyleBoxFlat.new()
-	style.bg_color = base_color.lightened(0.18) if _is_selected else base_color
-	style.border_width_left = 4 if _is_selected else 1
-	style.border_width_top = 4 if _is_selected else 1
-	style.border_width_right = 4 if _is_selected else 1
-	style.border_width_bottom = 4 if _is_selected else 1
-	style.border_color = Color(1.0, 1.0, 1.0, 1.0) if _is_selected else Color(0.05, 0.06, 0.08, 0.8)
+	style.bg_color = base_color.lightened(0.22) if _is_selected or _is_highlighted else base_color
+	var border_width := 1
+	var border_color := Color(0.05, 0.06, 0.08, 0.8)
+	if _is_invalid_feedback:
+		border_width = 4
+		border_color = Color(1.0, 0.18, 0.16, 1.0)
+	elif _is_selected:
+		border_width = 4
+		border_color = Color(1.0, 1.0, 1.0, 1.0)
+	elif _is_highlighted:
+		border_width = 3
+		border_color = Color(1.0, 0.94, 0.36, 1.0)
+
+	style.border_width_left = border_width
+	style.border_width_top = border_width
+	style.border_width_right = border_width
+	style.border_width_bottom = border_width
+	style.border_color = border_color
 	style.corner_radius_top_left = 6
 	style.corner_radius_top_right = 6
 	style.corner_radius_bottom_left = 6
@@ -96,3 +134,12 @@ func _apply_visuals() -> void:
 	add_theme_stylebox_override("hover", style)
 	add_theme_stylebox_override("pressed", style)
 	text = ""
+
+
+func _play_flash_tween(flash_modulate: Color, flash_scale: Vector2) -> void:
+	pivot_offset = size * 0.5
+	var tween := create_tween()
+	tween.tween_property(self, "modulate", flash_modulate, 0.06)
+	tween.parallel().tween_property(self, "scale", flash_scale, 0.06)
+	tween.tween_property(self, "modulate", Color.WHITE, 0.16)
+	tween.parallel().tween_property(self, "scale", Vector2.ONE, 0.16)

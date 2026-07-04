@@ -14,6 +14,8 @@ var _board: BoardModel
 var _tile_views: Dictionary = {}
 var _selected_cell := Vector2i(-1, -1)
 var _lane_activations: Dictionary = {}
+var _highlighted_cells: Array[Vector2i] = []
+var _invalid_feedback_cells: Array[Vector2i] = []
 
 
 func _ready() -> void:
@@ -43,6 +45,8 @@ func refresh_all_tiles() -> void:
 		if tile != null:
 			tile.set_tile(cell, _board.get_tile(cell))
 			tile.set_selected(cell == _selected_cell)
+			tile.set_highlighted(cell in _highlighted_cells)
+			tile.set_invalid_feedback(cell in _invalid_feedback_cells)
 
 
 func set_selected_cell(cell: Vector2i) -> void:
@@ -63,6 +67,44 @@ func highlight_lanes(lane_activations: Dictionary) -> void:
 func clear_lane_highlights() -> void:
 	_lane_activations.clear()
 	queue_redraw()
+
+
+func highlight_cells(cells: Array[Vector2i]) -> void:
+	_highlighted_cells = cells.duplicate()
+	_invalid_feedback_cells.clear()
+	refresh_all_tiles()
+
+
+func clear_cell_highlights() -> void:
+	_highlighted_cells.clear()
+	_invalid_feedback_cells.clear()
+	refresh_all_tiles()
+
+
+func flash_cells(cells: Array[Vector2i]) -> void:
+	for cell in cells:
+		var tile := _tile_views.get(cell) as TileView
+		if tile != null:
+			tile.play_flash()
+
+
+func flash_invalid_cells(cells: Array[Vector2i]) -> void:
+	_invalid_feedback_cells = cells.duplicate()
+	_highlighted_cells.clear()
+	refresh_all_tiles()
+	for cell in cells:
+		var tile := _tile_views.get(cell) as TileView
+		if tile != null:
+			tile.play_invalid_flash()
+
+
+func get_valid_cells_from_pair(a: Vector2i, b: Vector2i) -> Array[Vector2i]:
+	var cells: Array[Vector2i] = []
+	if _tile_views.has(a):
+		cells.append(a)
+	if _tile_views.has(b) and b != a:
+		cells.append(b)
+	return cells
 
 
 func _draw() -> void:
