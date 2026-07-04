@@ -2,7 +2,7 @@
 
 Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
-The project is currently through Stage 16: Balance and content expansion v0.1. It defines the app shell, simple screen navigation, a level select flow, a 10-level early campaign slice, a saved 5-hero roster/team selection flow, a menu-accessible full roster hero upgrade screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, first line special tiles, roster ability mappings, local hero upgrades, saved campaign progress, and lightweight swap, clear, and refill feedback for a vertical 9:16 game.
+The project is currently through Stage 17: Unified damage abilities v0.2. It defines the app shell, simple screen navigation, a level select flow, a 10-level early campaign slice, a saved 5-hero roster/team selection flow, a menu-accessible full roster hero upgrade screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, first line special tiles, damage-only roster ability mappings, local hero upgrades, saved campaign progress, and lightweight swap, clear, and refill feedback for a vertical 9:16 game.
 
 ## Project Direction
 
@@ -74,11 +74,12 @@ This stage includes:
 - `BattleFactory` combines base `HeroConfig` data with mutable `PlayerProgress` when creating battle heroes.
 - A `BattlePresenter` that coordinates the fixed prototype battle without platform, save, ad, or SDK code.
 - `BattlePresenter.start_level(level_id)` starts selected levels, and Restart preserves the current level.
-- Three starter abilities: Power Strike, Line Break, and Rally Heal.
-- Roster heroes use `ability_id` mapping: Warrior and Mage use Power Strike, Guardian and Ranger use Line Break, and Healer uses Rally Heal.
+- Five roster strike abilities: Warrior Strike, Guardian Strike, Healer Strike, Mage Strike, and Ranger Strike.
+- Roster heroes use damage-only `ability_id` mappings: `warrior_strike`, `guardian_strike`, `healer_strike`, `mage_strike`, and `ranger_strike`.
 - Ability readiness in `HeroCard`, with ability requests routed through `BattlePresenter`.
-- Ability feedback for damage, healing, row clears, and rejected requests.
+- Ability feedback for accepted damage and rejected requests.
 - Ability use does not consume moves or tick enemy intent.
+- Hero abilities do not heal heroes and do not modify, clear, or highlight board cells.
 - Hybrid tile swapping through `BoardInputController`: two-click fallback, mouse drag, and touch/swipe style input.
 - `BoardMotionAnimator` coordinates view-only board motion feedback without changing board, battle, progression, or save rules.
 - Lightweight `TileView` animation helpers for swap pulses, invalid pulses, match fade, refill appear, and visual reset.
@@ -122,7 +123,15 @@ Stage 16 is complete. The project now has a 10-level early campaign slice using 
 
 The curve is intentionally simple: levels 1-2 are forgiving intro fights, levels 3-4 are light challenge, levels 5-6 begin to reward upgrades, levels 7-9 are noticeably harder, and level 10 is an early Gatekeeper mini-boss. Balance is v0.1 and expected to change after playtesting.
 
-No new mechanics were introduced. Yandex SDK, cloud save, ads, payments, monetization, final art, sound, and particles remain out of scope. Next planned stage: Stage 17, Unified damage abilities v0.2.
+No new mechanics were introduced in Stage 16. Yandex SDK, cloud save, ads, payments, monetization, final art, sound, and particles remain out of scope. Stage 17 is now complete.
+
+## Stage 17: Unified Damage Abilities v0.2
+
+Stage 17 is complete. All hero abilities now deal damage to the enemy using `hero attack * ability damage_multiplier`.
+
+Healing hero abilities and board-clearing hero abilities were removed. Ability use still does not consume moves, does not advance enemy intent, and does not modify the board. All battle objectives remain defeat-the-enemy.
+
+No new heroes, objectives, target selection, cooldowns, ability upgrades, color bombs, special tiles, SDK, cloud save, ads, payments, final art, sound, or particles were added. Next planned stage: Stage 18, Special tiles v0.2.
 
 ## How To Open And Run
 
@@ -255,5 +264,5 @@ godot --headless --script res://scripts/tests/character_upgrade_screen_data_test
 
 ## Next Planned Stages
 
-- Stage 17, Unified damage abilities v0.2.
+- Stage 18, Special tiles v0.2: color bomb and activation polish.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.

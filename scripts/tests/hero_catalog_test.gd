@@ -18,7 +18,8 @@ func _run() -> void:
 	print("Running hero catalog tests...")
 
 	var catalog = load(HERO_CATALOG_SCRIPT).new()
-	var valid_ability_ids := ["power_strike", "line_break", "rally_heal"]
+	var ability_data_script = load("res://scripts/game/battle/ability_data.gd")
+	var valid_ability_ids := ["warrior_strike", "guardian_strike", "healer_strike", "mage_strike", "ranger_strike"]
 
 	_expect_equal(catalog.get_all_heroes().size(), 5, "catalog returns 5 heroes")
 	_expect_equal(catalog.get_default_team_ids().size(), 3, "default team has 3 heroes")
@@ -29,6 +30,9 @@ func _run() -> void:
 		_expect_true(hero_config.base_attack > 0, "%s has positive attack" % hero_config.hero_id)
 		_expect_true(hero_config.base_max_hp > 0, "%s has positive hp" % hero_config.hero_id)
 		_expect_true(valid_ability_ids.has(hero_config.ability_id), "%s has valid ability id" % hero_config.hero_id)
+		var ability = ability_data_script.get_for_ability(hero_config.ability_id, hero_config.hero_id)
+		_expect_true(ability.id != "", "%s ability resolves" % hero_config.hero_id)
+		_expect_true(ability.damage_multiplier > 0, "%s ability has positive damage multiplier" % hero_config.hero_id)
 
 	_expect_true(catalog.get_hero("unknown") == null, "unknown hero returns null")
 	_expect_equal(catalog.get_heroes(["hero_1", "hero_5"]).size(), 2, "get_heroes returns known configs")

@@ -1,6 +1,8 @@
 extends SceneTree
 
+const ABILITY_DATA_SCRIPT := "res://scripts/game/battle/ability_data.gd"
 const ABILITY_RESOLVER_SCRIPT := "res://scripts/game/battle/ability_resolver.gd"
+const HERO_CATALOG_SCRIPT := "res://scripts/game/config/hero_catalog.gd"
 
 var _failures := 0
 
@@ -11,18 +13,9 @@ func _initialize() -> void:
 	_test_rejected_when_not_ready()
 	_test_rejected_when_hero_dead()
 	_test_rejected_when_battle_finished()
-	_test_power_strike_damage()
-	_test_power_strike_resets_charge()
-	_test_line_break_refills_board()
-	_test_line_break_result_data()
-	_test_line_break_does_not_reduce_moves()
-	_test_rally_heal_heals_alive_heroes()
-	_test_rally_heal_does_not_overheal()
-	_test_rally_heal_resets_charge()
-	_test_ability_does_not_tick_enemy_intent()
-	_test_power_strike_can_win()
-	_test_roster_power_strike_works()
-	_test_roster_line_break_works()
+	_test_all_roster_abilities_resolve_to_damage()
+	_test_all_roster_abilities_deal_damage_only()
+	_test_ability_can_win()
 	_test_unknown_ability_rejects_without_spending_charge()
 
 	if _failures == 0:
@@ -34,7 +27,7 @@ func _initialize() -> void:
 
 
 func _test_rejected_when_not_ready() -> void:
-	var state := _create_state()
+	var state := _create_state("hero_1", "Hero 1", 10, 100, "warrior_strike")
 	var board := _create_board()
 	var result = _create_resolver().resolve_ability(state, board, 0)
 	_expect_false(result.accepted, "not-ready ability rejected")
@@ -43,10 +36,9 @@ func _test_rejected_when_not_ready() -> void:
 
 
 func _test_rejected_when_hero_dead() -> void:
-	var state := _create_state()
+	var state := _create_state("hero_1", "Hero 1", 10, 100, "warrior_strike")
 	var board := _create_board()
-	var hero := state.get_hero_by_lane(0)
-	hero.ability_charge = hero.ability_charge_required
+	var hero := _ready_hero(state)
 	hero.take_damage(999)
 	var result = _create_resolver().resolve_ability(state, board, 0)
 	_expect_false(result.accepted, "dead hero ability rejected")
@@ -55,9 +47,9 @@ func _test_rejected_when_hero_dead() -> void:
 
 
 func _test_rejected_when_battle_finished() -> void:
-	var state := _create_state()
+	var state := _create_state("hero_1", "Hero 1", 10, 100, "warrior_strike")
 	var board := _create_board()
-	state.enemy.take_damage(999)
+	state.enemy.take_damage(1000)
 	state.update_status()
 	var result = _create_resolver().resolve_ability(state, board, 0)
 	_expect_false(result.accepted, "finished battle ability rejected")
@@ -65,142 +57,63 @@ func _test_rejected_when_battle_finished() -> void:
 	print("ok - ability rejected when battle is finished")
 
 
-func _test_power_strike_damage() -> void:
-	var state := _create_state()
+func _test_all_roster_abilities_resolve_to_damage() -> void:
+	var catalog = load(HERO_CATALOG_SCRIPT).new()
+	for hero_config in catalog.get_all_heroes():
+		var ability = load(ABILITY_DATA_SCRIPT).get_for_ability(hero_config.ability_id, hero_config.hero_id)
+		_expect_true(ability.id != "", "%s ability resolves" % hero_config.hero_id)
+		_expect_equal(ability.hero_id, hero_config.hero_id, "%s ability owner is set" % hero_config.hero_id)
+		_expect_true(ability.display_name != "", "%s ability has display name" % hero_config.hero_id)
+		_expect_true(ability.description != "", "%s ability has description" % hero_config.hero_id)
+		_expect_true(ability.damage_multiplier > 0, "%s ability has positive damage multiplier" % hero_config.hero_id)
+	print("ok - all roster abilities resolve to damage data")
+
+
+func _test_all_roster_abilities_deal_damage_only() -> void:
+	var catalog = load(HERO_CATALOG_SCRIPT).new()
+	for hero_config in catalog.get_all_heroes():
+		var state := _create_state(hero_config.hero_id, hero_config.display_name, hero_config.base_attack, hero_config.base_max_hp, hero_config.ability_id)
+		var board := _create_board()
+		var hero := _ready_hero(state)
+		var ability = load(ABILITY_DATA_SCRIPT).get_for_ability(hero.ability_id, hero.id)
+		var board_before := board.to_debug_string()
+		var hero_hp_before := hero.current_hp
+		var moves_before := state.moves_left
+		var intent_before := state.enemy_intent.turns_until_action
+		var enemy_hp_before := state.enemy.current_hp
+
+		var result = _create_resolver().resolve_ability(state, board, 0)
+
+		_expect_true(result.accepted, "%s ability accepted" % hero_config.hero_id)
+		_expect_equal(result.damage_to_enemy, hero.get_attack() * ability.damage_multiplier, "%s damage uses multiplier" % hero_config.hero_id)
+		_expect_equal(state.enemy.current_hp, enemy_hp_before - result.damage_to_enemy, "%s damages enemy" % hero_config.hero_id)
+		_expect_equal(hero.ability_charge, 0, "%s ability resets charge" % hero_config.hero_id)
+		_expect_equal(state.moves_left, moves_before, "%s ability does not spend moves" % hero_config.hero_id)
+		_expect_equal(state.enemy_intent.turns_until_action, intent_before, "%s ability does not tick enemy intent" % hero_config.hero_id)
+		_expect_equal(hero.current_hp, hero_hp_before, "%s ability does not heal hero" % hero_config.hero_id)
+		_expect_equal(board.to_debug_string(), board_before, "%s ability does not change board" % hero_config.hero_id)
+		_expect_false(result.board_changed, "%s result does not mark board changed" % hero_config.hero_id)
+		_expect_equal(result.healed_heroes.size(), 0, "%s result has no healed heroes" % hero_config.hero_id)
+		_expect_equal(result.cleared_cells.size(), 0, "%s result has no cleared cells" % hero_config.hero_id)
+	print("ok - all roster abilities deal enemy damage only")
+
+
+func _test_ability_can_win() -> void:
+	var state := _create_state("hero_1", "Hero 1", 10, 100, "warrior_strike")
 	var board := _create_board()
-	_ready_hero(state, 0)
-	var result = _create_resolver().resolve_ability(state, board, 0)
-	_expect_true(result.accepted, "power strike accepted")
-	_expect_equal(result.damage_to_enemy, state.get_hero_by_lane(0).get_attack() * 5, "power strike damage")
-	_expect_equal(state.enemy.current_hp, 250, "enemy hp after power strike")
-	print("ok - Power Strike deals attack x5 damage")
-
-
-func _test_power_strike_resets_charge() -> void:
-	var state := _create_state()
-	var board := _create_board()
-	var hero := _ready_hero(state, 0)
-	_create_resolver().resolve_ability(state, board, 0)
-	_expect_equal(hero.ability_charge, 0, "power strike resets charge")
-	print("ok - Power Strike resets charge")
-
-
-func _test_line_break_refills_board() -> void:
-	var state := _create_state()
-	var board := _create_board()
-	_ready_hero(state, 1)
-	_create_resolver().resolve_ability(state, board, 1)
-	_expect_false(board.has_empty_cells(), "line break leaves board full")
-	print("ok - Line Break leaves board full after stabilization")
-
-
-func _test_line_break_result_data() -> void:
-	var state := _create_state()
-	var board := _create_board()
-	_ready_hero(state, 1)
-	var result = _create_resolver().resolve_ability(state, board, 1)
-	_expect_true(result.board_changed, "line break board changed")
-	_expect_equal(result.cleared_cells.size(), BoardModel.DEFAULT_WIDTH, "line break cleared cell count")
-	print("ok - Line Break sets board_changed and stores cleared cells")
-
-
-func _test_line_break_does_not_reduce_moves() -> void:
-	var state := _create_state()
-	var board := _create_board()
-	_ready_hero(state, 1)
-	var starting_moves := state.moves_left
-	_create_resolver().resolve_ability(state, board, 1)
-	_expect_equal(state.moves_left, starting_moves, "line break does not reduce moves")
-	print("ok - Line Break does not reduce moves")
-
-
-func _test_rally_heal_heals_alive_heroes() -> void:
-	var state := _create_state()
-	var board := _create_board()
-	_ready_hero(state, 2)
-	state.get_hero_by_lane(0).take_damage(40)
-	state.get_hero_by_lane(1).take_damage(20)
-	var result = _create_resolver().resolve_ability(state, board, 2)
-	_expect_true(result.accepted, "rally heal accepted")
-	_expect_equal(state.get_hero_by_lane(0).current_hp, 90, "hero 1 healed")
-	_expect_equal(state.get_hero_by_lane(1).current_hp, 120, "hero 2 clamped to max")
-	print("ok - Rally Heal heals alive heroes")
-
-
-func _test_rally_heal_does_not_overheal() -> void:
-	var state := _create_state()
-	var board := _create_board()
-	_ready_hero(state, 2)
-	_create_resolver().resolve_ability(state, board, 2)
-	_expect_equal(state.get_hero_by_lane(0).current_hp, state.get_hero_by_lane(0).get_max_hp(), "rally heal no overheal")
-	print("ok - Rally Heal does not heal above max HP")
-
-
-func _test_rally_heal_resets_charge() -> void:
-	var state := _create_state()
-	var board := _create_board()
-	var hero := _ready_hero(state, 2)
-	_create_resolver().resolve_ability(state, board, 2)
-	_expect_equal(hero.ability_charge, 0, "rally heal resets charge")
-	print("ok - Rally Heal resets charge")
-
-
-func _test_ability_does_not_tick_enemy_intent() -> void:
-	var state := _create_state()
-	var board := _create_board()
-	_ready_hero(state, 0)
-	var intent_before := state.enemy_intent.turns_until_action
-	_create_resolver().resolve_ability(state, board, 0)
-	_expect_equal(state.enemy_intent.turns_until_action, intent_before, "ability does not tick enemy intent")
-	print("ok - ability use does not tick enemy intent")
-
-
-func _test_power_strike_can_win() -> void:
-	var state := _create_state()
-	var board := _create_board()
-	_ready_hero(state, 0)
+	_ready_hero(state)
 	state.enemy.current_hp = 20
 	var result = _create_resolver().resolve_ability(state, board, 0)
-	_expect_true(result.accepted, "winning power strike accepted")
-	_expect_equal(state.status, BattleState.Status.VICTORY, "power strike victory status")
-	_expect_equal(result.battle_status, BattleState.Status.VICTORY, "power strike result victory status")
-	print("ok - victory can occur from Power Strike")
-
-
-func _test_roster_power_strike_works() -> void:
-	var state := _create_state()
-	var board := _create_board()
-	var hero := state.get_hero_by_lane(0)
-	hero.id = "hero_4"
-	hero.display_name = "Mage"
-	hero.ability_id = "power_strike"
-	_ready_hero(state, 0)
-	var result = _create_resolver().resolve_ability(state, board, 0)
-	_expect_true(result.accepted, "hero_4 power strike accepted")
-	_expect_equal(result.ability_id, "power_strike", "hero_4 uses mapped ability")
-	print("ok - roster hero with Power Strike works")
-
-
-func _test_roster_line_break_works() -> void:
-	var state := _create_state()
-	var board := _create_board()
-	var hero := state.get_hero_by_lane(1)
-	hero.id = "hero_5"
-	hero.display_name = "Ranger"
-	hero.ability_id = "line_break"
-	_ready_hero(state, 1)
-	var result = _create_resolver().resolve_ability(state, board, 1)
-	_expect_true(result.accepted, "hero_5 line break accepted")
-	_expect_equal(result.ability_id, "line_break", "hero_5 uses mapped ability")
-	_expect_true(result.board_changed, "hero_5 line break changes board")
-	print("ok - roster hero with Line Break works")
+	_expect_true(result.accepted, "winning ability accepted")
+	_expect_equal(state.status, BattleState.Status.VICTORY, "damage ability victory status")
+	_expect_equal(result.battle_status, BattleState.Status.VICTORY, "damage ability result victory status")
+	print("ok - victory can occur from damage ability")
 
 
 func _test_unknown_ability_rejects_without_spending_charge() -> void:
-	var state := _create_state()
+	var state := _create_state("hero_1", "Hero 1", 10, 100, "missing_ability")
 	var board := _create_board()
-	var hero := _ready_hero(state, 0)
-	hero.ability_id = "missing_ability"
+	var hero := _ready_hero(state)
 	var starting_charge := hero.ability_charge
 	var result = _create_resolver().resolve_ability(state, board, 0)
 	_expect_false(result.accepted, "unknown ability rejected")
@@ -209,13 +122,11 @@ func _test_unknown_ability_rejects_without_spending_charge() -> void:
 	print("ok - unknown ability rejects without spending charge")
 
 
-func _create_state() -> BattleState:
+func _create_state(hero_id: String, display_name: String, attack: int, max_hp: int, ability_id: String) -> BattleState:
 	var heroes: Array[HeroData] = [
-		HeroData.new("hero_1", "Hero 1", 0, 10, 100, 0, 0, 10, "power_strike"),
-		HeroData.new("hero_2", "Hero 2", 1, 8, 120, 0, 0, 10, "line_break"),
-		HeroData.new("hero_3", "Hero 3", 2, 12, 80, 0, 0, 10, "rally_heal"),
+		HeroData.new(hero_id, display_name, 0, attack, max_hp, 0, 0, 10, ability_id),
 	]
-	return BattleState.new(heroes, EnemyData.new("enemy_training", "Training Enemy", 300, 20), EnemyIntent.new(3, 1), 20)
+	return BattleState.new(heroes, EnemyData.new("enemy_training", "Training Enemy", 1000, 20), EnemyIntent.new(3, 1), 20)
 
 
 func _create_resolver():
@@ -228,8 +139,8 @@ func _create_board() -> BoardModel:
 	return BoardGenerator.new(rng).generate()
 
 
-func _ready_hero(state: BattleState, lane_index: int) -> HeroData:
-	var hero := state.get_hero_by_lane(lane_index)
+func _ready_hero(state: BattleState) -> HeroData:
+	var hero := state.get_hero_by_lane(0)
 	hero.ability_charge = hero.ability_charge_required
 	return hero
 

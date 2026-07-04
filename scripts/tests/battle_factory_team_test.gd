@@ -42,7 +42,7 @@ func _run() -> void:
 	_expect_equal(state.heroes[2].lane_index, 2, "third selected hero maps to lane 2")
 	_expect_equal(state.heroes[0].attack_level, 2, "selected hero attack upgrade is applied")
 	_expect_equal(state.heroes[0].hp_level, 1, "selected hero hp upgrade is applied")
-	_expect_equal(state.heroes[0].ability_id, "line_break", "selected hero ability_id is applied")
+	_expect_equal(state.heroes[0].ability_id, "ranger_strike", "selected hero ability_id is applied")
 	_expect_equal(hero_5_config.lane_index, original_lane, "HeroConfig lane is not mutated")
 
 	progress.set_team_selection(load(TEAM_SELECTION_STATE_SCRIPT).new(["hero_5", "hero_5", "unknown"]))

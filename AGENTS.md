@@ -2,7 +2,7 @@
 
 This is a Godot match-3 battle project intended for Yandex Games. The default layout is vertical 9:16 portrait with a 720x1280 base resolution.
 
-The current stage is a playable battle prototype through Stage 16: Balance and content expansion v0.1, with a 10-level early campaign slice, enemy and reward curve, balance tests, board animation polish, saved level completion, stars, sequential unlocks, upgrade points, hero progression, character upgrade screen v0.2, and local save v0.1. `GameScreen` is allowed to wire `BattlePresenter`, `BoardView`, `BoardInputController`, `TurnFeedbackPresenter`, `AbilityFeedbackPresenter`, and result-flow reward/completion calls through `ProgressManager`, but the board core, battle core, config layer, progression layer, and save layer must remain separate from UI implementation details.
+The current stage is a playable battle prototype through Stage 17: Unified damage abilities v0.2, with damage-only hero abilities, a 10-level early campaign slice, enemy and reward curve, balance tests, board animation polish, saved level completion, stars, sequential unlocks, upgrade points, hero progression, character upgrade screen v0.2, and local save v0.1. `GameScreen` is allowed to wire `BattlePresenter`, `BoardView`, `BoardInputController`, `TurnFeedbackPresenter`, `AbilityFeedbackPresenter`, and result-flow reward/completion calls through `ProgressManager`, but the board core, battle core, config layer, progression layer, and save layer must remain separate from UI implementation details.
 
 ## Project Rules
 
@@ -19,7 +19,8 @@ The current stage is a playable battle prototype through Stage 16: Balance and c
 - `GameScreen` may use `BattlePresenter`, but must not directly own board or battle rule details.
 - Stage 16 is complete: 10-level early campaign slice, enemy/reward curve, and balance tests are in place without new mechanics.
 - Balance remains v0.1 and is expected to change after playtesting.
-- Next planned stage: Stage 17, Unified damage abilities v0.2.
+- Stage 17 is complete: all hero abilities are damage-only, healing and board-clearing hero ability behavior was removed, ability use still does not consume moves or advance enemy intent, and hero abilities do not modify the board.
+- Next planned stage: Stage 18, Special tiles v0.2.
 
 ## Gameplay Direction
 
@@ -94,6 +95,10 @@ The current stage is a playable battle prototype through Stage 16: Balance and c
 - `BattlePresenter` coordinates ability flow.
 - Ability use must not reduce `moves_left` in v0.1.
 - Ability use must not tick enemy intent in v0.1.
+- All current hero abilities must deal enemy damage only.
+- Hero ability damage uses `hero.get_attack() * ability.damage_multiplier`.
+- Hero abilities must not heal heroes.
+- Hero abilities must not modify, clear, refill, resolve, or highlight board cells.
 - Ability-cleared tiles must not grant charge or hero damage unless explicitly requested later.
 - Configs live under `scripts/game/config/`.
 - Config classes must remain UI-independent.

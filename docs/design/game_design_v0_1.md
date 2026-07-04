@@ -131,19 +131,26 @@ Color bombs, wrapped bombs, special combos, full falling animation, cascade dama
 
 Color bombs, wrapped bombs, special + special combos, special battle rewards, cascade damage, particles, sound, and final art remain future work.
 
-## Hero Abilities v0.1
+## Hero Abilities v0.2
 
 - Ability charge comes from matched tiles in hero lanes.
 - Ready, alive heroes can use abilities from their HeroCard.
-- Hero 1: Power Strike deals direct enemy damage.
-- Hero 2: Line Break clears the center row and stabilizes the board.
-- Hero 3: Rally Heal heals all alive heroes.
+- All hero abilities deal direct enemy damage.
+- Ability damage is `hero attack * ability damage_multiplier`.
+- Warrior Strike uses x5 damage.
+- Guardian Strike uses x4 damage.
+- Healer Strike uses x3 damage.
+- Mage Strike uses x6 damage.
+- Ranger Strike uses x4 damage.
 - Successful ability use resets that hero's charge to 0.
 - Ability use does not consume moves.
 - Ability use does not trigger enemy action.
-- Ability-cleared tiles do not grant charge or hero damage.
+- Ability use does not advance enemy intent.
+- Hero abilities do not modify the board.
+- Hero abilities do not clear tiles.
+- Hero abilities do not heal heroes.
 
-Target selection, cooldowns, ability upgrades, new heroes, cloud saves, and platform systems remain future work.
+Target selection, cooldowns, healing abilities, shield abilities, buffs, debuffs, board-clearing hero abilities, ability upgrades, new heroes, cloud saves, and platform systems remain future work.
 
 ## Hero Roster and Team Selection v0.1
 
@@ -154,7 +161,7 @@ Target selection, cooldowns, ability upgrades, new heroes, cloud saves, and plat
 - `ProgressManager` reads, validates, saves, and normalizes selected team data.
 - `TeamSelectionResolver` owns validation rules: exactly 3 heroes, no duplicates, and all IDs exist in `HeroCatalog`.
 - Battles use the selected team when `BattleFactory` receives both `PlayerProgress` and `HeroCatalog`.
-- All roster heroes have an `ability_id` mapping to the v0.1 abilities.
+- All roster heroes have an `ability_id` mapping to the v0.2 damage-only abilities.
 - Missing or invalid saved team data uses the default team: Warrior, Guardian, and Healer.
 
 Gacha, rarity, hero unlocks, hero shards, portraits, drag-and-drop team UI, and roster balance pass remain future work.
@@ -242,4 +249,18 @@ One-time rewards, level map, chapters, stars-based rewards, max upgrade levels, 
 - All levels still use the single objective: defeat the enemy.
 - Balance tests cover catalog size, unique IDs, required content fields, total reward range, and broad difficulty growth.
 - No new mechanics, objectives, heroes, abilities, special tiles, platform SDK, cloud save, ads, payments, monetization, final art, sound, or particles were added.
-- Next planned stage: Stage 17, Unified damage abilities v0.2.
+- Stage 17 is now complete.
+
+## Stage 17: Unified Damage Abilities v0.2
+
+- Stage 17 is implemented.
+- `AbilityData` now includes `damage_multiplier`.
+- All five current hero abilities are damage-only enemy strikes.
+- Healing hero abilities were removed.
+- Board-clearing hero abilities were removed.
+- Hero abilities do not modify the board.
+- Hero abilities do not consume moves.
+- Hero abilities do not advance enemy intent.
+- All levels still use the single objective: defeat the enemy.
+- No new heroes, battle objectives, healing abilities, shield abilities, buffs, debuffs, target selection, cooldowns, ability upgrades, skill trees, color bombs, new special tiles, platform SDK, cloud save, ads, payments, final art, sound, or particles were added.
+- Next planned stage: Stage 18, Special tiles v0.2: color bomb and activation polish.

@@ -39,11 +39,11 @@ func get_heroes(hero_ids: Array) -> Array[HeroConfig]:
 
 
 func _register_heroes() -> void:
-	_add_hero(HERO_CONFIG_SCRIPT.new("hero_1", "Warrior", 0, 10, 100, 10, "power_strike"))
-	_add_hero(HERO_CONFIG_SCRIPT.new("hero_2", "Guardian", 1, 8, 130, 10, "line_break"))
-	_add_hero(HERO_CONFIG_SCRIPT.new("hero_3", "Healer", 2, 9, 100, 10, "rally_heal"))
-	_add_hero(HERO_CONFIG_SCRIPT.new("hero_4", "Mage", 0, 14, 75, 10, "power_strike"))
-	_add_hero(HERO_CONFIG_SCRIPT.new("hero_5", "Ranger", 1, 11, 95, 8, "line_break"))
+	_add_hero(HERO_CONFIG_SCRIPT.new("hero_1", "Warrior", 0, 10, 100, 10, "warrior_strike"))
+	_add_hero(HERO_CONFIG_SCRIPT.new("hero_2", "Guardian", 1, 8, 130, 10, "guardian_strike"))
+	_add_hero(HERO_CONFIG_SCRIPT.new("hero_3", "Healer", 2, 9, 100, 10, "healer_strike"))
+	_add_hero(HERO_CONFIG_SCRIPT.new("hero_4", "Mage", 0, 14, 75, 10, "mage_strike"))
+	_add_hero(HERO_CONFIG_SCRIPT.new("hero_5", "Ranger", 1, 11, 95, 8, "ranger_strike"))
 
 
 func _add_hero(hero_config: HeroConfig) -> void:

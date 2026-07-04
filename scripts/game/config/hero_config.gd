@@ -27,15 +27,15 @@ func to_hero_data() -> HeroData:
 
 
 static func hero_1():
-	return load(SCRIPT_PATH).new("hero_1", "Warrior", 0, 10, 100, 10, "power_strike")
+	return load(SCRIPT_PATH).new("hero_1", "Warrior", 0, 10, 100, 10, "warrior_strike")
 
 
 static func hero_2():
-	return load(SCRIPT_PATH).new("hero_2", "Guardian", 1, 8, 120, 10, "line_break")
+	return load(SCRIPT_PATH).new("hero_2", "Guardian", 1, 8, 120, 10, "guardian_strike")
 
 
 static func hero_3():
-	return load(SCRIPT_PATH).new("hero_3", "Healer", 2, 12, 80, 10, "rally_heal")
+	return load(SCRIPT_PATH).new("hero_3", "Healer", 2, 12, 80, 10, "healer_strike")
 
 
 static func get_default_party() -> Array:

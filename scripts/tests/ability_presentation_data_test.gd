@@ -13,9 +13,8 @@ func _initialize() -> void:
 	_test_accepted_result_is_copied()
 	_test_rejected_reason_is_copied()
 	_test_damage_fields_are_copied()
-	_test_healed_heroes_are_copied()
-	_test_cleared_cells_are_copied()
-	_test_board_changed_is_copied()
+	_test_legacy_effect_fields_stay_empty()
+	_test_board_changed_stays_false()
 
 	if _failures == 0:
 		print("Ability presentation data tests passed.")
@@ -28,8 +27,8 @@ func _initialize() -> void:
 func _test_accepted_result_is_copied() -> void:
 	var data = _create_accepted_data()
 	_expect_true(data.accepted, "accepted copied")
-	_expect_equal(data.hero_id, "hero_2", "hero id copied")
-	_expect_equal(data.ability_id, "line_break", "ability id copied")
+	_expect_equal(data.hero_id, "hero_1", "hero id copied")
+	_expect_equal(data.ability_id, "warrior_strike", "ability id copied")
 	print("ok - accepted result is copied")
 
 
@@ -43,37 +42,29 @@ func _test_rejected_reason_is_copied() -> void:
 
 func _test_damage_fields_are_copied() -> void:
 	var data = _create_accepted_data()
-	_expect_equal(data.damage_to_enemy, 40, "damage copied")
+	_expect_equal(data.damage_to_enemy, 50, "damage copied")
 	print("ok - damage fields are copied")
 
 
-func _test_healed_heroes_are_copied() -> void:
+func _test_legacy_effect_fields_stay_empty() -> void:
 	var data = _create_accepted_data()
-	_expect_equal(data.healed_heroes[0]["amount"], 30, "healed heroes copied")
-	print("ok - healed heroes are copied")
+	_expect_equal(data.healed_heroes.size(), 0, "healed heroes empty")
+	_expect_equal(data.cleared_cells.size(), 0, "cleared cells empty")
+	print("ok - legacy effect fields stay empty")
 
 
-func _test_cleared_cells_are_copied() -> void:
+func _test_board_changed_stays_false() -> void:
 	var data = _create_accepted_data()
-	_expect_equal(data.cleared_cells.size(), 2, "cleared cells copied")
-	print("ok - cleared cells are copied")
-
-
-func _test_board_changed_is_copied() -> void:
-	var data = _create_accepted_data()
-	_expect_true(data.board_changed, "board changed copied")
-	print("ok - board_changed is copied")
+	_expect_false(data.board_changed, "board changed false")
+	print("ok - board_changed stays false")
 
 
 func _create_accepted_data():
-	var hero := HeroData.new("hero_2", "Hero 2", 1, 8, 120, 0, 0, 10)
-	var ability = load(ABILITY_DATA_SCRIPT).line_break()
+	var hero := HeroData.new("hero_1", "Hero 1", 0, 10, 100, 0, 0, 10)
+	var ability = load(ABILITY_DATA_SCRIPT).warrior_strike("hero_1")
 	var result = load(ABILITY_RESULT_SCRIPT).accepted_result(hero, ability, BattleState.Status.IN_PROGRESS)
-	result.damage_to_enemy = 40
-	result.healed_heroes.append({"hero_id": "hero_3", "amount": 30, "current_hp": 70})
-	result.cleared_cells.append(Vector2i(0, 4))
-	result.cleared_cells.append(Vector2i(1, 4))
-	result.board_changed = true
+	result.damage_to_enemy = 50
+	result.board_changed = false
 	return load(ABILITY_PRESENTATION_DATA_SCRIPT).from_result(result)
 
 
