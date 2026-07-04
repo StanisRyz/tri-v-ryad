@@ -145,6 +145,20 @@ Color bombs, wrapped bombs, special + special combos, special battle rewards, ca
 
 Target selection, cooldowns, ability upgrades, new heroes, cloud saves, and platform systems remain future work.
 
+## Hero Roster and Team Selection v0.1
+
+- The roster has 5 placeholder heroes in `HeroCatalog`.
+- The player selects exactly 3 unique heroes for battle.
+- Selected team order maps directly to Hero Lanes: first hero to lane 0, second hero to lane 1, third hero to lane 2.
+- Selected team IDs are stored in `TeamSelectionState` inside `PlayerProgress`.
+- `ProgressManager` reads, validates, saves, and normalizes selected team data.
+- `TeamSelectionResolver` owns validation rules: exactly 3 heroes, no duplicates, and all IDs exist in `HeroCatalog`.
+- Battles use the selected team when `BattleFactory` receives both `PlayerProgress` and `HeroCatalog`.
+- All roster heroes have an `ability_id` mapping to the v0.1 abilities.
+- Missing or invalid saved team data uses the default team: Warrior, Guardian, and Healer.
+
+Gacha, rarity, hero unlocks, hero shards, portraits, UpgradeScreen rework, drag-and-drop team UI, and roster balance pass remain future work.
+
 ## Level System v0.1
 
 - Battles are created from data configs.

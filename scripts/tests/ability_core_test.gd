@@ -21,6 +21,9 @@ func _initialize() -> void:
 	_test_rally_heal_resets_charge()
 	_test_ability_does_not_tick_enemy_intent()
 	_test_power_strike_can_win()
+	_test_roster_power_strike_works()
+	_test_roster_line_break_works()
+	_test_unknown_ability_rejects_without_spending_charge()
 
 	if _failures == 0:
 		print("Ability core tests passed.")
@@ -164,11 +167,53 @@ func _test_power_strike_can_win() -> void:
 	print("ok - victory can occur from Power Strike")
 
 
+func _test_roster_power_strike_works() -> void:
+	var state := _create_state()
+	var board := _create_board()
+	var hero := state.get_hero_by_lane(0)
+	hero.id = "hero_4"
+	hero.display_name = "Mage"
+	hero.ability_id = "power_strike"
+	_ready_hero(state, 0)
+	var result = _create_resolver().resolve_ability(state, board, 0)
+	_expect_true(result.accepted, "hero_4 power strike accepted")
+	_expect_equal(result.ability_id, "power_strike", "hero_4 uses mapped ability")
+	print("ok - roster hero with Power Strike works")
+
+
+func _test_roster_line_break_works() -> void:
+	var state := _create_state()
+	var board := _create_board()
+	var hero := state.get_hero_by_lane(1)
+	hero.id = "hero_5"
+	hero.display_name = "Ranger"
+	hero.ability_id = "line_break"
+	_ready_hero(state, 1)
+	var result = _create_resolver().resolve_ability(state, board, 1)
+	_expect_true(result.accepted, "hero_5 line break accepted")
+	_expect_equal(result.ability_id, "line_break", "hero_5 uses mapped ability")
+	_expect_true(result.board_changed, "hero_5 line break changes board")
+	print("ok - roster hero with Line Break works")
+
+
+func _test_unknown_ability_rejects_without_spending_charge() -> void:
+	var state := _create_state()
+	var board := _create_board()
+	var hero := _ready_hero(state, 0)
+	hero.ability_id = "missing_ability"
+	var starting_charge := hero.ability_charge
+	var result = _create_resolver().resolve_ability(state, board, 0)
+	_expect_false(result.accepted, "unknown ability rejected")
+	_expect_equal(result.reason, "unknown_ability", "unknown ability reason")
+	_expect_equal(hero.ability_charge, starting_charge, "unknown ability keeps charge")
+	print("ok - unknown ability rejects without spending charge")
+
+
 func _create_state() -> BattleState:
 	var heroes: Array[HeroData] = [
-		HeroData.new("hero_1", "Hero 1", 0, 10, 100, 0, 0, 10),
-		HeroData.new("hero_2", "Hero 2", 1, 8, 120, 0, 0, 10),
-		HeroData.new("hero_3", "Hero 3", 2, 12, 80, 0, 0, 10),
+		HeroData.new("hero_1", "Hero 1", 0, 10, 100, 0, 0, 10, "power_strike"),
+		HeroData.new("hero_2", "Hero 2", 1, 8, 120, 0, 0, 10, "line_break"),
+		HeroData.new("hero_3", "Hero 3", 2, 12, 80, 0, 0, 10, "rally_heal"),
 	]
 	return BattleState.new(heroes, EnemyData.new("enemy_training", "Training Enemy", 300, 20), EnemyIntent.new(3, 1), 20)
 

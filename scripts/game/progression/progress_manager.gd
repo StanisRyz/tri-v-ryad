@@ -5,11 +5,16 @@ const SAVE_MANAGER_SCRIPT := preload("res://scripts/game/save/save_manager.gd")
 const PLAYER_PROGRESS_SCRIPT := preload("res://scripts/game/progression/player_progress.gd")
 const UPGRADE_RESOLVER_SCRIPT := preload("res://scripts/game/progression/upgrade_resolver.gd")
 const LEVEL_COMPLETION_RESOLVER_SCRIPT := preload("res://scripts/game/progression/level_completion_resolver.gd")
+const HERO_CATALOG_SCRIPT := preload("res://scripts/game/config/hero_catalog.gd")
+const TEAM_SELECTION_RESOLVER_SCRIPT := preload("res://scripts/game/progression/team_selection_resolver.gd")
+const TEAM_SELECTION_STATE_SCRIPT := preload("res://scripts/game/progression/team_selection_state.gd")
 
 var save_manager
 var progress
 var upgrade_resolver
 var level_completion_resolver
+var hero_catalog
+var team_selection_resolver
 
 
 func _init(manager_save_manager = null) -> void:
@@ -17,10 +22,13 @@ func _init(manager_save_manager = null) -> void:
 	progress = PLAYER_PROGRESS_SCRIPT.create_default()
 	upgrade_resolver = UPGRADE_RESOLVER_SCRIPT.new()
 	level_completion_resolver = LEVEL_COMPLETION_RESOLVER_SCRIPT.new()
+	hero_catalog = HERO_CATALOG_SCRIPT.new()
+	team_selection_resolver = TEAM_SELECTION_RESOLVER_SCRIPT.new()
 
 
 func load() -> void:
 	progress = save_manager.load_progress()
+	_normalize_loaded_team_selection()
 
 
 func save() -> bool:
@@ -29,6 +37,34 @@ func save() -> bool:
 
 func get_progress():
 	return progress
+
+
+func get_hero_catalog() -> HeroCatalog:
+	return hero_catalog
+
+
+func get_selected_team_ids() -> Array[String]:
+	if progress == null:
+		return hero_catalog.get_default_team_ids()
+	return team_selection_resolver.normalize_team(progress.get_selected_team_ids(), hero_catalog)
+
+
+func get_selected_team_state() -> TeamSelectionState:
+	if progress == null:
+		return TEAM_SELECTION_STATE_SCRIPT.create_default(hero_catalog.get_default_team_ids())
+	var normalized_ids := get_selected_team_ids()
+	return TEAM_SELECTION_STATE_SCRIPT.new(normalized_ids)
+
+
+func set_selected_team_ids(hero_ids: Array) -> bool:
+	if progress == null or not team_selection_resolver.is_valid_team(hero_ids, hero_catalog):
+		return false
+
+	progress.set_team_selection(TEAM_SELECTION_STATE_SCRIPT.new(hero_ids.duplicate()))
+	for hero_id in hero_ids:
+		progress.ensure_hero(hero_id)
+	save()
+	return true
 
 
 func get_upgrade_points() -> int:
@@ -83,3 +119,17 @@ func upgrade(hero_id: String, stat: String) -> bool:
 
 func reset_progress() -> void:
 	progress = save_manager.reset_progress()
+	_normalize_loaded_team_selection()
+
+
+func _normalize_loaded_team_selection() -> void:
+	if progress == null:
+		return
+
+	var current_ids: Array[String] = progress.get_selected_team_ids()
+	var normalized_ids: Array[String] = team_selection_resolver.normalize_team(current_ids, hero_catalog)
+	if current_ids == normalized_ids:
+		return
+
+	progress.set_team_selection(TEAM_SELECTION_STATE_SCRIPT.new(normalized_ids))
+	save()

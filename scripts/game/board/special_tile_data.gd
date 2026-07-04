@@ -32,5 +32,5 @@ func to_dictionary() -> Dictionary:
 	}
 
 
-static func from_type(special_type: int):
-	return load("res://scripts/game/board/special_tile_data.gd").new(special_type)
+static func from_type(new_special_type: int):
+	return load("res://scripts/game/board/special_tile_data.gd").new(new_special_type)

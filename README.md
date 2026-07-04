@@ -2,7 +2,7 @@
 
 Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
-The project is currently in the Special tiles v0.1 stage. It defines the app shell, simple screen navigation, a level select flow, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, first line special tiles, three starter hero abilities, data-driven test battles, local hero upgrades, saved campaign progress, and lightweight swap, clear, and refill feedback for a vertical 9:16 game.
+The project is currently in the Hero roster and team selection v0.1 stage. It defines the app shell, simple screen navigation, a level select flow, a saved 5-hero roster/team selection flow, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, first line special tiles, roster ability mappings, data-driven test battles, local hero upgrades, saved campaign progress, and lightweight swap, clear, and refill feedback for a vertical 9:16 game.
 
 ## Project Direction
 
@@ -31,6 +31,8 @@ This stage includes:
 - A minimal screen router.
 - A main menu placeholder with a Play button.
 - A simple `LevelSelectScreen` with 5 test level buttons.
+- A Team button on `LevelSelectScreen` that opens `TeamSelectScreen`.
+- `TeamSelectScreen` shows 5 placeholder roster heroes and lets the player save exactly 3 unique selected heroes.
 - A playable battle screen with a HUD, enemy panel, 9x9 `BoardView`, placeholder `TileView` tiles, hero party panel, status text, result overlay, and a Menu button.
 - Reusable UI components: `BattleHud`, `EnemyPanel`, `HeroPartyPanel`, `HeroCard`, and `BattleResultOverlay`.
 - A lightweight `LayoutManager` for UI-only portrait and landscape layout decisions.
@@ -44,11 +46,18 @@ This stage includes:
 - `TileView` shows simple placeholder `H`/`V` markers for special tiles.
 - UI-independent battle logic under `scripts/game/battle/`: heroes, enemy, battle state, Hero Lane activation, damage, ability charge, enemy intent/action, and turn results.
 - Data-driven configs under `scripts/game/config/`: `HeroConfig`, `EnemyConfig`, `LevelConfig`, and `LevelCatalog`.
-- `BattleFactory` creates battle state from level configs.
+- Hero roster definitions under `scripts/game/config/` with `HeroCatalog`.
+- `HeroConfig` carries immutable base hero stats plus `ability_id`.
+- `BattleFactory` creates battle state from level configs or the saved selected team when `PlayerProgress` and `HeroCatalog` are available.
+- Selected team order maps to Hero Lanes: slot 1 to lane 0, slot 2 to lane 1, and slot 3 to lane 2.
 - Local progression under `scripts/game/progression/`: `PlayerProgress`, `HeroUpgradeState`, `UpgradeResolver`, and `ProgressManager`.
+- Saved team selection under `scripts/game/progression/` with `TeamSelectionState` and `TeamSelectionResolver`.
+- `PlayerProgress` stores selected team IDs, and `ProgressManager` is the boundary for reading, validating, saving, and normalizing selected team data.
 - Saved level progress under `scripts/game/progression/`: `LevelProgressState` and `LevelCompletionResolver`.
 - Local save handling under `scripts/game/save/` with `SaveManager`.
 - Progress, completion, stars, and hero upgrades are saved locally to `user://save_v1.json`.
+- Selected team data is saved locally to `user://save_v1.json`.
+- Missing, incomplete, duplicated, or unknown saved team data falls back to the default team: `hero_1`, `hero_2`, `hero_3`.
 - Victory grants `LevelConfig.reward_upgrade_points`, and rewards can be earned repeatedly in v0.1.
 - Victory saves level completion and stars based on remaining moves.
 - Best stars and best remaining moves are preserved across replays.
@@ -60,6 +69,7 @@ This stage includes:
 - A `BattlePresenter` that coordinates the fixed prototype battle without platform, save, ad, or SDK code.
 - `BattlePresenter.start_level(level_id)` starts selected levels, and Restart preserves the current level.
 - Three starter abilities: Power Strike, Line Break, and Rally Heal.
+- Roster heroes use `ability_id` mapping: Warrior and Mage use Power Strike, Guardian and Ranger use Line Break, and Healer uses Rally Heal.
 - Ability readiness in `HeroCard`, with ability requests routed through `BattlePresenter`.
 - Ability feedback for damage, healing, row clears, and rejected requests.
 - Ability use does not consume moves or tick enemy intent.
@@ -94,7 +104,7 @@ This stage includes:
 This stage excludes:
 
 - Color bombs, wrapped bombs, special + special combos, special battle damage, cascade damage, full cascade-step animation, full falling animation, real tile movement, particles, sound, and final art.
-- Target selection, cooldowns, ability upgrades, and hero selection UI.
+- Target selection, cooldowns, ability upgrades, gacha, rarity, hero unlocks, hero shards, hero inventory, portraits, final art, drag-and-drop team UI, and complex ability additions.
 - One-time rewards, stars-based rewards, level map, chapters, complex economy, upgrade screen rework, and complex objectives.
 - Cloud saves, ads, payments, Yandex SDK, RuStore, Android-specific code, and monetization.
 
@@ -108,7 +118,8 @@ This stage excludes:
 6. Click one tile, then click a neighboring tile to attempt a swap, or drag/swipe from a tile toward a neighbor.
 7. Win a battle to earn upgrade points, save completion, earn stars, and unlock the next level.
 8. Open Upgrades from level select or the victory overlay.
-9. Press Menu to return to level select.
+9. Open Team from level select to choose and save exactly 3 roster heroes.
+10. Press Menu to return to level select.
 
 ## Board Core Tests
 
@@ -196,7 +207,25 @@ Run the special tile test with:
 godot --headless --script res://scripts/tests/special_tile_test.gd
 ```
 
+Run the hero catalog test with:
+
+```bash
+godot --headless --script res://scripts/tests/hero_catalog_test.gd
+```
+
+Run the team selection test with:
+
+```bash
+godot --headless --script res://scripts/tests/team_selection_test.gd
+```
+
+Run the battle factory team test with:
+
+```bash
+godot --headless --script res://scripts/tests/battle_factory_team_test.gd
+```
+
 ## Next Planned Stages
 
-- Hero roster and team selection v0.1.
+- Character upgrade screen v0.2 from the menu.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.

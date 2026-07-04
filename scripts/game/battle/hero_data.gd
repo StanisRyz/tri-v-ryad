@@ -11,6 +11,7 @@ var hp_level := 0
 var current_hp := 0
 var ability_charge := 0
 var ability_charge_required := 10
+var ability_id := ""
 
 
 func _init(
@@ -21,7 +22,8 @@ func _init(
 	hero_base_max_hp: int = 0,
 	hero_attack_level: int = 0,
 	hero_hp_level: int = 0,
-	required_charge: int = 10
+	required_charge: int = 10,
+	hero_ability_id: String = ""
 ) -> void:
 	id = hero_id
 	display_name = hero_display_name
@@ -31,6 +33,7 @@ func _init(
 	attack_level = hero_attack_level
 	hp_level = hero_hp_level
 	ability_charge_required = max(1, required_charge)
+	ability_id = hero_ability_id
 	heal_to_full()
 
 

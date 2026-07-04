@@ -4,6 +4,7 @@ const MAIN_MENU_SCREEN := preload("res://scenes/screens/MainMenuScreen.tscn")
 const LEVEL_SELECT_SCREEN := preload("res://scenes/screens/LevelSelectScreen.tscn")
 const GAME_SCREEN := preload("res://scenes/screens/GameScreen.tscn")
 const UPGRADE_SCREEN := preload("res://scenes/screens/UpgradeScreen.tscn")
+const TEAM_SELECT_SCREEN := preload("res://scenes/screens/TeamSelectScreen.tscn")
 const PROGRESS_MANAGER_SCRIPT := preload("res://scripts/game/progression/progress_manager.gd")
 
 @onready var screen_host: Control = %ScreenHost
@@ -30,6 +31,7 @@ func _show_level_select() -> void:
 		screen.set_progress_manager(_progress_manager)
 	screen.level_selected.connect(_on_level_selected)
 	screen.upgrades_pressed.connect(_on_upgrades_pressed)
+	screen.team_pressed.connect(_on_team_pressed)
 	screen.back_pressed.connect(_on_level_select_back_pressed)
 
 
@@ -50,6 +52,13 @@ func _show_upgrade_screen() -> void:
 	screen.back_pressed.connect(_on_upgrade_back_pressed)
 
 
+func _show_team_select_screen() -> void:
+	var screen := _router.change_screen(TEAM_SELECT_SCREEN)
+	if screen.has_method("set_progress_manager"):
+		screen.set_progress_manager(_progress_manager)
+	screen.back_pressed.connect(_on_team_select_back_pressed)
+
+
 func _on_main_menu_play_pressed() -> void:
 	_show_level_select()
 
@@ -62,6 +71,10 @@ func _on_upgrades_pressed() -> void:
 	_show_upgrade_screen()
 
 
+func _on_team_pressed() -> void:
+	_show_team_select_screen()
+
+
 func _on_level_select_back_pressed() -> void:
 	_show_main_menu()
 
@@ -71,4 +84,8 @@ func _on_game_back_pressed() -> void:
 
 
 func _on_upgrade_back_pressed() -> void:
+	_show_level_select()
+
+
+func _on_team_select_back_pressed() -> void:
 	_show_level_select()

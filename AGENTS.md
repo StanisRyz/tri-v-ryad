@@ -85,26 +85,36 @@ The current stage is a playable battle prototype with board animation polish, sa
 - Ability-cleared tiles must not grant charge or hero damage unless explicitly requested later.
 - Configs live under `scripts/game/config/`.
 - Config classes must remain UI-independent.
+- Hero roster definitions live in `HeroCatalog` under `scripts/game/config/`.
 - `BattleFactory` creates `BattleState` from configs.
 - Progression logic lives under `scripts/game/progression/`.
+- Team selection state lives under `scripts/game/progression/`.
+- `TeamSelectionResolver` owns team validation rules.
+- `PlayerProgress` stores selected team.
 - Level progress logic belongs under `scripts/game/progression/`.
 - Save logic lives under `scripts/game/save/`.
 - Screens must not read or write save files directly.
 - Use `ProgressManager` for progress operations.
 - `ProgressManager` is the boundary for level completion operations.
+- `ProgressManager` is the boundary for reading/writing selected team.
+- `TeamSelectScreen` must not save files directly.
+- `TeamSelectScreen` must not create `BattleState`.
 - `SaveManager` is local-only in v0.1.
 - `PlayerProgress` is mutable player data.
 - `LevelProgressState` stores saved level result data.
 - `LevelCompletionResolver` owns star and unlock rules.
 - `HeroConfig` remains immutable base data.
 - `BattleFactory` combines `HeroConfig` with `PlayerProgress`.
+- `BattleFactory` maps selected team order to lanes 0, 1, 2.
 - Do not mutate `HeroConfig` for player upgrades.
+- Do not mutate `HeroConfig` when assigning selected team lanes.
 - `BattlePresenter` starts levels but must not store hardcoded enemy or hero definitions.
 - `LevelSelectScreen` only selects `level_id`, displays level progress, and must not create `BattleState`.
 - `LevelSelectScreen` must not own unlock rules.
 - Rewards remain repeatable in v0.1.
 - Do not add one-time rewards, stars-based rewards, level map, chapters, or complex economy unless explicitly requested.
 - UpgradeScreen rework is future work and must not be mixed into campaign progression patches.
+- UpgradeScreen rework remains future work and must not be mixed into hero roster/team selection patches.
 
 ## Platform Boundaries
 

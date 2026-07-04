@@ -5,9 +5,11 @@ const LEVEL_CATALOG_SCRIPT := preload("res://scripts/game/config/level_catalog.g
 signal level_selected(level_id: String)
 signal back_pressed
 signal upgrades_pressed
+signal team_pressed
 
 @onready var back_button: Button = %BackButton
 @onready var upgrades_button: Button = %UpgradesButton
+@onready var team_button: Button = %TeamButton
 @onready var points_label: Label = %PointsLabel
 @onready var level_buttons: VBoxContainer = %LevelButtons
 
@@ -18,6 +20,7 @@ var _progress_manager
 func _ready() -> void:
 	back_button.pressed.connect(_on_back_button_pressed)
 	upgrades_button.pressed.connect(_on_upgrades_button_pressed)
+	team_button.pressed.connect(_on_team_button_pressed)
 	_refresh()
 
 
@@ -65,6 +68,10 @@ func _on_back_button_pressed() -> void:
 
 func _on_upgrades_button_pressed() -> void:
 	upgrades_pressed.emit()
+
+
+func _on_team_button_pressed() -> void:
+	team_pressed.emit()
 
 
 func _refresh_points() -> void:

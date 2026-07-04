@@ -5,6 +5,7 @@ const SAVE_VERSION := 1
 const SCRIPT_PATH := "res://scripts/game/progression/player_progress.gd"
 const HERO_UPGRADE_STATE_SCRIPT := preload("res://scripts/game/progression/hero_upgrade_state.gd")
 const LEVEL_PROGRESS_STATE_SCRIPT := preload("res://scripts/game/progression/level_progress_state.gd")
+const TEAM_SELECTION_STATE_SCRIPT := preload("res://scripts/game/progression/team_selection_state.gd")
 const DEFAULT_HERO_IDS := ["hero_1", "hero_2", "hero_3"]
 
 var save_version := SAVE_VERSION
@@ -12,12 +13,14 @@ var upgrade_points := 0
 var hero_upgrades: Dictionary = {}
 var completed_levels: Dictionary = {}
 var level_progress: Dictionary = {}
+var team_selection: TeamSelectionState
 
 
 static func create_default() -> PlayerProgress:
 	var progress = load(SCRIPT_PATH).new()
 	progress.save_version = SAVE_VERSION
 	progress.upgrade_points = 0
+	progress.team_selection = TEAM_SELECTION_STATE_SCRIPT.create_default(DEFAULT_HERO_IDS)
 	for hero_id in DEFAULT_HERO_IDS:
 		progress.ensure_hero(hero_id)
 	return progress
@@ -71,6 +74,22 @@ func set_level_progress(level_id: String, state) -> void:
 	completed_levels[level_id] = bool(state.completed)
 
 
+func get_team_selection() -> TeamSelectionState:
+	if team_selection == null:
+		team_selection = TEAM_SELECTION_STATE_SCRIPT.create_default(DEFAULT_HERO_IDS)
+	return team_selection
+
+
+func set_team_selection(team_state: TeamSelectionState) -> void:
+	if team_state == null:
+		return
+	team_selection = team_state
+
+
+func get_selected_team_ids() -> Array[String]:
+	return get_team_selection().selected_hero_ids.duplicate()
+
+
 func get_level_stars(level_id: String) -> int:
 	if level_progress.has(level_id):
 		var state = level_progress[level_id]
@@ -98,6 +117,7 @@ func to_dictionary() -> Dictionary:
 		"hero_upgrades": upgrade_data,
 		"completed_levels": completed_levels.duplicate(),
 		"level_progress": level_progress_data,
+		"team_selection": get_team_selection().to_dictionary(),
 	}
 
 
@@ -133,5 +153,11 @@ static func from_dictionary(data: Dictionary) -> PlayerProgress:
 	for level_id in progress.completed_levels.keys():
 		if bool(progress.completed_levels[level_id]) and not progress.level_progress.has(level_id):
 			progress.level_progress[level_id] = LEVEL_PROGRESS_STATE_SCRIPT.new(level_id, true, 1, 0)
+
+	var raw_team_selection = data.get("team_selection", {})
+	if raw_team_selection is Dictionary:
+		progress.team_selection = TEAM_SELECTION_STATE_SCRIPT.from_dictionary(raw_team_selection, DEFAULT_HERO_IDS)
+	else:
+		progress.team_selection = TEAM_SELECTION_STATE_SCRIPT.create_default(DEFAULT_HERO_IDS)
 
 	return progress

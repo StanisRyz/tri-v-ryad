@@ -28,9 +28,11 @@ func resolve_ability(state: BattleState, board: BoardModel, lane_index: int):
 	if not hero.is_ability_ready():
 		return ABILITY_RESULT_SCRIPT.rejected_result(hero.id, lane_index, "ability_not_ready")
 
-	var ability = ABILITY_DATA_SCRIPT.get_for_hero(hero.id)
-	var result = ABILITY_RESULT_SCRIPT.accepted_result(hero, ability, state.status)
+	var ability = ABILITY_DATA_SCRIPT.get_for_ability(hero.ability_id, hero.id)
+	if ability.id == "":
+		return ABILITY_RESULT_SCRIPT.rejected_result(hero.id, lane_index, "unknown_ability")
 
+	var result = ABILITY_RESULT_SCRIPT.accepted_result(hero, ability, state.status)
 	match ability.id:
 		ABILITY_DATA_SCRIPT.POWER_STRIKE:
 			_apply_power_strike(state, hero, result)
@@ -39,7 +41,7 @@ func resolve_ability(state: BattleState, board: BoardModel, lane_index: int):
 		ABILITY_DATA_SCRIPT.RALLY_HEAL:
 			_apply_rally_heal(state, result)
 		_:
-			return ABILITY_RESULT_SCRIPT.rejected_result(hero.id, lane_index, "ability_unavailable")
+			return ABILITY_RESULT_SCRIPT.rejected_result(hero.id, lane_index, "unknown_ability")
 
 	hero.ability_charge = 0
 	state.update_status()

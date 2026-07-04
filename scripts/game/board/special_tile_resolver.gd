@@ -25,7 +25,7 @@ func choose_special_cell(match_result: MatchResult) -> Vector2i:
 	if match_result == null or match_result.cells.is_empty():
 		return Vector2i(-1, -1)
 
-	return match_result.cells[match_result.cells.size() / 2]
+	return match_result.cells[floori(float(match_result.cells.size()) / 2.0)]
 
 
 func get_line_clear_cells(board: BoardModel, cell: Vector2i, special_data) -> Array[Vector2i]:

@@ -82,6 +82,7 @@ func _setup_playable_battle() -> void:
 	_presenter = BATTLE_PRESENTER_SCRIPT.new()
 	if _progress_manager != null:
 		_presenter.set_progress(_progress_manager.get_progress())
+		_presenter.set_hero_catalog(_progress_manager.get_hero_catalog())
 	_input_controller = BOARD_INPUT_CONTROLLER_SCRIPT.new()
 	_turn_feedback_presenter = TURN_FEEDBACK_PRESENTER_SCRIPT.new()
 	_ability_feedback_presenter = ABILITY_FEEDBACK_PRESENTER_SCRIPT.new()
@@ -278,3 +279,4 @@ func set_progress_manager(progress_manager) -> void:
 	_progress_manager = progress_manager
 	if _presenter != null and _progress_manager != null:
 		_presenter.set_progress(_progress_manager.get_progress())
+		_presenter.set_hero_catalog(_progress_manager.get_hero_catalog())
