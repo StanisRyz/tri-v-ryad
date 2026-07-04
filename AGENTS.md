@@ -2,7 +2,7 @@
 
 This is a Godot match-3 battle project intended for Yandex Games. The default layout is vertical 9:16 portrait with a 720x1280 base resolution.
 
-The current stage is a playable battle prototype with saved level completion, stars, sequential unlocks, upgrade points, hero progression, and local save v0.1. `GameScreen` is allowed to wire `BattlePresenter`, `BoardView`, `BoardInputController`, `TurnFeedbackPresenter`, `AbilityFeedbackPresenter`, and result-flow reward/completion calls through `ProgressManager`, but the board core, battle core, config layer, progression layer, and save layer must remain separate from UI implementation details.
+The current stage is a playable battle prototype with board animation polish, saved level completion, stars, sequential unlocks, upgrade points, hero progression, and local save v0.1. `GameScreen` is allowed to wire `BattlePresenter`, `BoardView`, `BoardInputController`, `TurnFeedbackPresenter`, `AbilityFeedbackPresenter`, and result-flow reward/completion calls through `ProgressManager`, but the board core, battle core, config layer, progression layer, and save layer must remain separate from UI implementation details.
 
 ## Project Rules
 
@@ -55,7 +55,16 @@ The current stage is a playable battle prototype with saved level completion, st
 - `GameScreen` must not contain long animation sequences.
 - Input unlock must happen after feedback completes.
 - `TileView` visual feedback must remain lightweight.
+- `BoardMotionAnimator` is view/presentation-only.
+- `BoardMotionAnimator` must not mutate `BoardModel`.
+- `BoardMotionAnimator` must not call board, battle, progression, save, platform, ad, or payment resolvers/services.
+- `TileView` animation helpers must remain lightweight tween feedback only.
+- `BoardView` animation helpers must not implement gameplay rules.
+- `BoardView` animation helpers must not mutate `BoardModel`.
+- `TurnFeedbackPresenter` may sequence visual feedback, but must not change gameplay outcomes.
+- Input unlock must remain tied to `feedback_finished`.
 - Do not implement full cascade animations unless explicitly requested.
+- Do not implement full manual board layout rewrite or full falling animation unless explicitly requested.
 - Do not add sound, particles, or final art in this stage.
 - Ability logic lives under `scripts/game/battle/`.
 - `AbilityResolver` must remain UI-independent.
@@ -101,8 +110,9 @@ The current stage is a playable battle prototype with saved level completion, st
 
 ## Current Exclusions
 
-- No tile swap, clear, fall, or refill animations.
 - No full cascade animations.
+- No full manual board layout rewrite.
+- No full falling animation.
 - No sound or particles.
 - No target selection, cooldowns, ability upgrades, or hero selection.
 - No one-time rewards, stars-based rewards, level map, chapters, complex economy, or complex objectives.

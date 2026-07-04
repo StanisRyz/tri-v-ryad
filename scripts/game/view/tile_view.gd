@@ -20,6 +20,7 @@ var _is_invalid_feedback := false
 var _press_start_position := Vector2.ZERO
 var _has_press_start := false
 var _suppress_next_pressed := false
+var _active_tween: Tween
 
 
 func _ready() -> void:
@@ -64,6 +65,48 @@ func play_flash() -> void:
 func play_invalid_flash() -> void:
 	set_invalid_feedback(true)
 	_play_flash_tween(Color(1.25, 0.55, 0.55, 1.0), Vector2(1.04, 1.04))
+
+
+func play_swap_pulse() -> void:
+	_play_flash_tween(Color(1.18, 1.18, 1.18, 1.0), Vector2(1.08, 1.08))
+
+
+func play_invalid_pulse() -> void:
+	set_invalid_feedback(true)
+	_play_flash_tween(Color(1.30, 0.48, 0.45, 1.0), Vector2(0.94, 0.94))
+
+
+func play_match_fade() -> void:
+	_stop_active_tween()
+	visible = true
+	pivot_offset = size * 0.5
+	modulate = Color.WHITE
+	scale = Vector2.ONE
+	_active_tween = create_tween()
+	_active_tween.tween_property(self, "modulate", Color(1.0, 1.0, 1.0, 0.22), 0.10)
+	_active_tween.parallel().tween_property(self, "scale", Vector2(0.88, 0.88), 0.10)
+	_active_tween.tween_property(self, "modulate", Color.WHITE, 0.10)
+	_active_tween.parallel().tween_property(self, "scale", Vector2.ONE, 0.10)
+
+
+func play_refill_appear() -> void:
+	_stop_active_tween()
+	visible = true
+	pivot_offset = size * 0.5
+	modulate = Color(1.0, 1.0, 1.0, 0.45)
+	scale = Vector2(0.90, 0.90)
+	_active_tween = create_tween()
+	_active_tween.tween_property(self, "modulate", Color.WHITE, 0.12)
+	_active_tween.parallel().tween_property(self, "scale", Vector2.ONE, 0.12)
+
+
+func reset_visual_state() -> void:
+	_stop_active_tween()
+	visible = true
+	modulate = Color.WHITE
+	scale = Vector2.ONE
+	_is_invalid_feedback = false
+	_apply_visuals()
 
 
 func _on_pressed() -> void:
@@ -137,9 +180,19 @@ func _apply_visuals() -> void:
 
 
 func _play_flash_tween(flash_modulate: Color, flash_scale: Vector2) -> void:
+	_stop_active_tween()
+	visible = true
+	modulate = Color.WHITE
+	scale = Vector2.ONE
 	pivot_offset = size * 0.5
-	var tween := create_tween()
-	tween.tween_property(self, "modulate", flash_modulate, 0.06)
-	tween.parallel().tween_property(self, "scale", flash_scale, 0.06)
-	tween.tween_property(self, "modulate", Color.WHITE, 0.16)
-	tween.parallel().tween_property(self, "scale", Vector2.ONE, 0.16)
+	_active_tween = create_tween()
+	_active_tween.tween_property(self, "modulate", flash_modulate, 0.06)
+	_active_tween.parallel().tween_property(self, "scale", flash_scale, 0.06)
+	_active_tween.tween_property(self, "modulate", Color.WHITE, 0.14)
+	_active_tween.parallel().tween_property(self, "scale", Vector2.ONE, 0.14)
+
+
+func _stop_active_tween() -> void:
+	if _active_tween != null:
+		_active_tween.kill()
+		_active_tween = null

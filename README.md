@@ -2,7 +2,7 @@
 
 Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
-The project is currently in the Saved Level Completion, Stars, and Unlocks v0.1 stage. It defines the app shell, simple screen navigation, a level select flow, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, three starter hero abilities, data-driven test battles, local hero upgrades, and saved campaign progress for a vertical 9:16 game.
+The project is currently in the Board Animation Polish v0.1 stage. It defines the app shell, simple screen navigation, a level select flow, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, three starter hero abilities, data-driven test battles, local hero upgrades, saved campaign progress, and lightweight swap, clear, and refill feedback for a vertical 9:16 game.
 
 ## Project Direction
 
@@ -57,8 +57,15 @@ This stage includes:
 - Ability feedback for damage, healing, row clears, and rejected requests.
 - Ability use does not consume moves or tick enemy intent.
 - Hybrid tile swapping through `BoardInputController`: two-click fallback, mouse drag, and touch/swipe style input.
-- Input locking during turn feedback and after victory/defeat.
-- Swapped cell feedback, invalid swap feedback, match highlights, Hero Lane highlights, and short damage/enemy action status messages.
+- `BoardMotionAnimator` coordinates view-only board motion feedback without changing board, battle, progression, or save rules.
+- Lightweight `TileView` animation helpers for swap pulses, invalid pulses, match fade, refill appear, and visual reset.
+- `BoardView` exposes presentation-only animation helpers over existing tile views.
+- Valid swaps get a short visual pulse/flash on the swapped cells.
+- Invalid swaps get brief rejection feedback on the involved cells.
+- Matched cells highlight and fade before board refresh/refill feedback.
+- Board refresh/refill gets lightweight appear feedback; this is not full falling animation.
+- Input locking during turn feedback and after victory/defeat remains tied to `feedback_finished`.
+- Swapped cell feedback, invalid swap feedback, match highlights, refill feedback, Hero Lane highlights, and short damage/enemy action status messages.
 - Live HUD, enemy, and hero updates.
 - Basic victory/defeat overlay with restart flow.
 - Headless board core tests in `scripts/tests/board_core_test.gd`.
@@ -78,10 +85,10 @@ This stage includes:
 
 This stage excludes:
 
-- Full cascade animations, real tile movement, particles, sound, and final art.
+- Special tiles, cascade damage, full cascade-step animation, full falling animation, real tile movement, particles, sound, and final art.
 - Target selection, cooldowns, ability upgrades, and hero selection UI.
-- One-time rewards, stars-based rewards, level map, chapters, complex economy, and complex objectives.
-- Cloud saves, ads, payments, Yandex SDK, RuStore, Android-specific code, and final art.
+- One-time rewards, stars-based rewards, level map, chapters, complex economy, upgrade screen rework, and complex objectives.
+- Cloud saves, ads, payments, Yandex SDK, RuStore, Android-specific code, and monetization.
 
 ## How To Open And Run
 
@@ -177,5 +184,5 @@ godot --headless --script res://scripts/tests/level_completion_test.gd
 
 ## Next Planned Stages
 
-- Improve board animation polish for swap, clear, fall, and refill.
+- Special tiles v0.1.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.

@@ -3,9 +3,12 @@ class_name TurnFeedbackPresenter
 
 signal feedback_finished
 
+const BOARD_MOTION_ANIMATOR_SCRIPT := preload("res://scripts/game/view/board_motion_animator.gd")
 const SHORT_DELAY := 0.12
 const MEDIUM_DELAY := 0.24
 const LONG_DELAY := 0.34
+
+var _board_motion_animator := BOARD_MOTION_ANIMATOR_SCRIPT.new()
 
 
 func play_turn_feedback(data, board_view: BoardView, status_callback: Callable) -> void:
@@ -18,16 +21,20 @@ func play_turn_feedback(data, board_view: BoardView, status_callback: Callable) 
 
 
 func _play_valid_feedback(data, board_view: BoardView, status_callback: Callable) -> void:
-	board_view.flash_cells(board_view.get_valid_cells_from_pair(data.swapped_from, data.swapped_to))
-	await _wait(board_view, SHORT_DELAY)
+	await _board_motion_animator.play_valid_swap_feedback(board_view, data.swapped_from, data.swapped_to)
 
 	board_view.highlight_cells(data.matched_cells)
-	board_view.flash_cells(data.matched_cells)
-	status_callback.call(_build_damage_message(data))
-	await _wait(board_view, MEDIUM_DELAY)
+	await _wait(board_view, SHORT_DELAY)
+
+	await _board_motion_animator.play_match_clear_feedback(board_view, data.matched_cells)
+
+	await _board_motion_animator.play_board_refresh_feedback(board_view)
 
 	board_view.highlight_lanes(data.lane_activations)
 	await _wait(board_view, SHORT_DELAY)
+
+	status_callback.call(_build_damage_message(data))
+	await _wait(board_view, MEDIUM_DELAY)
 
 	if data.enemy_action.get("acted", false):
 		status_callback.call(_build_enemy_action_message(data.enemy_action))
@@ -37,7 +44,7 @@ func _play_valid_feedback(data, board_view: BoardView, status_callback: Callable
 
 
 func _play_invalid_feedback(data, board_view: BoardView, status_callback: Callable) -> void:
-	board_view.flash_invalid_cells(board_view.get_valid_cells_from_pair(data.swapped_from, data.swapped_to))
+	await _board_motion_animator.play_invalid_swap_feedback(board_view, data.swapped_from, data.swapped_to)
 	status_callback.call(_build_invalid_message(data.invalid_reason))
 	await _wait(board_view, MEDIUM_DELAY)
 	board_view.clear_cell_highlights()

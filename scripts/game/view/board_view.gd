@@ -98,6 +98,53 @@ func flash_invalid_cells(cells: Array[Vector2i]) -> void:
 			tile.play_invalid_flash()
 
 
+func get_tile_view(cell: Vector2i) -> TileView:
+	return _tile_views.get(cell) as TileView
+
+
+func get_tile_views(cells: Array[Vector2i]) -> Array:
+	var views := []
+	for cell in cells:
+		var tile := get_tile_view(cell)
+		if tile != null:
+			views.append(tile)
+	return views
+
+
+func play_swap_feedback(from_cell: Vector2i, to_cell: Vector2i) -> void:
+	for tile in get_tile_views(get_valid_cells_from_pair(from_cell, to_cell)):
+		tile.play_swap_pulse()
+
+
+func play_invalid_swap_feedback(from_cell: Vector2i, to_cell: Vector2i) -> void:
+	_invalid_feedback_cells = get_valid_cells_from_pair(from_cell, to_cell)
+	_highlighted_cells.clear()
+	refresh_all_tiles()
+	for tile in get_tile_views(_invalid_feedback_cells):
+		tile.play_invalid_pulse()
+
+
+func play_match_clear_feedback(cells: Array[Vector2i]) -> void:
+	for tile in get_tile_views(cells):
+		tile.play_match_fade()
+
+
+func play_refill_feedback(cells: Array[Vector2i] = []) -> void:
+	var target_cells: Array[Vector2i] = cells.duplicate()
+	if target_cells.is_empty():
+		for cell in _tile_views.keys():
+			target_cells.append(cell)
+
+	for tile in get_tile_views(target_cells):
+		tile.play_refill_appear()
+
+
+func reset_tile_visuals() -> void:
+	for tile in _tile_views.values():
+		if tile != null and tile.has_method("reset_visual_state"):
+			tile.reset_visual_state()
+
+
 func get_valid_cells_from_pair(a: Vector2i, b: Vector2i) -> Array[Vector2i]:
 	var cells: Array[Vector2i] = []
 	if _tile_views.has(a):

@@ -104,6 +104,17 @@ Animation, advanced feedback, sound, and gesture polish remain future work.
 
 Full cascade animation, real tile movement, particles, sound, and deeper progression remain future work.
 
+## Board Animation Polish v0.1
+
+- Valid swaps receive a short visual pulse/flash on the swapped cells.
+- Invalid swaps receive visual rejection feedback on the involved cells.
+- Matched cells highlight and fade during turn feedback.
+- Board refresh/refill receives lightweight appear feedback after matched cells fade.
+- Input remains locked during the full feedback sequence and unlocks only after `feedback_finished`.
+- Board rules, battle rules, progression, rewards, stars, unlocks, upgrades, and save format are unchanged.
+
+Special tiles, full falling animation, cascade damage, cascade-step animation, particles, sound, final art, and real tile movement remain future work.
+
 ## Hero Abilities v0.1
 
 - Ability charge comes from matched tiles in hero lanes.
