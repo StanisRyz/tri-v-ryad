@@ -2,6 +2,7 @@ extends Control
 class_name TeamSelectScreen
 
 signal back_pressed
+signal start_battle_pressed(level_id: String)
 
 @onready var back_button: Button = %BackButton
 @onready var save_button: Button = %SaveButton
@@ -13,6 +14,7 @@ var _progress_manager
 var _hero_catalog: HeroCatalog
 var _selected_hero_ids: Array[String] = []
 var _hero_buttons: Dictionary = {}
+var _level_id := ""
 
 
 func _ready() -> void:
@@ -26,6 +28,12 @@ func set_progress_manager(progress_manager) -> void:
 	_hero_catalog = _progress_manager.get_hero_catalog() if _progress_manager != null else HeroCatalog.new()
 	if is_inside_tree():
 		_refresh_from_progress()
+
+
+func set_level_id(level_id: String) -> void:
+	_level_id = level_id
+	if is_inside_tree():
+		_refresh_controls("")
 
 
 func _refresh_from_progress() -> void:
@@ -96,10 +104,11 @@ func _refresh_controls(message: String) -> void:
 		var button: Button = _hero_buttons[hero_id]
 		button.button_pressed = _selected_hero_ids.has(hero_id)
 
-	save_button.disabled = _selected_hero_ids.size() != 3 or _has_duplicates(_selected_hero_ids)
+	var team_valid := _selected_hero_ids.size() == 3 and not _has_duplicates(_selected_hero_ids)
+	save_button.disabled = not team_valid or _level_id == ""
 	if message != "":
 		status_label.text = message
-	elif save_button.disabled:
+	elif not team_valid:
 		status_label.text = "Select exactly 3 unique heroes"
 	else:
 		status_label.text = "Team ready"
@@ -126,6 +135,7 @@ func _on_save_button_pressed() -> void:
 
 	if _progress_manager.set_selected_team_ids(_selected_hero_ids):
 		_refresh_controls("Team saved")
+		start_battle_pressed.emit(_level_id)
 	else:
 		_refresh_controls("Invalid team")
 

@@ -191,7 +191,7 @@ Hero unlocks, rarity, gacha, hero shards, ability upgrades, max levels, scaling 
 - Stage 16 adds a 10-level early campaign slice.
 - Levels 1-2 are very easy intro battles, levels 3-4 add light challenge, levels 5-6 make upgrades feel useful, levels 7-9 are noticeably harder, and level 10 is the first early mini-boss gatekeeper.
 - Levels define enemy config, moves, enemy intent, and fixed hero configs.
-- `LevelSelectScreen` chooses a `level_id`.
+- `LevelSelectScreen` chooses a `level_id` and routes to `TeamSelectScreen` for pre-battle team confirmation (see Stage 19).
 - `GameScreen` starts the selected level through `BattlePresenter`.
 - Every level uses the same objective: defeat the enemy.
 - Victory and defeat rules stay unchanged.
@@ -279,4 +279,17 @@ One-time rewards, level map, chapters, stars-based rewards, max upgrade levels, 
 - No special + special combos were added.
 - No wrapped bombs were added.
 - No particles, sound, final art, Yandex SDK, cloud save, ads, or payments were added.
-- Next planned stage: Stage 19, Menu and battle flow restructure v0.1.
+
+## Stage 19: Menu and Battle Flow Restructure v0.1
+
+- Stage 19 is implemented.
+- New main flow: MainMenu -> Play -> LevelSelect -> TeamSelect -> GameScreen, and MainMenu -> Heroes -> UpgradeScreen.
+- Heroes/progression entry moved from LevelSelect into MainMenu; MainMenu now has Play and Heroes buttons.
+- `LevelSelectScreen` is now only for choosing a level: showing levels, locked/open/completed/star state, level selection, and Back to MainMenu. Its Team and Heroes buttons and `team_pressed`/`upgrades_pressed` signals were removed.
+- `TeamSelectScreen` is now the pre-battle team confirmation screen. It receives a `level_id` through `set_level_id()`, shows the currently saved team, and lets the player change selected heroes. Its Save button was renamed Start Battle and is disabled unless the team has exactly 3 unique heroes and a level_id is set.
+- On Start Battle, `TeamSelectScreen` validates and saves the team through `ProgressManager.set_selected_team_ids()` and only then emits `start_battle_pressed(level_id)`. `App.gd` routes that signal to `GameScreen` with the same level_id. `TeamSelectScreen` never creates `BattleState`, opens `GameScreen` directly, or touches save files itself.
+- Restart in `GameScreen` keeps the current level_id unchanged; Back/Menu from `GameScreen` returns to `LevelSelectScreen`.
+- Back from `UpgradeScreen` returns to `MainMenu` for this stage, including when opened from `GameScreen`'s victory overlay Heroes link.
+- Team selection rules, level unlock/star/progression rules, battle rules, and save data formats were not changed.
+- No SettingsScreen, reset save, animation toggles, Yandex SDK, cloud save, ads, payments, new levels, new heroes, hero unlocks, gacha, rarity, hero shards, equipment, skill trees, new abilities, new special tiles, new battle objectives, final art, sound, or particles were added.
+- Next planned stage: Stage 20, UI/UX polish and settings v0.1.

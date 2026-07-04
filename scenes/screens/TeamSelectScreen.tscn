@@ -48,9 +48,9 @@ text = "Team Selection"
 
 [node name="SaveButton" type="Button" parent="SafeMargin/Root/TopBar"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(120, 54)
+custom_minimum_size = Vector2(160, 54)
 layout_mode = 2
-text = "Save"
+text = "Start Battle"
 
 [node name="BackButton" type="Button" parent="SafeMargin/Root/TopBar"]
 unique_name_in_owner = true

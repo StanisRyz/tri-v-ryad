@@ -2,7 +2,7 @@
 
 This is a Godot match-3 battle project intended for Yandex Games. The default layout is vertical 9:16 portrait with a 720x1280 base resolution.
 
-The current stage is a playable battle prototype through Stage 18: Special tiles v0.2, with damage-only hero abilities, line special tiles, color bombs, a 10-level early campaign slice, enemy and reward curve, balance tests, board animation polish, saved level completion, stars, sequential unlocks, upgrade points, hero progression, character upgrade screen v0.2, and local save v0.1. `GameScreen` is allowed to wire `BattlePresenter`, `BoardView`, `BoardInputController`, `TurnFeedbackPresenter`, `AbilityFeedbackPresenter`, and result-flow reward/completion calls through `ProgressManager`, but the board core, battle core, config layer, progression layer, and save layer must remain separate from UI implementation details.
+The current stage is a playable battle prototype through Stage 19: Menu and battle flow restructure v0.1, with damage-only hero abilities, line special tiles, color bombs, a 10-level early campaign slice, enemy and reward curve, balance tests, board animation polish, saved level completion, stars, sequential unlocks, upgrade points, hero progression, character upgrade screen v0.2, local save v0.1, and a MainMenu/LevelSelect/TeamSelect/GameScreen navigation flow. `GameScreen` is allowed to wire `BattlePresenter`, `BoardView`, `BoardInputController`, `TurnFeedbackPresenter`, `AbilityFeedbackPresenter`, and result-flow reward/completion calls through `ProgressManager`, but the board core, battle core, config layer, progression layer, and save layer must remain separate from UI implementation details.
 
 ## Project Rules
 
@@ -21,7 +21,8 @@ The current stage is a playable battle prototype through Stage 18: Special tiles
 - Balance remains v0.1 and is expected to change after playtesting.
 - Stage 17 is complete: all hero abilities are damage-only, healing and board-clearing hero ability behavior was removed, ability use still does not consume moves or advance enemy intent, and hero abilities do not modify the board.
 - Stage 18 is complete: match 4 creates line special tiles, match 5+ creates color bombs, color bombs clear tiles of a target/base tile type, and special tiles remain board-only effects.
-- Next planned stage: Stage 19, Menu and battle flow restructure v0.1.
+- Stage 19 is complete: MainMenu now has Play and Heroes, with Heroes opening UpgradeScreen directly from the main menu. Play opens LevelSelect, which now only shows levels and their locked/open/completed/star state. LevelSelect routes a selected level to TeamSelectScreen, which confirms/edits the saved team, requires exactly 3 unique heroes, and starts GameScreen with the selected level_id only after saving the team through `ProgressManager.set_selected_team_ids()`.
+- Next planned stage: Stage 20, UI/UX polish and settings v0.1.
 
 ## Gameplay Direction
 

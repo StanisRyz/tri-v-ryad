@@ -2,7 +2,7 @@
 
 Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
-The project is currently through Stage 18: Special tiles v0.2. It defines the app shell, simple screen navigation, a level select flow, a 10-level early campaign slice, a saved 5-hero roster/team selection flow, a menu-accessible full roster hero upgrade screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, damage-only roster ability mappings, local hero upgrades, saved campaign progress, and lightweight swap, clear, special activation, and refill feedback for a vertical 9:16 game.
+The project is currently through Stage 19: Menu and battle flow restructure v0.1. It defines the app shell, a MainMenu with Play and Heroes entry points, a level-select-only level flow, a pre-battle team confirmation flow, a menu-accessible full roster hero upgrade screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, damage-only roster ability mappings, local hero upgrades, saved campaign progress, and lightweight swap, clear, special activation, and refill feedback for a vertical 9:16 game.
 
 ## Project Direction
 
@@ -142,7 +142,20 @@ Stage 18 is complete. Match 4 still creates line special tiles, while match 5+ n
 
 Color bombs clear all tiles of the activated bomb cell's selected/base tile type. Special tiles remain board-only effects: special-cleared cells do not add extra battle damage or ability charge, and no special + special combos, wrapped bombs, particles, sound, final art, Yandex SDK, cloud save, ads, or payments were added.
 
-Next planned stage: Stage 19, Menu and battle flow restructure v0.1.
+## Stage 19: Menu and Battle Flow Restructure v0.1
+
+Stage 19 is complete. The main navigation flow is now:
+
+- MainMenu -> Play -> LevelSelect -> TeamSelect -> GameScreen
+- MainMenu -> Heroes -> UpgradeScreen
+
+MainMenu now has Play and Heroes buttons. Heroes opens UpgradeScreen directly from the main menu, and Back from UpgradeScreen returns to MainMenu. Play opens LevelSelect, which is now only responsible for showing levels and their locked/open/completed/star state; the Team and Heroes buttons were removed from LevelSelect. Selecting an unlocked level now routes to TeamSelectScreen instead of opening GameScreen directly.
+
+TeamSelectScreen is now the pre-battle team confirmation screen: it receives a `level_id` via `set_level_id()`, shows the currently saved team, and lets the player change selected heroes. Its Save button was renamed to Start Battle and is disabled unless exactly 3 unique heroes are selected and a level_id is set. Pressing Start Battle saves the team through `ProgressManager.set_selected_team_ids()` and, only on success, emits `start_battle_pressed(level_id)`, which App.gd routes to GameScreen with that level_id. TeamSelectScreen never creates BattleState, opens GameScreen directly, or touches save files itself.
+
+No battle, board, progression, save, hero upgrade, or special tile systems were changed in this stage. Settings remains a future Stage 20 item. Yandex SDK, cloud save, ads, payments, final art, sound, particles, gacha, hero unlocks, and new mechanics were not added.
+
+Next planned stage: Stage 20, UI/UX polish and settings v0.1.
 
 ## How To Open And Run
 
@@ -279,7 +292,13 @@ Run the character upgrade screen data test with:
 godot --headless --script res://scripts/tests/character_upgrade_screen_data_test.gd
 ```
 
+Run the navigation flow test with:
+
+```bash
+godot --headless --script res://scripts/tests/navigation_flow_test.gd
+```
+
 ## Next Planned Stages
 
-- Stage 19, Menu and battle flow restructure v0.1.
+- Stage 20, UI/UX polish and settings v0.1.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.
