@@ -81,7 +81,17 @@ Animations, real abilities, hero selection, upgrades, and platform systems remai
 - Victory and defeat show a result overlay.
 - Restart starts a fresh fixed test battle.
 
-Drag/swipe input, animations, real abilities, upgrades, hero selection, and platform systems remain future work.
+Animations, real abilities, upgrades, hero selection, and platform systems remain future work.
+
+## Mobile Input v0.1
+
+- Hybrid input supports both two-click swaps and drag/swipe swaps.
+- Drag direction maps to the neighboring tile in the dominant direction.
+- Short swipes are ignored and show simple feedback.
+- Input locks during turn processing and remains locked after victory or defeat.
+- Invalid input gets simple status feedback such as "Swipe too short", "Outside board", or "Input locked".
+
+Animation, advanced feedback, sound, and gesture polish remain future work.
 
 ## Future Progression
 
@@ -98,5 +108,4 @@ Complex meta progression is not part of the foundation stage.
 - No final art.
 - No complex meta progression.
 - No real abilities.
-- No drag/swipe input.
 - No board animations.

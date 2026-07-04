@@ -2,7 +2,7 @@
 
 Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
-The project is currently in the First Playable Battle Prototype stage. It defines the app shell, simple screen navigation, a playable 9x9 board with placeholder tiles, two-click swapping, UI-independent board and battle logic, and a fixed test battle for a vertical 9:16 game.
+The project is currently in the Mobile-Friendly Drag/Swipe Input stage. It defines the app shell, simple screen navigation, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, and a fixed test battle for a vertical 9:16 game.
 
 ## Project Direction
 
@@ -36,17 +36,19 @@ This stage includes:
 - UI-independent board generation, match detection, swap validation, gravity/refill, and cascade resolution under `scripts/game/board/`.
 - UI-independent battle logic under `scripts/game/battle/`: heroes, enemy, battle state, Hero Lane activation, damage, ability charge, enemy intent/action, and turn results.
 - A `BattlePresenter` that coordinates the fixed prototype battle without platform, save, ad, or SDK code.
-- Two-click tile swapping through `BoardInputController`.
+- Hybrid tile swapping through `BoardInputController`: two-click fallback, mouse drag, and touch/swipe style input.
+- Input locking during turn processing and after victory/defeat.
 - Live HUD, enemy, and hero updates.
 - Basic victory/defeat overlay with restart flow.
 - Headless board core tests in `scripts/tests/board_core_test.gd`.
 - Headless battle core tests in `scripts/tests/battle_core_test.gd`.
 - Playable battle smoke test in `scripts/tests/playable_battle_smoke_test.gd`.
+- Board input controller tests in `scripts/tests/board_input_controller_test.gd`.
 - Documentation for future implementation rules.
 
 This stage excludes:
 
-- Drag/swipe input and tile animations.
+- Tile animations, advanced gesture polish, and sound.
 - Real abilities, upgrades, hero selection UI, and progression.
 - Saves, ads, payments, Yandex SDK, RuStore, Android-specific code, and final art.
 
@@ -56,7 +58,7 @@ This stage excludes:
 2. Import or open this folder as a Godot project.
 3. Run the project. The configured main scene is `res://scenes/app/App.tscn`.
 4. Press Play on the main menu to start the fixed prototype battle.
-5. Click one tile, then click a neighboring tile to attempt a swap.
+5. Click one tile, then click a neighboring tile to attempt a swap, or drag/swipe from a tile toward a neighbor.
 6. Press Menu to return to the main menu.
 
 ## Board Core Tests
@@ -79,8 +81,14 @@ Run the playable battle smoke test with:
 godot --headless --script res://scripts/tests/playable_battle_smoke_test.gd
 ```
 
+Run the board input controller test with:
+
+```bash
+godot --headless --script res://scripts/tests/board_input_controller_test.gd
+```
+
 ## Next Planned Stages
 
-- Improve input with drag/swipe.
 - Add basic board animations for swap, clear, fall, and refill.
+- Improve turn feedback and gesture polish.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.

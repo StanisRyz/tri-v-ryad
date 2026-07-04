@@ -2,6 +2,7 @@ extends Button
 class_name TileView
 
 signal tile_pressed(cell: Vector2i)
+signal tile_drag_released(cell: Vector2i, drag_delta: Vector2)
 
 const TILE_COLORS := {
 	TileType.RED: Color(0.86, 0.22, 0.22, 1.0),
@@ -14,11 +15,15 @@ const TILE_COLORS := {
 var board_cell := Vector2i.ZERO
 var tile_type := BoardModel.EMPTY
 var _is_selected := false
+var _press_start_position := Vector2.ZERO
+var _has_press_start := false
+var _suppress_next_pressed := false
 
 
 func _ready() -> void:
 	custom_minimum_size = Vector2(48, 48)
 	focus_mode = Control.FOCUS_NONE
+	gui_input.connect(_on_gui_input)
 	if not pressed.is_connected(_on_pressed):
 		pressed.connect(_on_pressed)
 	_apply_visuals()
@@ -36,7 +41,42 @@ func set_selected(selected: bool) -> void:
 
 
 func _on_pressed() -> void:
+	if _suppress_next_pressed:
+		_suppress_next_pressed = false
+		return
+
 	tile_pressed.emit(board_cell)
+
+
+func _on_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		var mouse_event := event as InputEventMouseButton
+		if mouse_event.pressed:
+			_start_pointer(mouse_event.position)
+		else:
+			_release_pointer(mouse_event.position)
+	elif event is InputEventScreenTouch:
+		var touch_event := event as InputEventScreenTouch
+		if touch_event.pressed:
+			_start_pointer(touch_event.position)
+		else:
+			_release_pointer(touch_event.position)
+
+
+func _start_pointer(pointer_position: Vector2) -> void:
+	_press_start_position = pointer_position
+	_has_press_start = true
+
+
+func _release_pointer(pointer_position: Vector2) -> void:
+	if not _has_press_start:
+		return
+
+	var drag_delta := pointer_position - _press_start_position
+	_has_press_start = false
+	if drag_delta.length() > 0.0:
+		_suppress_next_pressed = true
+		tile_drag_released.emit(board_cell, drag_delta)
 
 
 func _apply_visuals() -> void:

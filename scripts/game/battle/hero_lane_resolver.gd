@@ -32,4 +32,4 @@ func _get_lane_index_for_cell(cell: Vector2i) -> int:
 	if cell.x < 0 or cell.x >= LANE_WIDTH * LANE_COUNT:
 		return -1
 
-	return cell.x / LANE_WIDTH
+	return int(cell.x / float(LANE_WIDTH))

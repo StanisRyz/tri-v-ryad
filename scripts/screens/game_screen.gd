@@ -69,9 +69,11 @@ func _setup_playable_battle() -> void:
 	_input_controller = BOARD_INPUT_CONTROLLER_SCRIPT.new()
 
 	board_view.tile_pressed.connect(_input_controller.handle_tile_pressed)
-	_input_controller.swap_requested.connect(_presenter.request_swap)
+	board_view.tile_drag_released.connect(_input_controller.handle_tile_drag_released)
+	_input_controller.swap_requested.connect(_on_swap_requested)
 	_input_controller.selection_changed.connect(_on_selection_changed)
 	_input_controller.selection_cleared.connect(_on_selection_cleared)
+	_input_controller.invalid_input.connect(_on_invalid_input)
 
 	_presenter.board_changed.connect(_on_board_changed)
 	_presenter.battle_state_changed.connect(_on_battle_state_changed)
@@ -108,6 +110,9 @@ func _on_battle_state_changed(state: BattleState) -> void:
 
 
 func _on_turn_resolved(result: BattleTurnResult) -> void:
+	if not _presenter.is_battle_finished():
+		_input_controller.set_input_enabled(true)
+
 	board_view.highlight_lanes(result.lane_activations)
 	if result.total_damage_to_enemy <= 0:
 		_set_status("Turn resolved")
@@ -121,6 +126,9 @@ func _on_turn_resolved(result: BattleTurnResult) -> void:
 
 
 func _on_invalid_swap(reason: String) -> void:
+	if not _presenter.is_battle_finished():
+		_input_controller.set_input_enabled(true)
+
 	board_view.clear_lane_highlights()
 	_set_status("No match" if reason == "no_match" else "Invalid swap")
 
@@ -143,6 +151,22 @@ func _on_selection_changed(cell: Vector2i) -> void:
 func _on_selection_cleared() -> void:
 	board_view.clear_selected_cell()
 	_set_status("Select a tile")
+
+
+func _on_invalid_input(reason: String) -> void:
+	var messages := {
+		"swipe_too_short": "Swipe too short",
+		"outside_board": "Outside board",
+		"input_locked": "Input locked",
+	}
+	_set_status(messages.get(reason, "Invalid input"))
+
+
+func _on_swap_requested(from_cell: Vector2i, to_cell: Vector2i) -> void:
+	_input_controller.set_input_enabled(false)
+	board_view.clear_lane_highlights()
+	_set_status("Resolving turn")
+	_presenter.request_swap(from_cell, to_cell)
 
 
 func _on_restart_pressed() -> void:

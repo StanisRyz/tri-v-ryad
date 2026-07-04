@@ -2,7 +2,7 @@
 
 This is a Godot match-3 battle project intended for Yandex Games. The default layout is vertical 9:16 portrait with a 720x1280 base resolution.
 
-The current stage is a first playable battle prototype. `GameScreen` is allowed to use `BattlePresenter`, but the board core and battle core must remain separate from UI implementation details.
+The current stage is a mobile-friendly playable battle prototype. `GameScreen` is allowed to wire `BattlePresenter`, `BoardView`, and `BoardInputController`, but the board core and battle core must remain separate from UI implementation details.
 
 ## Project Rules
 
@@ -42,10 +42,15 @@ The current stage is a first playable battle prototype. `GameScreen` is allowed 
 - `AbilityChargeResolver` must not implement real abilities yet.
 - `EnemyActionResolver` must stay deterministic and simple for now.
 - `BoardView` presents `BoardModel` but must not implement match rules.
-- `TileView` is visual only.
-- `BoardInputController` handles selection only, not swap logic.
+- `TileView` may detect pointer/touch gestures but must not validate gameplay rules.
+- `BoardView` forwards input events and presents board state only.
+- `BoardInputController` owns click/drag selection logic, not swap validation.
+- `GameScreen` wires signals but must not implement input rules.
+- Drag/swipe input must not duplicate swap requests.
+- Input must be locked during turn processing.
 - `BattlePresenter` coordinates prototype flow but must keep SDK, saves, ads, and payments out.
 - Cascade damage is future work and must not be added unless explicitly requested.
+- Animations remain future work unless explicitly requested.
 
 ## Platform Boundaries
 
@@ -58,7 +63,6 @@ The current stage is a first playable battle prototype. `GameScreen` is allowed 
 
 ## Current Exclusions
 
-- No drag/swipe input.
 - No tile swap, clear, fall, or refill animations.
 - No real abilities or upgrades.
 - No save system.

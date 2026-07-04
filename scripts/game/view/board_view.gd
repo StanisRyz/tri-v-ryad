@@ -2,6 +2,7 @@ extends Control
 class_name BoardView
 
 signal tile_pressed(cell: Vector2i)
+signal tile_drag_released(cell: Vector2i, drag_delta: Vector2)
 
 const TILE_VIEW_SCENE := preload("res://scenes/game/TileView.tscn")
 const BOARD_SIZE := 9
@@ -103,12 +104,17 @@ func _create_tiles() -> void:
 			tile.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			tile.size_flags_vertical = Control.SIZE_EXPAND_FILL
 			tile.tile_pressed.connect(_on_tile_pressed)
+			tile.tile_drag_released.connect(_on_tile_drag_released)
 			tile_grid.add_child(tile)
 			_tile_views[cell] = tile
 
 
 func _on_tile_pressed(cell: Vector2i) -> void:
 	tile_pressed.emit(cell)
+
+
+func _on_tile_drag_released(cell: Vector2i, drag_delta: Vector2) -> void:
+	tile_drag_released.emit(cell, drag_delta)
 
 
 func _update_grid_rect() -> void:
