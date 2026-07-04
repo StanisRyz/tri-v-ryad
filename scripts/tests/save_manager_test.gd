@@ -23,12 +23,40 @@ func _initialize() -> void:
 	progress.add_upgrade_points(3)
 	progress.get_hero_upgrade("hero_1").attack_level = 2
 	progress.get_hero_upgrade("hero_2").hp_level = 1
+	var level_state = progress.ensure_level_progress("level_1")
+	level_state.completed = true
+	level_state.stars = 3
+	level_state.best_moves_left = 12
+	progress.set_level_progress("level_1", level_state)
 	_expect_true(save_manager.save_progress(progress), "save_progress succeeds")
 
 	var loaded = save_manager.load_progress()
 	_expect_equal(loaded.upgrade_points, 3, "saved progress loads with upgrade points")
 	_expect_equal(loaded.get_hero_upgrade("hero_1").attack_level, 2, "saved attack upgrade loads correctly")
 	_expect_equal(loaded.get_hero_upgrade("hero_2").hp_level, 1, "saved hp upgrade loads correctly")
+	_expect_equal(loaded.get_level_stars("level_1"), 3, "saved level stars load correctly")
+	_expect_equal(loaded.get_level_progress("level_1").best_moves_left, 12, "saved best moves load correctly")
+
+	var old_save_file := FileAccess.open(TEST_SAVE_PATH, FileAccess.WRITE)
+	old_save_file.store_string(JSON.stringify({
+		"save_version": 1,
+		"upgrade_points": 4,
+		"hero_upgrades": {
+			"hero_1": {
+				"hero_id": "hero_1",
+				"attack_level": 2,
+				"hp_level": 0,
+			},
+		},
+		"completed_levels": {
+			"level_2": true,
+		},
+	}))
+	old_save_file.close()
+	var old_loaded = save_manager.load_progress()
+	_expect_equal(old_loaded.get_hero_upgrade("hero_1").attack_level, 2, "old save keeps hero upgrade data")
+	_expect_true(old_loaded.is_level_completed("level_2"), "old save without level_progress loads completed level")
+	_expect_equal(old_loaded.get_level_stars("level_2"), 1, "old save without level_progress migrates stars")
 
 	var file := FileAccess.open(TEST_SAVE_PATH, FileAccess.WRITE)
 	file.store_string("{invalid json")

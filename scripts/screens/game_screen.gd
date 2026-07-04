@@ -29,6 +29,8 @@ var _current_level_name := "Level 1"
 var _progress_manager
 var _reward_granted_for_current_battle := false
 var _last_reward_amount := 0
+var _completion_saved_for_current_battle := false
+var _last_stars_earned := 0
 
 func _ready() -> void:
 	if not menu_button.pressed.is_connected(_on_menu_button_pressed):
@@ -114,6 +116,8 @@ func _start_new_battle() -> void:
 	_feedback_active = false
 	_reward_granted_for_current_battle = false
 	_last_reward_amount = 0
+	_completion_saved_for_current_battle = false
+	_last_stars_earned = 0
 	result_overlay.hide_result()
 	board_view.clear_lane_highlights()
 	board_view.clear_cell_highlights()
@@ -183,8 +187,9 @@ func _show_battle_result(status: int) -> void:
 	_input_controller.set_input_enabled(false)
 	if status == BattleState.Status.VICTORY:
 		_grant_victory_reward_once()
+		_save_victory_completion_once()
 		_set_status("Victory")
-		result_overlay.show_victory(_last_reward_amount)
+		result_overlay.show_victory(_last_reward_amount, _last_stars_earned)
 	elif status == BattleState.Status.DEFEAT:
 		_set_status("Defeat")
 		result_overlay.show_defeat()
@@ -200,6 +205,20 @@ func _grant_victory_reward_once() -> void:
 		return
 
 	_last_reward_amount = _progress_manager.add_victory_reward(_presenter.current_level_config)
+
+
+func _save_victory_completion_once() -> void:
+	if _completion_saved_for_current_battle:
+		return
+
+	_completion_saved_for_current_battle = true
+	_last_stars_earned = 0
+	if _progress_manager == null or _presenter == null or _presenter.current_level_config == null or _presenter.state == null:
+		return
+
+	var state = _progress_manager.complete_level(_presenter.current_level_config, _presenter.state.moves_left)
+	if state != null:
+		_last_stars_earned = state.stars
 
 
 func _on_selection_changed(cell: Vector2i) -> void:

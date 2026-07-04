@@ -2,7 +2,7 @@
 
 This is a Godot match-3 battle project intended for Yandex Games. The default layout is vertical 9:16 portrait with a 720x1280 base resolution.
 
-The current stage is a playable battle prototype with upgrade points, hero progression, and local save v0.1. `GameScreen` is allowed to wire `BattlePresenter`, `BoardView`, `BoardInputController`, `TurnFeedbackPresenter`, `AbilityFeedbackPresenter`, and result-flow reward grants through `ProgressManager`, but the board core, battle core, config layer, progression layer, and save layer must remain separate from UI implementation details.
+The current stage is a playable battle prototype with saved level completion, stars, sequential unlocks, upgrade points, hero progression, and local save v0.1. `GameScreen` is allowed to wire `BattlePresenter`, `BoardView`, `BoardInputController`, `TurnFeedbackPresenter`, `AbilityFeedbackPresenter`, and result-flow reward/completion calls through `ProgressManager`, but the board core, battle core, config layer, progression layer, and save layer must remain separate from UI implementation details.
 
 ## Project Rules
 
@@ -70,17 +70,24 @@ The current stage is a playable battle prototype with upgrade points, hero progr
 - Config classes must remain UI-independent.
 - `BattleFactory` creates `BattleState` from configs.
 - Progression logic lives under `scripts/game/progression/`.
+- Level progress logic belongs under `scripts/game/progression/`.
 - Save logic lives under `scripts/game/save/`.
 - Screens must not read or write save files directly.
 - Use `ProgressManager` for progress operations.
+- `ProgressManager` is the boundary for level completion operations.
 - `SaveManager` is local-only in v0.1.
 - `PlayerProgress` is mutable player data.
+- `LevelProgressState` stores saved level result data.
+- `LevelCompletionResolver` owns star and unlock rules.
 - `HeroConfig` remains immutable base data.
 - `BattleFactory` combines `HeroConfig` with `PlayerProgress`.
 - Do not mutate `HeroConfig` for player upgrades.
 - `BattlePresenter` starts levels but must not store hardcoded enemy or hero definitions.
-- `LevelSelectScreen` only selects `level_id` and must not create `BattleState`.
-- Do not add level unlocks, stars, one-time rewards, or complex economy unless explicitly requested.
+- `LevelSelectScreen` only selects `level_id`, displays level progress, and must not create `BattleState`.
+- `LevelSelectScreen` must not own unlock rules.
+- Rewards remain repeatable in v0.1.
+- Do not add one-time rewards, stars-based rewards, level map, chapters, or complex economy unless explicitly requested.
+- UpgradeScreen rework is future work and must not be mixed into campaign progression patches.
 
 ## Platform Boundaries
 
@@ -97,8 +104,8 @@ The current stage is a playable battle prototype with upgrade points, hero progr
 - No tile swap, clear, fall, or refill animations.
 - No full cascade animations.
 - No sound or particles.
-- No target selection, cooldowns, ability upgrades, level unlocks, or hero selection.
-- No level unlocks, stars, one-time rewards, complex economy, or complex objectives.
+- No target selection, cooldowns, ability upgrades, or hero selection.
+- No one-time rewards, stars-based rewards, level map, chapters, complex economy, or complex objectives.
 - No cloud save.
 - No ads or monetization.
 - No Yandex SDK.

@@ -127,7 +127,7 @@ Target selection, cooldowns, ability upgrades, new heroes, cloud saves, and plat
 - `GameScreen` starts the selected level through `BattlePresenter`.
 - Victory and defeat rules stay unchanged.
 
-Unlocks, stars, hero selection, and complex objectives remain future work.
+Hero selection and complex objectives remain future work.
 
 ## Progression v0.1
 
@@ -135,13 +135,28 @@ Unlocks, stars, hero selection, and complex objectives remain future work.
 - Rewards can be earned repeatedly in v0.1.
 - Upgrade points can improve hero attack or HP.
 - Attack level and HP level are stored per hero in `HeroUpgradeState`.
-- `PlayerProgress` stores upgrade points, hero upgrade state, and completed level ids.
+- `PlayerProgress` stores upgrade points, hero upgrade state, and level progress.
 - Progress saves locally to `user://save_v1.json`.
 - `BattleFactory` applies saved attack and HP levels to future battle heroes.
 - `HeroConfig` remains base data and is not mutated by upgrades.
-- There are no level unlocks or stars yet.
+- Upgrade rewards remain repeatable in v0.1.
 
-Cloud save, Yandex SDK integration, level unlocks, stars, one-time rewards, hero selection, and complex economy remain future work.
+Cloud save, Yandex SDK integration, one-time rewards, stars-based rewards, hero selection, and complex economy remain future work.
+
+## Campaign Progression v0.1
+
+- Level 1 is always unlocked.
+- Each next level unlocks after the previous level is completed.
+- Victory saves level completion.
+- Defeat does not complete a level and does not unlock the next level.
+- Stars are based on remaining moves at victory.
+- 1 star is awarded for any victory.
+- 2 stars are awarded when at least 25% of level moves remain.
+- 3 stars are awarded when at least 50% of level moves remain.
+- Best stars and best remaining moves are preserved across replays.
+- Local save stores level progress in `user://save_v1.json`.
+
+One-time rewards, level map, chapters, stars-based rewards, and UpgradeScreen rework remain future work.
 
 ## MVP Exclusions
 
@@ -151,7 +166,9 @@ Cloud save, Yandex SDK integration, level unlocks, stars, one-time rewards, hero
 - No RuStore or Android-specific code.
 - No final art.
 - No complex meta progression.
-- No level unlocks, stars, or one-time rewards.
+- No one-time rewards or stars-based rewards.
+- No level map or chapters.
+- No UpgradeScreen rework.
 - No cloud save.
 - No target selection or ability upgrades.
 - No full cascade animations.

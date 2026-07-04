@@ -18,14 +18,18 @@ var _progress_manager
 func _ready() -> void:
 	back_button.pressed.connect(_on_back_button_pressed)
 	upgrades_button.pressed.connect(_on_upgrades_button_pressed)
-	_build_level_buttons()
-	_refresh_points()
+	_refresh()
 
 
 func set_progress_manager(progress_manager) -> void:
 	_progress_manager = progress_manager
 	if is_inside_tree():
-		_refresh_points()
+		_refresh()
+
+
+func _refresh() -> void:
+	_refresh_points()
+	_build_level_buttons()
 
 
 func _build_level_buttons() -> void:
@@ -34,9 +38,20 @@ func _build_level_buttons() -> void:
 
 	for level_config in _level_catalog.get_all_levels():
 		var button := Button.new()
-		button.custom_minimum_size = Vector2(360, 58)
-		button.text = level_config.display_name
-		button.pressed.connect(_on_level_button_pressed.bind(level_config.level_id))
+		var unlocked := _is_level_unlocked(level_config.level_id)
+		var completed := _is_level_completed(level_config.level_id)
+		var stars := _get_level_stars(level_config.level_id)
+		var status := "Locked"
+		if completed:
+			status = "Completed"
+		elif unlocked:
+			status = "Open"
+
+		button.custom_minimum_size = Vector2(420, 74)
+		button.text = "%s\n%s | Stars: %d/3" % [level_config.display_name, status, stars]
+		button.disabled = not unlocked
+		if unlocked:
+			button.pressed.connect(_on_level_button_pressed.bind(level_config.level_id))
 		level_buttons.add_child(button)
 
 
@@ -58,3 +73,21 @@ func _refresh_points() -> void:
 		return
 
 	points_label.text = "Upgrade points: %d" % _progress_manager.get_upgrade_points()
+
+
+func _is_level_unlocked(level_id: String) -> bool:
+	if _progress_manager == null:
+		return level_id == _level_catalog.get_default_level_id()
+	return _progress_manager.is_level_unlocked(_level_catalog, level_id)
+
+
+func _is_level_completed(level_id: String) -> bool:
+	if _progress_manager == null:
+		return false
+	return _progress_manager.is_level_completed(level_id)
+
+
+func _get_level_stars(level_id: String) -> int:
+	if _progress_manager == null:
+		return 0
+	return _progress_manager.get_level_stars(level_id)

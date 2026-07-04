@@ -7,6 +7,7 @@ signal upgrades_pressed
 
 @onready var result_label: Label = %ResultLabel
 @onready var reward_label: Label = %RewardLabel
+@onready var stars_label: Label = %StarsLabel
 @onready var restart_button: Button = %RestartButton
 @onready var upgrades_button: Button = %UpgradesButton
 @onready var menu_button: Button = %ResultMenuButton
@@ -19,9 +20,11 @@ func _ready() -> void:
 	hide_result()
 
 
-func show_victory(reward_points: int = 0) -> void:
+func show_victory(reward_points: int = 0, stars: int = 0) -> void:
 	result_label.text = "Victory"
 	reward_label.text = "Reward: +%d upgrade points" % max(0, reward_points)
+	stars_label.text = "Stars: %d/3" % clampi(stars, 0, 3)
+	stars_label.visible = true
 	upgrades_button.visible = true
 	upgrades_button.disabled = false
 	visible = true
@@ -30,6 +33,8 @@ func show_victory(reward_points: int = 0) -> void:
 func show_defeat() -> void:
 	result_label.text = "Defeat"
 	reward_label.text = "No reward"
+	stars_label.text = ""
+	stars_label.visible = false
 	upgrades_button.visible = false
 	upgrades_button.disabled = true
 	visible = true

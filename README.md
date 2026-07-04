@@ -2,7 +2,7 @@
 
 Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
-The project is currently in the Upgrade Points, Hero Progression, and Local Save v0.1 stage. It defines the app shell, simple screen navigation, a level select flow, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, three starter hero abilities, data-driven test battles, and a first local meta-progression layer for a vertical 9:16 game.
+The project is currently in the Saved Level Completion, Stars, and Unlocks v0.1 stage. It defines the app shell, simple screen navigation, a level select flow, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, three starter hero abilities, data-driven test battles, local hero upgrades, and saved campaign progress for a vertical 9:16 game.
 
 ## Project Direction
 
@@ -39,9 +39,14 @@ This stage includes:
 - Data-driven configs under `scripts/game/config/`: `HeroConfig`, `EnemyConfig`, `LevelConfig`, and `LevelCatalog`.
 - `BattleFactory` creates battle state from level configs.
 - Local progression under `scripts/game/progression/`: `PlayerProgress`, `HeroUpgradeState`, `UpgradeResolver`, and `ProgressManager`.
+- Saved level progress under `scripts/game/progression/`: `LevelProgressState` and `LevelCompletionResolver`.
 - Local save handling under `scripts/game/save/` with `SaveManager`.
-- Progress is saved locally to `user://save_v1.json`.
+- Progress, completion, stars, and hero upgrades are saved locally to `user://save_v1.json`.
 - Victory grants `LevelConfig.reward_upgrade_points`, and rewards can be earned repeatedly in v0.1.
+- Victory saves level completion and stars based on remaining moves.
+- Best stars and best remaining moves are preserved across replays.
+- Sequential unlocks open each next level after the previous level is completed.
+- `LevelSelectScreen` shows locked, open, completed, and star state for each level.
 - Upgrade points can raise each hero's attack level or HP level.
 - `UpgradeScreen` shows current points, hero upgrade levels, derived attack/HP values, and upgrade buttons.
 - `BattleFactory` combines base `HeroConfig` data with mutable `PlayerProgress` when creating battle heroes.
@@ -68,13 +73,14 @@ This stage includes:
 - Progression tests in `scripts/tests/progression_test.gd`.
 - Save manager tests in `scripts/tests/save_manager_test.gd`.
 - Battle factory progress tests in `scripts/tests/battle_factory_progress_test.gd`.
+- Level completion tests in `scripts/tests/level_completion_test.gd`.
 - Documentation for future implementation rules.
 
 This stage excludes:
 
 - Full cascade animations, real tile movement, particles, sound, and final art.
-- Target selection, cooldowns, ability upgrades, hero selection UI, and level unlocks.
-- Level unlocks, stars, one-time rewards, complex economy, and complex objectives.
+- Target selection, cooldowns, ability upgrades, and hero selection UI.
+- One-time rewards, stars-based rewards, level map, chapters, complex economy, and complex objectives.
 - Cloud saves, ads, payments, Yandex SDK, RuStore, Android-specific code, and final art.
 
 ## How To Open And Run
@@ -85,8 +91,9 @@ This stage excludes:
 4. Press Play on the main menu to open level select.
 5. Choose a level to start that battle.
 6. Click one tile, then click a neighboring tile to attempt a swap, or drag/swipe from a tile toward a neighbor.
-7. Win a battle to earn upgrade points, then open Upgrades from level select or the victory overlay.
-8. Press Menu to return to level select.
+7. Win a battle to earn upgrade points, save completion, earn stars, and unlock the next level.
+8. Open Upgrades from level select or the victory overlay.
+9. Press Menu to return to level select.
 
 ## Board Core Tests
 
@@ -162,8 +169,13 @@ Run the battle factory progress test with:
 godot --headless --script res://scripts/tests/battle_factory_progress_test.gd
 ```
 
+Run the level completion test with:
+
+```bash
+godot --headless --script res://scripts/tests/level_completion_test.gd
+```
+
 ## Next Planned Stages
 
-- Saved level completion and unlocks.
 - Improve board animation polish for swap, clear, fall, and refill.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.
