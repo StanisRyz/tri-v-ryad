@@ -67,7 +67,21 @@ Hero Lanes remain future battle logic. The current board core stores exact match
 - Victory occurs when enemy HP reaches 0.
 - Defeat occurs when moves run out or all heroes are dead.
 
-Visual integration, animations, real abilities, hero selection, upgrades, and platform systems remain future work.
+Animations, real abilities, hero selection, upgrades, and platform systems remain future work.
+
+## First Playable Prototype v0.1
+
+- The prototype runs one fixed test battle.
+- The 9x9 board is displayed with placeholder colored tiles.
+- Input uses two-click swapping: select one tile, then select a neighboring tile.
+- Valid swaps trigger hero damage and ability charge from the initial swap matches.
+- Cascades stabilize the board but do not deal damage yet.
+- Enemy attacks through simple intent timing.
+- The battle shows live HUD, enemy, and hero updates.
+- Victory and defeat show a result overlay.
+- Restart starts a fresh fixed test battle.
+
+Drag/swipe input, animations, real abilities, upgrades, hero selection, and platform systems remain future work.
 
 ## Future Progression
 
@@ -84,5 +98,5 @@ Complex meta progression is not part of the foundation stage.
 - No final art.
 - No complex meta progression.
 - No real abilities.
-- No visual tiles or board input.
-- No GameScreen integration with board or battle core.
+- No drag/swipe input.
+- No board animations.

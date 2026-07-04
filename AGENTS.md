@@ -2,7 +2,7 @@
 
 This is a Godot match-3 battle project intended for Yandex Games. The default layout is vertical 9:16 portrait with a 720x1280 base resolution.
 
-The current stage has UI-independent 9x9 board core and battle core logic. Do not connect these systems to UI unless a future task explicitly asks for it.
+The current stage is a first playable battle prototype. `GameScreen` is allowed to use `BattlePresenter`, but the board core and battle core must remain separate from UI implementation details.
 
 ## Project Rules
 
@@ -16,8 +16,7 @@ The current stage has UI-independent 9x9 board core and battle core logic. Do no
 - Keep platform SDK logic separate from gameplay.
 - Do not add third-party plugins without explicit request.
 - Do not add generated heavy files.
-- Do not connect board core to `GameScreen` until explicitly requested.
-- Do not connect battle core to `GameScreen` until explicitly requested.
+- `GameScreen` may use `BattlePresenter`, but must not directly own board or battle rule details.
 
 ## Gameplay Direction
 
@@ -42,6 +41,11 @@ The current stage has UI-independent 9x9 board core and battle core logic. Do no
 - `DamageResolver` must not implement UI animation.
 - `AbilityChargeResolver` must not implement real abilities yet.
 - `EnemyActionResolver` must stay deterministic and simple for now.
+- `BoardView` presents `BoardModel` but must not implement match rules.
+- `TileView` is visual only.
+- `BoardInputController` handles selection only, not swap logic.
+- `BattlePresenter` coordinates prototype flow but must keep SDK, saves, ads, and payments out.
+- Cascade damage is future work and must not be added unless explicitly requested.
 
 ## Platform Boundaries
 
@@ -54,10 +58,9 @@ The current stage has UI-independent 9x9 board core and battle core logic. Do no
 
 ## Current Exclusions
 
-- No GameScreen-driven battle state or visual battle integration.
+- No drag/swipe input.
+- No tile swap, clear, fall, or refill animations.
 - No real abilities or upgrades.
-- No visual tiles or board input.
-- No GameScreen integration with board or battle core.
 - No save system.
 - No ads or monetization.
 - No Yandex SDK.

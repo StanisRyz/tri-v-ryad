@@ -2,7 +2,7 @@
 
 Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
-The project is currently in the Battle Core with Hero Lanes stage. It defines the app shell, simple screen navigation, structured placeholder battle UI, UI-independent board logic, and UI-independent battle logic for a vertical 9:16 game. GameScreen integration and visual tile interaction are intentionally not implemented yet.
+The project is currently in the First Playable Battle Prototype stage. It defines the app shell, simple screen navigation, a playable 9x9 board with placeholder tiles, two-click swapping, UI-independent board and battle logic, and a fixed test battle for a vertical 9:16 game.
 
 ## Project Direction
 
@@ -30,19 +30,23 @@ This stage includes:
 - A Godot project with `scenes/app/App.tscn` as the main scene.
 - A minimal screen router.
 - A main menu placeholder with a Play button.
-- A structured battle screen placeholder with a HUD, enemy panel, visual 9x9 board frame, hero lane divisions, hero party panel, and a Menu button.
-- Reusable UI components: `BattleHud`, `EnemyPanel`, `BoardFrame`, `HeroPartyPanel`, and `HeroCard`.
+- A playable battle screen with a HUD, enemy panel, 9x9 `BoardView`, placeholder `TileView` tiles, hero party panel, status text, result overlay, and a Menu button.
+- Reusable UI components: `BattleHud`, `EnemyPanel`, `HeroPartyPanel`, `HeroCard`, and `BattleResultOverlay`.
 - A lightweight `LayoutManager` for UI-only portrait and landscape layout decisions.
 - UI-independent board generation, match detection, swap validation, gravity/refill, and cascade resolution under `scripts/game/board/`.
 - UI-independent battle logic under `scripts/game/battle/`: heroes, enemy, battle state, Hero Lane activation, damage, ability charge, enemy intent/action, and turn results.
+- A `BattlePresenter` that coordinates the fixed prototype battle without platform, save, ad, or SDK code.
+- Two-click tile swapping through `BoardInputController`.
+- Live HUD, enemy, and hero updates.
+- Basic victory/defeat overlay with restart flow.
 - Headless board core tests in `scripts/tests/board_core_test.gd`.
 - Headless battle core tests in `scripts/tests/battle_core_test.gd`.
+- Playable battle smoke test in `scripts/tests/playable_battle_smoke_test.gd`.
 - Documentation for future implementation rules.
 
 This stage excludes:
 
-- Visual tiles and player input.
-- GameScreen integration with board or battle core.
+- Drag/swipe input and tile animations.
 - Real abilities, upgrades, hero selection UI, and progression.
 - Saves, ads, payments, Yandex SDK, RuStore, Android-specific code, and final art.
 
@@ -51,8 +55,9 @@ This stage excludes:
 1. Open Godot 4.x.
 2. Import or open this folder as a Godot project.
 3. Run the project. The configured main scene is `res://scenes/app/App.tscn`.
-4. Press Play on the main menu to view the placeholder game screen.
-5. Press Menu to return to the main menu.
+4. Press Play on the main menu to start the fixed prototype battle.
+5. Click one tile, then click a neighboring tile to attempt a swap.
+6. Press Menu to return to the main menu.
 
 ## Board Core Tests
 
@@ -68,9 +73,14 @@ Run the battle core test script with:
 godot --headless --script res://scripts/tests/battle_core_test.gd
 ```
 
+Run the playable battle smoke test with:
+
+```bash
+godot --headless --script res://scripts/tests/playable_battle_smoke_test.gd
+```
+
 ## Next Planned Stages
 
-- First playable battle prototype.
-- Board model to tile view connection when explicitly requested.
-- Match input and visual tile interaction.
+- Improve input with drag/swipe.
+- Add basic board animations for swap, clear, fall, and refill.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.

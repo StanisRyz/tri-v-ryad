@@ -1,10 +1,11 @@
-[gd_scene load_steps=6 format=3 uid="uid://dsqit1j6lh7mq"]
+[gd_scene load_steps=7 format=3 uid="uid://dsqit1j6lh7mq"]
 
 [ext_resource type="Script" path="res://scripts/screens/game_screen.gd" id="1_jyptq"]
 [ext_resource type="PackedScene" path="res://scenes/ui/BattleHud.tscn" id="2_2dfvm"]
 [ext_resource type="PackedScene" path="res://scenes/ui/EnemyPanel.tscn" id="3_746sx"]
-[ext_resource type="PackedScene" path="res://scenes/ui/BoardFrame.tscn" id="4_f7wwi"]
+[ext_resource type="PackedScene" path="res://scenes/game/BoardView.tscn" id="4_4hyiu"]
 [ext_resource type="PackedScene" path="res://scenes/ui/HeroPartyPanel.tscn" id="5_uw1i4"]
+[ext_resource type="PackedScene" path="res://scenes/ui/BattleResultOverlay.tscn" id="6_mdu30"]
 
 [node name="GameScreen" type="Control"]
 layout_mode = 3
@@ -43,7 +44,7 @@ layout_mode = 2
 unique_name_in_owner = true
 custom_minimum_size = Vector2(664, 0)
 layout_mode = 2
-theme_override_constants/separation = 14
+theme_override_constants/separation = 12
 
 [node name="TopBar" type="HBoxContainer" parent="SafeMargin/BattleCenter/BattleRoot"]
 layout_mode = 2
@@ -68,10 +69,22 @@ layout_mode = 2
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="BoardFrame" parent="SafeMargin/BattleCenter/BattleRoot/BoardArea" instance=ExtResource("4_f7wwi")]
+[node name="BoardView" parent="SafeMargin/BattleCenter/BattleRoot/BoardArea" instance=ExtResource("4_4hyiu")]
 unique_name_in_owner = true
 layout_mode = 2
+
+[node name="StatusLabel" type="Label" parent="SafeMargin/BattleCenter/BattleRoot"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Select a tile"
+horizontal_alignment = 1
+autowrap_mode = 3
 
 [node name="HeroPartyPanel" parent="SafeMargin/BattleCenter/BattleRoot" instance=ExtResource("5_uw1i4")]
 unique_name_in_owner = true
 layout_mode = 2
+
+[node name="BattleResultOverlay" parent="." instance=ExtResource("6_mdu30")]
+unique_name_in_owner = true
+layout_mode = 1

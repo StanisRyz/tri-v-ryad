@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://b6q0fxrumxrdn"]
+
+[ext_resource type="Script" path="res://scripts/game/view/tile_view.gd" id="1_3jjdl"]
+
+[node name="TileView" type="Button"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 3
+anchors_preset = 0
+focus_mode = 0
+script = ExtResource("1_3jjdl")
