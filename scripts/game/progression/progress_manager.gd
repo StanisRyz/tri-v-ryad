@@ -71,6 +71,18 @@ func get_upgrade_points() -> int:
 	return progress.upgrade_points if progress != null else 0
 
 
+func ensure_hero_upgrade(hero_id: String) -> HeroUpgradeState:
+	if progress == null:
+		return null
+	return progress.ensure_hero(hero_id)
+
+
+func get_hero_upgrade(hero_id: String) -> HeroUpgradeState:
+	if progress == null:
+		return null
+	return progress.get_hero_upgrade(hero_id)
+
+
 func add_victory_reward(level_config) -> int:
 	if progress == null or level_config == null:
 		return 0
@@ -107,10 +119,14 @@ func is_level_unlocked(level_catalog, level_id: String) -> bool:
 
 
 func can_upgrade(hero_id: String, stat: String) -> bool:
+	if hero_catalog != null and not hero_catalog.has_hero(hero_id):
+		return false
 	return upgrade_resolver.can_upgrade(progress, hero_id, stat)
 
 
 func upgrade(hero_id: String, stat: String) -> bool:
+	if hero_catalog != null and not hero_catalog.has_hero(hero_id):
+		return false
 	if not upgrade_resolver.upgrade(progress, hero_id, stat):
 		return false
 	save()

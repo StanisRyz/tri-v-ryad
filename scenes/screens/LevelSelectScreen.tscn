@@ -47,9 +47,9 @@ text = "Select Level"
 
 [node name="UpgradesButton" type="Button" parent="SafeMargin/Root/TopBar"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(150, 54)
+custom_minimum_size = Vector2(120, 54)
 layout_mode = 2
-text = "Upgrades"
+text = "Heroes"
 
 [node name="TeamButton" type="Button" parent="SafeMargin/Root/TopBar"]
 unique_name_in_owner = true

@@ -10,9 +10,9 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -180.0
+offset_left = -210.0
 offset_top = -154.0
-offset_right = 180.0
+offset_right = 210.0
 offset_bottom = 154.0
 grow_horizontal = 2
 grow_vertical = 2
@@ -63,10 +63,10 @@ text = "Restart"
 
 [node name="UpgradesButton" type="Button" parent="Margin/Content/Buttons"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(104, 56)
+custom_minimum_size = Vector2(116, 56)
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Upgrades"
+text = "Heroes"
 
 [node name="ResultMenuButton" type="Button" parent="Margin/Content/Buttons"]
 unique_name_in_owner = true

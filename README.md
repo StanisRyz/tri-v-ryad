@@ -2,7 +2,7 @@
 
 Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
-The project is currently in the Hero roster and team selection v0.1 stage. It defines the app shell, simple screen navigation, a level select flow, a saved 5-hero roster/team selection flow, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, first line special tiles, roster ability mappings, data-driven test battles, local hero upgrades, saved campaign progress, and lightweight swap, clear, and refill feedback for a vertical 9:16 game.
+The project is currently in the Character upgrade screen v0.2 from the menu stage. It defines the app shell, simple screen navigation, a level select flow, a saved 5-hero roster/team selection flow, a menu-accessible full roster hero upgrade screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, first line special tiles, roster ability mappings, data-driven test battles, local hero upgrades, saved campaign progress, and lightweight swap, clear, and refill feedback for a vertical 9:16 game.
 
 ## Project Direction
 
@@ -32,6 +32,7 @@ This stage includes:
 - A main menu placeholder with a Play button.
 - A simple `LevelSelectScreen` with 5 test level buttons.
 - A Team button on `LevelSelectScreen` that opens `TeamSelectScreen`.
+- A Heroes button on `LevelSelectScreen` that opens `UpgradeScreen`.
 - `TeamSelectScreen` shows 5 placeholder roster heroes and lets the player save exactly 3 unique selected heroes.
 - A playable battle screen with a HUD, enemy panel, 9x9 `BoardView`, placeholder `TileView` tiles, hero party panel, status text, result overlay, and a Menu button.
 - Reusable UI components: `BattleHud`, `EnemyPanel`, `HeroPartyPanel`, `HeroCard`, and `BattleResultOverlay`.
@@ -64,7 +65,11 @@ This stage includes:
 - Sequential unlocks open each next level after the previous level is completed.
 - `LevelSelectScreen` shows locked, open, completed, and star state for each level.
 - Upgrade points can raise each hero's attack level or HP level.
-- `UpgradeScreen` shows current points, hero upgrade levels, derived attack/HP values, and upgrade buttons.
+- `UpgradeScreen` now acts as the full roster character upgrade screen.
+- `UpgradeScreen` shows all 5 `HeroCatalog` heroes, current upgrade points, ability IDs, attack/HP levels, current attack/HP, next attack/HP previews, and +Attack/+HP buttons.
+- +Attack/+HP purchases go through `ProgressManager` and `UpgradeResolver`.
+- Old saves without `hero_4` or `hero_5` upgrade records are handled safely and create those records when displayed or upgraded.
+- The victory overlay only shows reward/stars and links to Heroes; it does not contain upgrade spending UI.
 - `BattleFactory` combines base `HeroConfig` data with mutable `PlayerProgress` when creating battle heroes.
 - A `BattlePresenter` that coordinates the fixed prototype battle without platform, save, ad, or SDK code.
 - `BattlePresenter.start_level(level_id)` starts selected levels, and Restart preserves the current level.
@@ -105,7 +110,8 @@ This stage excludes:
 
 - Color bombs, wrapped bombs, special + special combos, special battle damage, cascade damage, full cascade-step animation, full falling animation, real tile movement, particles, sound, and final art.
 - Target selection, cooldowns, ability upgrades, gacha, rarity, hero unlocks, hero shards, hero inventory, portraits, final art, drag-and-drop team UI, and complex ability additions.
-- One-time rewards, stars-based rewards, level map, chapters, complex economy, upgrade screen rework, and complex objectives.
+- One-time rewards, stars-based rewards, level map, chapters, complex economy, max upgrade levels, scaling upgrade costs, reset upgrades, and complex objectives.
+- New heroes, hero unlocks, gacha, rarity, shards, ability upgrades, TeamSelectScreen rework, Yandex SDK, cloud save, ads, payments, sound, particles, and final art.
 - Cloud saves, ads, payments, Yandex SDK, RuStore, Android-specific code, and monetization.
 
 ## How To Open And Run
@@ -117,7 +123,7 @@ This stage excludes:
 5. Choose a level to start that battle.
 6. Click one tile, then click a neighboring tile to attempt a swap, or drag/swipe from a tile toward a neighbor.
 7. Win a battle to earn upgrade points, save completion, earn stars, and unlock the next level.
-8. Open Upgrades from level select or the victory overlay.
+8. Open Heroes from level select or the victory overlay.
 9. Open Team from level select to choose and save exactly 3 roster heroes.
 10. Press Menu to return to level select.
 
@@ -225,7 +231,13 @@ Run the battle factory team test with:
 godot --headless --script res://scripts/tests/battle_factory_team_test.gd
 ```
 
+Run the character upgrade screen data test with:
+
+```bash
+godot --headless --script res://scripts/tests/character_upgrade_screen_data_test.gd
+```
+
 ## Next Planned Stages
 
-- Character upgrade screen v0.2 from the menu.
+- Define the next 5 medium-sized stages after Character upgrade screen v0.2.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.

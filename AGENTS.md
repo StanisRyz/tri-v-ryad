@@ -2,7 +2,7 @@
 
 This is a Godot match-3 battle project intended for Yandex Games. The default layout is vertical 9:16 portrait with a 720x1280 base resolution.
 
-The current stage is a playable battle prototype with board animation polish, saved level completion, stars, sequential unlocks, upgrade points, hero progression, and local save v0.1. `GameScreen` is allowed to wire `BattlePresenter`, `BoardView`, `BoardInputController`, `TurnFeedbackPresenter`, `AbilityFeedbackPresenter`, and result-flow reward/completion calls through `ProgressManager`, but the board core, battle core, config layer, progression layer, and save layer must remain separate from UI implementation details.
+The current stage is a playable battle prototype with board animation polish, saved level completion, stars, sequential unlocks, upgrade points, hero progression, character upgrade screen v0.2, and local save v0.1. `GameScreen` is allowed to wire `BattlePresenter`, `BoardView`, `BoardInputController`, `TurnFeedbackPresenter`, `AbilityFeedbackPresenter`, and result-flow reward/completion calls through `ProgressManager`, but the board core, battle core, config layer, progression layer, and save layer must remain separate from UI implementation details.
 
 ## Project Rules
 
@@ -28,6 +28,15 @@ The current stage is a playable battle prototype with board animation polish, sa
 - Hero 3 owns columns 7-9.
 - Future matches will activate heroes based on affected columns.
 - Progression awards upgrade points after victory for hero attack and HP.
+- `UpgradeScreen` is the dedicated character upgrade UI.
+- `UpgradeScreen` must show roster heroes from `HeroCatalog`.
+- `UpgradeScreen` must use `ProgressManager` for upgrade operations.
+- `UpgradeScreen` must not mutate `PlayerProgress` directly.
+- `UpgradeScreen` must not read/write save files directly.
+- `UpgradeResolver` owns upgrade cost and stat rules.
+- Victory overlay must not contain upgrade spending controls.
+- `TeamSelectScreen` remains only for team selection.
+- Do not add max levels, scaling costs, ability upgrades, or hero unlocks unless explicitly requested.
 - `BoardFrame` is only a placeholder visual frame, not the match-3 board model.
 - Future board logic belongs under `scripts/game/board/`.
 - Board logic must remain UI-independent.
@@ -113,8 +122,7 @@ The current stage is a playable battle prototype with board animation polish, sa
 - `LevelSelectScreen` must not own unlock rules.
 - Rewards remain repeatable in v0.1.
 - Do not add one-time rewards, stars-based rewards, level map, chapters, or complex economy unless explicitly requested.
-- UpgradeScreen rework is future work and must not be mixed into campaign progression patches.
-- UpgradeScreen rework remains future work and must not be mixed into hero roster/team selection patches.
+- Upgrade screen spending belongs in `UpgradeScreen`, not in level select, team select, battle UI, or result overlays.
 
 ## Platform Boundaries
 

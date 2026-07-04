@@ -157,7 +157,22 @@ Target selection, cooldowns, ability upgrades, new heroes, cloud saves, and plat
 - All roster heroes have an `ability_id` mapping to the v0.1 abilities.
 - Missing or invalid saved team data uses the default team: Warrior, Guardian, and Healer.
 
-Gacha, rarity, hero unlocks, hero shards, portraits, UpgradeScreen rework, drag-and-drop team UI, and roster balance pass remain future work.
+Gacha, rarity, hero unlocks, hero shards, portraits, drag-and-drop team UI, and roster balance pass remain future work.
+
+## Character Upgrade Screen v0.2
+
+- Upgrade points are spent in the Heroes screen, implemented through the existing `UpgradeScreen` route.
+- All 5 roster heroes from `HeroCatalog` can be upgraded.
+- Attack and HP are upgraded separately.
+- Each hero row shows ability ID, attack level, HP level, current attack, next attack, current max HP, and next max HP.
+- Upgrade purchases go through `ProgressManager` and `UpgradeResolver`.
+- `UpgradeScreen` does not mutate `PlayerProgress` directly and does not read or write save files.
+- Upgrades save locally through the existing progress save flow.
+- Old saves without `hero_4` or `hero_5` upgrade records are handled safely at 0/0 until upgraded.
+- `BattleFactory` uses saved upgraded stats for future battles, including selected `hero_4` and `hero_5`.
+- The victory overlay shows reward/stars and links to the Heroes screen, but does not contain +Attack/+HP spending controls.
+
+Hero unlocks, rarity, gacha, hero shards, ability upgrades, max levels, scaling costs, reset upgrades, equipment, portraits, and final art remain future work.
 
 ## Level System v0.1
 
@@ -182,7 +197,7 @@ Hero selection and complex objectives remain future work.
 - `HeroConfig` remains base data and is not mutated by upgrades.
 - Upgrade rewards remain repeatable in v0.1.
 
-Cloud save, Yandex SDK integration, one-time rewards, stars-based rewards, hero selection, and complex economy remain future work.
+Cloud save, Yandex SDK integration, one-time rewards, stars-based rewards, hero selection, max levels, scaling costs, reset upgrades, and complex economy remain future work.
 
 ## Campaign Progression v0.1
 
@@ -197,7 +212,7 @@ Cloud save, Yandex SDK integration, one-time rewards, stars-based rewards, hero 
 - Best stars and best remaining moves are preserved across replays.
 - Local save stores level progress in `user://save_v1.json`.
 
-One-time rewards, level map, chapters, stars-based rewards, and UpgradeScreen rework remain future work.
+One-time rewards, level map, chapters, stars-based rewards, max upgrade levels, scaling costs, reset upgrades, and deeper upgrade trees remain future work.
 
 ## MVP Exclusions
 
@@ -209,7 +224,7 @@ One-time rewards, level map, chapters, stars-based rewards, and UpgradeScreen re
 - No complex meta progression.
 - No one-time rewards or stars-based rewards.
 - No level map or chapters.
-- No UpgradeScreen rework.
+- No hero unlocks, gacha, rarity, shards, ability upgrades, max upgrade levels, scaling upgrade costs, reset upgrades, equipment, portraits, or final art.
 - No cloud save.
 - No target selection or ability upgrades.
 - No full cascade animations.
