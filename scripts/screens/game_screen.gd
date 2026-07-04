@@ -23,6 +23,8 @@ var _turn_feedback_presenter
 var _ability_feedback_presenter
 var _pending_battle_status := -1
 var _feedback_active := false
+var _current_level_id := "level_1"
+var _current_level_name := "Level 1"
 
 func _ready() -> void:
 	if not menu_button.pressed.is_connected(_on_menu_button_pressed):
@@ -86,6 +88,7 @@ func _setup_playable_battle() -> void:
 
 	_presenter.board_changed.connect(_on_board_changed)
 	_presenter.battle_state_changed.connect(_on_battle_state_changed)
+	_presenter.level_changed.connect(_on_level_changed)
 	_presenter.turn_resolved.connect(_on_turn_resolved)
 	_presenter.turn_presentation_ready.connect(_on_turn_presentation_ready)
 	_presenter.ability_presentation_ready.connect(_on_ability_presentation_ready)
@@ -107,7 +110,7 @@ func _start_new_battle() -> void:
 	board_view.clear_cell_highlights()
 	_input_controller.set_input_enabled(true)
 	_set_status("Select a tile")
-	_presenter.start_new_battle()
+	_presenter.start_level(_current_level_id)
 
 
 func _on_board_changed(board: BoardModel) -> void:
@@ -116,13 +119,18 @@ func _on_board_changed(board: BoardModel) -> void:
 
 func _on_battle_state_changed(state: BattleState) -> void:
 	if battle_hud.has_method("set_values"):
-		battle_hud.set_values("Level 1", "Moves: %d" % state.moves_left)
+		battle_hud.set_values(_current_level_name, "Moves: %d" % state.moves_left)
 
 	if enemy_panel.has_method("set_enemy_state"):
 		enemy_panel.set_enemy_state(state.enemy, state.enemy_intent)
 
 	if hero_party_panel.has_method("set_heroes"):
 		hero_party_panel.set_heroes(state.heroes)
+
+
+func _on_level_changed(level_config) -> void:
+	_current_level_id = level_config.level_id
+	_current_level_name = level_config.display_name
 
 
 func _on_turn_resolved(_result: BattleTurnResult) -> void:
@@ -213,3 +221,9 @@ func _on_restart_pressed() -> void:
 
 func _set_status(message: String) -> void:
 	status_label.text = message
+
+
+func set_level_id(level_id: String) -> void:
+	_current_level_id = level_id if level_id != "" else "level_1"
+	if _presenter != null:
+		_start_new_battle()

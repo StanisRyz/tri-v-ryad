@@ -118,6 +118,17 @@ Full cascade animation, real tile movement, particles, sound, and progression re
 
 Target selection, cooldowns, ability upgrades, new heroes, level configs, saves, and platform systems remain future work.
 
+## Level System v0.1
+
+- Battles are created from data configs.
+- 5 test levels exist.
+- Levels define enemy config, moves, enemy intent, and fixed hero configs.
+- `LevelSelectScreen` chooses a `level_id`.
+- `GameScreen` starts the selected level through `BattlePresenter`.
+- Victory and defeat rules stay unchanged.
+
+Progression, unlocks, stars, upgrade rewards, hero selection, and complex objectives remain future work.
+
 ## Future Progression
 
 After battles, the player will later receive upgrade points. Upgrade points will improve hero attack and HP.
@@ -132,6 +143,7 @@ Complex meta progression is not part of the foundation stage.
 - No RuStore or Android-specific code.
 - No final art.
 - No complex meta progression.
+- No saved level completion, unlocks, stars, or upgrade rewards.
 - No target selection or ability upgrades.
 - No full cascade animations.
 - No real tile movement.

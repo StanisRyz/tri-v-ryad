@@ -5,9 +5,12 @@ const TURN_PRESENTATION_DATA_SCRIPT := preload("res://scripts/game/presentation/
 const ABILITY_PRESENTER_DATA_SCRIPT := preload("res://scripts/game/presentation/ability_presentation_data.gd")
 const ABILITY_RESULT_SCRIPT := preload("res://scripts/game/battle/ability_result.gd")
 const ABILITY_RESOLVER_SCRIPT := preload("res://scripts/game/battle/ability_resolver.gd")
+const LEVEL_CATALOG_SCRIPT := preload("res://scripts/game/config/level_catalog.gd")
+const BATTLE_FACTORY_SCRIPT := preload("res://scripts/game/battle/battle_factory.gd")
 
 signal board_changed(board: BoardModel)
 signal battle_state_changed(state: BattleState)
+signal level_changed(level_config)
 signal turn_resolved(result: BattleTurnResult)
 signal turn_presentation_ready(data)
 signal ability_presentation_ready(data)
@@ -16,17 +19,30 @@ signal battle_finished(status: int)
 
 var board: BoardModel
 var state: BattleState
+var current_level_config
+var current_level_id := ""
 
 var _board_generator := BoardGenerator.new()
 var _swap_resolver := SwapResolver.new()
 var _board_resolver := BoardResolver.new()
 var _battle_resolver := BattleResolver.new()
 var _ability_resolver = ABILITY_RESOLVER_SCRIPT.new()
+var _level_catalog = LEVEL_CATALOG_SCRIPT.new()
+var _battle_factory = BATTLE_FACTORY_SCRIPT.new()
 
 
 func start_new_battle() -> void:
+	var level_id := current_level_id if current_level_id != "" else _level_catalog.get_default_level_id()
+	start_level(level_id)
+
+
+func start_level(level_id: String) -> void:
+	var resolved_level_id := level_id if _level_catalog.has_level(level_id) else _level_catalog.get_default_level_id()
+	current_level_config = _level_catalog.get_level(resolved_level_id)
+	current_level_id = current_level_config.level_id
 	board = _generate_playable_board()
-	state = _create_test_battle_state()
+	state = _battle_factory.create_state(current_level_config)
+	level_changed.emit(current_level_config)
 	board_changed.emit(board)
 	battle_state_changed.emit(state)
 
@@ -77,17 +93,6 @@ func request_ability(lane_index: int) -> void:
 
 func is_battle_finished() -> bool:
 	return state != null and state.is_finished()
-
-
-func _create_test_battle_state() -> BattleState:
-	var heroes: Array[HeroData] = [
-		HeroData.new("hero_1", "Hero 1", 0, 10, 100, 0, 0, 10),
-		HeroData.new("hero_2", "Hero 2", 1, 8, 120, 0, 0, 10),
-		HeroData.new("hero_3", "Hero 3", 2, 12, 80, 0, 0, 10),
-	]
-	var enemy := EnemyData.new("enemy_training", "Training Enemy", 300, 20)
-	var enemy_intent := EnemyIntent.new(3, 1)
-	return BattleState.new(heroes, enemy, enemy_intent, 20)
 
 
 func _generate_playable_board() -> BoardModel:
