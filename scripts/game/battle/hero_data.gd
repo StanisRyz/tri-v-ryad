@@ -58,5 +58,11 @@ func heal_to_full() -> void:
 	current_hp = get_max_hp()
 
 
+func heal(amount: int) -> int:
+	var previous_hp := current_hp
+	current_hp = clampi(current_hp + max(0, amount), 0, get_max_hp())
+	return current_hp - previous_hp
+
+
 func add_ability_charge(amount: int) -> void:
 	ability_charge = clampi(ability_charge + max(0, amount), 0, ability_charge_required)

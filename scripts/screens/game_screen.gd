@@ -5,6 +5,7 @@ signal back_pressed
 const BATTLE_PRESENTER_SCRIPT := preload("res://scripts/game/presentation/battle_presenter.gd")
 const BOARD_INPUT_CONTROLLER_SCRIPT := preload("res://scripts/game/input/board_input_controller.gd")
 const TURN_FEEDBACK_PRESENTER_SCRIPT := preload("res://scripts/game/presentation/turn_feedback_presenter.gd")
+const ABILITY_FEEDBACK_PRESENTER_SCRIPT := preload("res://scripts/game/presentation/ability_feedback_presenter.gd")
 
 @onready var menu_button: Button = %MenuButton
 @onready var battle_root: VBoxContainer = %BattleRoot
@@ -19,6 +20,7 @@ var _layout_manager: LayoutManager
 var _presenter
 var _input_controller
 var _turn_feedback_presenter
+var _ability_feedback_presenter
 var _pending_battle_status := -1
 var _feedback_active := false
 
@@ -72,6 +74,7 @@ func _setup_playable_battle() -> void:
 	_presenter = BATTLE_PRESENTER_SCRIPT.new()
 	_input_controller = BOARD_INPUT_CONTROLLER_SCRIPT.new()
 	_turn_feedback_presenter = TURN_FEEDBACK_PRESENTER_SCRIPT.new()
+	_ability_feedback_presenter = ABILITY_FEEDBACK_PRESENTER_SCRIPT.new()
 
 	board_view.tile_pressed.connect(_input_controller.handle_tile_pressed)
 	board_view.tile_drag_released.connect(_input_controller.handle_tile_drag_released)
@@ -79,14 +82,17 @@ func _setup_playable_battle() -> void:
 	_input_controller.selection_changed.connect(_on_selection_changed)
 	_input_controller.selection_cleared.connect(_on_selection_cleared)
 	_input_controller.invalid_input.connect(_on_invalid_input)
+	hero_party_panel.ability_requested.connect(_on_ability_requested)
 
 	_presenter.board_changed.connect(_on_board_changed)
 	_presenter.battle_state_changed.connect(_on_battle_state_changed)
 	_presenter.turn_resolved.connect(_on_turn_resolved)
 	_presenter.turn_presentation_ready.connect(_on_turn_presentation_ready)
+	_presenter.ability_presentation_ready.connect(_on_ability_presentation_ready)
 	_presenter.invalid_swap.connect(_on_invalid_swap)
 	_presenter.battle_finished.connect(_on_battle_finished)
 	_turn_feedback_presenter.feedback_finished.connect(_on_feedback_finished)
+	_ability_feedback_presenter.feedback_finished.connect(_on_feedback_finished)
 
 	result_overlay.restart_pressed.connect(_on_restart_pressed)
 	result_overlay.menu_pressed.connect(_on_menu_button_pressed)
@@ -141,6 +147,11 @@ func _on_turn_presentation_ready(data) -> void:
 	_turn_feedback_presenter.play_turn_feedback(data, board_view, Callable(self, "_set_status"))
 
 
+func _on_ability_presentation_ready(data) -> void:
+	_feedback_active = true
+	_ability_feedback_presenter.play_ability_feedback(data, board_view, Callable(self, "_set_status"))
+
+
 func _on_feedback_finished() -> void:
 	_feedback_active = false
 	if _pending_battle_status != -1:
@@ -186,6 +197,14 @@ func _on_swap_requested(from_cell: Vector2i, to_cell: Vector2i) -> void:
 	board_view.clear_cell_highlights()
 	_set_status("Resolving turn")
 	_presenter.request_swap(from_cell, to_cell)
+
+
+func _on_ability_requested(lane_index: int) -> void:
+	_input_controller.set_input_enabled(false)
+	board_view.clear_lane_highlights()
+	board_view.clear_cell_highlights()
+	_set_status("Using ability")
+	_presenter.request_ability(lane_index)
 
 
 func _on_restart_pressed() -> void:

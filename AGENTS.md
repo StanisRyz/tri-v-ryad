@@ -2,7 +2,7 @@
 
 This is a Godot match-3 battle project intended for Yandex Games. The default layout is vertical 9:16 portrait with a 720x1280 base resolution.
 
-The current stage is a playable battle prototype with basic board feedback. `GameScreen` is allowed to wire `BattlePresenter`, `BoardView`, `BoardInputController`, and `TurnFeedbackPresenter`, but the board core and battle core must remain separate from UI implementation details.
+The current stage is a playable battle prototype with Hero abilities v0.1. `GameScreen` is allowed to wire `BattlePresenter`, `BoardView`, `BoardInputController`, `TurnFeedbackPresenter`, and `AbilityFeedbackPresenter`, but the board core and battle core must remain separate from UI implementation details.
 
 ## Project Rules
 
@@ -57,6 +57,15 @@ The current stage is a playable battle prototype with basic board feedback. `Gam
 - `TileView` visual feedback must remain lightweight.
 - Do not implement full cascade animations unless explicitly requested.
 - Do not add sound, particles, or final art in this stage.
+- Ability logic lives under `scripts/game/battle/`.
+- `AbilityResolver` must remain UI-independent.
+- `HeroCard` only emits ability requests and must not apply effects.
+- `HeroPartyPanel` only forwards ability requests.
+- `GameScreen` wires ability signals but must not implement ability rules.
+- `BattlePresenter` coordinates ability flow.
+- Ability use must not reduce `moves_left` in v0.1.
+- Ability use must not tick enemy intent in v0.1.
+- Ability-cleared tiles must not grant charge or hero damage unless explicitly requested later.
 
 ## Platform Boundaries
 
@@ -72,7 +81,7 @@ The current stage is a playable battle prototype with basic board feedback. `Gam
 - No tile swap, clear, fall, or refill animations.
 - No full cascade animations.
 - No sound or particles.
-- No real abilities or upgrades.
+- No target selection, cooldowns, ability upgrades, levels, or hero selection.
 - No save system.
 - No ads or monetization.
 - No Yandex SDK.

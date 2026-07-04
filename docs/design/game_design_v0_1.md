@@ -102,7 +102,21 @@ Animation, advanced feedback, sound, and gesture polish remain future work.
 - Damage and enemy action are shown through short status messages.
 - Input remains locked during feedback and unlocks only after feedback completes.
 
-Full cascade animation, real tile movement, particles, sound, abilities, and progression remain future work.
+Full cascade animation, real tile movement, particles, sound, and progression remain future work.
+
+## Hero Abilities v0.1
+
+- Ability charge comes from matched tiles in hero lanes.
+- Ready, alive heroes can use abilities from their HeroCard.
+- Hero 1: Power Strike deals direct enemy damage.
+- Hero 2: Line Break clears the center row and stabilizes the board.
+- Hero 3: Rally Heal heals all alive heroes.
+- Successful ability use resets that hero's charge to 0.
+- Ability use does not consume moves.
+- Ability use does not trigger enemy action.
+- Ability-cleared tiles do not grant charge or hero damage.
+
+Target selection, cooldowns, ability upgrades, new heroes, level configs, saves, and platform systems remain future work.
 
 ## Future Progression
 
@@ -118,7 +132,7 @@ Complex meta progression is not part of the foundation stage.
 - No RuStore or Android-specific code.
 - No final art.
 - No complex meta progression.
-- No real abilities.
+- No target selection or ability upgrades.
 - No full cascade animations.
 - No real tile movement.
 - No sound or particles.

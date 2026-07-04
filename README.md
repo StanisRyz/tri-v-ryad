@@ -2,7 +2,7 @@
 
 Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
-The project is currently in the Basic Board Animations and Turn Feedback stage. It defines the app shell, simple screen navigation, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, basic turn feedback, and a fixed test battle for a vertical 9:16 game.
+The project is currently in the Hero Abilities v0.1 stage. It defines the app shell, simple screen navigation, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, three starter hero abilities, basic feedback, and a fixed test battle for a vertical 9:16 game.
 
 ## Project Direction
 
@@ -36,6 +36,10 @@ This stage includes:
 - UI-independent board generation, match detection, swap validation, gravity/refill, and cascade resolution under `scripts/game/board/`.
 - UI-independent battle logic under `scripts/game/battle/`: heroes, enemy, battle state, Hero Lane activation, damage, ability charge, enemy intent/action, and turn results.
 - A `BattlePresenter` that coordinates the fixed prototype battle without platform, save, ad, or SDK code.
+- Three starter abilities: Power Strike, Line Break, and Rally Heal.
+- Ability readiness in `HeroCard`, with ability requests routed through `BattlePresenter`.
+- Ability feedback for damage, healing, row clears, and rejected requests.
+- Ability use does not consume moves or tick enemy intent.
 - Hybrid tile swapping through `BoardInputController`: two-click fallback, mouse drag, and touch/swipe style input.
 - Input locking during turn feedback and after victory/defeat.
 - Swapped cell feedback, invalid swap feedback, match highlights, Hero Lane highlights, and short damage/enemy action status messages.
@@ -46,12 +50,14 @@ This stage includes:
 - Playable battle smoke test in `scripts/tests/playable_battle_smoke_test.gd`.
 - Board input controller tests in `scripts/tests/board_input_controller_test.gd`.
 - Turn presentation data tests in `scripts/tests/turn_presentation_data_test.gd`.
+- Ability core tests in `scripts/tests/ability_core_test.gd`.
+- Ability presentation data tests in `scripts/tests/ability_presentation_data_test.gd`.
 - Documentation for future implementation rules.
 
 This stage excludes:
 
 - Full cascade animations, real tile movement, particles, sound, and final art.
-- Real abilities, upgrades, hero selection UI, and progression.
+- Target selection, cooldowns, ability upgrades, hero selection UI, levels, and progression.
 - Saves, ads, payments, Yandex SDK, RuStore, Android-specific code, and final art.
 
 ## How To Open And Run
@@ -95,8 +101,20 @@ Run the turn presentation data test with:
 godot --headless --script res://scripts/tests/turn_presentation_data_test.gd
 ```
 
+Run the ability core test with:
+
+```bash
+godot --headless --script res://scripts/tests/ability_core_test.gd
+```
+
+Run the ability presentation data test with:
+
+```bash
+godot --headless --script res://scripts/tests/ability_presentation_data_test.gd
+```
+
 ## Next Planned Stages
 
-- Hero abilities v0.1.
+- Level system and data-driven battle configs.
 - Improve board animation polish for swap, clear, fall, and refill.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.

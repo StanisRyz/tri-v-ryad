@@ -5,7 +5,7 @@
 
 [node name="HeroPartyPanel" type="HBoxContainer"]
 offset_right = 664.0
-offset_bottom = 132.0
+offset_bottom = 156.0
 theme_override_constants/separation = 10
 script = ExtResource("1_o2sxj")
 

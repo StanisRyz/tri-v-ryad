@@ -2,11 +2,15 @@ extends RefCounted
 class_name BattlePresenter
 
 const TURN_PRESENTATION_DATA_SCRIPT := preload("res://scripts/game/presentation/turn_presentation_data.gd")
+const ABILITY_PRESENTER_DATA_SCRIPT := preload("res://scripts/game/presentation/ability_presentation_data.gd")
+const ABILITY_RESULT_SCRIPT := preload("res://scripts/game/battle/ability_result.gd")
+const ABILITY_RESOLVER_SCRIPT := preload("res://scripts/game/battle/ability_resolver.gd")
 
 signal board_changed(board: BoardModel)
 signal battle_state_changed(state: BattleState)
 signal turn_resolved(result: BattleTurnResult)
 signal turn_presentation_ready(data)
+signal ability_presentation_ready(data)
 signal invalid_swap(reason: String)
 signal battle_finished(status: int)
 
@@ -17,6 +21,7 @@ var _board_generator := BoardGenerator.new()
 var _swap_resolver := SwapResolver.new()
 var _board_resolver := BoardResolver.new()
 var _battle_resolver := BattleResolver.new()
+var _ability_resolver = ABILITY_RESOLVER_SCRIPT.new()
 
 
 func start_new_battle() -> void:
@@ -48,6 +53,26 @@ func request_swap(from_cell: Vector2i, to_cell: Vector2i) -> void:
 
 	if state.is_finished():
 		battle_finished.emit(state.status)
+
+
+func request_ability(lane_index: int) -> void:
+	var result
+	if board == null or state == null:
+		result = ABILITY_RESULT_SCRIPT.rejected_result("", lane_index, "invalid_state")
+	elif state.is_finished():
+		result = ABILITY_RESULT_SCRIPT.rejected_result("", lane_index, "battle_finished")
+	else:
+		result = _ability_resolver.resolve_ability(state, board, lane_index)
+
+	ability_presentation_ready.emit(ABILITY_PRESENTER_DATA_SCRIPT.from_result(result))
+
+	if result.board_changed:
+		board_changed.emit(board)
+
+	if state != null:
+		battle_state_changed.emit(state)
+		if state.is_finished():
+			battle_finished.emit(state.status)
 
 
 func is_battle_finished() -> bool:
