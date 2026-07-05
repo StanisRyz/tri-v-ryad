@@ -2,7 +2,7 @@
 
 Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
-The project is currently through Stage 24: Enemy roster and random enemy selection v0.1. It defines the app shell, a MainMenu with Play, Heroes, and Settings entry points, a level-select-only level flow with numbers-only level labels, a pre-battle team confirmation flow, a shared 10-enemy roster with battle-start random enemy selection, a menu-accessible full roster hero upgrade screen, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, damage-only roster ability mappings, local hero upgrades, saved campaign progress, and lightweight swap, clear, special activation, and refill feedback for a vertical 9:16 game.
+The project is currently through Stage 25: 100-level campaign foundation v0.1. It defines the app shell, a MainMenu with Play, Heroes, and Settings entry points, a level-select-only level flow with numbers-only labels for `level_1` through `level_100`, a pre-battle team confirmation flow, a shared 10-enemy roster with battle-start random enemy selection, a menu-accessible full roster hero upgrade screen, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, damage-only roster ability mappings, local hero upgrades, saved campaign progress, and lightweight swap, clear, special activation, and refill feedback for a vertical 9:16 game.
 
 ## Project Direction
 
@@ -30,7 +30,7 @@ This stage includes:
 - A Godot project with `scenes/app/App.tscn` as the main scene.
 - A minimal screen router.
 - A MainMenu with Play, Heroes, and Settings buttons.
-- A `LevelSelectScreen` with 10 early campaign level buttons labeled `Level 1` through `Level 10`, lock/completion/star state, and routing to `TeamSelectScreen`.
+- A scrollable `LevelSelectScreen` with 100 campaign level buttons labeled `Level 1` through `Level 100`, lock/completion/star state, and routing to `TeamSelectScreen`.
 - A `TeamSelectScreen` that confirms or edits the saved 3-hero team before starting the selected level.
 - A main-menu `UpgradeScreen` route for roster hero upgrades.
 - A persistent `SettingsScreen` route for presentation/audio setting toggles.
@@ -52,7 +52,8 @@ This stage includes:
 - Data-driven configs under `scripts/game/config/`: `HeroConfig`, `EnemyConfig`, `EnemyCatalog`, `EnemySelectionResolver`, `LevelConfig`, `LevelLabelFormatter`, and `LevelCatalog`.
 - `EnemyCatalog` contains the shared 10-enemy roster, using the existing enemy IDs, display names, and base stats.
 - `EnemySelectionResolver` selects an enemy from that roster when a battle starts and supports deterministic tests through seeded `RandomNumberGenerator` injection.
-- `LevelCatalog` contains a 10-level early campaign slice with numbers-only display names and unchanged level IDs.
+- `LevelCatalog` deterministically generates a 100-level campaign foundation with numbers-only display names and `level_1` through `level_100` IDs.
+- The Stage 25 moves and upgrade-point reward values are placeholder v0.1 curves, not final balance.
 - `LevelConfig.enemy_config` remains compatibility fallback/default data; runtime battle starts use the shared roster selection.
 - Hero roster definitions under `scripts/game/config/` with `HeroCatalog`.
 - `HeroConfig` carries immutable base hero stats plus `ability_id`.
@@ -125,7 +126,7 @@ This stage excludes:
 - One-time rewards, stars-based rewards, level map, chapters, complex economy, max upgrade levels, scaling upgrade costs, reset upgrades, and complex objectives.
 - New heroes, hero unlocks, gacha, rarity, shards, ability upgrades, TeamSelectScreen rework, Yandex SDK, cloud save, ads, payments, sound, particles, and final art.
 - Cloud saves, ads, payments, Yandex SDK, RuStore, Android-specific code, and monetization.
-- Enemy scaling, enemy level multipliers, a 100-level campaign, and campaign reward rebalance.
+- Enemy scaling, enemy level multipliers, campaign reward rebalance, and full LevelSelect UX polish.
 
 ## Stage 16: Balance and Content Expansion v0.1
 
@@ -200,9 +201,9 @@ No gameplay, progression, enemy, level catalog, save, settings, platform, audio,
 
 Stage 23 is complete. Player-facing level labels are now numbers-only: `Level 1`, `Level 2`, and so on through the current 10-level campaign.
 
-Location-style level names were removed from `LevelCatalog` display names and level UI. `level_id` values remain unchanged as `level_1` through `level_10`, and the campaign still has exactly 10 levels.
+Location-style level names were removed from `LevelCatalog` display names and level UI. At Stage 23, `level_id` values remained unchanged as `level_1` through `level_10`, and the campaign still had exactly 10 levels.
 
-Enemy configs, rewards, balance, progression, battle UI layout, board layout, save format, settings, platform, audio, art, monetization, abilities, and special tile rules were not changed during Stage 23. Random enemy selection was handled later in Stage 24, and a 100-level campaign is not implemented yet.
+Enemy configs, rewards, balance, progression, battle UI layout, board layout, save format, settings, platform, audio, art, monetization, abilities, and special tile rules were not changed during Stage 23. Random enemy selection was handled later in Stage 24, and the 100-level campaign foundation was handled later in Stage 25.
 
 ## Stage 24: Enemy Roster and Random Enemy Selection v0.1
 
@@ -210,7 +211,19 @@ Stage 24 is complete. `EnemyCatalog` now defines the shared 10-enemy roster usin
 
 `EnemySelectionResolver` selects an enemy from the roster when a battle starts. Selection is deterministic and testable when a seeded `RandomNumberGenerator` is injected, while runtime battles use the presenter's RNG. `BattleFactory` now accepts an optional enemy override and otherwise falls back to `LevelConfig.enemy_config`.
 
-Level IDs, `Level N` labels, moves, rewards, progression, saves, battle rules, board rules, abilities, special tiles, settings, and UI layout were not changed. Enemy scaling, enemy level multipliers, and the 100-level campaign are still future work.
+Level IDs, `Level N` labels, moves, rewards, progression, saves, battle rules, board rules, abilities, special tiles, settings, and UI layout were not changed.
+
+## Stage 25: 100-Level Campaign Foundation v0.1
+
+Stage 25 is complete. `LevelCatalog` now generates 100 levels deterministically instead of manually listing the earlier 10-level slice.
+
+Level IDs remain in the existing style: `level_1` through `level_100`. Player-facing labels remain numbers-only: `Level 1` through `Level 100`. `level_101` is not part of the catalog.
+
+Moves use a safe placeholder curve: levels 1-10 use 24 to 22 moves, levels 11-30 use 23 to 21 moves, levels 31-60 use 22 to 20 moves, and levels 61-100 use 21 to 19 moves. Repeatable `reward_upgrade_points` use a simple placeholder curve from 1 to 5 points across the campaign.
+
+Runtime enemy selection still uses `EnemyCatalog` and `EnemySelectionResolver` from Stage 24. `LevelConfig.enemy_config` remains fallback/default data for compatibility and cycles through the existing roster; enemy scaling, enemy level multipliers, new enemies, and final economy balance were not added.
+
+No gameplay, board, battle, save, settings, hero, ability, special tile, platform, art, audio, or monetization systems were changed. Full LevelSelect UX polish remains future work.
 
 ## How To Open And Run
 
@@ -274,6 +287,12 @@ Run the level config test with:
 
 ```bash
 godot --headless --script res://scripts/tests/level_config_test.gd
+```
+
+Run the 100-level campaign test with:
+
+```bash
+godot --headless --script res://scripts/tests/campaign_100_levels_test.gd
 ```
 
 Run the level identity test with:
@@ -392,5 +411,5 @@ godot --headless --script res://scripts/tests/settings_screen_data_test.gd
 
 ## Next Planned Stages
 
-- Stage 25: 100-level campaign foundation v0.1.
+- Stage 26: Enemy scaling and level multipliers v0.1.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.

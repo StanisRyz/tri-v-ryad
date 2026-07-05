@@ -35,6 +35,14 @@ func _initialize() -> void:
 	_expect_true(enemy_catalog.has_enemy(presenter.state.enemy.id), "level 2 selected enemy exists in catalog")
 	_expect_equal(presenter.state.moves_left, presenter.current_level_config.moves, "level 2 moves count")
 
+	presenter.start_level("level_100")
+	_expect_equal(presenter.current_level_id, "level_100", "presenter starts level_100")
+	_expect_true(presenter.board != null, "level_100 created board")
+	_expect_true(presenter.state != null, "level_100 created battle state")
+	_expect_false(presenter.board.has_empty_cells(), "level_100 board is full")
+	_expect_true(enemy_catalog.has_enemy(presenter.state.enemy.id), "level_100 selected enemy exists in catalog")
+	_expect_equal(presenter.state.moves_left, presenter.current_level_config.moves, "level_100 moves count")
+
 	if _failures == 0:
 		print("Playable battle smoke test passed.")
 		quit(0)

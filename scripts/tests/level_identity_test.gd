@@ -57,7 +57,9 @@ func _test_formatter() -> void:
 func _test_catalog_identity() -> void:
 	var catalog := LEVEL_CATALOG.new()
 	var levels := catalog.get_all_levels()
-	_expect_equal(levels.size(), 10, "catalog still has 10 levels")
+	_expect_equal(levels.size(), 100, "catalog has 100 levels")
+	_expect_true(catalog.has_level("level_100"), "catalog has level_100")
+	_expect_false(catalog.has_level("level_101"), "catalog omits level_101")
 
 	for index in range(levels.size()):
 		var level_number := index + 1
@@ -75,10 +77,14 @@ func _test_level_select_labels(debug_labels_enabled: bool) -> void:
 	await process_frame
 
 	var first_button := screen.get_node("%LevelButtons").get_child(0) as Button
+	var final_button := screen.get_node("%LevelButtons").get_child(99) as Button
 	var expected_title := "Level 1 (level_1)" if debug_labels_enabled else "Level 1"
+	var expected_final_title := "Level 100 (level_100)" if debug_labels_enabled else "Level 100"
 	_expect_true(first_button.text.begins_with(expected_title), "level select title respects debug label setting")
+	_expect_true(final_button.text.begins_with(expected_final_title), "level select includes level_100 label")
 	_expect_true(first_button.text.contains("Stars: 0/3"), "level select keeps star text")
 	_expect_false(_contains_old_level_name(first_button.text), "level select omits old location names")
+	_expect_false(_contains_old_level_name(final_button.text), "level_100 omits old location names")
 
 	screen.queue_free()
 

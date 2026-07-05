@@ -31,14 +31,15 @@ func _test_default_level(catalog) -> void:
 
 
 func _test_level_count(catalog) -> void:
-	_expect_equal(catalog.get_all_levels().size(), 10, "level count")
-	print("ok - catalog returns 10 levels")
+	_expect_equal(catalog.get_all_levels().size(), 100, "level count")
+	print("ok - catalog returns 100 levels")
 
 
 func _test_expected_level_ids(catalog) -> void:
-	for index in range(1, 11):
+	for index in range(1, 101):
 		_expect_true(catalog.has_level("level_%d" % index), "catalog has level_%d" % index)
-	print("ok - catalog has level_1 through level_10")
+	_expect_false(catalog.has_level("level_101"), "catalog does not have level_101")
+	print("ok - catalog has level_1 through level_100")
 
 
 func _test_unknown_level_fallback(catalog) -> void:
@@ -48,9 +49,10 @@ func _test_unknown_level_fallback(catalog) -> void:
 
 func _test_level_five_is_harder(catalog) -> void:
 	var level_1 = catalog.get_level("level_1")
-	var level_5 = catalog.get_level("level_5")
-	_expect_true(level_5.enemy_config.max_hp > level_1.enemy_config.max_hp or level_5.enemy_config.attack > level_1.enemy_config.attack, "level 5 harder than level 1")
-	print("ok - level 5 is harder than level 1")
+	var level_100 = catalog.get_level("level_100")
+	_expect_true(level_1.moves >= level_100.moves, "level 100 moves are not more forgiving than level 1")
+	_expect_true(level_100.reward_upgrade_points >= level_1.reward_upgrade_points, "level 100 reward is not lower than level 1")
+	print("ok - placeholder campaign curve trends across 100 levels")
 
 
 func _test_level_contents(catalog) -> void:

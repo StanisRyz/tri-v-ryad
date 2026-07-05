@@ -45,6 +45,13 @@ func _initialize() -> void:
 	for index in range(2, 5):
 		resolver.apply_victory_result(fresh_progress, catalog.get_level("level_%d" % index), 0)
 	_expect_true(resolver.is_level_unlocked(fresh_progress, catalog, "level_5"), "level_5 unlocks through prior completions")
+	_expect_false(resolver.is_level_unlocked(fresh_progress, catalog, "level_100"), "level_100 remains locked until level_99 completion")
+
+	var late_progress = load(PLAYER_PROGRESS_SCRIPT).create_default()
+	for index in range(1, 100):
+		resolver.apply_victory_result(late_progress, catalog.get_level("level_%d" % index), 0)
+	_expect_true(resolver.is_level_unlocked(late_progress, catalog, "level_100"), "level_100 unlocks after level_99 completion")
+	_expect_false(resolver.is_level_unlocked(late_progress, catalog, "level_101"), "level_101 is not unlockable")
 
 	if _failures == 0:
 		print("Level completion tests passed.")

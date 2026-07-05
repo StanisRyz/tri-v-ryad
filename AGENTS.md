@@ -2,7 +2,7 @@
 
 This is a Godot match-3 battle project intended for Yandex Games. The default layout is vertical 9:16 portrait with a 720x1280 base resolution.
 
-The current stage is a playable battle prototype through Stage 24: Enemy roster and random enemy selection v0.1, with damage-only hero abilities, line special tiles, color bombs, a 10-level early campaign slice with numbers-only level labels, a shared 10-enemy roster, battle-start random enemy selection, enemy and reward curve, balance tests, board animation polish, saved level completion, stars, sequential unlocks, upgrade points, hero progression, character upgrade screen v0.2, local save v0.1, a MainMenu/LevelSelect/TeamSelect/GameScreen navigation flow, a persistent SettingsScreen, a top enemy battle layout, a compact Level / Moves / Menu HUD row, a wider portrait battle board aligned to the hero party panel, and no permanent Hero Lane separator/debug grid visuals. `GameScreen` is allowed to wire `BattlePresenter`, `BoardView`, `BoardInputController`, `TurnFeedbackPresenter`, `AbilityFeedbackPresenter`, `SettingsManager`, and result-flow reward/completion calls through `ProgressManager`, but the board core, battle core, config layer, progression layer, save layer, and settings layer must remain separate from UI implementation details.
+The current stage is a playable battle prototype through Stage 25: 100-level campaign foundation v0.1, with damage-only hero abilities, line special tiles, color bombs, a generated 100-level campaign foundation with numbers-only level labels, a shared 10-enemy roster, battle-start random enemy selection, placeholder moves/reward curves, balance tests, board animation polish, saved level completion, stars, sequential unlocks, upgrade points, hero progression, character upgrade screen v0.2, local save v0.1, a MainMenu/LevelSelect/TeamSelect/GameScreen navigation flow, a persistent SettingsScreen, a top enemy battle layout, a compact Level / Moves / Menu HUD row, a wider portrait battle board aligned to the hero party panel, and no permanent Hero Lane separator/debug grid visuals. `GameScreen` is allowed to wire `BattlePresenter`, `BoardView`, `BoardInputController`, `TurnFeedbackPresenter`, `AbilityFeedbackPresenter`, `SettingsManager`, and result-flow reward/completion calls through `ProgressManager`, but the board core, battle core, config layer, progression layer, save layer, and settings layer must remain separate from UI implementation details.
 
 ## Project Rules
 
@@ -26,7 +26,8 @@ The current stage is a playable battle prototype through Stage 24: Enemy roster 
 - Stage 21 is complete: the portrait battle board is scaled wider and visually aligns with the hero party panel; permanent Hero Lane separator/debug grid visuals were removed from the normal board state; temporary lane activation feedback remains presentation-only. Hero Lane gameplay logic remains unchanged. No gameplay, progression, enemy, level, save, settings, platform, audio, art, or monetization systems were changed.
 - Stage 22 is complete: `EnemyPanel` is now the top battle screen element, the Level / Moves / Menu row is directly below it, the battle HUD uses compact `Level N` text, and Stage 21 board scaling and hero panel alignment are preserved. No gameplay, progression, enemy, level catalog, save, settings, platform, audio, art, or monetization systems were changed.
 - Stage 23 is complete: level labels are now numbers-only, location-style level names were removed from player-facing UI and `LevelCatalog` display names, level IDs remain unchanged, and the current campaign remains 10 levels. Enemy configs, rewards, balance, progression, battle UI layout, board layout, save, settings, platform, audio, art, and monetization systems were not changed.
-- Stage 24 is complete: `EnemyCatalog` now contains the shared 10-enemy roster, and `EnemySelectionResolver` selects an enemy from that roster when a battle starts. Selection is deterministic/testable with seeded RNG. `LevelConfig.enemy_config` remains fallback/default data for compatibility. Level IDs, `Level N` labels, moves, rewards, progression, saves, battle rules, board rules, abilities, special tiles, settings, and UI layout were not changed. Enemy scaling/multipliers and the 100-level campaign are still future stages. Next planned stage: Stage 25, 100-level campaign foundation v0.1.
+- Stage 24 is complete: `EnemyCatalog` now contains the shared 10-enemy roster, and `EnemySelectionResolver` selects an enemy from that roster when a battle starts. Selection is deterministic/testable with seeded RNG. `LevelConfig.enemy_config` remains fallback/default data for compatibility. Level IDs, `Level N` labels, moves, rewards, progression, saves, battle rules, board rules, abilities, special tiles, settings, and UI layout were not changed.
+- Stage 25 is complete: `LevelCatalog` now generates exactly 100 levels with IDs `level_1` through `level_100` and labels `Level 1` through `Level 100`. Moves and repeatable upgrade-point rewards use placeholder v0.1 curves. Runtime enemy selection still uses `EnemyCatalog` / `EnemySelectionResolver` from Stage 24, while fallback `enemy_config` data cycles through the existing roster. Enemy scaling, level multipliers, final economy balance, and full LevelSelect UX polish remain future work. No gameplay, board, battle, save, settings, hero, ability, special tile, platform, art, audio, or monetization systems were changed. Next planned stage: Stage 26, Enemy scaling and level multipliers v0.1.
 
 ## Gameplay Direction
 
@@ -119,7 +120,7 @@ The current stage is a playable battle prototype through Stage 24: Enemy roster 
 - Do not call `randomize()` inside `EnemySelectionResolver`.
 - Do not use global random state in core enemy selection logic.
 - `LevelConfig.enemy_config` may remain only as fallback/default data.
-- Do not add enemy scaling, level multipliers, or a 100-level campaign unless explicitly requested.
+- Do not add enemy scaling or level multipliers unless explicitly requested.
 - Hero roster definitions live in `HeroCatalog` under `scripts/game/config/`.
 - `BattleFactory` creates `BattleState` from configs.
 - Progression logic lives under `scripts/game/progression/`.
@@ -146,7 +147,7 @@ The current stage is a playable battle prototype through Stage 24: Enemy roster 
 - `BattlePresenter` starts levels but must not store hardcoded enemy or hero definitions.
 - `LevelSelectScreen` only selects `level_id`, displays level progress, and must not create `BattleState`.
 - `LevelSelectScreen` must not own unlock rules.
-- `LevelCatalog` contains exactly 10 early campaign levels for Stage 16.
+- `LevelCatalog` contains exactly 100 generated campaign levels for Stage 25.
 - Player-facing level labels use numbers only, such as `Level 1`; keep `level_id` values stable.
 - All current levels use the same objective: defeat the enemy.
 - Stage 16 uses only existing enemy stats, moves, and `reward_upgrade_points`.
@@ -185,5 +186,5 @@ The current stage is a playable battle prototype through Stage 24: Enemy roster 
 - No ads or monetization.
 - No Yandex SDK.
 - No final art assets.
-- No 100-level campaign.
+- No full LevelSelect UX redesign.
 - No enemy scaling or enemy level multipliers.
