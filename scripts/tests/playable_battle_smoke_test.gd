@@ -1,6 +1,7 @@
 extends SceneTree
 
 const BATTLE_PRESENTER_SCRIPT := "res://scripts/game/presentation/battle_presenter.gd"
+const ENEMY_CATALOG_SCRIPT := "res://scripts/game/config/enemy_catalog.gd"
 
 var _failures := 0
 
@@ -9,10 +10,13 @@ func _initialize() -> void:
 	print("Running playable battle smoke test...")
 
 	var presenter = load(BATTLE_PRESENTER_SCRIPT).new()
+	var enemy_catalog = load(ENEMY_CATALOG_SCRIPT).new()
+	presenter.set_enemy_rng_seed(24)
 	presenter.start_new_battle()
 
 	_expect_true(presenter.board != null, "presenter created board")
 	_expect_true(presenter.state != null, "presenter created battle state")
+	_expect_true(enemy_catalog.has_enemy(presenter.state.enemy.id), "presenter selected enemy from catalog")
 	_expect_false(presenter.board.has_empty_cells(), "presenter board is full")
 
 	var swap := _find_valid_swap(presenter.board)
@@ -28,7 +32,7 @@ func _initialize() -> void:
 
 	presenter.start_level("level_2")
 	_expect_equal(presenter.current_level_id, "level_2", "presenter starts requested level")
-	_expect_equal(presenter.state.enemy.id, "small_slime", "level 2 enemy differs from default")
+	_expect_true(enemy_catalog.has_enemy(presenter.state.enemy.id), "level 2 selected enemy exists in catalog")
 	_expect_equal(presenter.state.moves_left, presenter.current_level_config.moves, "level 2 moves count")
 
 	if _failures == 0:

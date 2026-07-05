@@ -6,6 +6,8 @@ const ABILITY_PRESENTER_DATA_SCRIPT := preload("res://scripts/game/presentation/
 const ABILITY_RESULT_SCRIPT := preload("res://scripts/game/battle/ability_result.gd")
 const ABILITY_RESOLVER_SCRIPT := preload("res://scripts/game/battle/ability_resolver.gd")
 const LEVEL_CATALOG_SCRIPT := preload("res://scripts/game/config/level_catalog.gd")
+const ENEMY_CATALOG_SCRIPT := preload("res://scripts/game/config/enemy_catalog.gd")
+const ENEMY_SELECTION_RESOLVER_SCRIPT := preload("res://scripts/game/config/enemy_selection_resolver.gd")
 const BATTLE_FACTORY_SCRIPT := preload("res://scripts/game/battle/battle_factory.gd")
 
 signal board_changed(board: BoardModel)
@@ -30,7 +32,14 @@ var _board_resolver := BoardResolver.new()
 var _battle_resolver := BattleResolver.new()
 var _ability_resolver = ABILITY_RESOLVER_SCRIPT.new()
 var _level_catalog = LEVEL_CATALOG_SCRIPT.new()
+var _enemy_catalog = ENEMY_CATALOG_SCRIPT.new()
+var _enemy_selection_resolver = ENEMY_SELECTION_RESOLVER_SCRIPT.new()
+var _enemy_rng := RandomNumberGenerator.new()
 var _battle_factory = BATTLE_FACTORY_SCRIPT.new()
+
+
+func _init() -> void:
+	_enemy_rng.randomize()
 
 
 func start_new_battle() -> void:
@@ -43,7 +52,8 @@ func start_level(level_id: String) -> void:
 	current_level_config = _level_catalog.get_level(resolved_level_id)
 	current_level_id = current_level_config.level_id
 	board = _generate_playable_board()
-	state = _battle_factory.create_state(current_level_config, progress, hero_catalog)
+	var selected_enemy = _enemy_selection_resolver.select_enemy_for_level(current_level_config, _enemy_catalog, _enemy_rng)
+	state = _battle_factory.create_state(current_level_config, progress, hero_catalog, selected_enemy)
 	level_changed.emit(current_level_config)
 	board_changed.emit(board)
 	battle_state_changed.emit(state)
@@ -55,6 +65,19 @@ func set_progress(player_progress) -> void:
 
 func set_hero_catalog(catalog: HeroCatalog) -> void:
 	hero_catalog = catalog
+
+
+func set_enemy_catalog(catalog) -> void:
+	_enemy_catalog = catalog
+
+
+func set_enemy_rng_seed(rng_seed: int) -> void:
+	_enemy_rng.seed = rng_seed
+
+
+func set_enemy_rng(rng: RandomNumberGenerator) -> void:
+	if rng != null:
+		_enemy_rng = rng
 
 
 func request_swap(from_cell: Vector2i, to_cell: Vector2i) -> void:

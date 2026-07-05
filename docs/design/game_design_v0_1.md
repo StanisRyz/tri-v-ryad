@@ -192,14 +192,28 @@ Hero unlocks, rarity, gacha, hero shards, ability upgrades, max levels, scaling 
 - Stage 16 adds a 10-level early campaign slice.
 - Player-facing level labels are numbers-only, such as `Level 1`.
 - Levels 1-2 are very easy intro battles, levels 3-4 add light challenge, levels 5-6 make upgrades feel useful, levels 7-9 are noticeably harder, and level 10 is the first early mini-boss gatekeeper.
-- Levels define enemy config, moves, enemy intent, and fixed hero configs.
+- Levels define moves, fallback/default enemy config, and fixed hero configs.
+- Battles select enemies from the shared `EnemyCatalog` roster through `EnemySelectionResolver` when the level starts.
+- `EnemySelectionResolver` is deterministic/testable when given a seeded `RandomNumberGenerator`.
 - `LevelSelectScreen` chooses a `level_id` and routes to `TeamSelectScreen` for pre-battle team confirmation (see Stage 19).
 - `GameScreen` starts the selected level through `BattlePresenter`.
 - Every level uses the same objective: defeat the enemy.
 - Victory and defeat rules stay unchanged.
 - Balance is v0.1 content tuning and is expected to change after playtesting.
 
-Hero selection and complex objectives remain future work.
+Enemy scaling, level multipliers, a 100-level campaign, hero selection, and complex objectives remain future work.
+
+## Enemy Roster and Selection v0.1
+
+- `EnemyCatalog` contains exactly 10 enemies: training dummy, small slime, goblin scout, goblin fighter, armored goblin, wild wolf, bandit, orc brute, cave shaman, and gatekeeper.
+- Enemy IDs, display names, and base stats match the existing `EnemyConfig` definitions.
+- `EnemySelectionResolver` selects one valid enemy from `EnemyCatalog` at battle start.
+- Tests can inject a seeded `RandomNumberGenerator` for reproducible selection.
+- Runtime enemy selection is coordinated by `BattlePresenter`.
+- `BattleFactory` accepts an optional selected enemy override and otherwise uses `LevelConfig.enemy_config` as fallback/default data.
+- Level IDs, `Level N` labels, moves, rewards, progression, saves, battle rules, board rules, abilities, special tiles, settings, and UI layout are unchanged.
+
+Enemy scaling, enemy level multipliers, new enemies, new enemy stats, and the 100-level campaign remain future work.
 
 ## Progression v0.1
 
@@ -339,6 +353,18 @@ One-time rewards, level map, chapters, stars-based rewards, max upgrade levels, 
 - `level_id` values remain unchanged as `level_1` through `level_10`.
 - The current campaign still has exactly 10 levels.
 - Enemy configs, rewards, balance, progression rules, battle UI layout, board layout, save format, settings, platform, audio, art, ability rules, and special tile rules were not changed.
-- Random enemy selection is not implemented yet.
+- Random enemy selection was handled later in Stage 24.
 - A 100-level campaign is not implemented yet.
-- Next planned stage: Stage 24, Enemy roster and random enemy selection v0.1.
+
+## Stage 24: Enemy Roster and Random Enemy Selection v0.1
+
+- Stage 24 is implemented.
+- `EnemyCatalog` now contains the shared 10-enemy roster.
+- `EnemySelectionResolver` selects an enemy from the roster when a battle starts.
+- Selection is deterministic/testable with seeded RNG.
+- `LevelConfig.enemy_config` remains fallback/default data for compatibility.
+- `BattleFactory` supports selected enemy overrides.
+- Level IDs, `Level N` labels, moves, rewards, progression, saves, battle rules, board rules, abilities, special tiles, settings, and UI layout were not changed.
+- Enemy scaling and enemy level multipliers are not implemented yet.
+- A 100-level campaign is not implemented yet.
+- Next planned stage: Stage 25, 100-level campaign foundation v0.1.

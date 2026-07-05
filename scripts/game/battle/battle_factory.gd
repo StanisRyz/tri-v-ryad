@@ -5,7 +5,7 @@ class_name BattleFactory
 const TEAM_SELECTION_RESOLVER_SCRIPT := preload("res://scripts/game/progression/team_selection_resolver.gd")
 
 
-func create_state(level_config, progress = null, hero_catalog: HeroCatalog = null) -> BattleState:
+func create_state(level_config, progress = null, hero_catalog: HeroCatalog = null, enemy_override = null) -> BattleState:
 	var heroes: Array[HeroData] = []
 	var hero_configs := _get_battle_hero_configs(level_config, progress, hero_catalog)
 	for index in range(hero_configs.size()):
@@ -19,7 +19,7 @@ func create_state(level_config, progress = null, hero_catalog: HeroCatalog = nul
 			hero_data.heal_to_full()
 		heroes.append(hero_data)
 
-	var enemy_config = level_config.get_enemy_config()
+	var enemy_config = enemy_override if enemy_override != null else level_config.get_enemy_config()
 	return BattleState.new(
 		heroes,
 		enemy_config.to_enemy_data(),

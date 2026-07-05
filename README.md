@@ -2,7 +2,7 @@
 
 Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
-The project is currently through Stage 23: Level identity cleanup v0.2. It defines the app shell, a MainMenu with Play, Heroes, and Settings entry points, a level-select-only level flow with numbers-only level labels, a pre-battle team confirmation flow, a menu-accessible full roster hero upgrade screen, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, damage-only roster ability mappings, local hero upgrades, saved campaign progress, and lightweight swap, clear, special activation, and refill feedback for a vertical 9:16 game.
+The project is currently through Stage 24: Enemy roster and random enemy selection v0.1. It defines the app shell, a MainMenu with Play, Heroes, and Settings entry points, a level-select-only level flow with numbers-only level labels, a pre-battle team confirmation flow, a shared 10-enemy roster with battle-start random enemy selection, a menu-accessible full roster hero upgrade screen, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, damage-only roster ability mappings, local hero upgrades, saved campaign progress, and lightweight swap, clear, special activation, and refill feedback for a vertical 9:16 game.
 
 ## Project Direction
 
@@ -49,11 +49,14 @@ This stage includes:
 - Special tiles affect board clearing only; special-cleared cells do not add extra battle damage or ability charge yet.
 - `TileView` shows simple placeholder `H`/`V`/`B` markers for special tiles.
 - UI-independent battle logic under `scripts/game/battle/`: heroes, enemy, battle state, Hero Lane activation, damage, ability charge, enemy intent/action, and turn results.
-- Data-driven configs under `scripts/game/config/`: `HeroConfig`, `EnemyConfig`, `LevelConfig`, `LevelLabelFormatter`, and `LevelCatalog`.
+- Data-driven configs under `scripts/game/config/`: `HeroConfig`, `EnemyConfig`, `EnemyCatalog`, `EnemySelectionResolver`, `LevelConfig`, `LevelLabelFormatter`, and `LevelCatalog`.
+- `EnemyCatalog` contains the shared 10-enemy roster, using the existing enemy IDs, display names, and base stats.
+- `EnemySelectionResolver` selects an enemy from that roster when a battle starts and supports deterministic tests through seeded `RandomNumberGenerator` injection.
 - `LevelCatalog` contains a 10-level early campaign slice with numbers-only display names and unchanged level IDs.
+- `LevelConfig.enemy_config` remains compatibility fallback/default data; runtime battle starts use the shared roster selection.
 - Hero roster definitions under `scripts/game/config/` with `HeroCatalog`.
 - `HeroConfig` carries immutable base hero stats plus `ability_id`.
-- `BattleFactory` creates battle state from level configs or the saved selected team when `PlayerProgress` and `HeroCatalog` are available.
+- `BattleFactory` creates battle state from level configs, optional enemy overrides, or the saved selected team when `PlayerProgress` and `HeroCatalog` are available.
 - Selected team order maps to Hero Lanes: slot 1 to lane 0, slot 2 to lane 1, and slot 3 to lane 2.
 - Local progression under `scripts/game/progression/`: `PlayerProgress`, `HeroUpgradeState`, `UpgradeResolver`, and `ProgressManager`.
 - Saved team selection under `scripts/game/progression/` with `TeamSelectionState` and `TeamSelectionResolver`.
@@ -75,7 +78,7 @@ This stage includes:
 - Old saves without `hero_4` or `hero_5` upgrade records are handled safely and create those records when displayed or upgraded.
 - The victory overlay only shows reward/stars and links to Heroes; it does not contain upgrade spending UI.
 - `BattleFactory` combines base `HeroConfig` data with mutable `PlayerProgress` when creating battle heroes.
-- A `BattlePresenter` that coordinates the fixed prototype battle without platform, save, ad, or SDK code.
+- A `BattlePresenter` that coordinates the prototype battle and selects enemies from `EnemyCatalog` without platform, save, ad, or SDK code.
 - `BattlePresenter.start_level(level_id)` starts selected levels, and Restart preserves the current level.
 - Five roster strike abilities: Warrior Strike, Guardian Strike, Healer Strike, Mage Strike, and Ranger Strike.
 - Roster heroes use damage-only `ability_id` mappings: `warrior_strike`, `guardian_strike`, `healer_strike`, `mage_strike`, and `ranger_strike`.
@@ -106,6 +109,8 @@ This stage includes:
 - Level config tests in `scripts/tests/level_config_test.gd`.
 - Balance curve tests in `scripts/tests/balance_curve_test.gd`.
 - Battle factory tests in `scripts/tests/battle_factory_test.gd`.
+- Enemy catalog tests in `scripts/tests/enemy_catalog_test.gd`.
+- Enemy selection tests in `scripts/tests/enemy_selection_test.gd`.
 - Progression tests in `scripts/tests/progression_test.gd`.
 - Save manager tests in `scripts/tests/save_manager_test.gd`.
 - Battle factory progress tests in `scripts/tests/battle_factory_progress_test.gd`.
@@ -120,6 +125,7 @@ This stage excludes:
 - One-time rewards, stars-based rewards, level map, chapters, complex economy, max upgrade levels, scaling upgrade costs, reset upgrades, and complex objectives.
 - New heroes, hero unlocks, gacha, rarity, shards, ability upgrades, TeamSelectScreen rework, Yandex SDK, cloud save, ads, payments, sound, particles, and final art.
 - Cloud saves, ads, payments, Yandex SDK, RuStore, Android-specific code, and monetization.
+- Enemy scaling, enemy level multipliers, a 100-level campaign, and campaign reward rebalance.
 
 ## Stage 16: Balance and Content Expansion v0.1
 
@@ -196,7 +202,15 @@ Stage 23 is complete. Player-facing level labels are now numbers-only: `Level 1`
 
 Location-style level names were removed from `LevelCatalog` display names and level UI. `level_id` values remain unchanged as `level_1` through `level_10`, and the campaign still has exactly 10 levels.
 
-Enemy configs, rewards, balance, progression, battle UI layout, board layout, save format, settings, platform, audio, art, monetization, abilities, and special tile rules were not changed. Random enemy selection and a 100-level campaign are not implemented yet.
+Enemy configs, rewards, balance, progression, battle UI layout, board layout, save format, settings, platform, audio, art, monetization, abilities, and special tile rules were not changed during Stage 23. Random enemy selection was handled later in Stage 24, and a 100-level campaign is not implemented yet.
+
+## Stage 24: Enemy Roster and Random Enemy Selection v0.1
+
+Stage 24 is complete. `EnemyCatalog` now defines the shared 10-enemy roster using the existing enemy IDs, display names, and base stats.
+
+`EnemySelectionResolver` selects an enemy from the roster when a battle starts. Selection is deterministic and testable when a seeded `RandomNumberGenerator` is injected, while runtime battles use the presenter's RNG. `BattleFactory` now accepts an optional enemy override and otherwise falls back to `LevelConfig.enemy_config`.
+
+Level IDs, `Level N` labels, moves, rewards, progression, saves, battle rules, board rules, abilities, special tiles, settings, and UI layout were not changed. Enemy scaling, enemy level multipliers, and the 100-level campaign are still future work.
 
 ## How To Open And Run
 
@@ -278,6 +292,18 @@ Run the battle factory test with:
 
 ```bash
 godot --headless --script res://scripts/tests/battle_factory_test.gd
+```
+
+Run the enemy catalog test with:
+
+```bash
+godot --headless --script res://scripts/tests/enemy_catalog_test.gd
+```
+
+Run the enemy selection test with:
+
+```bash
+godot --headless --script res://scripts/tests/enemy_selection_test.gd
 ```
 
 Run the progression test with:
@@ -366,5 +392,5 @@ godot --headless --script res://scripts/tests/settings_screen_data_test.gd
 
 ## Next Planned Stages
 
-- Stage 24: Enemy roster and random enemy selection v0.1.
+- Stage 25: 100-level campaign foundation v0.1.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.
