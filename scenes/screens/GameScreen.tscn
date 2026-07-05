@@ -46,24 +46,24 @@ custom_minimum_size = Vector2(664, 0)
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="TopBar" type="HBoxContainer" parent="SafeMargin/BattleCenter/BattleRoot"]
+[node name="EnemyPanel" parent="SafeMargin/BattleCenter/BattleRoot" instance=ExtResource("3_746sx")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="HudRow" type="HBoxContainer" parent="SafeMargin/BattleCenter/BattleRoot"]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="BattleHud" parent="SafeMargin/BattleCenter/BattleRoot/TopBar" instance=ExtResource("2_2dfvm")]
+[node name="BattleHud" parent="SafeMargin/BattleCenter/BattleRoot/HudRow" instance=ExtResource("2_2dfvm")]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="MenuButton" type="Button" parent="SafeMargin/BattleCenter/BattleRoot/TopBar"]
+[node name="MenuButton" type="Button" parent="SafeMargin/BattleCenter/BattleRoot/HudRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(118, 70)
+custom_minimum_size = Vector2(118, 60)
 layout_mode = 2
 text = "Menu"
-
-[node name="EnemyPanel" parent="SafeMargin/BattleCenter/BattleRoot" instance=ExtResource("3_746sx")]
-unique_name_in_owner = true
-layout_mode = 2
 
 [node name="BoardArea" type="CenterContainer" parent="SafeMargin/BattleCenter/BattleRoot"]
 layout_mode = 2

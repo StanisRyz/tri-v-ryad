@@ -2,7 +2,7 @@
 
 Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
-The project is currently through Stage 21: Battle screen layout v0.2. It defines the app shell, a MainMenu with Play, Heroes, and Settings entry points, a level-select-only level flow, a pre-battle team confirmation flow, a menu-accessible full roster hero upgrade screen, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, damage-only roster ability mappings, local hero upgrades, saved campaign progress, and lightweight swap, clear, special activation, and refill feedback for a vertical 9:16 game.
+The project is currently through Stage 22: Battle HUD restructure v0.2. It defines the app shell, a MainMenu with Play, Heroes, and Settings entry points, a level-select-only level flow, a pre-battle team confirmation flow, a menu-accessible full roster hero upgrade screen, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, damage-only roster ability mappings, local hero upgrades, saved campaign progress, and lightweight swap, clear, special activation, and refill feedback for a vertical 9:16 game.
 
 ## Project Direction
 
@@ -34,7 +34,7 @@ This stage includes:
 - A `TeamSelectScreen` that confirms or edits the saved 3-hero team before starting the selected level.
 - A main-menu `UpgradeScreen` route for roster hero upgrades.
 - A persistent `SettingsScreen` route for presentation/audio setting toggles.
-- A playable battle screen with a HUD, enemy panel, widened 9x9 `BoardView`, placeholder `TileView` tiles, hero party panel, status text, result overlay, and a Menu button.
+- A playable battle screen with a top enemy panel, compact Level/Moves/Menu HUD row, widened 9x9 `BoardView`, placeholder `TileView` tiles, hero party panel, status text, result overlay, and a Menu button.
 - Reusable UI components: `BattleHud`, `EnemyPanel`, `HeroPartyPanel`, `HeroCard`, and `BattleResultOverlay`.
 - A lightweight `LayoutManager` for UI-only portrait and landscape layout decisions.
 - UI-independent board generation, match detection, swap validation, gravity/refill, and cascade resolution under `scripts/game/board/`.
@@ -94,7 +94,7 @@ This stage includes:
 - Input locking during turn feedback and after victory/defeat remains tied to `feedback_finished`.
 - Swapped cell feedback, invalid swap feedback, match highlights, refill feedback, temporary Hero Lane highlights, and short damage/enemy action status messages.
 - The portrait battle board is scaled to match the hero party panel width, and permanent Hero Lane separator/debug grid visuals are removed from the normal board state.
-- Live HUD, enemy, and hero updates.
+- Live enemy, HUD, and hero updates.
 - Basic victory/defeat overlay with restart flow.
 - Headless board core tests in `scripts/tests/board_core_test.gd`.
 - Headless battle core tests in `scripts/tests/battle_core_test.gd`.
@@ -181,6 +181,14 @@ Stage 21 is complete. The portrait battle board is scaled wider so its left and 
 Permanent Hero Lane separator lines and always-on lane background/debug fills were removed from the normal board state. Hero Lane activation feedback remains temporary and presentation-only.
 
 Hero Lane gameplay rules remain unchanged: columns 0-2, 3-5, and 6-8 still map to lanes 0, 1, and 2 through the existing battle logic. No gameplay, progression, enemy, level, save, settings, platform, audio, art, monetization, ability, board matching, or special tile rules were changed.
+
+## Stage 22: Battle HUD Restructure v0.2
+
+Stage 22 is complete. `EnemyPanel` is now the top battle screen element, with the compact Level / Moves / Menu row placed directly below it.
+
+The battle HUD now displays compact `Level N` text such as `Level 1` and `Level 10` without changing `LevelCatalog` or level identity data. Stage 21 board scaling was preserved: the portrait board remains square and visually aligned with the hero party panel.
+
+No gameplay, progression, enemy, level catalog, save, settings, platform, audio, art, monetization, ability, board matching, or special tile rules were changed.
 
 ## How To Open And Run
 
@@ -324,6 +332,12 @@ Run the navigation flow test with:
 godot --headless --script res://scripts/tests/navigation_flow_test.gd
 ```
 
+Run the game screen layout test with:
+
+```bash
+godot --headless --script res://scripts/tests/game_screen_layout_test.gd
+```
+
 Run the settings manager test with:
 
 ```bash
@@ -338,5 +352,5 @@ godot --headless --script res://scripts/tests/settings_screen_data_test.gd
 
 ## Next Planned Stages
 
-- Stage 22: Battle HUD restructure v0.2: enemy top layout.
+- Stage 23: Level identity cleanup v0.2: numbers only.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.

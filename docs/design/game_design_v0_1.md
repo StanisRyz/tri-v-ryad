@@ -40,7 +40,7 @@ Exact activation, charge, targeting, and combo rules are intentionally not imple
 ## Battle Screen Layout
 
 - Enemy panel at the top.
-- HUD near the top for level and moves placeholders.
+- Compact HUD row directly below the enemy panel for Level / Moves / Menu.
 - 9x9 board in the center, scaled in portrait to align visually with the hero party panel.
 - 3 hero cards below the board.
 - Board lanes map mechanically to the hero cards: Hero 1 left, Hero 2 center, Hero 3 right.
@@ -318,4 +318,14 @@ One-time rewards, level map, chapters, stars-based rewards, max upgrade levels, 
 - Temporary lane activation feedback remains presentation-only.
 - Hero Lane gameplay rules remain unchanged: columns 0-2, 3-5, and 6-8 still map to lanes 0, 1, and 2.
 - No battle rules, board rules, progression, save, settings, enemy, level, ability, special tile, platform, audio, art, or monetization systems were changed.
-- Next planned stage: Stage 22, Battle HUD restructure v0.2.
+
+## Stage 22: Battle HUD Restructure v0.2
+
+- Stage 22 is implemented.
+- `EnemyPanel` is now the first battle content block at the top of `GameScreen`.
+- Level, moves, and Menu are now grouped in a compact row directly below the enemy.
+- Battle HUD level text uses compact `Level N` formatting for current `level_#` ids.
+- Stage 21 portrait board scaling is preserved: the board remains square and visually aligned with the hero party panel.
+- `LevelCatalog` and level config identity data were not changed.
+- No battle rules, board rules, progression, save, settings, enemy, level catalog, ability, special tile, platform, audio, art, or monetization systems were changed.
+- Next planned stage: Stage 23, Level identity cleanup v0.2: numbers only.
