@@ -190,6 +190,7 @@ Hero unlocks, rarity, gacha, hero shards, ability upgrades, max levels, scaling 
 
 - Battles are created from data configs.
 - Stage 16 adds a 10-level early campaign slice.
+- Player-facing level labels are numbers-only, such as `Level 1`.
 - Levels 1-2 are very easy intro battles, levels 3-4 add light challenge, levels 5-6 make upgrades feel useful, levels 7-9 are noticeably harder, and level 10 is the first early mini-boss gatekeeper.
 - Levels define enemy config, moves, enemy intent, and fixed hero configs.
 - `LevelSelectScreen` chooses a `level_id` and routes to `TeamSelectScreen` for pre-battle team confirmation (see Stage 19).
@@ -249,7 +250,7 @@ One-time rewards, level map, chapters, stars-based rewards, max upgrade levels, 
 ## Stage 16: Balance and Content Expansion v0.1
 
 - Stage 16 is implemented.
-- `LevelCatalog` now contains a 10-level early campaign slice from Training Dummy through Gatekeeper.
+- `LevelCatalog` now contains a 10-level early campaign slice with fixed enemy configs.
 - The campaign uses a simple enemy HP/attack, moves, and upgrade-point reward curve.
 - All levels still use the single objective: defeat the enemy.
 - Balance tests cover catalog size, unique IDs, required content fields, total reward range, and broad difficulty growth.
@@ -328,4 +329,16 @@ One-time rewards, level map, chapters, stars-based rewards, max upgrade levels, 
 - Stage 21 portrait board scaling is preserved: the board remains square and visually aligned with the hero party panel.
 - `LevelCatalog` and level config identity data were not changed.
 - No battle rules, board rules, progression, save, settings, enemy, level catalog, ability, special tile, platform, audio, art, or monetization systems were changed.
-- Next planned stage: Stage 23, Level identity cleanup v0.2: numbers only.
+
+## Stage 23: Level Identity Cleanup v0.2
+
+- Stage 23 is implemented.
+- Player-facing level labels are now numbers-only: `Level 1`, `Level 2`, etc.
+- Location-style level names were removed from `LevelCatalog` display names and level UI.
+- `LevelLabelFormatter` centralizes `level_#` to `Level N` formatting with safe fallback behavior.
+- `level_id` values remain unchanged as `level_1` through `level_10`.
+- The current campaign still has exactly 10 levels.
+- Enemy configs, rewards, balance, progression rules, battle UI layout, board layout, save format, settings, platform, audio, art, ability rules, and special tile rules were not changed.
+- Random enemy selection is not implemented yet.
+- A 100-level campaign is not implemented yet.
+- Next planned stage: Stage 24, Enemy roster and random enemy selection v0.1.

@@ -2,7 +2,7 @@
 
 Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
-The project is currently through Stage 22: Battle HUD restructure v0.2. It defines the app shell, a MainMenu with Play, Heroes, and Settings entry points, a level-select-only level flow, a pre-battle team confirmation flow, a menu-accessible full roster hero upgrade screen, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, damage-only roster ability mappings, local hero upgrades, saved campaign progress, and lightweight swap, clear, special activation, and refill feedback for a vertical 9:16 game.
+The project is currently through Stage 23: Level identity cleanup v0.2. It defines the app shell, a MainMenu with Play, Heroes, and Settings entry points, a level-select-only level flow with numbers-only level labels, a pre-battle team confirmation flow, a menu-accessible full roster hero upgrade screen, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, damage-only roster ability mappings, local hero upgrades, saved campaign progress, and lightweight swap, clear, special activation, and refill feedback for a vertical 9:16 game.
 
 ## Project Direction
 
@@ -30,7 +30,7 @@ This stage includes:
 - A Godot project with `scenes/app/App.tscn` as the main scene.
 - A minimal screen router.
 - A MainMenu with Play, Heroes, and Settings buttons.
-- A `LevelSelectScreen` with 10 early campaign level buttons, lock/completion/star state, and routing to `TeamSelectScreen`.
+- A `LevelSelectScreen` with 10 early campaign level buttons labeled `Level 1` through `Level 10`, lock/completion/star state, and routing to `TeamSelectScreen`.
 - A `TeamSelectScreen` that confirms or edits the saved 3-hero team before starting the selected level.
 - A main-menu `UpgradeScreen` route for roster hero upgrades.
 - A persistent `SettingsScreen` route for presentation/audio setting toggles.
@@ -49,8 +49,8 @@ This stage includes:
 - Special tiles affect board clearing only; special-cleared cells do not add extra battle damage or ability charge yet.
 - `TileView` shows simple placeholder `H`/`V`/`B` markers for special tiles.
 - UI-independent battle logic under `scripts/game/battle/`: heroes, enemy, battle state, Hero Lane activation, damage, ability charge, enemy intent/action, and turn results.
-- Data-driven configs under `scripts/game/config/`: `HeroConfig`, `EnemyConfig`, `LevelConfig`, and `LevelCatalog`.
-- `LevelCatalog` contains a 10-level early campaign slice from Training Dummy through Gatekeeper.
+- Data-driven configs under `scripts/game/config/`: `HeroConfig`, `EnemyConfig`, `LevelConfig`, `LevelLabelFormatter`, and `LevelCatalog`.
+- `LevelCatalog` contains a 10-level early campaign slice with numbers-only display names and unchanged level IDs.
 - Hero roster definitions under `scripts/game/config/` with `HeroCatalog`.
 - `HeroConfig` carries immutable base hero stats plus `ability_id`.
 - `BattleFactory` creates battle state from level configs or the saved selected team when `PlayerProgress` and `HeroCatalog` are available.
@@ -67,7 +67,7 @@ This stage includes:
 - Victory saves level completion and stars based on remaining moves.
 - Best stars and best remaining moves are preserved across replays.
 - Sequential unlocks open each next level after the previous level is completed.
-- `LevelSelectScreen` shows locked, open, completed, and star state for each level.
+- `LevelSelectScreen` shows numbers-only level labels plus locked, open, completed, and star state for each level.
 - Upgrade points can raise each hero's attack level or HP level.
 - `UpgradeScreen` now acts as the full roster character upgrade screen.
 - `UpgradeScreen` shows all 5 `HeroCatalog` heroes, current upgrade points, ability IDs, attack/HP levels, current attack/HP, next attack/HP previews, and +Attack/+HP buttons.
@@ -125,7 +125,7 @@ This stage excludes:
 
 Stage 16 is complete. The project now has a 10-level early campaign slice using the existing defeat-the-enemy objective, enemy HP/attack fields, move limits, and repeatable `reward_upgrade_points`.
 
-The curve is intentionally simple: levels 1-2 are forgiving intro fights, levels 3-4 are light challenge, levels 5-6 begin to reward upgrades, levels 7-9 are noticeably harder, and level 10 is an early Gatekeeper mini-boss. Balance is v0.1 and expected to change after playtesting.
+The curve is intentionally simple: levels 1-2 are forgiving intro fights, levels 3-4 are light challenge, levels 5-6 begin to reward upgrades, levels 7-9 are noticeably harder, and level 10 is an early mini-boss. Balance is v0.1 and expected to change after playtesting.
 
 No new mechanics were introduced in Stage 16. Yandex SDK, cloud save, ads, payments, monetization, final art, sound, and particles remain out of scope. Stage 18 is now complete.
 
@@ -190,6 +190,14 @@ The battle HUD now displays compact `Level N` text such as `Level 1` and `Level 
 
 No gameplay, progression, enemy, level catalog, save, settings, platform, audio, art, monetization, ability, board matching, or special tile rules were changed.
 
+## Stage 23: Level Identity Cleanup v0.2
+
+Stage 23 is complete. Player-facing level labels are now numbers-only: `Level 1`, `Level 2`, and so on through the current 10-level campaign.
+
+Location-style level names were removed from `LevelCatalog` display names and level UI. `level_id` values remain unchanged as `level_1` through `level_10`, and the campaign still has exactly 10 levels.
+
+Enemy configs, rewards, balance, progression, battle UI layout, board layout, save format, settings, platform, audio, art, monetization, abilities, and special tile rules were not changed. Random enemy selection and a 100-level campaign are not implemented yet.
+
 ## How To Open And Run
 
 1. Open Godot 4.x.
@@ -252,6 +260,12 @@ Run the level config test with:
 
 ```bash
 godot --headless --script res://scripts/tests/level_config_test.gd
+```
+
+Run the level identity test with:
+
+```bash
+godot --headless --script res://scripts/tests/level_identity_test.gd
 ```
 
 Run the balance curve test with:
@@ -352,5 +366,5 @@ godot --headless --script res://scripts/tests/settings_screen_data_test.gd
 
 ## Next Planned Stages
 
-- Stage 23: Level identity cleanup v0.2: numbers only.
+- Stage 24: Enemy roster and random enemy selection v0.1.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.

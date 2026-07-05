@@ -1,6 +1,7 @@
 extends SceneTree
 
 const GAME_SCREEN := preload("res://scenes/screens/GameScreen.tscn")
+const LEVEL_LABEL_FORMATTER := preload("res://scripts/game/config/level_label_formatter.gd")
 
 var _failures := 0
 
@@ -46,9 +47,10 @@ func _run() -> void:
 
 	screen.set_level_id("level_1")
 	await process_frame
-	_expect_equal(screen._format_level_label("level_1", "Training Grounds"), "Level 1", "level_1 formats as Level 1")
-	_expect_equal(screen._format_level_label("level_10", "Gatekeeper"), "Level 10", "level_10 formats as Level 10")
-	_expect_equal(screen._format_level_label("boss_intro", "Boss Intro"), "Boss Intro", "unexpected level ids use fallback display name")
+	var level_label := battle_hud.get_node("%LevelLabel") as Label
+	_expect_equal(level_label.text, "Level 1", "battle HUD uses shared compact level label")
+	_expect_equal(LEVEL_LABEL_FORMATTER.format_level_label("level_10", "Gatekeeper"), "Level 10", "level_10 formats as Level 10")
+	_expect_equal(LEVEL_LABEL_FORMATTER.format_level_label("boss_intro", "Boss Intro"), "Boss Intro", "unexpected level ids use fallback display name")
 
 	var menu_signals: Array = []
 	screen.back_pressed.connect(func(): menu_signals.append(true))

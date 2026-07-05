@@ -54,13 +54,17 @@ func _test_level_five_is_harder(catalog) -> void:
 
 
 func _test_level_contents(catalog) -> void:
+	var expected_level_number := 1
 	for level_config in catalog.get_all_levels():
 		_expect_equal(level_config.hero_configs.size(), 3, "%s has 3 heroes" % level_config.level_id)
 		_expect_true(level_config.moves > 0, "%s has positive moves" % level_config.level_id)
 		_expect_true(level_config.display_name != "", "%s has display name" % level_config.level_id)
+		_expect_equal(level_config.display_name, "Level %d" % expected_level_number, "%s has numbers-only display name" % level_config.level_id)
+		_expect_false(level_config.display_name.contains(":"), "%s display name has no subtitle separator" % level_config.level_id)
 		_expect_true(level_config.enemy_config != null, "%s has enemy config" % level_config.level_id)
 		_expect_true(level_config.enemy_config.max_hp > 0, "%s enemy has hp" % level_config.level_id)
 		_expect_true(level_config.reward_upgrade_points >= 0, "%s has non-negative reward" % level_config.level_id)
+		expected_level_number += 1
 	print("ok - each level has heroes, moves, and enemy config")
 
 
@@ -70,6 +74,10 @@ func _expect_true(value: bool, message: String) -> void:
 
 	_failures += 1
 	push_error("FAILED: %s" % message)
+
+
+func _expect_false(value: bool, message: String) -> void:
+	_expect_true(not value, message)
 
 
 func _expect_equal(actual, expected, message: String) -> void:

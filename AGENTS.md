@@ -2,7 +2,7 @@
 
 This is a Godot match-3 battle project intended for Yandex Games. The default layout is vertical 9:16 portrait with a 720x1280 base resolution.
 
-The current stage is a playable battle prototype through Stage 22: Battle HUD restructure v0.2, with damage-only hero abilities, line special tiles, color bombs, a 10-level early campaign slice, enemy and reward curve, balance tests, board animation polish, saved level completion, stars, sequential unlocks, upgrade points, hero progression, character upgrade screen v0.2, local save v0.1, a MainMenu/LevelSelect/TeamSelect/GameScreen navigation flow, a persistent SettingsScreen, a top enemy battle layout, a compact Level / Moves / Menu HUD row, a wider portrait battle board aligned to the hero party panel, and no permanent Hero Lane separator/debug grid visuals. `GameScreen` is allowed to wire `BattlePresenter`, `BoardView`, `BoardInputController`, `TurnFeedbackPresenter`, `AbilityFeedbackPresenter`, `SettingsManager`, and result-flow reward/completion calls through `ProgressManager`, but the board core, battle core, config layer, progression layer, save layer, and settings layer must remain separate from UI implementation details.
+The current stage is a playable battle prototype through Stage 23: Level identity cleanup v0.2, with damage-only hero abilities, line special tiles, color bombs, a 10-level early campaign slice with numbers-only level labels, enemy and reward curve, balance tests, board animation polish, saved level completion, stars, sequential unlocks, upgrade points, hero progression, character upgrade screen v0.2, local save v0.1, a MainMenu/LevelSelect/TeamSelect/GameScreen navigation flow, a persistent SettingsScreen, a top enemy battle layout, a compact Level / Moves / Menu HUD row, a wider portrait battle board aligned to the hero party panel, and no permanent Hero Lane separator/debug grid visuals. `GameScreen` is allowed to wire `BattlePresenter`, `BoardView`, `BoardInputController`, `TurnFeedbackPresenter`, `AbilityFeedbackPresenter`, `SettingsManager`, and result-flow reward/completion calls through `ProgressManager`, but the board core, battle core, config layer, progression layer, save layer, and settings layer must remain separate from UI implementation details.
 
 ## Project Rules
 
@@ -24,7 +24,8 @@ The current stage is a playable battle prototype through Stage 22: Battle HUD re
 - Stage 19 is complete: MainMenu now has Play and Heroes, with Heroes opening UpgradeScreen directly from the main menu. Play opens LevelSelect, which now only shows levels and their locked/open/completed/star state. LevelSelect routes a selected level to TeamSelectScreen, which confirms/edits the saved team, requires exactly 3 unique heroes, and starts GameScreen with the selected level_id only after saving the team through `ProgressManager.set_selected_team_ids()`.
 - Stage 20 is complete: MainMenu now also has a Settings button that opens `SettingsScreen`. `PlayerSettings`/`SettingsManager` under `scripts/game/settings/` persist animations_enabled, reduced_motion_enabled, debug_labels_enabled, music_enabled, and sound_effects_enabled to `user://settings_v1.json`, fully separate from `user://save_v1.json` and `PlayerProgress`. Animation/reduced-motion settings are applied presentation-only in `TileView`, `BoardMotionAnimator`, `TurnFeedbackPresenter`, and `AbilityFeedbackPresenter`. Debug labels optionally show `level_id`/`hero_id` in `LevelSelectScreen`, `TeamSelectScreen`, `UpgradeScreen`, and `HeroCard`. Reset Progress was intentionally not added. No gameplay, board, battle, progression, or save-format rules changed.
 - Stage 21 is complete: the portrait battle board is scaled wider and visually aligns with the hero party panel; permanent Hero Lane separator/debug grid visuals were removed from the normal board state; temporary lane activation feedback remains presentation-only. Hero Lane gameplay logic remains unchanged. No gameplay, progression, enemy, level, save, settings, platform, audio, art, or monetization systems were changed.
-- Stage 22 is complete: `EnemyPanel` is now the top battle screen element, the Level / Moves / Menu row is directly below it, the battle HUD uses compact `Level N` text, and Stage 21 board scaling and hero panel alignment are preserved. No gameplay, progression, enemy, level catalog, save, settings, platform, audio, art, or monetization systems were changed. Next planned stage: Stage 23, Level identity cleanup v0.2.
+- Stage 22 is complete: `EnemyPanel` is now the top battle screen element, the Level / Moves / Menu row is directly below it, the battle HUD uses compact `Level N` text, and Stage 21 board scaling and hero panel alignment are preserved. No gameplay, progression, enemy, level catalog, save, settings, platform, audio, art, or monetization systems were changed.
+- Stage 23 is complete: level labels are now numbers-only, location-style level names were removed from player-facing UI and `LevelCatalog` display names, level IDs remain unchanged, and the current campaign remains 10 levels. Enemy configs, rewards, balance, progression, battle UI layout, board layout, save, settings, platform, audio, art, and monetization systems were not changed. Next planned stage: Stage 24, Enemy roster and random enemy selection v0.1.
 
 ## Gameplay Direction
 
@@ -138,6 +139,7 @@ The current stage is a playable battle prototype through Stage 22: Battle HUD re
 - `LevelSelectScreen` only selects `level_id`, displays level progress, and must not create `BattleState`.
 - `LevelSelectScreen` must not own unlock rules.
 - `LevelCatalog` contains exactly 10 early campaign levels for Stage 16.
+- Player-facing level labels use numbers only, such as `Level 1`; keep `level_id` values stable.
 - All current levels use the same objective: defeat the enemy.
 - Stage 16 uses only existing enemy stats, moves, and `reward_upgrade_points`.
 - Rewards remain repeatable in v0.1.
@@ -175,3 +177,4 @@ The current stage is a playable battle prototype through Stage 22: Battle HUD re
 - No ads or monetization.
 - No Yandex SDK.
 - No final art assets.
+- No 100-level campaign or random enemy selection yet.

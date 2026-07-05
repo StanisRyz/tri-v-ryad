@@ -1,6 +1,7 @@
 extends Control
 
 const LEVEL_CATALOG_SCRIPT := preload("res://scripts/game/config/level_catalog.gd")
+const LEVEL_LABEL_FORMATTER_SCRIPT := preload("res://scripts/game/config/level_label_formatter.gd")
 
 signal level_selected(level_id: String)
 signal back_pressed
@@ -52,9 +53,9 @@ func _build_level_buttons() -> void:
 			status = "Open"
 
 		button.custom_minimum_size = Vector2(420, 74)
-		var title: String = level_config.display_name
+		var title: String = LEVEL_LABEL_FORMATTER_SCRIPT.format_level_label(level_config.level_id, level_config.display_name)
 		if _is_debug_labels_enabled():
-			title = "%s (%s)" % [level_config.display_name, level_config.level_id]
+			title = "%s (%s)" % [title, level_config.level_id]
 		button.text = "%s\n%s | Stars: %d/3" % [title, status, stars]
 		button.disabled = not unlocked
 		if unlocked:

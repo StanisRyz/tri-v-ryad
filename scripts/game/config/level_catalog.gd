@@ -37,16 +37,16 @@ func get_default_level_id() -> String:
 
 func _register_levels() -> void:
 	var heroes := HERO_CONFIG_SCRIPT.get_default_party()
-	_add_level("level_1", "Level 1: Training Yard", ENEMY_CONFIG_SCRIPT.training_dummy(), 24, heroes, 1)
-	_add_level("level_2", "Level 2: Slime Trail", ENEMY_CONFIG_SCRIPT.small_slime(), 24, heroes, 1)
-	_add_level("level_3", "Level 3: Scout Post", ENEMY_CONFIG_SCRIPT.goblin_scout(), 23, heroes, 1)
-	_add_level("level_4", "Level 4: Fighter Camp", ENEMY_CONFIG_SCRIPT.goblin_fighter(), 23, heroes, 2)
-	_add_level("level_5", "Level 5: Armored Watch", ENEMY_CONFIG_SCRIPT.armored_goblin(), 22, heroes, 2)
-	_add_level("level_6", "Level 6: Wild Path", ENEMY_CONFIG_SCRIPT.wild_wolf(), 22, heroes, 2)
-	_add_level("level_7", "Level 7: Bandit Road", ENEMY_CONFIG_SCRIPT.bandit(), 21, heroes, 2)
-	_add_level("level_8", "Level 8: Brute Cave", ENEMY_CONFIG_SCRIPT.orc_brute(), 21, heroes, 2)
-	_add_level("level_9", "Level 9: Shaman Hollow", ENEMY_CONFIG_SCRIPT.cave_shaman(), 20, heroes, 2)
-	_add_level("level_10", "Level 10: Gatekeeper", ENEMY_CONFIG_SCRIPT.gatekeeper(), 22, heroes, 3)
+	_add_level("level_1", "Level 1", ENEMY_CONFIG_SCRIPT.training_dummy(), 24, heroes, 1)
+	_add_level("level_2", "Level 2", ENEMY_CONFIG_SCRIPT.small_slime(), 24, heroes, 1)
+	_add_level("level_3", "Level 3", ENEMY_CONFIG_SCRIPT.goblin_scout(), 23, heroes, 1)
+	_add_level("level_4", "Level 4", ENEMY_CONFIG_SCRIPT.goblin_fighter(), 23, heroes, 2)
+	_add_level("level_5", "Level 5", ENEMY_CONFIG_SCRIPT.armored_goblin(), 22, heroes, 2)
+	_add_level("level_6", "Level 6", ENEMY_CONFIG_SCRIPT.wild_wolf(), 22, heroes, 2)
+	_add_level("level_7", "Level 7", ENEMY_CONFIG_SCRIPT.bandit(), 21, heroes, 2)
+	_add_level("level_8", "Level 8", ENEMY_CONFIG_SCRIPT.orc_brute(), 21, heroes, 2)
+	_add_level("level_9", "Level 9", ENEMY_CONFIG_SCRIPT.cave_shaman(), 20, heroes, 2)
+	_add_level("level_10", "Level 10", ENEMY_CONFIG_SCRIPT.gatekeeper(), 22, heroes, 3)
 
 
 func _add_level(level_id: String, display_name: String, enemy_config, moves: int, hero_configs: Array, reward_upgrade_points: int) -> void:

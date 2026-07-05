@@ -7,6 +7,7 @@ const BATTLE_PRESENTER_SCRIPT := preload("res://scripts/game/presentation/battle
 const BOARD_INPUT_CONTROLLER_SCRIPT := preload("res://scripts/game/input/board_input_controller.gd")
 const TURN_FEEDBACK_PRESENTER_SCRIPT := preload("res://scripts/game/presentation/turn_feedback_presenter.gd")
 const ABILITY_FEEDBACK_PRESENTER_SCRIPT := preload("res://scripts/game/presentation/ability_feedback_presenter.gd")
+const LEVEL_LABEL_FORMATTER_SCRIPT := preload("res://scripts/game/config/level_label_formatter.gd")
 const PORTRAIT_CONTENT_WIDTH := 664.0
 const PORTRAIT_BOARD_SIZE := PORTRAIT_CONTENT_WIDTH
 const LANDSCAPE_CONTENT_WIDTH := 560.0
@@ -138,7 +139,7 @@ func _on_board_changed(board: BoardModel) -> void:
 
 func _on_battle_state_changed(state: BattleState) -> void:
 	if battle_hud.has_method("set_values"):
-		battle_hud.set_values(_format_level_label(_current_level_id, _current_level_name), "Moves: %d" % state.moves_left)
+		battle_hud.set_values(LEVEL_LABEL_FORMATTER_SCRIPT.format_level_label(_current_level_id, _current_level_name), "Moves: %d" % state.moves_left)
 
 	if enemy_panel.has_method("set_enemy_state"):
 		enemy_panel.set_enemy_state(state.enemy, state.enemy_intent)
@@ -150,19 +151,6 @@ func _on_battle_state_changed(state: BattleState) -> void:
 func _on_level_changed(level_config) -> void:
 	_current_level_id = level_config.level_id
 	_current_level_name = level_config.display_name
-
-
-func _format_level_label(level_id: String, fallback_display_name: String) -> String:
-	var prefix := "level_"
-	if level_id.begins_with(prefix):
-		var level_number := level_id.substr(prefix.length())
-		if level_number.is_valid_int():
-			return "Level %d" % int(level_number)
-
-	if fallback_display_name != "":
-		return fallback_display_name
-
-	return "Level"
 
 
 func _on_turn_resolved(_result: BattleTurnResult) -> void:
