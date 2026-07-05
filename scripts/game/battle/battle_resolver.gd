@@ -6,9 +6,14 @@ var _damage_resolver := DamageResolver.new()
 var _ability_charge_resolver := AbilityChargeResolver.new()
 var _enemy_action_resolver := EnemyActionResolver.new()
 var _direct_damage_resolver := DirectMatchDamageResolver.new()
+var _round_modifier = null
 
 
-func resolve_player_matches(state: BattleState, matches: Array[MatchResult], board_result: BoardResolveResult = null, round_modifier = null) -> BattleTurnResult:
+func set_round_modifier(round_modifier) -> void:
+	_round_modifier = round_modifier
+
+
+func resolve_player_matches(state: BattleState, matches: Array[MatchResult], board_result: BoardResolveResult = null) -> BattleTurnResult:
 	var turn_result := BattleTurnResult.new()
 
 	if state.is_finished():
@@ -18,7 +23,7 @@ func resolve_player_matches(state: BattleState, matches: Array[MatchResult], boa
 	if FeatureFlags.HERO_SYSTEMS_ENABLED:
 		_resolve_hero_path(state, matches, turn_result)
 	else:
-		_resolve_direct_damage_path(state, matches, board_result, round_modifier, turn_result)
+		_resolve_direct_damage_path(state, matches, board_result, _round_modifier, turn_result)
 
 	state.moves_left = max(0, state.moves_left - 1)
 	state.turn_number += 1

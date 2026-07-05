@@ -140,7 +140,9 @@ func _test_hero_upgrades_do_not_affect_direct_damage() -> void:
 	_expect_equal(result.total_damage_to_enemy, 3, "heavily upgraded hero attack stats do not change direct match damage")
 
 	var red_x3 = load("res://scripts/game/config/round_modifier_config.gd").new("red_x3", "Red Surge", "Red crystals deal x3 damage", {TileType.RED: 3.0})
-	var modified_result := BattleResolver.new().resolve_player_matches(state, matches, null, red_x3)
+	var modified_resolver := BattleResolver.new()
+	modified_resolver.set_round_modifier(red_x3)
+	var modified_result := modified_resolver.resolve_player_matches(state, matches)
 	_expect_equal(modified_result.total_damage_to_enemy, 9, "round modifier damage is unaffected by hero upgrade stats")
 	print("ok - hero upgrades do not affect direct match damage")
 

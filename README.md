@@ -2,7 +2,7 @@
 
 Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
-The project is currently through Stage 35: Direct LevelSelect startup and simplified UX polish v0.1. Hero/RPG systems (TeamSelect, hero party UI, hero abilities/charge/lane damage, hero upgrades) remain frozen and hidden from the active flow via `FeatureFlags.HERO_SYSTEMS_ENABLED := false`, and gameplay deals direct match-3 damage to the enemy. Each battle selects one positive round modifier that multiplies damage for matched cells of specific colors, while Stage 34 direct balance controls moves and enemy HP. The active flow is now App startup -> LevelSelect -> GameScreen -> LevelSelect, with Settings opened from the LevelSelect top panel; MainMenu remains in the project as inactive legacy/future code but is skipped by normal startup and play. The app shell, a level-select hub with numbers-only labels for `level_1` through `level_100` grouped into 10 locked zones, a shared 10-enemy base roster with battle-start random enemy selection and direct-mode HP scaling, battle background placeholders, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, saved campaign progress with stars/unlocks, and lightweight swap, clear, special activation, and refill feedback all remain active for a vertical 9:16 game. Hero code, MainMenu, TeamSelect, and UpgradeScreen remain in the project (not deleted) for a future revisit.
+The project is currently through Stage 36: ImageSlot asset placeholder pipeline v0.1. Hero/RPG systems (TeamSelect, hero party UI, hero abilities/charge/lane damage, hero upgrades) remain frozen and hidden from the active flow via `FeatureFlags.HERO_SYSTEMS_ENABLED := false`, and gameplay deals direct match-3 damage to the enemy. Each battle selects one positive round modifier that multiplies damage for matched cells of specific colors, while Stage 34 direct balance controls moves and enemy HP. The active flow remains App startup -> LevelSelect -> GameScreen -> LevelSelect, with Settings opened from the LevelSelect top panel; MainMenu remains in the project as inactive legacy/future code but is skipped by normal startup and play. The app shell, a level-select hub with numbers-only labels for `level_1` through `level_100` grouped into 10 locked zones, a shared 10-enemy base roster with battle-start random enemy selection and direct-mode HP scaling, battle background placeholders, the safe `ImageSlot`/`GameAssetCatalog` placeholder image pipeline, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, saved campaign progress with stars/unlocks, and lightweight swap, clear, special activation, and refill feedback all remain active for a vertical 9:16 game. Hero code, MainMenu, TeamSelect, and UpgradeScreen remain in the project (not deleted) for a future revisit.
 
 ## Project Direction
 
@@ -34,7 +34,9 @@ This stage includes:
 - Inactive legacy `TeamSelectScreen` and `UpgradeScreen` code retained for a future hero-systems revisit.
 - A persistent `SettingsScreen` route opened from LevelSelect for presentation/audio setting toggles.
 - A playable battle screen with a top enemy panel, compact Level/Moves/Levels HUD row, widened 9x9 `BoardView`, placeholder `TileView` tiles, hidden inactive hero party panel, status text, result overlay, and a Levels button back to LevelSelect.
-- Reusable UI components: `BattleHud`, `EnemyPanel`, `HeroPartyPanel`, `HeroCard`, and `BattleResultOverlay`.
+- Reusable UI components: `BattleHud`, `EnemyPanel`, `HeroPartyPanel`, `HeroCard`, `BattleResultOverlay`, and `ImageSlot`.
+- `GameAssetCatalog` maps reserved image asset keys to future `res://assets/images/` paths and loads optional textures safely.
+- Empty asset folders under `assets/images/backgrounds/`, `assets/images/enemies/`, `assets/images/tiles/`, `assets/images/ui/`, and `assets/images/heroes/` for later real images.
 - A lightweight `LayoutManager` for UI-only portrait and landscape layout decisions.
 - UI-independent board generation, match detection, swap validation, gravity/refill, and cascade resolution under `scripts/game/board/`.
 - Special tile board logic under `scripts/game/board/`: `SpecialTileType`, `SpecialTileData`, and `SpecialTileResolver`.
@@ -341,7 +343,17 @@ Stage 35 is complete. The app now starts directly on `LevelSelectScreen`; `MainM
 
 Active navigation is now: App startup -> LevelSelect -> GameScreen -> LevelSelect, and LevelSelect -> Settings -> LevelSelect. The LevelSelect top panel has a Settings button, Settings Back returns to LevelSelect, and the GameScreen/ResultOverlay Levels button returns to LevelSelect. LevelSelect still opens GameScreen directly when an unlocked level is selected.
 
-TeamSelect, Heroes/Upgrade flow, `HeroPartyPanel`, hero abilities, hero charge, hero lane damage, and hero upgrades remain inactive. Direct match damage, round modifiers, Stage 34 balance, enemies, levels, moves, stars, progression, locked zones, enemy scaling, backgrounds, and enemy presentation remain active. No new gameplay systems, debuffs, player HP, enemy attacks, enemies, levels, asset pipeline, audio, platform SDK, ads, payments, final art, sound/music assets, particles, or Reset Progress were added. Next planned stage: Stage 36, ImageSlot asset placeholder pipeline v0.1.
+TeamSelect, Heroes/Upgrade flow, `HeroPartyPanel`, hero abilities, hero charge, hero lane damage, and hero upgrades remain inactive. Direct match damage, round modifiers, Stage 34 balance, enemies, levels, moves, stars, progression, locked zones, enemy scaling, backgrounds, and enemy presentation remain active. No new gameplay systems, debuffs, player HP, enemy attacks, enemies, levels, asset pipeline, audio, platform SDK, ads, payments, final art, sound/music assets, particles, or Reset Progress were added.
+
+## Stage 36: ImageSlot Asset Placeholder Pipeline v0.1
+
+Stage 36 is complete. `ImageSlot` (`scripts/ui/image_slot.gd`) is a reusable Control-based image holder that can load a texture through an asset key or accept a `Texture2D` directly. When the key is empty, unknown, or points to a missing file, it clears the texture and shows a configured placeholder color instead of crashing.
+
+`GameAssetCatalog` (`scripts/game/config/game_asset_catalog.gd`) is the central registry for reserved image asset keys and future paths. It covers 5 battle backgrounds, 10 enemies, 5 tiles, 5 UI panel assets, and 5 future/frozen hero portraits. It checks `ResourceLoader.exists()` before loading optional files, returns `null` for missing or non-texture resources, and does not preload missing assets.
+
+Empty asset folders were added under `assets/images/` with `.gitkeep` files only. No real image assets were added. `ImageSlot` was not mass-integrated into active UI yet; GameScreen backgrounds, EnemyPanel avatar, TileView, LevelSelect panels, BattleResultOverlay, and RoundModifierPanel still use their current placeholder paths. Stage 37 will integrate asset loading into active image holders.
+
+Active gameplay remains unchanged: LevelSelect startup, Settings from LevelSelect, GameScreen Menu/Back to LevelSelect, direct match damage, round modifiers, Stage 34 balance, progression, stars, zones, enemies, and battle flow all remain active. Hero/RPG systems remain frozen and inactive. Next planned stage: Stage 37, Asset loading integration for active imageholders v0.1.
 
 ## How To Open And Run
 
@@ -478,6 +490,18 @@ Run the battle background presenter integration test with:
 
 ```bash
 godot --headless --script res://scripts/tests/battle_background_presenter_test.gd
+```
+
+Run the asset catalog test with:
+
+```bash
+godot --headless --script res://scripts/tests/game_asset_catalog_test.gd
+```
+
+Run the image slot test with:
+
+```bash
+godot --headless --script res://scripts/tests/image_slot_test.gd
 ```
 
 Run the upgrade economy test with:
@@ -660,5 +684,5 @@ godot --headless --script res://scripts/tests/round_modifier_balance_test.gd
 ## Next Planned Stages
 
 - Stage 26-30 block is complete. Stage 31 (hero portrait buttons and ability bars) is complete. Stage 32 (hero systems freeze and direct match damage foundation) is complete. Stage 33 (round modifiers and color damage rules) is complete. Stage 34 (direct match-3 balance pass) is complete. Stage 35 (direct LevelSelect startup and simplified UX polish) is complete.
-- Stage 36: ImageSlot asset placeholder pipeline v0.1.
+- Stage 37: Asset loading integration for active imageholders v0.1.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.

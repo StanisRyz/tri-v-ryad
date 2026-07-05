@@ -541,4 +541,12 @@ One-time rewards, level map, chapters, stars-based rewards, reset upgrades, and 
 - Direct match damage, round modifiers, Stage 34 direct balance, enemies, levels, moves, stars, progression, locked zones, enemy scaling, battle backgrounds, and enemy presentation remain active.
 - EnemyPanel and battle result copy avoid active hero-target/upgrade language in direct mode.
 - No gameplay systems, debuffs, player HP, enemy attacks against the player, new enemies, new levels, asset pipeline, audio, Yandex SDK, cloud save, ads, payments, final art, sound/music assets, particles, or Reset Progress were added.
-- Next planned stage: Stage 36, ImageSlot asset placeholder pipeline v0.1.
+- Stage 36 is implemented.
+- `ImageSlot` is a reusable placeholder/image UI component that can load a texture from `GameAssetCatalog` or accept a `Texture2D` directly.
+- `GameAssetCatalog` maps reserved keys for backgrounds, enemies, tiles, UI panels, and future/frozen hero portraits to future `res://assets/images/` paths.
+- Missing asset files are expected and safe: catalog lookup returns `null`, and `ImageSlot` shows its placeholder color.
+- Empty asset folders were added under `assets/images/` with `.gitkeep` files only; no real image assets were added.
+- `ImageSlot` is not mass-integrated into active UI yet; Stage 37 will integrate it into active imageholders.
+- Active gameplay remains unchanged: LevelSelect startup, direct match damage, round modifiers, Stage 34 direct balance, enemies, levels, moves, stars, progression, zones, battle backgrounds, and enemy presentation remain active.
+- Hero/RPG systems remain frozen and inactive.
+- Next planned stage: Stage 37, Asset loading integration for active imageholders v0.1.
