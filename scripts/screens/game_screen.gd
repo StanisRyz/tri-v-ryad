@@ -323,6 +323,7 @@ func _apply_presentation_settings() -> void:
 
 	TileView.configure_presentation(animations_enabled, reduced_motion_enabled)
 	HeroCard.set_debug_labels_enabled(_debug_labels_enabled)
+	HeroCard.set_presentation_settings(animations_enabled, reduced_motion_enabled)
 	if _turn_feedback_presenter != null:
 		_turn_feedback_presenter.configure_settings(animations_enabled, reduced_motion_enabled, _debug_labels_enabled)
 	if _ability_feedback_presenter != null:

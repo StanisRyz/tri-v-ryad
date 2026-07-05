@@ -2,7 +2,7 @@
 
 Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
-The project is currently through Stage 30: Battle readability and feedback polish v0.1. It defines the app shell, a MainMenu with Play, Heroes, and Settings entry points, a level-select-only level flow with numbers-only labels for `level_1` through `level_100` grouped into 10 locked zones, a pre-battle team confirmation flow, a shared 10-enemy base roster with battle-start random enemy selection and linear battle-time HP/attack scaling, a menu-accessible full roster hero upgrade screen with linear costs/stat growth, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, damage-only roster ability mappings, local hero upgrades, saved campaign progress, and lightweight swap, clear, special activation, and refill feedback for a vertical 9:16 game.
+The project is currently through Stage 31: Hero portrait buttons and ability bars v0.1. It defines the app shell, a MainMenu with Play, Heroes, and Settings entry points, a level-select-only level flow with numbers-only labels for `level_1` through `level_100` grouped into 10 locked zones, a pre-battle team confirmation flow, a shared 10-enemy base roster with battle-start random enemy selection and linear battle-time HP/attack scaling, a menu-accessible full roster hero upgrade screen with linear costs/stat growth, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, damage-only roster ability mappings, local hero upgrades, saved campaign progress, and lightweight swap, clear, special activation, and refill feedback for a vertical 9:16 game.
 
 ## Project Direction
 
@@ -286,6 +286,16 @@ Presentation settings continue to be respected: `animations_enabled` and `reduce
 
 No damage formulas, board rules, enemy scaling, rewards, upgrade economy, level progression, saves, settings, LevelSelect zones, battle backgrounds, hero abilities, special tile rules, platform systems, final art, audio, or monetization systems were changed. The Stage 26-30 block is now complete; the next roadmap block will be planned separately.
 
+## Stage 31: Hero Portrait Buttons and Ability Bars v0.1
+
+Stage 31 is complete. `HeroCard` (`scenes/ui/HeroCard.tscn`, `scripts/ui/hero_card.gd`) was redesigned as a square portrait-style battle control instead of a text-heavy stat card: each card now centers on a square portrait placeholder, with a red HP bar and a blue Charge bar stacked underneath it. Hero name text and Columns/lane text were removed from battle hero cards, and the separate Charge/Ability button was removed entirely.
+
+The hero portrait itself is now the ability button: pressing it emits `HeroCard.ability_pressed(lane_index)`, which `HeroPartyPanel` forwards as `ability_requested(lane_index)` to `GameScreen` exactly as before. Pressing a portrait always routes through the ability request flow when a hero occupies that slot, whether or not the ability is ready or the hero is alive, so existing "Ability is not ready yet" / "This hero is down" feedback from `AbilityFeedbackPresenter` still plays; only an empty slot (no hero assigned) disables the press.
+
+When a hero's charge is full, the portrait shows a bright gold ready-highlight border (a subtle scale pulse plays when `animations_enabled` is true and `reduced_motion_enabled` is false; the highlight border alone is shown otherwise). Defeated/down heroes show a dimmed overlay over the portrait and an empty HP bar; ability presses on a down hero still route through and are safely rejected by existing ability rules. `debug_labels_enabled` optionally shows a tiny hero-id label on the portrait; with it off, no hero id or lane text is shown anywhere on the card.
+
+Real hero portrait art and the shared `ImageSlot` asset pipeline are not part of this stage; a safe placeholder square is used instead. No battle rules, ability rules, charge formulas, damage formulas, enemy scaling, rewards, upgrade economy, progression, saves, LevelSelect zones, TeamSelect layout, platform systems, art assets, audio, or monetization systems were changed. Next planned stage: Stage 32, TeamSelect portrait layout and roster polish v0.1.
+
 ## How To Open And Run
 
 1. Open Godot 4.x.
@@ -530,7 +540,20 @@ Run the battle message formatter test with:
 godot --headless --script res://scripts/tests/battle_message_formatter_test.gd
 ```
 
+Run the hero card presentation test with:
+
+```bash
+godot --headless --script res://scripts/tests/hero_card_presentation_test.gd
+```
+
+Run the hero party panel test with:
+
+```bash
+godot --headless --script res://scripts/tests/hero_party_panel_test.gd
+```
+
 ## Next Planned Stages
 
-- Stage 26-30 block is complete. The next roadmap block will be planned separately.
+- Stage 26-30 block is complete. Stage 31 (hero portrait buttons and ability bars) is complete.
+- Stage 32: TeamSelect portrait layout and roster polish v0.1.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.

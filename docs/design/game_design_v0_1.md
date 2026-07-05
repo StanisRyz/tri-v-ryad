@@ -464,3 +464,17 @@ One-time rewards, level map, chapters, stars-based rewards, reset upgrades, and 
 - Presentation settings are respected: `animations_enabled`/`reduced_motion_enabled` continue to control feedback timing and motion, and `debug_labels_enabled` only adds hero/ability IDs to messages when explicitly enabled.
 - No damage formulas, board rules, enemy scaling, rewards, upgrade economy, level progression, saves, settings, LevelSelect zones, battle backgrounds, hero abilities, special tile rules, platform systems, final art, audio, or monetization systems were changed.
 - The Stage 26-30 block is complete. The next roadmap block will be planned separately.
+
+## Stage 31: Hero Portrait Buttons and Ability Bars v0.1
+
+- Stage 31 is implemented.
+- Battle heroes now use square portrait placeholders instead of text-heavy stat cards.
+- Hero names and Columns/lane text were removed from battle hero cards.
+- HP is shown as a red bar under the portrait; Charge is shown as a blue bar under HP.
+- The hero portrait/card now acts as the ability button; the separate Charge/Ability button was removed.
+- Pressing a ready hero portrait activates the hero ability. Pressing a not-ready or down hero portrait still routes through the normal ability request flow, so existing "Ability is not ready yet"/"This hero is down" feedback still appears; only an empty slot disables the press.
+- Ready heroes (full charge) show a highlight/glow border on the portrait, with an optional subtle pulse respecting `animations_enabled`/`reduced_motion_enabled`.
+- Down/dead heroes show a dimmed overlay and an empty HP bar.
+- Real hero portrait assets are not required yet; a safe placeholder square is used. The full `ImageSlot` pipeline remains future work for Stage 33.
+- No gameplay rules, ability rules, charge formulas, damage formulas, enemy scaling, rewards, upgrade economy, progression, saves, TeamSelect layout, LevelSelect zones, platform systems, art assets, audio assets, or monetization systems were changed.
+- Next planned stage: Stage 32, TeamSelect portrait layout and roster polish v0.1.

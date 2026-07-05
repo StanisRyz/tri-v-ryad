@@ -1,52 +1,91 @@
-[gd_scene load_steps=2 format=3 uid="uid://mrauy16mksx8"]
+[gd_scene load_steps=4 format=3 uid="uid://mrauy16mksx8"]
 
 [ext_resource type="Script" path="res://scripts/ui/hero_card.gd" id="1_1oy7n"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hp"]
+bg_color = Color(0.75, 0.16, 0.16, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_charge"]
+bg_color = Color(0.2, 0.45, 0.85, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
 [node name="HeroCard" type="PanelContainer"]
-custom_minimum_size = Vector2(0, 156)
+custom_minimum_size = Vector2(0, 124)
 offset_right = 210.0
-offset_bottom = 156.0
+offset_bottom = 124.0
 script = ExtResource("1_1oy7n")
 
 [node name="Margin" type="MarginContainer" parent="."]
 layout_mode = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 10
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
 
-[node name="Text" type="VBoxContainer" parent="Margin"]
+[node name="Content" type="VBoxContainer" parent="Margin"]
 layout_mode = 2
 theme_override_constants/separation = 6
+alignment = 1
 
-[node name="HeroNameLabel" type="Label" parent="Margin/Text"]
+[node name="PortraitButton" type="Button" parent="Margin/Content"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(72, 72)
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "Hero"
+size_flags_horizontal = 4
+focus_mode = 0
+flat = true
+text = ""
+
+[node name="DownOverlay" type="ColorRect" parent="Margin/Content/PortraitButton"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0.55)
+visible = false
+
+[node name="DebugLabel" type="Label" parent="Margin/Content/PortraitButton"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 10
 horizontal_alignment = 1
+vertical_alignment = 2
+text = ""
+visible = false
 
-[node name="LaneLabel" type="Label" parent="Margin/Text"]
+[node name="HpBar" type="ProgressBar" parent="Margin/Content"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 10)
 layout_mode = 2
-text = "Columns 1-3"
-horizontal_alignment = 1
-autowrap_mode = 3
+theme_override_styles/fill = SubResource("StyleBoxFlat_hp")
+max_value = 1.0
+step = 0.001
+value = 1.0
+show_percentage = false
 
-[node name="HpLabel" type="Label" parent="Margin/Text"]
+[node name="ChargeBar" type="ProgressBar" parent="Margin/Content"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 8)
 layout_mode = 2
-text = "HP: -- / --"
-horizontal_alignment = 1
-
-[node name="ChargeLabel" type="Label" parent="Margin/Text"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Charge: --%"
-horizontal_alignment = 1
-
-[node name="AbilityButton" type="Button" parent="Margin/Text"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 34)
-layout_mode = 2
-text = "Charge --"
+theme_override_styles/fill = SubResource("StyleBoxFlat_charge")
+max_value = 1.0
+step = 0.001
+value = 0.0
+show_percentage = false
