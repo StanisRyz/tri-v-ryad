@@ -3,6 +3,7 @@ extends SceneTree
 const PLAYER_PROGRESS_SCRIPT := "res://scripts/game/progression/player_progress.gd"
 const UPGRADE_RESOLVER_SCRIPT := "res://scripts/game/progression/upgrade_resolver.gd"
 const LEVEL_PROGRESS_STATE_SCRIPT := "res://scripts/game/progression/level_progress_state.gd"
+const ECONOMY_CONFIG := preload("res://scripts/game/progression/upgrade_economy_config.gd")
 
 var _failures := 0
 
@@ -27,11 +28,11 @@ func _initialize() -> void:
 
 	_expect_true(resolver.upgrade(progress, "hero_1", "attack"), "attack upgrade with points succeeds")
 	_expect_equal(progress.get_hero_upgrade("hero_1").attack_level, 1, "attack upgrade increases attack level")
-	_expect_equal(progress.upgrade_points, 1, "attack upgrade spends 1 point")
+	_expect_equal(progress.upgrade_points, 2 - ECONOMY_CONFIG.get_attack_upgrade_cost(0), "attack upgrade spends calculated cost")
 
 	_expect_true(resolver.upgrade(progress, "hero_1", "hp"), "hp upgrade with points succeeds")
 	_expect_equal(progress.get_hero_upgrade("hero_1").hp_level, 1, "hp upgrade increases hp level")
-	_expect_equal(progress.upgrade_points, 0, "hp upgrade spends 1 point")
+	_expect_equal(progress.upgrade_points, 0, "hp upgrade spends calculated cost")
 
 	progress.add_upgrade_points(1)
 	var before_points: int = progress.upgrade_points

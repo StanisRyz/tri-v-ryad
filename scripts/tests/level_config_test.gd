@@ -52,7 +52,7 @@ func _test_level_five_is_harder(catalog) -> void:
 	var level_100 = catalog.get_level("level_100")
 	_expect_true(level_1.moves >= level_100.moves, "level 100 moves are not more forgiving than level 1")
 	_expect_true(level_100.reward_upgrade_points >= level_1.reward_upgrade_points, "level 100 reward is not lower than level 1")
-	print("ok - placeholder campaign curve trends across 100 levels")
+	print("ok - campaign economy curve trends across 100 levels")
 
 
 func _test_level_contents(catalog) -> void:

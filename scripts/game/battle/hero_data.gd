@@ -1,6 +1,8 @@
 extends RefCounted
 class_name HeroData
 
+const ECONOMY_CONFIG := preload("res://scripts/game/progression/upgrade_economy_config.gd")
+
 var id := ""
 var display_name := ""
 var lane_index := 0
@@ -38,11 +40,11 @@ func _init(
 
 
 func get_attack() -> int:
-	return base_attack + attack_level * 2
+	return ECONOMY_CONFIG.get_attack_for_level(base_attack, attack_level)
 
 
 func get_max_hp() -> int:
-	return base_max_hp + hp_level * 10
+	return ECONOMY_CONFIG.get_max_hp_for_level(base_max_hp, hp_level)
 
 
 func is_alive() -> bool:

@@ -176,15 +176,16 @@ Gacha, rarity, hero unlocks, hero shards, portraits, drag-and-drop team UI, and 
 - Upgrade points are spent in the Heroes screen, implemented through the existing `UpgradeScreen` route.
 - All 5 roster heroes from `HeroCatalog` can be upgraded.
 - Attack and HP are upgraded separately.
-- Each hero row shows ability ID, attack level, HP level, current attack, next attack, current max HP, and next max HP.
+- Each hero row shows ability ID, attack level, HP level, current attack, next attack, current max HP, next max HP, upgrade cost, and max/not-enough-points state.
 - Upgrade purchases go through `ProgressManager` and `UpgradeResolver`.
+- Upgrade costs and stat growth use `UpgradeEconomyConfig`.
 - `UpgradeScreen` does not mutate `PlayerProgress` directly and does not read or write save files.
 - Upgrades save locally through the existing progress save flow.
 - Old saves without `hero_4` or `hero_5` upgrade records are handled safely at 0/0 until upgraded.
 - `BattleFactory` uses saved upgraded stats for future battles, including selected `hero_4` and `hero_5`.
 - The victory overlay shows reward/stars and links to the Heroes screen, but does not contain +Attack/+HP spending controls.
 
-Hero unlocks, rarity, gacha, hero shards, ability upgrades, max levels, scaling costs, reset upgrades, equipment, portraits, and final art remain future work.
+Hero unlocks, rarity, gacha, hero shards, ability upgrades, reset upgrades, equipment, portraits, and final art remain future work.
 
 ## Level System v0.1
 
@@ -193,7 +194,7 @@ Hero unlocks, rarity, gacha, hero shards, ability upgrades, max levels, scaling 
 - Player-facing level labels are numbers-only, such as `Level 1`.
 - Level IDs use `level_1` through `level_100`; `level_101` is not part of the catalog.
 - Level labels use `Level 1` through `Level 100`.
-- Moves and upgrade-point rewards use placeholder v0.1 curves across the 100 levels.
+- Moves use the Stage 25 placeholder curve; upgrade-point rewards use the Stage 27 linear economy curve across the 100 levels.
 - Levels define moves, fallback/default enemy config, and fixed hero configs.
 - Battles select enemies from the shared `EnemyCatalog` roster through `EnemySelectionResolver` when the level starts.
 - `EnemySelectionResolver` is deterministic/testable when given a seeded `RandomNumberGenerator`.
@@ -205,7 +206,7 @@ Hero unlocks, rarity, gacha, hero shards, ability upgrades, max levels, scaling 
 - Victory and defeat rules stay unchanged.
 - 100-level balance is foundation-only v0.1 content tuning and is expected to change after playtesting.
 
-Hero economy rebalance, reward rebalance, upgrade cost rebalance, hero selection, complex objectives, final economy balance, and full LevelSelect UX polish remain future work.
+Hero selection, complex objectives, final economy balance, LevelSelect zones, and full LevelSelect UX polish remain future work.
 
 ## Enemy Roster and Selection v0.1
 
@@ -228,13 +229,16 @@ New enemies, new enemy mechanics, boss mechanics, and final enemy balance remain
 - Rewards can be earned repeatedly in v0.1.
 - Upgrade points can improve hero attack or HP.
 - Attack level and HP level are stored per hero in `HeroUpgradeState`.
+- Attack upgrades cost `1 + attack_level`; HP upgrades cost `1 + hp_level`.
+- Attack grows by 2 per attack level; max HP grows by 10 per HP level.
+- Attack and HP upgrades are capped at level 20.
 - `PlayerProgress` stores upgrade points, hero upgrade state, and level progress.
 - Progress saves locally to `user://save_v1.json`.
 - `BattleFactory` applies saved attack and HP levels to future battle heroes.
 - `HeroConfig` remains base data and is not mutated by upgrades.
 - Upgrade rewards remain repeatable in v0.1.
 
-Cloud save, Yandex SDK integration, one-time rewards, stars-based rewards, hero selection, max levels, scaling costs, reset upgrades, and complex economy remain future work.
+Cloud save, Yandex SDK integration, one-time rewards, stars-based rewards, hero selection, reset upgrades, and complex economy remain future work.
 
 ## Campaign Progression v0.1
 
@@ -249,7 +253,7 @@ Cloud save, Yandex SDK integration, one-time rewards, stars-based rewards, hero 
 - Best stars and best remaining moves are preserved across replays.
 - Local save stores level progress in `user://save_v1.json`.
 
-One-time rewards, level map, chapters, stars-based rewards, max upgrade levels, scaling costs, reset upgrades, and deeper upgrade trees remain future work.
+One-time rewards, level map, chapters, stars-based rewards, reset upgrades, and deeper upgrade trees remain future work.
 
 ## MVP Exclusions
 
@@ -261,7 +265,7 @@ One-time rewards, level map, chapters, stars-based rewards, max upgrade levels, 
 - No complex meta progression.
 - No one-time rewards or stars-based rewards.
 - No level map or chapters.
-- No hero unlocks, gacha, rarity, shards, ability upgrades, max upgrade levels, scaling upgrade costs, reset upgrades, equipment, portraits, or final art.
+- No hero unlocks, gacha, rarity, shards, ability upgrades, reset upgrades, equipment, portraits, or final art.
 - No cloud save.
 - No target selection or ability upgrades.
 - No full cascade animations.
@@ -402,3 +406,23 @@ One-time rewards, level map, chapters, stars-based rewards, max upgrade levels, 
 - Stage 25's 100-level campaign IDs, labels, move curve, reward curve, fallback enemy cycle, and default level remain unchanged.
 - Hero economy, rewards, upgrade costs, hero stat progression, LevelSelect zones, backgrounds, battle feedback polish, board rules, abilities, special tiles, saves, Yandex SDK, cloud save, ads, payments, sound, particles, and final art were not changed.
 - Next planned stage: Stage 27, Linear rewards and hero upgrade economy v0.2.
+
+## Stage 27: Linear Rewards and Hero Upgrade Economy v0.2
+
+- Stage 27 is implemented.
+- `UpgradeEconomyConfig` centralizes economy constants.
+- Attack upgrade cost is `1 + attack_level * 1`.
+- HP upgrade cost is `1 + hp_level * 1`.
+- Attack stat growth is `base_attack + attack_level * 2`.
+- Max HP stat growth is `base_max_hp + hp_level * 10`.
+- Max attack level and max HP level are both 20.
+- `UpgradeResolver` rejects upgrades for invalid heroes, invalid upgrade types, insufficient points, and max level.
+- `UpgradeResolver` spends the exact calculated cost and increments only the requested stat level.
+- Level rewards use `1 + floor((level_number - 1) / 8) + floor(level_number / 10)`, clamped to 23.
+- Every 10th level gives a mild deterministic wall reward bonus through the `floor(level_number / 10)` term.
+- Rewards remain repeatable in v0.1.
+- `UpgradeScreen` shows current and next stat values, cost text, not-enough-points state, and max-level state.
+- Stage 26 enemy scaling was not changed.
+- No new gameplay systems, enemies, levels, currencies, gacha, equipment, abilities, special tiles, platform SDK, cloud save, ads, payments, final art, audio assets, or particles were added.
+- Economy is v0.2 and still expected to change after playtesting.
+- Next planned stage: Stage 28, LevelSelect zones for 100 levels v0.2.

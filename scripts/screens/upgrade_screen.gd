@@ -119,13 +119,17 @@ func _refresh() -> void:
 		var view_data = HERO_UPGRADE_VIEW_DATA_SCRIPT.from_config(hero_config, progress, _progress_manager)
 
 		controls["ability"].text = "Ability: %s" % view_data.ability_id
-		controls["stats"].text = "Attack Lv %d | %d -> %d\nHP Lv %d | %d -> %d" % [
+		controls["stats"].text = "Attack Lv %d/%d | %d -> %d | %s\nHP Lv %d/%d | %d -> %d | %s" % [
 			view_data.attack_level,
+			view_data.max_attack_level,
 			view_data.current_attack,
 			view_data.next_attack,
+			view_data.attack_status,
 			view_data.hp_level,
+			view_data.max_hp_level,
 			view_data.current_max_hp,
 			view_data.next_max_hp,
+			view_data.hp_status,
 		]
 		controls["attack_button"].disabled = not view_data.can_upgrade_attack
 		controls["hp_button"].disabled = not view_data.can_upgrade_hp
@@ -136,14 +140,15 @@ func _on_upgrade_button_pressed(hero_id: String, stat: String) -> void:
 		_set_status("Progress is unavailable.")
 		return
 
-	if _progress_manager.upgrade(hero_id, stat):
+	var result: Dictionary = _progress_manager.upgrade_with_result(hero_id, stat) if _progress_manager.has_method("upgrade_with_result") else {}
+	if bool(result.get("accepted", false)):
 		if stat == "attack":
 			_set_status("Attack upgraded")
 		else:
 			_set_status("HP upgraded")
 		_refresh()
 	else:
-		_set_status("Not enough upgrade points")
+		_set_status(_get_upgrade_result_message(str(result.get("reason", "not_enough_points"))))
 		_refresh()
 
 
@@ -170,3 +175,11 @@ func _get_hero_title_text(hero_config: HeroConfig) -> String:
 	if _settings_manager != null and _settings_manager.get_settings().debug_labels_enabled:
 		return "%s (%s)" % [hero_config.display_name, hero_config.hero_id]
 	return hero_config.display_name
+
+
+func _get_upgrade_result_message(reason: String) -> String:
+	if reason == "max_level":
+		return "Max level"
+	if reason == "invalid_hero" or reason == "invalid_upgrade_type":
+		return "Upgrade unavailable"
+	return "Not enough upgrade points"

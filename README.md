@@ -2,7 +2,7 @@
 
 Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
-The project is currently through Stage 26: linear enemy scaling and level multipliers v0.1. It defines the app shell, a MainMenu with Play, Heroes, and Settings entry points, a level-select-only level flow with numbers-only labels for `level_1` through `level_100`, a pre-battle team confirmation flow, a shared 10-enemy base roster with battle-start random enemy selection and linear battle-time HP/attack scaling, a menu-accessible full roster hero upgrade screen, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, damage-only roster ability mappings, local hero upgrades, saved campaign progress, and lightweight swap, clear, special activation, and refill feedback for a vertical 9:16 game.
+The project is currently through Stage 27: linear rewards and hero upgrade economy v0.2. It defines the app shell, a MainMenu with Play, Heroes, and Settings entry points, a level-select-only level flow with numbers-only labels for `level_1` through `level_100`, a pre-battle team confirmation flow, a shared 10-enemy base roster with battle-start random enemy selection and linear battle-time HP/attack scaling, a menu-accessible full roster hero upgrade screen with linear costs/stat growth, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, damage-only roster ability mappings, local hero upgrades, saved campaign progress, and lightweight swap, clear, special activation, and refill feedback for a vertical 9:16 game.
 
 ## Project Direction
 
@@ -55,13 +55,13 @@ This stage includes:
 - `EnemyScalingResolver` applies soft linear level multipliers to selected enemies at battle start, after enemy selection and before `BattleFactory` creates `BattleState`.
 - Enemy scaling changes only battle-time `max_hp` and `attack`; enemy identity, display name, intent turns, and target lane are preserved, and `EnemyCatalog` base stats are not mutated.
 - `LevelCatalog` deterministically generates a 100-level campaign foundation with numbers-only display names and `level_1` through `level_100` IDs.
-- The Stage 25 moves and upgrade-point reward values are placeholder v0.1 curves, not final balance.
+- Level rewards use the Stage 27 linear economy curve from `UpgradeEconomyConfig`; moves remain the Stage 25 placeholder curve.
 - `LevelConfig.enemy_config` remains compatibility fallback/default data; runtime battle starts use the shared roster selection.
 - Hero roster definitions under `scripts/game/config/` with `HeroCatalog`.
 - `HeroConfig` carries immutable base hero stats plus `ability_id`.
 - `BattleFactory` creates battle state from level configs, optional enemy overrides, or the saved selected team when `PlayerProgress` and `HeroCatalog` are available.
 - Selected team order maps to Hero Lanes: slot 1 to lane 0, slot 2 to lane 1, and slot 3 to lane 2.
-- Local progression under `scripts/game/progression/`: `PlayerProgress`, `HeroUpgradeState`, `UpgradeResolver`, and `ProgressManager`.
+- Local progression under `scripts/game/progression/`: `PlayerProgress`, `HeroUpgradeState`, `UpgradeEconomyConfig`, `UpgradeResolver`, and `ProgressManager`.
 - Saved team selection under `scripts/game/progression/` with `TeamSelectionState` and `TeamSelectionResolver`.
 - `PlayerProgress` stores selected team IDs, and `ProgressManager` is the boundary for reading, validating, saving, and normalizing selected team data.
 - Saved level progress under `scripts/game/progression/`: `LevelProgressState` and `LevelCompletionResolver`.
@@ -69,14 +69,14 @@ This stage includes:
 - Progress, completion, stars, and hero upgrades are saved locally to `user://save_v1.json`.
 - Selected team data is saved locally to `user://save_v1.json`.
 - Missing, incomplete, duplicated, or unknown saved team data falls back to the default team: `hero_1`, `hero_2`, `hero_3`.
-- Victory grants `LevelConfig.reward_upgrade_points`, and rewards can be earned repeatedly in v0.1.
+- Victory grants `LevelConfig.reward_upgrade_points` from a deterministic linear reward curve, and rewards can be earned repeatedly in v0.1.
 - Victory saves level completion and stars based on remaining moves.
 - Best stars and best remaining moves are preserved across replays.
 - Sequential unlocks open each next level after the previous level is completed.
 - `LevelSelectScreen` shows numbers-only level labels plus locked, open, completed, and star state for each level.
-- Upgrade points can raise each hero's attack level or HP level.
+- Upgrade points can raise each hero's attack level or HP level up to explicit max levels.
 - `UpgradeScreen` now acts as the full roster character upgrade screen.
-- `UpgradeScreen` shows all 5 `HeroCatalog` heroes, current upgrade points, ability IDs, attack/HP levels, current attack/HP, next attack/HP previews, and +Attack/+HP buttons.
+- `UpgradeScreen` shows all 5 `HeroCatalog` heroes, current upgrade points, ability IDs, attack/HP levels, current attack/HP, next attack/HP previews, linear upgrade costs, max-level/not-enough-points state, and +Attack/+HP buttons.
 - +Attack/+HP purchases go through `ProgressManager` and `UpgradeResolver`.
 - Old saves without `hero_4` or `hero_5` upgrade records are handled safely and create those records when displayed or upgraded.
 - The victory overlay only shows reward/stars and links to Heroes; it does not contain upgrade spending UI.
@@ -115,6 +115,9 @@ This stage includes:
 - Enemy catalog tests in `scripts/tests/enemy_catalog_test.gd`.
 - Enemy selection tests in `scripts/tests/enemy_selection_test.gd`.
 - Enemy scaling tests in `scripts/tests/enemy_scaling_test.gd`.
+- Upgrade economy tests in `scripts/tests/upgrade_economy_test.gd`.
+- Reward curve tests in `scripts/tests/reward_curve_test.gd`.
+- Upgrade screen data tests in `scripts/tests/upgrade_screen_data_test.gd`.
 - Progression tests in `scripts/tests/progression_test.gd`.
 - Save manager tests in `scripts/tests/save_manager_test.gd`.
 - Battle factory progress tests in `scripts/tests/battle_factory_progress_test.gd`.
@@ -126,10 +129,10 @@ This stage excludes:
 
 - Wrapped bombs, special + special combos, special battle damage, cascade damage, full cascade-step animation, full falling animation, real tile movement, particles, sound, and final art.
 - Target selection, cooldowns, ability upgrades, gacha, rarity, hero unlocks, hero shards, hero inventory, portraits, final art, drag-and-drop team UI, and complex ability additions.
-- One-time rewards, stars-based rewards, level map, chapters, complex economy, max upgrade levels, scaling upgrade costs, reset upgrades, and complex objectives.
+- One-time rewards, stars-based rewards, level map, chapters, complex economy, reset upgrades, and complex objectives.
 - New heroes, hero unlocks, gacha, rarity, shards, ability upgrades, TeamSelectScreen rework, Yandex SDK, cloud save, ads, payments, sound, particles, and final art.
 - Cloud saves, ads, payments, Yandex SDK, RuStore, Android-specific code, and monetization.
-- Campaign reward rebalance, hero economy rebalance, upgrade cost rebalance, LevelSelect zones, battle backgrounds, battle feedback polish, and full LevelSelect UX polish.
+- LevelSelect zones, battle backgrounds, enemy presentation polish, battle feedback polish, and full LevelSelect UX polish.
 
 ## Stage 16: Balance and Content Expansion v0.1
 
@@ -238,6 +241,16 @@ Only enemy `max_hp` and `attack` are scaled. Enemy ID, display name, intent turn
 
 Hero economy, rewards, upgrade costs, LevelSelect zones, backgrounds, battle feedback polish, saves, board rules, hero abilities, special tiles, platform SDK, cloud save, ads, payments, sound, particles, and final art were not changed. Stage 25's 100-level campaign structure remains unchanged.
 
+## Stage 27: Linear Rewards and Hero Upgrade Economy v0.2
+
+Stage 27 is complete. Hero upgrade costs, hero attack growth, hero HP growth, and 100-level rewards now use readable linear formulas from `UpgradeEconomyConfig`.
+
+Attack upgrades cost `1 + attack_level * 1`; HP upgrades cost `1 + hp_level * 1`. Attack grows as `base_attack + attack_level * 2`; max HP grows as `base_max_hp + hp_level * 10`. Attack and HP upgrade levels are capped at 20.
+
+Level rewards use `1 + floor((level_number - 1) / 8) + floor(level_number / 10)`, clamped to a safe max of 23. Every 10th level therefore gives a mild extra wall reward without adding new reward types.
+
+`UpgradeScreen` now displays cost/status text for each stat and disables upgrades when the player lacks points or the stat is at max level. Stage 26 enemy scaling was not changed. No new gameplay systems, enemies, levels, currencies, gacha, equipment, abilities, special tiles, platform SDK, cloud save, ads, payments, final art, audio assets, or particles were added. Economy balance is v0.2 and expected to change after playtesting.
+
 ## How To Open And Run
 
 1. Open Godot 4.x.
@@ -344,6 +357,18 @@ Run the enemy scaling test with:
 godot --headless --script res://scripts/tests/enemy_scaling_test.gd
 ```
 
+Run the upgrade economy test with:
+
+```bash
+godot --headless --script res://scripts/tests/upgrade_economy_test.gd
+```
+
+Run the reward curve test with:
+
+```bash
+godot --headless --script res://scripts/tests/reward_curve_test.gd
+```
+
 Run the progression test with:
 
 ```bash
@@ -404,6 +429,12 @@ Run the character upgrade screen data test with:
 godot --headless --script res://scripts/tests/character_upgrade_screen_data_test.gd
 ```
 
+Run the upgrade screen data test with:
+
+```bash
+godot --headless --script res://scripts/tests/upgrade_screen_data_test.gd
+```
+
 Run the navigation flow test with:
 
 ```bash
@@ -430,5 +461,5 @@ godot --headless --script res://scripts/tests/settings_screen_data_test.gd
 
 ## Next Planned Stages
 
-- Stage 27: Linear rewards and hero upgrade economy v0.2.
+- Stage 28: LevelSelect zones for 100 levels v0.2.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.

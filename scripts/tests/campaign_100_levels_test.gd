@@ -7,6 +7,7 @@ const BATTLE_FACTORY := preload("res://scripts/game/battle/battle_factory.gd")
 const BATTLE_PRESENTER := preload("res://scripts/game/presentation/battle_presenter.gd")
 const PLAYER_PROGRESS := preload("res://scripts/game/progression/player_progress.gd")
 const LEVEL_COMPLETION_RESOLVER := preload("res://scripts/game/progression/level_completion_resolver.gd")
+const ECONOMY_CONFIG := preload("res://scripts/game/progression/upgrade_economy_config.gd")
 
 var _failures := 0
 
@@ -16,7 +17,7 @@ func _initialize() -> void:
 
 	var catalog := LEVEL_CATALOG.new()
 	_test_catalog_identity(catalog)
-	_test_placeholder_curves(catalog)
+	_test_economy_curves(catalog)
 	_test_level_100_battle_creation(catalog)
 	_test_level_100_presenter_start()
 	_test_late_unlocks(catalog)
@@ -50,13 +51,13 @@ func _test_catalog_identity(catalog) -> void:
 		_expect_false(_contains_old_level_name(level_config.display_name), "%s has no old location-style name" % level_config.level_id)
 
 
-func _test_placeholder_curves(catalog) -> void:
+func _test_economy_curves(catalog) -> void:
 	for level_config in catalog.get_all_levels():
 		_expect_true(level_config.moves > 0, "%s moves are positive" % level_config.level_id)
 		_expect_true(level_config.moves >= 19, "%s moves stay in safe minimum range" % level_config.level_id)
 		_expect_true(level_config.moves <= 24, "%s moves stay in safe maximum range" % level_config.level_id)
 		_expect_true(level_config.reward_upgrade_points >= 0, "%s reward is non-negative" % level_config.level_id)
-		_expect_true(level_config.reward_upgrade_points <= 5, "%s reward stays in safe placeholder range" % level_config.level_id)
+		_expect_true(level_config.reward_upgrade_points <= ECONOMY_CONFIG.LEVEL_REWARD_MAX, "%s reward stays in safe economy range" % level_config.level_id)
 
 
 func _test_level_100_battle_creation(catalog) -> void:

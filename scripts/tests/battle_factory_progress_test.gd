@@ -3,6 +3,7 @@ extends SceneTree
 const LEVEL_CATALOG_SCRIPT := "res://scripts/game/config/level_catalog.gd"
 const BATTLE_FACTORY_SCRIPT := "res://scripts/game/battle/battle_factory.gd"
 const PLAYER_PROGRESS_SCRIPT := "res://scripts/game/progression/player_progress.gd"
+const ECONOMY_CONFIG := preload("res://scripts/game/progression/upgrade_economy_config.gd")
 
 var _failures := 0
 
@@ -26,8 +27,8 @@ func _initialize() -> void:
 
 	_expect_equal(upgraded_hero.attack_level, 3, "factory applies attack level")
 	_expect_equal(upgraded_hero.hp_level, 2, "factory applies hp level")
-	_expect_equal(upgraded_hero.get_attack(), level_config.hero_configs[0].base_attack + 6, "upgraded attack value is derived")
-	_expect_equal(upgraded_hero.get_max_hp(), level_config.hero_configs[0].base_max_hp + 20, "upgraded max hp is derived")
+	_expect_equal(upgraded_hero.get_attack(), level_config.hero_configs[0].base_attack + 3 * ECONOMY_CONFIG.ATTACK_GROWTH_PER_LEVEL, "upgraded attack value is derived")
+	_expect_equal(upgraded_hero.get_max_hp(), level_config.hero_configs[0].base_max_hp + 2 * ECONOMY_CONFIG.HP_GROWTH_PER_LEVEL, "upgraded max hp is derived")
 	_expect_equal(upgraded_hero.current_hp, upgraded_hero.get_max_hp(), "upgraded current hp starts full")
 	_expect_equal(level_config.hero_configs[0].base_attack, 10, "base HeroConfig attack is not mutated")
 	_expect_equal(level_config.hero_configs[0].base_max_hp, 100, "base HeroConfig hp is not mutated")

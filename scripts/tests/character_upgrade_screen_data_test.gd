@@ -5,6 +5,7 @@ const HERO_UPGRADE_VIEW_DATA_SCRIPT := "res://scripts/game/presentation/hero_upg
 const PLAYER_PROGRESS_SCRIPT := "res://scripts/game/progression/player_progress.gd"
 const PROGRESS_MANAGER_SCRIPT := "res://scripts/game/progression/progress_manager.gd"
 const SAVE_MANAGER_SCRIPT := "res://scripts/game/save/save_manager.gd"
+const ECONOMY_CONFIG := preload("res://scripts/game/progression/upgrade_economy_config.gd")
 
 const TEST_SAVE_PATH := "user://test_character_upgrade_save_v1.json"
 const TEST_TEMP_SAVE_PATH := "user://test_character_upgrade_save_v1.tmp"
@@ -45,9 +46,12 @@ func _initialize() -> void:
 	var hero_4_config = catalog.get_hero("hero_4")
 	var hero_4_data = load(HERO_UPGRADE_VIEW_DATA_SCRIPT).from_config(hero_4_config, progress_manager.get_progress(), progress_manager)
 	_expect_equal(hero_4_data.current_attack, hero_4_config.base_attack, "hero_4 current attack uses base at level 0")
-	_expect_equal(hero_4_data.next_attack, hero_4_config.base_attack + 2, "hero_4 next attack previews +2")
+	_expect_equal(hero_4_data.next_attack, hero_4_config.base_attack + ECONOMY_CONFIG.ATTACK_GROWTH_PER_LEVEL, "hero_4 next attack previews linear growth")
 	_expect_equal(hero_4_data.current_max_hp, hero_4_config.base_max_hp, "hero_4 current hp uses base at level 0")
-	_expect_equal(hero_4_data.next_max_hp, hero_4_config.base_max_hp + 10, "hero_4 next hp previews +10")
+	_expect_equal(hero_4_data.next_max_hp, hero_4_config.base_max_hp + ECONOMY_CONFIG.HP_GROWTH_PER_LEVEL, "hero_4 next hp previews linear growth")
+	_expect_equal(hero_4_data.attack_cost, ECONOMY_CONFIG.get_attack_upgrade_cost(0), "hero_4 attack cost uses economy config")
+	_expect_equal(hero_4_data.hp_cost, ECONOMY_CONFIG.get_hp_upgrade_cost(0), "hero_4 hp cost uses economy config")
+	_expect_equal(hero_4_data.attack_status, "Cost: %d" % ECONOMY_CONFIG.get_attack_upgrade_cost(0), "hero_4 attack status shows cost")
 
 	var points_before_invalid: int = progress_manager.get_upgrade_points()
 	_expect_false(progress_manager.upgrade("hero_4", "speed"), "invalid stat fails")
@@ -56,18 +60,18 @@ func _initialize() -> void:
 
 	_expect_true(progress_manager.upgrade("hero_4", "attack"), "hero_4 attack upgrade succeeds")
 	_expect_equal(progress_manager.get_hero_upgrade("hero_4").attack_level, 1, "hero_4 attack level increases")
-	_expect_equal(progress_manager.get_upgrade_points(), 2, "hero_4 attack upgrade spends one point")
+	_expect_equal(progress_manager.get_upgrade_points(), 3 - ECONOMY_CONFIG.get_attack_upgrade_cost(0), "hero_4 attack upgrade spends calculated cost")
 
 	_expect_true(progress_manager.upgrade("hero_5", "hp"), "hero_5 hp upgrade succeeds")
 	_expect_equal(progress_manager.get_hero_upgrade("hero_5").hp_level, 1, "hero_5 hp level increases")
-	_expect_equal(progress_manager.get_upgrade_points(), 1, "hero_5 hp upgrade spends one point")
+	_expect_equal(progress_manager.get_upgrade_points(), 3 - ECONOMY_CONFIG.get_attack_upgrade_cost(0) - ECONOMY_CONFIG.get_hp_upgrade_cost(0), "hero_5 hp upgrade spends calculated cost")
 
 	var hero_5_config = catalog.get_hero("hero_5")
 	var hero_5_data = load(HERO_UPGRADE_VIEW_DATA_SCRIPT).from_config(hero_5_config, progress_manager.get_progress(), progress_manager)
 	_expect_equal(hero_5_data.current_attack, hero_5_config.base_attack, "hero_5 current attack stays base")
-	_expect_equal(hero_5_data.next_attack, hero_5_config.base_attack + 2, "hero_5 next attack previews +2")
-	_expect_equal(hero_5_data.current_max_hp, hero_5_config.base_max_hp + 10, "hero_5 current hp includes one level")
-	_expect_equal(hero_5_data.next_max_hp, hero_5_config.base_max_hp + 20, "hero_5 next hp previews next level")
+	_expect_equal(hero_5_data.next_attack, hero_5_config.base_attack + ECONOMY_CONFIG.ATTACK_GROWTH_PER_LEVEL, "hero_5 next attack previews linear growth")
+	_expect_equal(hero_5_data.current_max_hp, hero_5_config.base_max_hp + ECONOMY_CONFIG.HP_GROWTH_PER_LEVEL, "hero_5 current hp includes one level")
+	_expect_equal(hero_5_data.next_max_hp, hero_5_config.base_max_hp + ECONOMY_CONFIG.HP_GROWTH_PER_LEVEL * 2, "hero_5 next hp previews next level")
 
 	var saved_progress = save_manager.load_progress()
 	_expect_equal(saved_progress.get_hero_upgrade("hero_4").attack_level, 1, "saved progress includes hero_4 upgrade")

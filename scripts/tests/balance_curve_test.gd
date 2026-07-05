@@ -1,12 +1,13 @@
 extends SceneTree
 
 const LEVEL_CATALOG_SCRIPT := "res://scripts/game/config/level_catalog.gd"
+const ECONOMY_CONFIG := preload("res://scripts/game/progression/upgrade_economy_config.gd")
 
 const EXPECTED_LEVEL_COUNT := 100
 const MIN_MOVES := 19
 const MAX_MOVES := 24
 const MIN_REWARD := 1
-const MAX_REWARD := 5
+const MAX_REWARD := ECONOMY_CONFIG.LEVEL_REWARD_MAX
 
 var _failures := 0
 
@@ -52,8 +53,8 @@ func _test_level_invariants(levels: Array) -> void:
 		_expect_true(level_config.moves >= MIN_MOVES, "%s moves stay above safe minimum" % level_config.level_id)
 		_expect_true(level_config.moves <= MAX_MOVES, "%s moves stay below safe maximum" % level_config.level_id)
 		_expect_true(level_config.reward_upgrade_points >= 0, "%s has non-negative reward" % level_config.level_id)
-		_expect_true(level_config.reward_upgrade_points >= MIN_REWARD, "%s reward stays above placeholder minimum" % level_config.level_id)
-		_expect_true(level_config.reward_upgrade_points <= MAX_REWARD, "%s reward stays below placeholder maximum" % level_config.level_id)
+		_expect_true(level_config.reward_upgrade_points >= MIN_REWARD, "%s reward stays above economy minimum" % level_config.level_id)
+		_expect_true(level_config.reward_upgrade_points <= MAX_REWARD, "%s reward stays below economy maximum" % level_config.level_id)
 	print("ok - all levels have valid content data")
 
 
@@ -61,7 +62,7 @@ func _test_reward_range(levels: Array) -> void:
 	var level_1 = levels[0]
 	var level_100 = levels[levels.size() - 1]
 	_expect_true(level_100.reward_upgrade_points >= level_1.reward_upgrade_points, "rewards grow across the campaign")
-	print("ok - reward range is a safe placeholder curve")
+	print("ok - reward range is a safe linear economy curve")
 
 
 func _test_difficulty_curve(catalog, levels: Array) -> void:
@@ -70,7 +71,7 @@ func _test_difficulty_curve(catalog, levels: Array) -> void:
 	_expect_true(final_level.moves <= first_level.moves, "level 100 moves are no higher than level 1")
 	_expect_true(catalog.has_level("level_100"), "level_100 exists")
 	_expect_false(catalog.has_level("level_101"), "level_101 does not exist")
-	print("ok - campaign placeholder curve uses moves/rewards, not enemy scaling")
+	print("ok - campaign curve uses moves/rewards without changing enemy scaling")
 
 
 func _expect_true(value: bool, message: String) -> void:

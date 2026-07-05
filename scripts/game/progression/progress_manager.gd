@@ -124,13 +124,37 @@ func can_upgrade(hero_id: String, stat: String) -> bool:
 	return upgrade_resolver.can_upgrade(progress, hero_id, stat)
 
 
-func upgrade(hero_id: String, stat: String) -> bool:
+func get_upgrade_cost(hero_id: String, stat: String) -> int:
 	if hero_catalog != null and not hero_catalog.has_hero(hero_id):
-		return false
-	if not upgrade_resolver.upgrade(progress, hero_id, stat):
-		return false
-	save()
-	return true
+		return -1
+	return upgrade_resolver.get_upgrade_cost(progress, hero_id, stat)
+
+
+func get_upgrade_result(hero_id: String, stat: String) -> Dictionary:
+	if hero_catalog != null and not hero_catalog.has_hero(hero_id):
+		return {
+			"accepted": false,
+			"reason": "invalid_hero",
+			"cost": -1,
+			"current_level": 0,
+			"max_level": 0,
+			"stat": stat,
+			"hero_id": hero_id,
+		}
+	return upgrade_resolver.get_upgrade_result(progress, hero_id, stat)
+
+
+func upgrade_with_result(hero_id: String, stat: String) -> Dictionary:
+	if hero_catalog != null and not hero_catalog.has_hero(hero_id):
+		return get_upgrade_result(hero_id, stat)
+	var result: Dictionary = upgrade_resolver.upgrade_with_result(progress, hero_id, stat)
+	if bool(result.get("accepted", false)):
+		save()
+	return result
+
+
+func upgrade(hero_id: String, stat: String) -> bool:
+	return bool(upgrade_with_result(hero_id, stat).get("accepted", false))
 
 
 func reset_progress() -> void:
