@@ -133,13 +133,13 @@ func _test_ability_rejected_messages() -> void:
 
 
 func _test_victory_message() -> void:
-	_expect_equal(_formatter.format_victory_message(0, 0), "Victory!", "victory message with no reward")
-	_expect_equal(_formatter.format_victory_message(10, 2), "Victory! +10 points (2/3 stars)", "victory message with reward")
+	_expect_equal(_formatter.format_victory_message(0, 0), "Victory! Progress saved (0/3 stars)", "victory message with no reward")
+	_expect_equal(_formatter.format_victory_message(10, 2), "Victory! Progress saved (2/3 stars)", "victory message with reward")
 	print("ok - victory message")
 
 
 func _test_defeat_message() -> void:
-	_expect_equal(_formatter.format_defeat_message(), "Defeat — use boosted colors and try again", "defeat message")
+	_expect_equal(_formatter.format_defeat_message(), "Defeat: use boosted colors, special tiles, and better matches", "defeat message")
 	print("ok - defeat message")
 
 

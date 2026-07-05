@@ -70,16 +70,19 @@ func _test_level_select_signals() -> void:
 	await process_frame
 
 	_expect_true(screen.has_signal("level_selected"), "level select exposes level_selected")
-	_expect_true(screen.has_signal("back_pressed"), "level select exposes back_pressed")
+	_expect_true(screen.has_signal("settings_pressed"), "level select exposes settings_pressed")
+	_expect_false(screen.has_signal("back_pressed"), "level select no longer exposes active back navigation")
 	_expect_false(screen.has_signal("team_pressed"), "level select no longer exposes team_pressed")
 	_expect_false(screen.has_signal("upgrades_pressed"), "level select no longer exposes upgrades_pressed")
 	_expect_false(screen.has_node("%TeamButton"), "level select no longer has a team button")
 	_expect_false(screen.has_node("%UpgradesButton"), "level select no longer has an upgrades button")
+	_expect_false(screen.has_node("%BackButton"), "level select no longer has an active back button")
+	_expect_true(screen.has_node("%SettingsButton"), "level select has a settings button")
 
-	var back_signals: Array = []
-	screen.back_pressed.connect(func(): back_signals.append(true))
-	screen.get_node("%BackButton").pressed.emit()
-	_expect_equal(back_signals.size(), 1, "level select back button emits back_pressed")
+	var settings_signals: Array = []
+	screen.settings_pressed.connect(func(): settings_signals.append(true))
+	screen.get_node("%SettingsButton").pressed.emit()
+	_expect_equal(settings_signals.size(), 1, "level select settings button emits settings_pressed")
 
 	screen.queue_free()
 

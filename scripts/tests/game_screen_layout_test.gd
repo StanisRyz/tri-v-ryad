@@ -84,8 +84,8 @@ func _run() -> void:
 	_expect_equal(enemy_name_label.text, "Goblin Scout", "enemy panel shows enemy name")
 	_expect_true(enemy_hp_label.text.find(str(enemy_data.max_hp)) != -1, "enemy panel shows HP text")
 	_expect_equal(enemy_hp_bar.value, 1.0, "enemy panel HP bar reflects full health")
-	_expect_true(enemy_intent_label.text.find("Attack:") != -1, "enemy panel shows attack in intent text")
-	_expect_equal(enemy_target_label.text, "Target: Right", "enemy panel shows target lane label")
+	_expect_equal(enemy_intent_label.text, "Goal: defeat enemy | Enemy does not attack", "enemy panel shows direct-mode enemy copy")
+	_expect_equal(enemy_target_label.text, "Match crystals to deal damage", "enemy panel avoids hero-target copy in direct mode")
 
 	enemy_panel.set_enemy_state(null, null)
 	await process_frame

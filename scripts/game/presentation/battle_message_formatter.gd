@@ -170,15 +170,12 @@ static func format_ability_rejected_message(reason: String) -> String:
 			return "Ability unavailable"
 
 
-static func format_victory_message(reward_points: int, stars: int) -> String:
-	if reward_points <= 0:
-		return "Victory!"
-
-	return "Victory! +%d points (%d/3 stars)" % [max(0, reward_points), clampi(stars, 0, 3)]
+static func format_victory_message(_reward_points: int, stars: int) -> String:
+	return "Victory! Progress saved (%d/3 stars)" % clampi(stars, 0, 3)
 
 
 static func format_defeat_message() -> String:
-	return "Defeat — use boosted colors and try again"
+	return "Defeat: use boosted colors, special tiles, and better matches"
 
 
 static func _ability_display_name(data, debug_labels_enabled: bool) -> String:

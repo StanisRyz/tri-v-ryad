@@ -20,9 +20,9 @@ func _ready() -> void:
 	hide_result()
 
 
-func show_victory(reward_points: int = 0, stars: int = 0) -> void:
+func show_victory(_reward_points: int = 0, stars: int = 0) -> void:
 	result_label.text = "Victory"
-	reward_label.text = "Reward: +%d points" % max(0, reward_points)
+	reward_label.text = "Progress saved"
 	stars_label.text = "Stars: %d/3" % clampi(stars, 0, 3)
 	stars_label.visible = true
 	upgrades_button.visible = FeatureFlags.HERO_SYSTEMS_ENABLED
@@ -32,7 +32,7 @@ func show_victory(reward_points: int = 0, stars: int = 0) -> void:
 
 func show_defeat() -> void:
 	result_label.text = "Defeat"
-	reward_label.text = "No reward"
+	reward_label.text = "Use boosted colors, better matches, and special tiles"
 	stars_label.text = ""
 	stars_label.visible = false
 	upgrades_button.visible = false

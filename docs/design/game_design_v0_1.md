@@ -40,7 +40,7 @@ Exact activation, charge, targeting, and combo rules are intentionally not imple
 ## Battle Screen Layout
 
 - Enemy panel at the top.
-- Compact HUD row directly below the enemy panel for Level / Moves / Menu.
+- Compact HUD row directly below the enemy panel for Level / Moves / Levels.
 - 9x9 board in the center, scaled in portrait to align visually with the hero party panel.
 - 3 hero cards below the board.
 - Board lanes map mechanically to the hero cards: Hero 1 left, Hero 2 center, Hero 3 right.
@@ -200,7 +200,7 @@ Hero unlocks, rarity, gacha, hero shards, ability upgrades, reset upgrades, equi
 - `EnemySelectionResolver` is deterministic/testable when given a seeded `RandomNumberGenerator`.
 - Selected enemies are scaled by `EnemyScalingResolver` after selection and before `BattleFactory` creates `BattleState`.
 - Enemy level scaling is linear-only and changes only HP and attack.
-- `LevelSelectScreen` groups the 100-level campaign into 10 zones of 10 levels, shows only the selected unlocked zone, chooses a `level_id`, and routes to `TeamSelectScreen` for pre-battle team confirmation (see Stage 19 and Stage 28).
+- `LevelSelectScreen` groups the 100-level campaign into 10 zones of 10 levels, shows only the selected unlocked zone, chooses a `level_id`, opens `GameScreen` directly, and opens Settings from its top panel. `MainMenuScreen` and `TeamSelectScreen` remain inactive legacy/future code in the active direct flow (see Stage 32 and Stage 35).
 - `GameScreen` starts the selected level through `BattlePresenter`.
 - Every level uses the same objective: defeat the enemy.
 - Victory and defeat rules stay unchanged.
@@ -525,4 +525,20 @@ One-time rewards, level map, chapters, stars-based rewards, reset upgrades, and 
 - Progression/stars/locked zones are unchanged: `LevelCompletionResolver.calculate_stars()` still uses moves-left as a fraction of each level's own `moves`, so it stays correct under the new moves curve without changes. Zone 2 still unlocks after Level 10 and Zone 3 still unlocks after Level 20 (`level_zone_helper.gd` is level-number based and untouched).
 - Hero/RPG systems remain fully frozen (unchanged from Stage 32/33): `TeamSelect`, `UpgradeScreen`/Heroes flow, `HeroPartyPanel`, hero abilities, hero charge, hero lane damage, and hero upgrades stay inactive in normal gameplay. Direct match damage and Stage 33's color multipliers remain fully active.
 - Balance is intentionally v0.1 and expected to be re-tuned after playtesting.
-- Next planned stage: Stage 35, Simplified level flow and UX polish v0.1.
+- Stage 35 follows this pass with simplified LevelSelect startup and direct-flow UX polish.
+
+## Stage 35: Direct LevelSelect Startup and Simplified UX Polish v0.1
+
+- Stage 35 is implemented.
+- The app now starts directly on `LevelSelectScreen`.
+- `MainMenuScreen` is skipped/inactive in the active flow and remains in the project as legacy/future code.
+- Active flow is now `App startup -> LevelSelect -> GameScreen -> LevelSelect` and `LevelSelect -> Settings -> LevelSelect`.
+- `LevelSelectScreen` has a Settings button in its top panel and no active back navigation to MainMenu.
+- Settings Back returns to LevelSelect.
+- GameScreen Menu/Back and the result overlay's Levels action return to LevelSelect.
+- Selecting an unlocked level from LevelSelect still opens GameScreen directly; TeamSelect is not used.
+- `TeamSelect`, Heroes/Upgrade flow, `HeroPartyPanel`, hero abilities, hero charge, hero lane damage, and hero upgrades remain inactive in normal gameplay.
+- Direct match damage, round modifiers, Stage 34 direct balance, enemies, levels, moves, stars, progression, locked zones, enemy scaling, battle backgrounds, and enemy presentation remain active.
+- EnemyPanel and battle result copy avoid active hero-target/upgrade language in direct mode.
+- No gameplay systems, debuffs, player HP, enemy attacks against the player, new enemies, new levels, asset pipeline, audio, Yandex SDK, cloud save, ads, payments, final art, sound/music assets, particles, or Reset Progress were added.
+- Next planned stage: Stage 36, ImageSlot asset placeholder pipeline v0.1.

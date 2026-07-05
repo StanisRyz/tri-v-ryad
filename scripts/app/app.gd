@@ -22,7 +22,7 @@ func _ready() -> void:
 	_progress_manager.load()
 	_settings_manager = SETTINGS_MANAGER_SCRIPT.new()
 	_settings_manager.load()
-	_show_main_menu()
+	_show_level_select()
 
 
 func _show_main_menu() -> void:
@@ -39,7 +39,7 @@ func _show_level_select() -> void:
 	if screen.has_method("set_settings_manager"):
 		screen.set_settings_manager(_settings_manager)
 	screen.level_selected.connect(_on_level_selected)
-	screen.back_pressed.connect(_on_level_select_back_pressed)
+	screen.settings_pressed.connect(_on_settings_pressed)
 
 
 func _show_game_screen(level_id: String) -> void:
@@ -101,7 +101,7 @@ func _on_upgrades_pressed() -> void:
 
 
 func _on_level_select_back_pressed() -> void:
-	_show_main_menu()
+	_show_level_select()
 
 
 func _on_game_back_pressed() -> void:
@@ -121,4 +121,4 @@ func _on_settings_pressed() -> void:
 
 
 func _on_settings_back_pressed() -> void:
-	_show_main_menu()
+	_show_level_select()

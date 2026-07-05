@@ -2,7 +2,7 @@
 
 Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
-The project is currently through Stage 33: Round modifiers and color damage rules v0.1. Hero/RPG systems (TeamSelect, hero party UI, hero abilities/charge/lane damage, hero upgrades) remain frozen and hidden from the active flow via `FeatureFlags.HERO_SYSTEMS_ENABLED := false`, and gameplay deals direct match-3 damage to the enemy. Each battle now also selects one positive round modifier (e.g. `red_x3`, `all_x2`) that multiplies damage for matched cells of specific colors; unbuffed colors stay at the Stage 32 baseline of 1 damage per uniquely cleared cell. MainMenu -> Play -> LevelSelect -> GameScreen is the active flow (LevelSelect opens GameScreen directly; TeamSelect and UpgradeScreen remain in the project but are not reachable from normal play). The app shell, a MainMenu with Play and Settings entry points (Heroes hidden), a level-select-only level flow with numbers-only labels for `level_1` through `level_100` grouped into 10 locked zones, a shared 10-enemy base roster with battle-start random enemy selection and linear battle-time HP/attack scaling, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, saved campaign progress with stars/unlocks, and lightweight swap, clear, special activation, and refill feedback all remain active for a vertical 9:16 game. Hero code, TeamSelect, and UpgradeScreen remain in the project (not deleted) for a future revisit.
+The project is currently through Stage 35: Direct LevelSelect startup and simplified UX polish v0.1. Hero/RPG systems (TeamSelect, hero party UI, hero abilities/charge/lane damage, hero upgrades) remain frozen and hidden from the active flow via `FeatureFlags.HERO_SYSTEMS_ENABLED := false`, and gameplay deals direct match-3 damage to the enemy. Each battle selects one positive round modifier that multiplies damage for matched cells of specific colors, while Stage 34 direct balance controls moves and enemy HP. The active flow is now App startup -> LevelSelect -> GameScreen -> LevelSelect, with Settings opened from the LevelSelect top panel; MainMenu remains in the project as inactive legacy/future code but is skipped by normal startup and play. The app shell, a level-select hub with numbers-only labels for `level_1` through `level_100` grouped into 10 locked zones, a shared 10-enemy base roster with battle-start random enemy selection and direct-mode HP scaling, battle background placeholders, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, saved campaign progress with stars/unlocks, and lightweight swap, clear, special activation, and refill feedback all remain active for a vertical 9:16 game. Hero code, MainMenu, TeamSelect, and UpgradeScreen remain in the project (not deleted) for a future revisit.
 
 ## Project Direction
 
@@ -29,12 +29,11 @@ This stage includes:
 
 - A Godot project with `scenes/app/App.tscn` as the main scene.
 - A minimal screen router.
-- A MainMenu with Play, Heroes, and Settings buttons.
-- A scrollable `LevelSelectScreen` with a zone selector for the 100-level campaign, numbers-only labels, lock/completion/star state, and routing to `TeamSelectScreen`.
-- A `TeamSelectScreen` that confirms or edits the saved 3-hero team before starting the selected level.
-- A main-menu `UpgradeScreen` route for roster hero upgrades.
-- A persistent `SettingsScreen` route for presentation/audio setting toggles.
-- A playable battle screen with a top enemy panel, compact Level/Moves/Menu HUD row, widened 9x9 `BoardView`, placeholder `TileView` tiles, hero party panel, status text, result overlay, and a Menu button.
+- An inactive legacy `MainMenuScreen` kept for future use, skipped by the active startup flow.
+- A scrollable `LevelSelectScreen` hub with a Settings button, a zone selector for the 100-level campaign, numbers-only labels, lock/completion/star state, and direct routing to `GameScreen`.
+- Inactive legacy `TeamSelectScreen` and `UpgradeScreen` code retained for a future hero-systems revisit.
+- A persistent `SettingsScreen` route opened from LevelSelect for presentation/audio setting toggles.
+- A playable battle screen with a top enemy panel, compact Level/Moves/Levels HUD row, widened 9x9 `BoardView`, placeholder `TileView` tiles, hidden inactive hero party panel, status text, result overlay, and a Levels button back to LevelSelect.
 - Reusable UI components: `BattleHud`, `EnemyPanel`, `HeroPartyPanel`, `HeroCard`, and `BattleResultOverlay`.
 - A lightweight `LayoutManager` for UI-only portrait and landscape layout decisions.
 - UI-independent board generation, match detection, swap validation, gravity/refill, and cascade resolution under `scripts/game/board/`.
@@ -55,7 +54,7 @@ This stage includes:
 - `EnemyScalingResolver` applies soft linear level multipliers to selected enemies at battle start, after enemy selection and before `BattleFactory` creates `BattleState`.
 - Enemy scaling changes only battle-time `max_hp` and `attack`; enemy identity, display name, intent turns, and target lane are preserved, and `EnemyCatalog` base stats are not mutated.
 - `LevelCatalog` deterministically generates a 100-level campaign foundation with numbers-only display names and `level_1` through `level_100` IDs.
-- Level rewards use the Stage 27 linear economy curve from `UpgradeEconomyConfig`; moves remain the Stage 25 placeholder curve.
+- Level rewards remain in config for compatibility; active direct-mode UI focuses on saved progress and stars while hero upgrades are frozen.
 - `LevelConfig.enemy_config` remains compatibility fallback/default data; runtime battle starts use the shared roster selection.
 - Hero roster definitions under `scripts/game/config/` with `HeroCatalog`.
 - `HeroConfig` carries immutable base hero stats plus `ability_id`.
@@ -77,7 +76,7 @@ This stage includes:
 - Zone 1 is available from the start, Zone 2 unlocks after Level 10 completion, Zone 3 unlocks after Level 20 completion, and Zone 10 unlocks after Level 90 completion.
 - No separate zone save data or zone completion records are stored.
 - `LevelSelectScreen` shows numbers-only level labels plus locked, open, completed, and star state for visible zone levels.
-- Upgrade points can raise each hero's attack level or HP level up to explicit max levels.
+- Upgrade points and hero upgrades remain saved/implemented for inactive hero systems, but they are not part of the active direct flow.
 - `UpgradeScreen` now acts as the full roster character upgrade screen.
 - `UpgradeScreen` shows all 5 `HeroCatalog` heroes, current upgrade points, ability IDs, attack/HP levels, current attack/HP, next attack/HP previews, linear upgrade costs, max-level/not-enough-points state, and +Attack/+HP buttons.
 - +Attack/+HP purchases go through `ProgressManager` and `UpgradeResolver`.
@@ -334,20 +333,28 @@ Stage 34 is complete. This is a balance/configuration-only pass that re-tunes en
 
 Balance checkpoint summary (required damage/move stays below expected damage/move at every checkpoint, so all are clearable with reasonable boosted-color play): level 1 (24 moves, ~40 HP, ~1.7 required vs 4.0 expected — very forgiving), level 10 (22 moves, ~45 HP, ~2.1 vs 4.0), level 20 (22 moves, ~51 HP, ~2.3 vs 4.2), level 30 (21 moves, ~57 HP, ~2.7 vs 4.4), level 50 (21 moves, ~69 HP, ~3.3 vs 4.8), level 75 (20 moves, ~84 HP, ~4.2 vs 5.4), level 100 (19 moves, ~99 HP, ~5.2 vs 5.8 — harder but still plausible). Wall levels (multiples of 10) introduce no extra HP spike beyond the smooth linear curve.
 
-Hero/RPG systems remain fully frozen (unchanged from Stage 32/33): `TeamSelect`, the Heroes/UpgradeScreen flow, `HeroPartyPanel`, hero abilities, hero charge, hero lane damage, and hero upgrades stay inactive in normal gameplay. Direct match damage and Stage 33's color multipliers remain fully active and unaffected. Progression, stars, and locked-zone unlocks (Zone 2 after Level 10, Zone 3 after Level 20) are unchanged since star thresholds are relative to each level's own move count. Balance is intentionally v0.1 and expected to be re-tuned after playtesting. No debuffs, player HP, enemy attacks against the player, new enemies, new levels, asset pipeline, audio, platform SDK, ads, or payments were added. Next planned stage: Stage 35, Simplified level flow and UX polish v0.1.
+Hero/RPG systems remain fully frozen (unchanged from Stage 32/33): `TeamSelect`, the Heroes/UpgradeScreen flow, `HeroPartyPanel`, hero abilities, hero charge, hero lane damage, and hero upgrades stay inactive in normal gameplay. Direct match damage and Stage 33's color multipliers remain fully active and unaffected. Progression, stars, and locked-zone unlocks (Zone 2 after Level 10, Zone 3 after Level 20) are unchanged since star thresholds are relative to each level's own move count. Balance is intentionally v0.1 and expected to be re-tuned after playtesting. No debuffs, player HP, enemy attacks against the player, new enemies, new levels, asset pipeline, audio, platform SDK, ads, or payments were added.
+
+## Stage 35: Direct LevelSelect Startup and Simplified UX Polish v0.1
+
+Stage 35 is complete. The app now starts directly on `LevelSelectScreen`; `MainMenuScreen` is skipped/inactive in the active flow and retained only as legacy/future code.
+
+Active navigation is now: App startup -> LevelSelect -> GameScreen -> LevelSelect, and LevelSelect -> Settings -> LevelSelect. The LevelSelect top panel has a Settings button, Settings Back returns to LevelSelect, and the GameScreen/ResultOverlay Levels button returns to LevelSelect. LevelSelect still opens GameScreen directly when an unlocked level is selected.
+
+TeamSelect, Heroes/Upgrade flow, `HeroPartyPanel`, hero abilities, hero charge, hero lane damage, and hero upgrades remain inactive. Direct match damage, round modifiers, Stage 34 balance, enemies, levels, moves, stars, progression, locked zones, enemy scaling, backgrounds, and enemy presentation remain active. No new gameplay systems, debuffs, player HP, enemy attacks, enemies, levels, asset pipeline, audio, platform SDK, ads, payments, final art, sound/music assets, particles, or Reset Progress were added. Next planned stage: Stage 36, ImageSlot asset placeholder pipeline v0.1.
 
 ## How To Open And Run
 
 1. Open Godot 4.x.
 2. Import or open this folder as a Godot project.
 3. Run the project. The configured main scene is `res://scenes/app/App.tscn`.
-4. From MainMenu, press Play to open LevelSelect.
+4. The project opens directly on LevelSelect.
 5. Choose an unlocked zone, then choose an unlocked level to open GameScreen directly (TeamSelect is skipped in the active flow).
 6. Check the round modifier panel above the board to see the active battle's color damage buff (e.g. "Red Surge — Red crystals deal x3 damage").
 7. Click one tile, then click a neighboring tile to attempt a swap, or drag/swipe from a tile toward a neighbor. Clearing crystals deals direct damage to the enemy, boosted for any color the current round modifier buffs.
 8. Win a battle to save completion, earn stars, and unlock the next level.
-9. From MainMenu, press Settings to open SettingsScreen and toggle Animations, Reduced Motion, Debug Labels, Music, and Sound Effects.
-10. Press Menu/Back to return to the previous screen.
+9. Press Settings in the LevelSelect top panel to open SettingsScreen and toggle Animations, Reduced Motion, Debug Labels, Music, and Sound Effects.
+10. Press Levels/Back to return to LevelSelect.
 
 The Heroes button and the TeamSelect/UpgradeScreen flow are hidden from active play while `FeatureFlags.HERO_SYSTEMS_ENABLED` is false; hero code remains in the project for a future revisit.
 
@@ -557,6 +564,12 @@ Run the navigation flow test with:
 godot --headless --script res://scripts/tests/navigation_flow_test.gd
 ```
 
+Run the direct startup flow test with:
+
+```bash
+godot --headless --script res://scripts/tests/direct_startup_flow_test.gd
+```
+
 Run the game screen layout test with:
 
 ```bash
@@ -573,6 +586,12 @@ Run the settings screen data test with:
 
 ```bash
 godot --headless --script res://scripts/tests/settings_screen_data_test.gd
+```
+
+Run the settings flow test with:
+
+```bash
+godot --headless --script res://scripts/tests/settings_flow_test.gd
 ```
 
 Run the battle message formatter test with:
@@ -640,6 +659,6 @@ godot --headless --script res://scripts/tests/round_modifier_balance_test.gd
 
 ## Next Planned Stages
 
-- Stage 26-30 block is complete. Stage 31 (hero portrait buttons and ability bars) is complete. Stage 32 (hero systems freeze and direct match damage foundation) is complete. Stage 33 (round modifiers and color damage rules) is complete. Stage 34 (direct match-3 balance pass) is complete.
-- Stage 35: Simplified level flow and UX polish v0.1.
+- Stage 26-30 block is complete. Stage 31 (hero portrait buttons and ability bars) is complete. Stage 32 (hero systems freeze and direct match damage foundation) is complete. Stage 33 (round modifiers and color damage rules) is complete. Stage 34 (direct match-3 balance pass) is complete. Stage 35 (direct LevelSelect startup and simplified UX polish) is complete.
+- Stage 36: ImageSlot asset placeholder pipeline v0.1.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.

@@ -50,10 +50,8 @@ func _test_level_select_opens_game_screen_directly() -> void:
 	root.add_child(app)
 	await process_frame
 
-	app._on_main_menu_play_pressed()
-	await process_frame
 	_expect_true(app._router._current_screen is Control, "app shows a screen after Play is pressed")
-	_expect_true(app._router._current_screen.get_scene_file_path() == "res://scenes/screens/LevelSelectScreen.tscn", "play opens level select")
+	_expect_true(app._router._current_screen.get_scene_file_path() == "res://scenes/screens/LevelSelectScreen.tscn", "app starts on level select")
 
 	app._on_level_selected("level_2")
 	await process_frame

@@ -27,6 +27,10 @@ func set_enemy_state(enemy: EnemyData, intent: EnemyIntent) -> void:
 	var intent_text := "Intent: attacks in %d" % intent.turns_until_action if intent != null else "Intent: --"
 	var attack_text := "Attack: %d" % enemy.attack
 	var target_text := "Target: %s" % _format_target_lane(intent.target_lane if intent != null else -1)
+	if not FeatureFlags.HERO_SYSTEMS_ENABLED:
+		intent_text = "Goal: defeat enemy"
+		attack_text = "Enemy does not attack"
+		target_text = "Match crystals to deal damage"
 
 	set_placeholder_values(
 		enemy.display_name,

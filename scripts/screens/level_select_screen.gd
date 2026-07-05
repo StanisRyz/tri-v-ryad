@@ -5,9 +5,9 @@ const LEVEL_LABEL_FORMATTER_SCRIPT := preload("res://scripts/game/config/level_l
 const LEVEL_ZONE_HELPER_SCRIPT := preload("res://scripts/game/config/level_zone_helper.gd")
 
 signal level_selected(level_id: String)
-signal back_pressed
+signal settings_pressed
 
-@onready var back_button: Button = %BackButton
+@onready var settings_button: Button = %SettingsButton
 @onready var points_label: Label = %PointsLabel
 @onready var zone_selector: OptionButton = %ZoneSelector
 @onready var level_buttons: VBoxContainer = %LevelButtons
@@ -20,7 +20,7 @@ var _has_manual_zone_selection := false
 
 
 func _ready() -> void:
-	back_button.pressed.connect(_on_back_button_pressed)
+	settings_button.pressed.connect(_on_settings_button_pressed)
 	zone_selector.item_selected.connect(_on_zone_selected)
 	_refresh()
 
@@ -114,16 +114,21 @@ func _on_level_button_pressed(level_id: String) -> void:
 	level_selected.emit(level_id)
 
 
-func _on_back_button_pressed() -> void:
-	back_pressed.emit()
+func _on_settings_button_pressed() -> void:
+	settings_pressed.emit()
 
 
 func _refresh_points() -> void:
 	if _progress_manager == null:
-		points_label.text = "Upgrade points: 0"
+		points_label.text = "Progress: 0 levels complete"
 		return
 
-	points_label.text = "Upgrade points: %d" % _progress_manager.get_upgrade_points()
+	var completed_count := 0
+	for level_config in _level_catalog.get_all_levels():
+		if _progress_manager.is_level_completed(level_config.level_id):
+			completed_count += 1
+
+	points_label.text = "Progress: %d levels complete" % completed_count
 
 
 func _is_level_unlocked(level_id: String) -> bool:
