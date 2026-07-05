@@ -52,12 +52,18 @@ func _play_valid_feedback(data, board_view: BoardView, status_callback: Callable
 		status_callback.call(lane_message)
 	await _wait(board_view, SHORT_DELAY)
 
-	status_callback.call(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_damage_message(data, _debug_labels_enabled))
+	if FeatureFlags.HERO_SYSTEMS_ENABLED:
+		status_callback.call(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_damage_message(data, _debug_labels_enabled))
+	else:
+		status_callback.call(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_direct_damage_message(data, _debug_labels_enabled))
 	await _wait(board_view, MEDIUM_DELAY)
 
 	if data.enemy_action.get("acted", false):
 		status_callback.call(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_enemy_action_message(data.enemy_action, _debug_labels_enabled))
 		await _wait(board_view, LONG_DELAY)
+	elif not FeatureFlags.HERO_SYSTEMS_ENABLED and data.battle_status == BattleState.Status.VICTORY:
+		status_callback.call(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_enemy_defeated_message())
+		await _wait(board_view, SHORT_DELAY)
 
 	board_view.clear_lane_highlights()
 	board_view.clear_cell_highlights()

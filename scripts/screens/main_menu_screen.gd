@@ -13,6 +13,7 @@ func _ready() -> void:
 	play_button.pressed.connect(_on_play_button_pressed)
 	heroes_button.pressed.connect(_on_heroes_button_pressed)
 	settings_button.pressed.connect(_on_settings_button_pressed)
+	heroes_button.visible = FeatureFlags.HERO_SYSTEMS_ENABLED
 
 
 func _on_play_button_pressed() -> void:

@@ -52,7 +52,11 @@ func update_status() -> void:
 		status = Status.VICTORY
 		return
 
-	if moves_left <= 0 or get_alive_heroes().is_empty():
+	if moves_left <= 0:
+		status = Status.DEFEAT
+		return
+
+	if FeatureFlags.HERO_SYSTEMS_ENABLED and get_alive_heroes().is_empty():
 		status = Status.DEFEAT
 		return
 

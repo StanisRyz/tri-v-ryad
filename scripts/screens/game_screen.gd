@@ -103,7 +103,10 @@ func _setup_playable_battle() -> void:
 	_input_controller.selection_changed.connect(_on_selection_changed)
 	_input_controller.selection_cleared.connect(_on_selection_cleared)
 	_input_controller.invalid_input.connect(_on_invalid_input)
-	hero_party_panel.ability_requested.connect(_on_ability_requested)
+	if FeatureFlags.HERO_SYSTEMS_ENABLED:
+		hero_party_panel.ability_requested.connect(_on_ability_requested)
+	else:
+		hero_party_panel.visible = false
 
 	_presenter.board_changed.connect(_on_board_changed)
 	_presenter.battle_state_changed.connect(_on_battle_state_changed)
@@ -149,7 +152,7 @@ func _on_battle_state_changed(state: BattleState) -> void:
 	if enemy_panel.has_method("set_enemy_state"):
 		enemy_panel.set_enemy_state(state.enemy, state.enemy_intent)
 
-	if hero_party_panel.has_method("set_heroes"):
+	if FeatureFlags.HERO_SYSTEMS_ENABLED and hero_party_panel.has_method("set_heroes"):
 		hero_party_panel.set_heroes(state.heroes)
 
 

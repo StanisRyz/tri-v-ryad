@@ -6,6 +6,11 @@ var _failures := 0
 func _initialize() -> void:
 	print("Running battle core tests...")
 
+	# These tests exercise the frozen hero battle path directly (Stage 32 defaults
+	# FeatureFlags.HERO_SYSTEMS_ENABLED to false for the active direct-damage flow).
+	var previous_hero_systems_enabled := FeatureFlags.HERO_SYSTEMS_ENABLED
+	FeatureFlags.HERO_SYSTEMS_ENABLED = true
+
 	_test_lane_zero_activation()
 	_test_cross_lane_activation()
 	_test_lane_one_activation()
@@ -21,6 +26,9 @@ func _initialize() -> void:
 	_test_defeat_when_moves_left_zero()
 	_test_defeat_when_all_heroes_dead()
 	_test_battle_resolver_returns_turn_result()
+	_test_direct_damage_path_used_when_hero_systems_disabled()
+
+	FeatureFlags.HERO_SYSTEMS_ENABLED = previous_hero_systems_enabled
 
 	if _failures == 0:
 		print("Battle core tests passed.")
@@ -173,6 +181,24 @@ func _test_battle_resolver_returns_turn_result() -> void:
 	_expect_equal(state.turn_number, 1, "turn number increments")
 	_expect_true(result_dictionary.has("battle_status"), "turn result dictionary has status")
 	print("ok - BattleResolver returns useful BattleTurnResult")
+
+
+func _test_direct_damage_path_used_when_hero_systems_disabled() -> void:
+	var previous_hero_systems_enabled := FeatureFlags.HERO_SYSTEMS_ENABLED
+	FeatureFlags.HERO_SYSTEMS_ENABLED = false
+
+	var state := BattleTestFactory.create_default_state()
+	var matches: Array[MatchResult] = [_match([Vector2i(0, 0), Vector2i(1, 0), Vector2i(2, 0)])]
+	var starting_enemy_hp: int = state.enemy.current_hp
+
+	var result := BattleResolver.new().resolve_player_matches(state, matches)
+
+	_expect_equal(result.total_damage_to_enemy, 3, "direct damage path deals 1 damage per cleared cell")
+	_expect_equal(state.enemy.current_hp, starting_enemy_hp - 3, "direct damage path reduces enemy hp by cleared cell count")
+	_expect_true(not result.enemy_action.get("acted", false), "direct damage path does not run enemy attacks")
+
+	FeatureFlags.HERO_SYSTEMS_ENABLED = previous_hero_systems_enabled
+	print("ok - direct damage path is used when hero systems are disabled")
 
 
 func _match(raw_cells: Array, direction: MatchResult.Direction = MatchResult.Direction.HORIZONTAL) -> MatchResult:

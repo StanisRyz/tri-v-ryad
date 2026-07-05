@@ -2,7 +2,7 @@
 
 Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
-The project is currently through Stage 31: Hero portrait buttons and ability bars v0.1. It defines the app shell, a MainMenu with Play, Heroes, and Settings entry points, a level-select-only level flow with numbers-only labels for `level_1` through `level_100` grouped into 10 locked zones, a pre-battle team confirmation flow, a shared 10-enemy base roster with battle-start random enemy selection and linear battle-time HP/attack scaling, a menu-accessible full roster hero upgrade screen with linear costs/stat growth, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, damage-only roster ability mappings, local hero upgrades, saved campaign progress, and lightweight swap, clear, special activation, and refill feedback for a vertical 9:16 game.
+The project is currently through Stage 32: Hero systems freeze and direct match damage foundation v0.1. Hero/RPG systems (TeamSelect, hero party UI, hero abilities/charge/lane damage, hero upgrades) are frozen and hidden from the active flow via `FeatureFlags.HERO_SYSTEMS_ENABLED := false`, and gameplay now deals direct match-3 damage to the enemy: 1 cleared crystal = 1 damage. MainMenu -> Play -> LevelSelect -> GameScreen is the active flow (LevelSelect opens GameScreen directly; TeamSelect and UpgradeScreen remain in the project but are not reachable from normal play). The app shell, a MainMenu with Play and Settings entry points (Heroes hidden), a level-select-only level flow with numbers-only labels for `level_1` through `level_100` grouped into 10 locked zones, a shared 10-enemy base roster with battle-start random enemy selection and linear battle-time HP/attack scaling, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, saved campaign progress with stars/unlocks, and lightweight swap, clear, special activation, and refill feedback all remain active for a vertical 9:16 game. Hero code, TeamSelect, and UpgradeScreen remain in the project (not deleted) for a future revisit.
 
 ## Project Direction
 
@@ -294,7 +294,21 @@ The hero portrait itself is now the ability button: pressing it emits `HeroCard.
 
 When a hero's charge is full, the portrait shows a bright gold ready-highlight border (a subtle scale pulse plays when `animations_enabled` is true and `reduced_motion_enabled` is false; the highlight border alone is shown otherwise). Defeated/down heroes show a dimmed overlay over the portrait and an empty HP bar; ability presses on a down hero still route through and are safely rejected by existing ability rules. `debug_labels_enabled` optionally shows a tiny hero-id label on the portrait; with it off, no hero id or lane text is shown anywhere on the card.
 
-Real hero portrait art and the shared `ImageSlot` asset pipeline are not part of this stage; a safe placeholder square is used instead. No battle rules, ability rules, charge formulas, damage formulas, enemy scaling, rewards, upgrade economy, progression, saves, LevelSelect zones, TeamSelect layout, platform systems, art assets, audio, or monetization systems were changed. Next planned stage: Stage 32, TeamSelect portrait layout and roster polish v0.1.
+Real hero portrait art and the shared `ImageSlot` asset pipeline are not part of this stage; a safe placeholder square is used instead. No battle rules, ability rules, charge formulas, damage formulas, enemy scaling, rewards, upgrade economy, progression, saves, LevelSelect zones, TeamSelect layout, platform systems, art assets, audio, or monetization systems were changed.
+
+## Stage 32: Hero Systems Freeze and Direct Match Damage Foundation v0.1
+
+Stage 32 is complete. Hero/RPG systems are frozen and the active gameplay flow now uses direct match-3 damage: clearing crystals damages the enemy directly, at 1 damage per uniquely cleared cell. Hero code was not deleted — it is only hidden/gated from the active flow so it can be revisited later.
+
+`FeatureFlags` (`scripts/game/config/feature_flags.gd`) is the single switch for this direction: `HERO_SYSTEMS_ENABLED := false` and `DIRECT_MATCH_DAMAGE_ENABLED := true`. Navigation changed so `LevelSelectScreen` opens `GameScreen` directly (`App._on_level_selected`); `TeamSelectScreen` and its `start_battle_pressed` signal remain in the project for a future hero-systems revisit but are not used by the active Play path. `MainMenuScreen`'s Heroes button and `BattleResultOverlay`'s upgrades button are hidden while hero systems are disabled, so `UpgradeScreen` is not reachable from normal play (the screen and hero upgrade code still exist).
+
+`GameScreen` hides `HeroPartyPanel` in direct mode and does not connect its `ability_requested` signal, so no hero ability UI or input is active; `VBoxContainer` layout naturally closes the gap since hidden controls are skipped for sizing.
+
+`DirectMatchDamageResolver` (`scripts/game/battle/direct_match_damage_resolver.gd`) counts unique cleared cells (matches, cascades, and special-tile clears via `BoardResolveResult.total_cleared`) and returns that count as damage — 1 cleared crystal = 1 damage, with no color multipliers yet. `BattleResolver` branches on `FeatureFlags.HERO_SYSTEMS_ENABLED`: the frozen hero path (Hero Lane damage, ability charge, enemy attacks against heroes) runs unchanged when the flag is true, while the new direct-damage path runs when it is false and skips `EnemyActionResolver` entirely, so enemies never attack in direct mode. `BattleState.update_status()` only treats "no alive heroes" as a defeat condition when hero systems are enabled, so direct-mode battles never depend on hero data existing. Enemy HP, enemy scaling, 100 levels, LevelSelect zones, moves, stars, victory/defeat, progression, battle backgrounds, and enemy presentation are all unchanged and remain fully active.
+
+`BattleMessageFormatter.format_direct_damage_message` and `format_enemy_defeated_message` provide direct-mode battle text ("Matched 3 tiles: 3 damage", "Special cleared 9 tiles: 9 damage", "No damage dealt", "Enemy defeated!"), used by `TurnFeedbackPresenter` instead of the old hero/lane/ability messages when hero systems are disabled.
+
+No color damage multipliers, round modifiers, buff/debuff UI, player HP, enemy attacks against the player, new levels, new enemies, or new mechanics were added, and no hero, upgrade, or TeamSelect files were deleted. Next planned stage: Stage 33, Round modifiers and color damage rules v0.1.
 
 ## How To Open And Run
 
@@ -552,8 +566,20 @@ Run the hero party panel test with:
 godot --headless --script res://scripts/tests/hero_party_panel_test.gd
 ```
 
+Run the direct match damage test with:
+
+```bash
+godot --headless --script res://scripts/tests/direct_match_damage_test.gd
+```
+
+Run the hero systems freeze test with:
+
+```bash
+godot --headless --script res://scripts/tests/hero_systems_freeze_test.gd
+```
+
 ## Next Planned Stages
 
-- Stage 26-30 block is complete. Stage 31 (hero portrait buttons and ability bars) is complete.
-- Stage 32: TeamSelect portrait layout and roster polish v0.1.
+- Stage 26-30 block is complete. Stage 31 (hero portrait buttons and ability bars) is complete. Stage 32 (hero systems freeze and direct match damage foundation) is complete.
+- Stage 33: Round modifiers and color damage rules v0.1.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.

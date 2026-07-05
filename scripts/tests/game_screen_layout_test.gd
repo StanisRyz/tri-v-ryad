@@ -32,6 +32,7 @@ func _run() -> void:
 	_expect_true(board_view != null, "game screen has BoardView")
 	_expect_true(status_label != null, "game screen has StatusLabel")
 	_expect_true(hero_party_panel != null, "game screen has HeroPartyPanel")
+	_expect_true(not hero_party_panel.visible, "hero party panel is hidden while hero systems are frozen")
 	_expect_true(result_overlay != null, "game screen has BattleResultOverlay")
 	_expect_true(background_rect != null, "game screen has background layer")
 	_expect_true(background_texture != null, "game screen has background texture layer")

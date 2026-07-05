@@ -41,6 +41,24 @@ static func format_damage_message(data, debug_labels_enabled: bool = false) -> S
 	return "Heroes dealt %d total damage" % total_damage
 
 
+static func format_direct_damage_message(data, _debug_labels_enabled: bool = false) -> String:
+	if data == null:
+		return "No damage dealt"
+
+	var total_damage: int = data.total_damage_to_enemy
+	if total_damage <= 0:
+		return "No damage dealt"
+
+	if not data.special_cleared_cells.is_empty():
+		return "Special cleared %d tiles: %d damage" % [total_damage, total_damage]
+
+	return "Matched %d tiles: %d damage" % [total_damage, total_damage]
+
+
+static func format_enemy_defeated_message() -> String:
+	return "Enemy defeated!"
+
+
 static func format_lane_activation_message(lane_activations: Dictionary) -> String:
 	if lane_activations == null:
 		return ""

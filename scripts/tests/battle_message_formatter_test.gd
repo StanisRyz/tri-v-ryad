@@ -30,6 +30,8 @@ func _initialize() -> void:
 	_test_defeat_message()
 	_test_debug_labels_include_ids()
 	_test_unknown_data_uses_safe_fallback()
+	_test_direct_damage_messages()
+	_test_enemy_defeated_message()
 
 	if _failures == 0:
 		print("Battle message formatter tests passed.")
@@ -155,6 +157,32 @@ func _test_unknown_data_uses_safe_fallback() -> void:
 	_expect_equal(_formatter.format_hero_name(""), "Hero", "empty hero id uses safe fallback")
 	_expect_equal(_formatter.format_lane_name(99), "Lane", "unknown lane index uses safe fallback")
 	print("ok - unknown or missing data uses safe fallback")
+
+
+func _test_direct_damage_messages() -> void:
+	var matched_data = load(TURN_PRESENTATION_DATA_SCRIPT).new()
+	matched_data.total_damage_to_enemy = 3
+	_expect_equal(_formatter.format_direct_damage_message(matched_data), "Matched 3 tiles: 3 damage", "matched tiles damage message")
+
+	var five_data = load(TURN_PRESENTATION_DATA_SCRIPT).new()
+	five_data.total_damage_to_enemy = 5
+	_expect_equal(_formatter.format_direct_damage_message(five_data), "Matched 5 tiles: 5 damage", "5 tile matched damage message")
+
+	var special_data = load(TURN_PRESENTATION_DATA_SCRIPT).new()
+	special_data.total_damage_to_enemy = 9
+	var special_cells: Array[Vector2i] = [Vector2i(0, 0)]
+	special_data.special_cleared_cells = special_cells
+	_expect_equal(_formatter.format_direct_damage_message(special_data), "Special cleared 9 tiles: 9 damage", "special clear damage message")
+
+	var no_damage_data = load(TURN_PRESENTATION_DATA_SCRIPT).new()
+	_expect_equal(_formatter.format_direct_damage_message(no_damage_data), "No damage dealt", "no direct damage message")
+	_expect_equal(_formatter.format_direct_damage_message(null), "No damage dealt", "null direct damage data uses safe fallback")
+	print("ok - direct damage messages")
+
+
+func _test_enemy_defeated_message() -> void:
+	_expect_equal(_formatter.format_enemy_defeated_message(), "Enemy defeated!", "enemy defeated message")
+	print("ok - enemy defeated message")
 
 
 func _turn_data(lane_activations: Dictionary, damage_events: Array, total_damage: int):

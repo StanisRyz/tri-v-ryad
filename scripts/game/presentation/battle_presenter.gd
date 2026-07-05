@@ -121,8 +121,8 @@ func request_swap(from_cell: Vector2i, to_cell: Vector2i) -> void:
 		board_changed.emit(board)
 		return
 
-	var battle_result := _battle_resolver.resolve_player_matches(state, swap_result.matches)
 	var board_result := _board_resolver.resolve_board(board)
+	var battle_result := _battle_resolver.resolve_player_matches(state, swap_result.matches, board_result)
 	var presentation_data = TURN_PRESENTATION_DATA_SCRIPT.from_valid_turn(from_cell, to_cell, swap_result.matches, battle_result, board_result)
 
 	board_changed.emit(board)

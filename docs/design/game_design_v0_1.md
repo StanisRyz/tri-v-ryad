@@ -475,6 +475,23 @@ One-time rewards, level map, chapters, stars-based rewards, reset upgrades, and 
 - Pressing a ready hero portrait activates the hero ability. Pressing a not-ready or down hero portrait still routes through the normal ability request flow, so existing "Ability is not ready yet"/"This hero is down" feedback still appears; only an empty slot disables the press.
 - Ready heroes (full charge) show a highlight/glow border on the portrait, with an optional subtle pulse respecting `animations_enabled`/`reduced_motion_enabled`.
 - Down/dead heroes show a dimmed overlay and an empty HP bar.
-- Real hero portrait assets are not required yet; a safe placeholder square is used. The full `ImageSlot` pipeline remains future work for Stage 33.
+- Real hero portrait assets are not required yet; a safe placeholder square is used. The full `ImageSlot` pipeline remains future work.
 - No gameplay rules, ability rules, charge formulas, damage formulas, enemy scaling, rewards, upgrade economy, progression, saves, TeamSelect layout, LevelSelect zones, platform systems, art assets, audio assets, or monetization systems were changed.
-- Next planned stage: Stage 32, TeamSelect portrait layout and roster polish v0.1.
+
+## Stage 32: Hero Systems Freeze and Direct Match Damage Foundation v0.1
+
+- Stage 32 is implemented.
+- Direction change: hero/RPG systems are frozen (not deleted) so gameplay can focus on clean match-3 enemy battles. Hero code, `TeamSelectScreen`, and `UpgradeScreen` remain in the project for a future revisit.
+- `FeatureFlags` (`scripts/game/config/feature_flags.gd`) is the single toggle for this direction: `HERO_SYSTEMS_ENABLED := false`, `DIRECT_MATCH_DAMAGE_ENABLED := true`.
+- New active flow: MainMenu -> Play -> LevelSelect -> GameScreen. `LevelSelectScreen` now opens `GameScreen` directly (`App._on_level_selected`) instead of routing through `TeamSelectScreen`.
+- `TeamSelectScreen` and its `start_battle_pressed(level_id)` signal remain wired in `App.gd` for legacy/future use but are not part of the active Play path.
+- `MainMenuScreen`'s Heroes button and `BattleResultOverlay`'s upgrades button are hidden while `HERO_SYSTEMS_ENABLED` is false, so `UpgradeScreen` is not reachable from normal play.
+- `GameScreen` hides `HeroPartyPanel` in direct mode and does not connect `ability_requested`, so no hero ability UI or input is active; hiding the panel (rather than removing it) avoids a layout gap since containers skip invisible children when sizing.
+- Damage is now direct match damage: 1 cleared crystal = 1 damage. `DirectMatchDamageResolver` (`scripts/game/battle/direct_match_damage_resolver.gd`) counts unique cleared cells, including cascades and special-tile clears (via `BoardResolveResult.total_cleared`).
+- `BattleResolver` branches on `FeatureFlags.HERO_SYSTEMS_ENABLED`: the frozen hero-lane/ability/enemy-attack path is preserved unchanged behind the flag; the new direct-damage path applies damage straight to enemy HP and does not run `EnemyActionResolver`, so enemies do not attack in direct mode.
+- `BattleState.update_status()` only treats "no alive heroes" as defeat when hero systems are enabled, so direct-mode battles never depend on hero data existing.
+- Enemies, enemy HP, enemy scaling, the 100-level campaign, LevelSelect locked zones, moves, stars, victory/defeat, progression, battle backgrounds, and enemy presentation are unchanged and remain active.
+- `BattleMessageFormatter.format_direct_damage_message`/`format_enemy_defeated_message` provide direct-mode battle text ("Matched 3 tiles: 3 damage", "Special cleared 9 tiles: 9 damage", "No damage dealt", "Enemy defeated!").
+- Color damage multipliers and round modifiers are not implemented yet.
+- No hero, upgrade, or TeamSelect files were deleted; no player HP, enemy-attacks-on-player, new levels, new enemies, or new mechanics were added.
+- Next planned stage: Stage 33, Round modifiers and color damage rules v0.1.

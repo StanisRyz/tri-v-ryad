@@ -87,7 +87,9 @@ func _on_main_menu_play_pressed() -> void:
 
 
 func _on_level_selected(level_id: String) -> void:
-	_show_team_select_screen(level_id)
+	# Stage 32: hero systems are frozen, so LevelSelect opens GameScreen directly.
+	# _show_team_select_screen remains available for a future hero-systems revisit.
+	_show_game_screen(level_id)
 
 
 func _on_team_start_battle_pressed(level_id: String) -> void:
