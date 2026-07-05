@@ -23,6 +23,8 @@ func _run() -> void:
 	var status_label := screen.get_node("%StatusLabel") as Label
 	var hero_party_panel := screen.get_node("%HeroPartyPanel") as Control
 	var result_overlay := screen.get_node("%BattleResultOverlay") as Control
+	var background_rect := screen.get_node("%Background") as ColorRect
+	var background_texture := screen.get_node("%BackgroundTexture") as TextureRect
 
 	_expect_true(enemy_panel != null, "game screen has EnemyPanel")
 	_expect_true(battle_hud != null, "game screen has BattleHud")
@@ -31,6 +33,10 @@ func _run() -> void:
 	_expect_true(status_label != null, "game screen has StatusLabel")
 	_expect_true(hero_party_panel != null, "game screen has HeroPartyPanel")
 	_expect_true(result_overlay != null, "game screen has BattleResultOverlay")
+	_expect_true(background_rect != null, "game screen has background layer")
+	_expect_true(background_texture != null, "game screen has background texture layer")
+	_expect_equal(background_rect.mouse_filter, Control.MOUSE_FILTER_IGNORE, "background layer does not block input")
+	_expect_true(background_rect.get_index() < result_overlay.get_index(), "background layer stays behind result overlay")
 
 	if enemy_panel != null and battle_hud != null and menu_button != null and board_view != null and status_label != null and hero_party_panel != null:
 		var battle_root := screen.get_node("%BattleRoot")
@@ -56,6 +62,26 @@ func _run() -> void:
 	screen.back_pressed.connect(func(): menu_signals.append(true))
 	menu_button.pressed.emit()
 	_expect_equal(menu_signals.size(), 1, "menu button still emits back_pressed")
+
+	var enemy_config = load("res://scripts/game/config/enemy_config.gd").goblin_scout()
+	var enemy_data = enemy_config.to_enemy_data()
+	var enemy_intent = enemy_config.to_enemy_intent()
+	enemy_panel.set_enemy_state(enemy_data, enemy_intent)
+	await process_frame
+	var enemy_name_label := enemy_panel.get_node("%EnemyNameLabel") as Label
+	var enemy_hp_label := enemy_panel.get_node("%EnemyHpLabel") as Label
+	var enemy_hp_bar := enemy_panel.get_node("%EnemyHpBar") as ProgressBar
+	var enemy_intent_label := enemy_panel.get_node("%EnemyIntentLabel") as Label
+	var enemy_target_label := enemy_panel.get_node("%EnemyTargetLabel") as Label
+	_expect_equal(enemy_name_label.text, "Goblin Scout", "enemy panel shows enemy name")
+	_expect_true(enemy_hp_label.text.find(str(enemy_data.max_hp)) != -1, "enemy panel shows HP text")
+	_expect_equal(enemy_hp_bar.value, 1.0, "enemy panel HP bar reflects full health")
+	_expect_true(enemy_intent_label.text.find("Attack:") != -1, "enemy panel shows attack in intent text")
+	_expect_equal(enemy_target_label.text, "Target: Right", "enemy panel shows target lane label")
+
+	enemy_panel.set_enemy_state(null, null)
+	await process_frame
+	_expect_true(enemy_hp_label.text.find("--") != -1, "enemy panel handles null enemy state safely")
 
 	screen.queue_free()
 

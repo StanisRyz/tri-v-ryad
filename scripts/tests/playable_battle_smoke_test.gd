@@ -2,6 +2,7 @@ extends SceneTree
 
 const BATTLE_PRESENTER_SCRIPT := "res://scripts/game/presentation/battle_presenter.gd"
 const ENEMY_CATALOG_SCRIPT := "res://scripts/game/config/enemy_catalog.gd"
+const BATTLE_BACKGROUND_CATALOG_SCRIPT := "res://scripts/game/config/battle_background_catalog.gd"
 
 var _failures := 0
 
@@ -11,12 +12,15 @@ func _initialize() -> void:
 
 	var presenter = load(BATTLE_PRESENTER_SCRIPT).new()
 	var enemy_catalog = load(ENEMY_CATALOG_SCRIPT).new()
+	var background_catalog = load(BATTLE_BACKGROUND_CATALOG_SCRIPT).new()
 	presenter.set_enemy_rng_seed(24)
+	presenter.set_background_rng_seed(24)
 	presenter.start_new_battle()
 
 	_expect_true(presenter.board != null, "presenter created board")
 	_expect_true(presenter.state != null, "presenter created battle state")
 	_expect_true(enemy_catalog.has_enemy(presenter.state.enemy.id), "presenter selected enemy from catalog")
+	_expect_true(background_catalog.has_background(presenter.get_current_background().background_id), "presenter selected background from catalog")
 	_expect_false(presenter.board.has_empty_cells(), "presenter board is full")
 
 	var swap := _find_valid_swap(presenter.board)

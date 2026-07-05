@@ -21,6 +21,8 @@ const LANDSCAPE_BOARD_SIZE := 320.0
 @onready var status_label: Label = %StatusLabel
 @onready var hero_party_panel: HBoxContainer = %HeroPartyPanel
 @onready var result_overlay: PanelContainer = %BattleResultOverlay
+@onready var background_rect: ColorRect = %Background
+@onready var background_texture: TextureRect = %BackgroundTexture
 
 var _layout_manager: LayoutManager
 var _presenter
@@ -109,6 +111,7 @@ func _setup_playable_battle() -> void:
 	_presenter.ability_presentation_ready.connect(_on_ability_presentation_ready)
 	_presenter.invalid_swap.connect(_on_invalid_swap)
 	_presenter.battle_finished.connect(_on_battle_finished)
+	_presenter.battle_background_changed.connect(_on_battle_background_changed)
 	_turn_feedback_presenter.feedback_finished.connect(_on_feedback_finished)
 	_ability_feedback_presenter.feedback_finished.connect(_on_feedback_finished)
 
@@ -146,6 +149,28 @@ func _on_battle_state_changed(state: BattleState) -> void:
 
 	if hero_party_panel.has_method("set_heroes"):
 		hero_party_panel.set_heroes(state.heroes)
+
+
+func _on_battle_background_changed(background_config) -> void:
+	if background_config == null:
+		return
+
+	if background_rect != null and background_config.placeholder_color is Color:
+		background_rect.color = background_config.placeholder_color
+
+	if background_texture == null:
+		return
+
+	var texture_path: String = background_config.texture_path if "texture_path" in background_config else ""
+	if texture_path != "" and ResourceLoader.exists(texture_path):
+		var texture := load(texture_path)
+		if texture is Texture2D:
+			background_texture.texture = texture
+			background_texture.visible = true
+			return
+
+	background_texture.visible = false
+	background_texture.texture = null
 
 
 func _on_level_changed(level_config) -> void:

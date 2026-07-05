@@ -10,6 +10,8 @@ const ENEMY_CATALOG_SCRIPT := preload("res://scripts/game/config/enemy_catalog.g
 const ENEMY_SELECTION_RESOLVER_SCRIPT := preload("res://scripts/game/config/enemy_selection_resolver.gd")
 const ENEMY_SCALING_RESOLVER_SCRIPT := preload("res://scripts/game/config/enemy_scaling_resolver.gd")
 const BATTLE_FACTORY_SCRIPT := preload("res://scripts/game/battle/battle_factory.gd")
+const BATTLE_BACKGROUND_CATALOG_SCRIPT := preload("res://scripts/game/config/battle_background_catalog.gd")
+const BATTLE_BACKGROUND_SELECTION_RESOLVER_SCRIPT := preload("res://scripts/game/config/battle_background_selection_resolver.gd")
 
 signal board_changed(board: BoardModel)
 signal battle_state_changed(state: BattleState)
@@ -19,6 +21,7 @@ signal turn_presentation_ready(data)
 signal ability_presentation_ready(data)
 signal invalid_swap(reason: String)
 signal battle_finished(status: int)
+signal battle_background_changed(background_config)
 
 var board: BoardModel
 var state: BattleState
@@ -26,6 +29,7 @@ var current_level_config
 var current_level_id := ""
 var progress
 var hero_catalog: HeroCatalog
+var current_background
 
 var _board_generator := BoardGenerator.new()
 var _swap_resolver := SwapResolver.new()
@@ -38,10 +42,14 @@ var _enemy_selection_resolver = ENEMY_SELECTION_RESOLVER_SCRIPT.new()
 var _enemy_scaling_resolver = ENEMY_SCALING_RESOLVER_SCRIPT.new()
 var _enemy_rng := RandomNumberGenerator.new()
 var _battle_factory = BATTLE_FACTORY_SCRIPT.new()
+var _background_catalog = BATTLE_BACKGROUND_CATALOG_SCRIPT.new()
+var _background_selection_resolver = BATTLE_BACKGROUND_SELECTION_RESOLVER_SCRIPT.new()
+var _background_rng := RandomNumberGenerator.new()
 
 
 func _init() -> void:
 	_enemy_rng.randomize()
+	_background_rng.randomize()
 
 
 func start_new_battle() -> void:
@@ -56,10 +64,12 @@ func start_level(level_id: String) -> void:
 	board = _generate_playable_board()
 	var selected_enemy = _enemy_selection_resolver.select_enemy_for_level(current_level_config, _enemy_catalog, _enemy_rng)
 	var scaled_enemy = _enemy_scaling_resolver.scale_enemy_for_level(selected_enemy, current_level_config)
+	current_background = _background_selection_resolver.select_background(_background_catalog, _background_rng)
 	state = _battle_factory.create_state(current_level_config, progress, hero_catalog, scaled_enemy)
 	level_changed.emit(current_level_config)
 	board_changed.emit(board)
 	battle_state_changed.emit(state)
+	battle_background_changed.emit(current_background)
 
 
 func set_progress(player_progress) -> void:
@@ -81,6 +91,23 @@ func set_enemy_rng_seed(rng_seed: int) -> void:
 func set_enemy_rng(rng: RandomNumberGenerator) -> void:
 	if rng != null:
 		_enemy_rng = rng
+
+
+func set_battle_background_catalog(catalog) -> void:
+	_background_catalog = catalog
+
+
+func set_background_rng_seed(rng_seed: int) -> void:
+	_background_rng.seed = rng_seed
+
+
+func set_background_rng(rng: RandomNumberGenerator) -> void:
+	if rng != null:
+		_background_rng = rng
+
+
+func get_current_background():
+	return current_background
 
 
 func request_swap(from_cell: Vector2i, to_cell: Vector2i) -> void:

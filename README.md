@@ -264,6 +264,16 @@ Zone 1 is available from the start. Zone 2 unlocks after Level 10 is completed, 
 
 Zone state is derived from existing level completion/progression data. No separate zone save data, zone completion records, progression rewards, reward curve changes, upgrade economy changes, enemy scaling changes, battle rule changes, board rule changes, save changes, settings changes, platform integration, art, audio, or monetization systems were added.
 
+## Stage 29: Battle Backgrounds and Enemy Scene Presentation v0.1
+
+Stage 29 is complete. `BattleBackgroundCatalog` defines 5 placeholder background slots (`background_1`-`background_5`), each with a display name and a placeholder color; `BattleBackgroundSelectionResolver` selects one background at battle start using the same deterministic seeded-RNG style as `EnemySelectionResolver`.
+
+Each battle now has independent random enemy selection (Stage 24) and random background selection (Stage 29) — the two are unrelated and neither affects the other's outcome. `BattlePresenter.start_level()` selects both and emits `battle_background_changed`. `GameScreen` listens for this signal and applies the placeholder color to a background layer behind `BattleRoot`; the layer ignores mouse input and stays behind `BattleResultOverlay`. A `TextureRect` is wired up for future real background art but stays hidden until a `texture_path` resource actually exists.
+
+`EnemyPanel` presentation was improved: it now shows a placeholder avatar area, an HP bar alongside the existing HP text, the enemy's attack value, "attacks in N turns" intent text, and a target lane label (Left/Center/Right/Unknown).
+
+No gameplay, battle rules, board rules, rewards, upgrade economy, enemy scaling, progression, saves, settings, LevelSelect zones, hero abilities, special tiles, platform systems, final art, audio, or monetization systems were changed. Backgrounds are placeholders only; final background images will be added in a later stage.
+
 ## How To Open And Run
 
 1. Open Godot 4.x.
@@ -382,6 +392,24 @@ Run the enemy scaling test with:
 godot --headless --script res://scripts/tests/enemy_scaling_test.gd
 ```
 
+Run the battle background catalog test with:
+
+```bash
+godot --headless --script res://scripts/tests/battle_background_catalog_test.gd
+```
+
+Run the battle background selection test with:
+
+```bash
+godot --headless --script res://scripts/tests/battle_background_selection_test.gd
+```
+
+Run the battle background presenter integration test with:
+
+```bash
+godot --headless --script res://scripts/tests/battle_background_presenter_test.gd
+```
+
 Run the upgrade economy test with:
 
 ```bash
@@ -486,5 +514,5 @@ godot --headless --script res://scripts/tests/settings_screen_data_test.gd
 
 ## Next Planned Stages
 
-- Stage 29: Battle backgrounds and enemy scene presentation v0.1.
+- Stage 30: Battle readability and feedback polish v0.1.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.

@@ -439,4 +439,16 @@ One-time rewards, level map, chapters, stars-based rewards, reset upgrades, and 
 - Zone unlock state is derived from existing level completion data through `ProgressManager` queries.
 - No separate zone save data or zone completion records were added.
 - Progression, rewards, economy, enemy scaling, battle rules, board rules, saves, settings, platform, art, audio, and monetization systems were not changed.
-- Next planned stage: Stage 29, Battle backgrounds and enemy scene presentation v0.1.
+
+## Stage 29: Battle Backgrounds and Enemy Scene Presentation v0.1
+
+- Stage 29 is implemented.
+- `BattleBackgroundCatalog` now defines 5 placeholder background slots (`background_1` through `background_5`), each with a display name and a placeholder color; `texture_path` is reserved for future real art and stays empty for now.
+- `BattleBackgroundSelectionResolver` selects one background at battle start, deterministic/testable with a seeded `RandomNumberGenerator`, mirroring `EnemySelectionResolver`'s style.
+- Enemy selection remains the existing Stage 24 random selection from the 10-enemy roster; enemy scaling formulas were not changed.
+- Background and enemy selection are independent: each is resolved separately in `BattlePresenter.start_level()`, and neither affects the other's outcome, stats, rewards, or progression.
+- `GameScreen` applies the selected background's placeholder color to a background layer behind `BattleRoot`; the layer ignores mouse input so board input is unaffected, and it stays behind `BattleResultOverlay`. A hidden `TextureRect` is wired up so a real texture can be applied later without further plumbing changes.
+- `EnemyPanel` presentation was improved with a placeholder avatar area, an HP bar alongside the existing HP text, the enemy's attack value, "attacks in N turns" intent text, and a target lane label (Left/Center/Right/Unknown).
+- Current backgrounds are placeholders only; final background images will be added in a later stage.
+- No gameplay, battle rules, board rules, rewards, upgrade economy, enemy scaling, progression, saves, settings, LevelSelect zones, hero abilities, special tiles, platform systems, final art, audio, or monetization systems were changed.
+- Next planned stage: Stage 30, Battle readability and feedback polish v0.1.
