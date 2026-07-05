@@ -2,7 +2,7 @@
 
 This is a Godot match-3 battle project intended for Yandex Games. The default layout is vertical 9:16 portrait with a 720x1280 base resolution.
 
-The current stage is a playable battle prototype through Stage 27: linear rewards and hero upgrade economy v0.2, with damage-only hero abilities, line special tiles, color bombs, a generated 100-level campaign foundation with numbers-only level labels, a shared 10-enemy base roster, battle-start random enemy selection, battle-time linear enemy HP/attack scaling, linear level rewards, linear hero upgrade costs/stat growth, explicit max upgrade levels, balance tests, board animation polish, saved level completion, stars, sequential unlocks, upgrade points, hero progression, character upgrade screen v0.2, local save v0.1, a MainMenu/LevelSelect/TeamSelect/GameScreen navigation flow, a persistent SettingsScreen, a top enemy battle layout, a compact Level / Moves / Menu HUD row, a wider portrait battle board aligned to the hero party panel, and no permanent Hero Lane separator/debug grid visuals. `GameScreen` is allowed to wire `BattlePresenter`, `BoardView`, `BoardInputController`, `TurnFeedbackPresenter`, `AbilityFeedbackPresenter`, `SettingsManager`, and result-flow reward/completion calls through `ProgressManager`, but the board core, battle core, config layer, progression layer, save layer, and settings layer must remain separate from UI implementation details.
+The current stage is a playable battle prototype through Stage 28: LevelSelect locked zones for 100 levels v0.2, with damage-only hero abilities, line special tiles, color bombs, a generated 100-level campaign foundation with numbers-only level labels grouped into 10 locked LevelSelect zones, a shared 10-enemy base roster, battle-start random enemy selection, battle-time linear enemy HP/attack scaling, linear level rewards, linear hero upgrade costs/stat growth, explicit max upgrade levels, balance tests, board animation polish, saved level completion, stars, sequential unlocks, upgrade points, hero progression, character upgrade screen v0.2, local save v0.1, a MainMenu/LevelSelect/TeamSelect/GameScreen navigation flow, a persistent SettingsScreen, a top enemy battle layout, a compact Level / Moves / Menu HUD row, a wider portrait battle board aligned to the hero party panel, and no permanent Hero Lane separator/debug grid visuals. `GameScreen` is allowed to wire `BattlePresenter`, `BoardView`, `BoardInputController`, `TurnFeedbackPresenter`, `AbilityFeedbackPresenter`, `SettingsManager`, and result-flow reward/completion calls through `ProgressManager`, but the board core, battle core, config layer, progression layer, save layer, and settings layer must remain separate from UI implementation details.
 
 ## Project Rules
 
@@ -30,6 +30,7 @@ The current stage is a playable battle prototype through Stage 27: linear reward
 - Stage 25 is complete: `LevelCatalog` now generates exactly 100 levels with IDs `level_1` through `level_100` and labels `Level 1` through `Level 100`. Moves and repeatable upgrade-point rewards use placeholder v0.1 curves. Runtime enemy selection still uses `EnemyCatalog` / `EnemySelectionResolver` from Stage 24, while fallback `enemy_config` data cycles through the existing roster. No gameplay, board, battle, save, settings, hero, ability, special tile, platform, art, audio, or monetization systems were changed.
 - Stage 26 is complete: `EnemyScalingResolver` applies soft linear battle-time scaling by level number after `EnemySelectionResolver` selects a base enemy and before `BattleFactory` creates `BattleState`. `EnemyCatalog` remains the base roster. Only enemy `max_hp` and `attack` are scaled; enemy ID, display name, intent turns, and target lane are preserved. No exponential, power, or hard-spike scaling was introduced.
 - Stage 27 is complete: `UpgradeEconomyConfig` owns linear hero upgrade costs, linear attack/HP growth, max upgrade levels, and linear level rewards. `UpgradeResolver` enforces max levels and exact costs, `HeroData` uses the same growth constants, and `UpgradeScreen` shows cost/max/not-enough-points state. Stage 26 enemy scaling remains unchanged. No new gameplay systems, enemies, levels, currencies, gacha, equipment, abilities, special tiles, platform SDK, cloud save, ads, payments, final art, audio assets, or particles were added. Next planned stage: Stage 28, LevelSelect zones for 100 levels v0.2.
+- Stage 28 is complete: `LevelSelectScreen` groups the 100-level campaign into 10 zones of 10 levels. Zone 1 is available from the start, Zone 2 unlocks after Level 10 completion, and Zone 10 unlocks after Level 90 completion. LevelSelect shows only levels from the selected unlocked zone, with zone state derived from existing level completion data and no separate zone save data. Progression, rewards, economy, enemy scaling, battle, board, save, settings, platform, art, audio, and monetization systems were not changed. Next planned stage: Stage 29, Battle backgrounds and enemy scene presentation v0.1.
 
 ## Gameplay Direction
 
@@ -151,6 +152,9 @@ The current stage is a playable battle prototype through Stage 27: linear reward
 - `BattlePresenter` starts levels but must not store hardcoded enemy or hero definitions.
 - `LevelSelectScreen` only selects `level_id`, displays level progress, and must not create `BattleState`.
 - `LevelSelectScreen` must not own unlock rules.
+- `LevelSelectScreen` groups the 100-level campaign into unlocked 10-level zones using `LevelZoneHelper` and existing completion data only.
+- Zone 1 is available from the start; later zones unlock when the previous zone's last level is completed.
+- Do not add separate zone save data or zone completion records.
 - `LevelCatalog` contains exactly 100 generated campaign levels for Stage 25.
 - Player-facing level labels use numbers only, such as `Level 1`; keep `level_id` values stable.
 - All current levels use the same objective: defeat the enemy.
@@ -193,4 +197,4 @@ The current stage is a playable battle prototype through Stage 27: linear reward
 - No Yandex SDK.
 - No final art assets.
 - No full LevelSelect UX redesign.
-- No LevelSelect zones, battle backgrounds, enemy presentation polish, battle feedback polish, or full economy redesign.
+- No battle backgrounds, enemy presentation polish, battle feedback polish, or full economy redesign.

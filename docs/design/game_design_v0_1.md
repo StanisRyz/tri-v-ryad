@@ -200,13 +200,13 @@ Hero unlocks, rarity, gacha, hero shards, ability upgrades, reset upgrades, equi
 - `EnemySelectionResolver` is deterministic/testable when given a seeded `RandomNumberGenerator`.
 - Selected enemies are scaled by `EnemyScalingResolver` after selection and before `BattleFactory` creates `BattleState`.
 - Enemy level scaling is linear-only and changes only HP and attack.
-- `LevelSelectScreen` chooses a `level_id` and routes to `TeamSelectScreen` for pre-battle team confirmation (see Stage 19).
+- `LevelSelectScreen` groups the 100-level campaign into 10 zones of 10 levels, shows only the selected unlocked zone, chooses a `level_id`, and routes to `TeamSelectScreen` for pre-battle team confirmation (see Stage 19 and Stage 28).
 - `GameScreen` starts the selected level through `BattlePresenter`.
 - Every level uses the same objective: defeat the enemy.
 - Victory and defeat rules stay unchanged.
 - 100-level balance is foundation-only v0.1 content tuning and is expected to change after playtesting.
 
-Hero selection, complex objectives, final economy balance, LevelSelect zones, and full LevelSelect UX polish remain future work.
+Hero selection, complex objectives, final economy balance, a full LevelSelect UX redesign, and visual LevelSelect polish remain future work.
 
 ## Enemy Roster and Selection v0.1
 
@@ -425,4 +425,18 @@ One-time rewards, level map, chapters, stars-based rewards, reset upgrades, and 
 - Stage 26 enemy scaling was not changed.
 - No new gameplay systems, enemies, levels, currencies, gacha, equipment, abilities, special tiles, platform SDK, cloud save, ads, payments, final art, audio assets, or particles were added.
 - Economy is v0.2 and still expected to change after playtesting.
-- Next planned stage: Stage 28, LevelSelect zones for 100 levels v0.2.
+- Stage 28 follows this economy work with LevelSelect zones for the 100-level campaign.
+
+## Stage 28: LevelSelect Locked Zones for 100 Levels v0.2
+
+- Stage 28 is implemented.
+- `LevelSelectScreen` now groups the 100-level campaign into 10 zones of 10 levels.
+- Zone 1 contains Levels 1-10 and is available from the start.
+- Zone 2 contains Levels 11-20 and unlocks after Level 10 completion.
+- Zone 3 contains Levels 21-30 and unlocks after Level 20 completion.
+- Zone 10 contains Levels 91-100 and unlocks after Level 90 completion.
+- LevelSelect shows only levels from the selected unlocked zone.
+- Zone unlock state is derived from existing level completion data through `ProgressManager` queries.
+- No separate zone save data or zone completion records were added.
+- Progression, rewards, economy, enemy scaling, battle rules, board rules, saves, settings, platform, art, audio, and monetization systems were not changed.
+- Next planned stage: Stage 29, Battle backgrounds and enemy scene presentation v0.1.

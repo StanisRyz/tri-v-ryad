@@ -3,6 +3,11 @@ extends SceneTree
 const LEVEL_CATALOG := preload("res://scripts/game/config/level_catalog.gd")
 const LEVEL_LABEL_FORMATTER := preload("res://scripts/game/config/level_label_formatter.gd")
 const LEVEL_SELECT_SCREEN := preload("res://scenes/screens/LevelSelectScreen.tscn")
+const PROGRESS_MANAGER_SCRIPT := preload("res://scripts/game/progression/progress_manager.gd")
+const SAVE_MANAGER_SCRIPT := preload("res://scripts/game/save/save_manager.gd")
+
+const TEST_SAVE_PATH := "user://test_level_identity_save_v1.json"
+const TEST_TEMP_SAVE_PATH := "user://test_level_identity_save_v1.tmp"
 
 var _failures := 0
 
@@ -27,10 +32,12 @@ func _initialize() -> void:
 
 
 func _run() -> void:
+	_cleanup()
 	_test_formatter()
 	_test_catalog_identity()
 	await _test_level_select_labels(false)
 	await _test_level_select_labels(true)
+	_cleanup()
 
 	if _failures == 0:
 		print("Level identity tests passed.")
@@ -71,22 +78,38 @@ func _test_catalog_identity() -> void:
 
 
 func _test_level_select_labels(debug_labels_enabled: bool) -> void:
+	var progress_manager = _make_progress_manager()
 	var screen := LEVEL_SELECT_SCREEN.instantiate()
 	root.add_child(screen)
+	screen.set_progress_manager(progress_manager)
 	screen.set_settings_manager(TestSettingsManager.new(debug_labels_enabled))
 	await process_frame
 
 	var first_button := screen.get_node("%LevelButtons").get_child(0) as Button
-	var final_button := screen.get_node("%LevelButtons").get_child(99) as Button
+	var final_button := screen.get_node("%LevelButtons").get_child(9) as Button
 	var expected_title := "Level 1 (level_1)" if debug_labels_enabled else "Level 1"
-	var expected_final_title := "Level 100 (level_100)" if debug_labels_enabled else "Level 100"
+	var expected_final_title := "Level 10 (level_10)" if debug_labels_enabled else "Level 10"
 	_expect_true(first_button.text.begins_with(expected_title), "level select title respects debug label setting")
-	_expect_true(final_button.text.begins_with(expected_final_title), "level select includes level_100 label")
+	_expect_true(final_button.text.begins_with(expected_final_title), "level select includes zone 1 final label")
 	_expect_true(first_button.text.contains("Stars: 0/3"), "level select keeps star text")
 	_expect_false(_contains_old_level_name(first_button.text), "level select omits old location names")
-	_expect_false(_contains_old_level_name(final_button.text), "level_100 omits old location names")
+	_expect_false(_contains_old_level_name(final_button.text), "zone 1 final level omits old location names")
 
 	screen.queue_free()
+
+
+func _make_progress_manager():
+	var save_manager = SAVE_MANAGER_SCRIPT.new(TEST_SAVE_PATH, TEST_TEMP_SAVE_PATH)
+	var progress_manager = PROGRESS_MANAGER_SCRIPT.new(save_manager)
+	progress_manager.load()
+	return progress_manager
+
+
+func _cleanup() -> void:
+	if FileAccess.file_exists(TEST_SAVE_PATH):
+		DirAccess.remove_absolute(TEST_SAVE_PATH)
+	if FileAccess.file_exists(TEST_TEMP_SAVE_PATH):
+		DirAccess.remove_absolute(TEST_TEMP_SAVE_PATH)
 
 
 func _contains_old_level_name(value: String) -> bool:

@@ -2,7 +2,7 @@
 
 Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
-The project is currently through Stage 27: linear rewards and hero upgrade economy v0.2. It defines the app shell, a MainMenu with Play, Heroes, and Settings entry points, a level-select-only level flow with numbers-only labels for `level_1` through `level_100`, a pre-battle team confirmation flow, a shared 10-enemy base roster with battle-start random enemy selection and linear battle-time HP/attack scaling, a menu-accessible full roster hero upgrade screen with linear costs/stat growth, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, damage-only roster ability mappings, local hero upgrades, saved campaign progress, and lightweight swap, clear, special activation, and refill feedback for a vertical 9:16 game.
+The project is currently through Stage 28: LevelSelect locked zones for 100 levels v0.2. It defines the app shell, a MainMenu with Play, Heroes, and Settings entry points, a level-select-only level flow with numbers-only labels for `level_1` through `level_100` grouped into 10 locked zones, a pre-battle team confirmation flow, a shared 10-enemy base roster with battle-start random enemy selection and linear battle-time HP/attack scaling, a menu-accessible full roster hero upgrade screen with linear costs/stat growth, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, damage-only roster ability mappings, local hero upgrades, saved campaign progress, and lightweight swap, clear, special activation, and refill feedback for a vertical 9:16 game.
 
 ## Project Direction
 
@@ -30,7 +30,7 @@ This stage includes:
 - A Godot project with `scenes/app/App.tscn` as the main scene.
 - A minimal screen router.
 - A MainMenu with Play, Heroes, and Settings buttons.
-- A scrollable `LevelSelectScreen` with 100 campaign level buttons labeled `Level 1` through `Level 100`, lock/completion/star state, and routing to `TeamSelectScreen`.
+- A scrollable `LevelSelectScreen` with a zone selector for the 100-level campaign, numbers-only labels, lock/completion/star state, and routing to `TeamSelectScreen`.
 - A `TeamSelectScreen` that confirms or edits the saved 3-hero team before starting the selected level.
 - A main-menu `UpgradeScreen` route for roster hero upgrades.
 - A persistent `SettingsScreen` route for presentation/audio setting toggles.
@@ -73,7 +73,10 @@ This stage includes:
 - Victory saves level completion and stars based on remaining moves.
 - Best stars and best remaining moves are preserved across replays.
 - Sequential unlocks open each next level after the previous level is completed.
-- `LevelSelectScreen` shows numbers-only level labels plus locked, open, completed, and star state for each level.
+- `LevelSelectScreen` groups the 100-level campaign into 10 zones of 10 levels, shows only the selected unlocked zone, and derives zone availability from existing level completion data.
+- Zone 1 is available from the start, Zone 2 unlocks after Level 10 completion, Zone 3 unlocks after Level 20 completion, and Zone 10 unlocks after Level 90 completion.
+- No separate zone save data or zone completion records are stored.
+- `LevelSelectScreen` shows numbers-only level labels plus locked, open, completed, and star state for visible zone levels.
 - Upgrade points can raise each hero's attack level or HP level up to explicit max levels.
 - `UpgradeScreen` now acts as the full roster character upgrade screen.
 - `UpgradeScreen` shows all 5 `HeroCatalog` heroes, current upgrade points, ability IDs, attack/HP levels, current attack/HP, next attack/HP previews, linear upgrade costs, max-level/not-enough-points state, and +Attack/+HP buttons.
@@ -122,6 +125,8 @@ This stage includes:
 - Save manager tests in `scripts/tests/save_manager_test.gd`.
 - Battle factory progress tests in `scripts/tests/battle_factory_progress_test.gd`.
 - Level completion tests in `scripts/tests/level_completion_test.gd`.
+- Level zone helper tests in `scripts/tests/level_zone_helper_test.gd`.
+- LevelSelect zone UI tests in `scripts/tests/level_select_zones_test.gd`.
 - Special tile tests in `scripts/tests/special_tile_test.gd`.
 - Documentation for future implementation rules.
 
@@ -132,7 +137,7 @@ This stage excludes:
 - One-time rewards, stars-based rewards, level map, chapters, complex economy, reset upgrades, and complex objectives.
 - New heroes, hero unlocks, gacha, rarity, shards, ability upgrades, TeamSelectScreen rework, Yandex SDK, cloud save, ads, payments, sound, particles, and final art.
 - Cloud saves, ads, payments, Yandex SDK, RuStore, Android-specific code, and monetization.
-- LevelSelect zones, battle backgrounds, enemy presentation polish, battle feedback polish, and full LevelSelect UX polish.
+- Battle backgrounds, enemy presentation polish, battle feedback polish, and full LevelSelect UX polish.
 
 ## Stage 16: Balance and Content Expansion v0.1
 
@@ -251,13 +256,21 @@ Level rewards use `1 + floor((level_number - 1) / 8) + floor(level_number / 10)`
 
 `UpgradeScreen` now displays cost/status text for each stat and disables upgrades when the player lacks points or the stat is at max level. Stage 26 enemy scaling was not changed. No new gameplay systems, enemies, levels, currencies, gacha, equipment, abilities, special tiles, platform SDK, cloud save, ads, payments, final art, audio assets, or particles were added. Economy balance is v0.2 and expected to change after playtesting.
 
+## Stage 28: LevelSelect Locked Zones for 100 Levels v0.2
+
+Stage 28 is complete. `LevelSelectScreen` now groups the 100-level campaign into 10 zones of 10 levels each.
+
+Zone 1 is available from the start. Zone 2 unlocks after Level 10 is completed, Zone 3 unlocks after Level 20 is completed, and Zone 10 unlocks after Level 90 is completed. The screen defaults to the highest unlocked zone, lets the player switch among unlocked zones, and builds buttons only for the selected zone.
+
+Zone state is derived from existing level completion/progression data. No separate zone save data, zone completion records, progression rewards, reward curve changes, upgrade economy changes, enemy scaling changes, battle rule changes, board rule changes, save changes, settings changes, platform integration, art, audio, or monetization systems were added.
+
 ## How To Open And Run
 
 1. Open Godot 4.x.
 2. Import or open this folder as a Godot project.
 3. Run the project. The configured main scene is `res://scenes/app/App.tscn`.
 4. From MainMenu, press Play to open LevelSelect.
-5. Choose an unlocked level to open TeamSelect.
+5. Choose an unlocked zone, then choose an unlocked level to open TeamSelect.
 6. Confirm or change your team, then press Start Battle to open GameScreen with that level.
 7. Click one tile, then click a neighboring tile to attempt a swap, or drag/swipe from a tile toward a neighbor.
 8. Win a battle to earn upgrade points, save completion, earn stars, and unlock the next level.
@@ -325,6 +338,18 @@ Run the level identity test with:
 
 ```bash
 godot --headless --script res://scripts/tests/level_identity_test.gd
+```
+
+Run the level zone helper test with:
+
+```bash
+godot --headless --script res://scripts/tests/level_zone_helper_test.gd
+```
+
+Run the LevelSelect zone test with:
+
+```bash
+godot --headless --script res://scripts/tests/level_select_zones_test.gd
 ```
 
 Run the balance curve test with:
@@ -461,5 +486,5 @@ godot --headless --script res://scripts/tests/settings_screen_data_test.gd
 
 ## Next Planned Stages
 
-- Stage 28: LevelSelect zones for 100 levels v0.2.
+- Stage 29: Battle backgrounds and enemy scene presentation v0.1.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.

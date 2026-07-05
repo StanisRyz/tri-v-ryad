@@ -58,6 +58,22 @@ theme_override_font_sizes/font_size = 22
 text = "Upgrade points: 0"
 horizontal_alignment = 1
 
+[node name="ZoneRow" type="HBoxContainer" parent="SafeMargin/Root"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ZoneLabel" type="Label" parent="SafeMargin/Root/ZoneRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Zone"
+vertical_alignment = 1
+
+[node name="ZoneSelector" type="OptionButton" parent="SafeMargin/Root/ZoneRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(420, 54)
+layout_mode = 2
+size_flags_horizontal = 3
+
 [node name="LevelScroll" type="ScrollContainer" parent="SafeMargin/Root"]
 layout_mode = 2
 size_flags_vertical = 3
