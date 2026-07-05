@@ -14,15 +14,16 @@ func _initialize() -> void:
 	var catalog = load(ENEMY_CATALOG_SCRIPT).new()
 	var resolver = load(ENEMY_SCALING_RESOLVER_SCRIPT).new()
 	var base_enemy = catalog.get_enemy("gatekeeper")
-	_test_level_one_keeps_base_stats(resolver, base_enemy)
-	_test_stats_grow_across_campaign(resolver, base_enemy)
-	_test_multipliers_are_linear(resolver)
+	_test_direct_mode_is_default(resolver, base_enemy)
+	_test_direct_mode_hp_grows_across_campaign(resolver, base_enemy)
+	_test_direct_mode_attack_stays_at_base(resolver, base_enemy)
 	_test_scaled_values_are_positive(resolver, base_enemy)
 	_test_identity_and_intent_are_preserved(resolver, base_enemy)
 	_test_base_enemy_is_not_mutated(resolver, base_enemy)
 	_test_malformed_level_id_uses_level_one(resolver, base_enemy)
 	_test_null_enemy_uses_default(resolver, catalog)
-	_test_wall_bonus_is_mild_and_deterministic(resolver)
+	_test_hero_mode_multipliers_are_linear(resolver)
+	_test_hero_mode_wall_bonus_is_mild_and_deterministic(resolver)
 
 	if _failures == 0:
 		print("Enemy scaling tests passed.")
@@ -32,35 +33,29 @@ func _initialize() -> void:
 		quit(1)
 
 
-func _test_level_one_keeps_base_stats(resolver, base_enemy) -> void:
+func _test_direct_mode_is_default(resolver, base_enemy) -> void:
+	_expect_true(not FeatureFlags.HERO_SYSTEMS_ENABLED, "hero systems are frozen so scaling defaults to direct mode")
 	var scaled = resolver.scale_enemy(base_enemy, 1)
-	_expect_equal(scaled.max_hp, base_enemy.max_hp, "level 1 hp matches base")
-	_expect_equal(scaled.attack, base_enemy.attack, "level 1 attack matches base")
-	print("ok - level 1 scaling keeps base stats")
+	_expect_equal(scaled.attack, base_enemy.attack, "direct mode leaves attack at base since enemy actions are neutralized")
+	print("ok - scale_enemy uses direct-mode balance by default")
 
 
-func _test_stats_grow_across_campaign(resolver, base_enemy) -> void:
+func _test_direct_mode_hp_grows_across_campaign(resolver, base_enemy) -> void:
 	var level_1 = resolver.scale_enemy(base_enemy, 1)
 	var level_10 = resolver.scale_enemy(base_enemy, 10)
 	var level_50 = resolver.scale_enemy(base_enemy, 50)
 	var level_100 = resolver.scale_enemy(base_enemy, 100)
-	_expect_true(level_10.max_hp > level_1.max_hp, "level 10 hp grows")
-	_expect_true(level_10.attack > level_1.attack, "level 10 attack grows")
-	_expect_true(level_50.max_hp > level_10.max_hp, "level 50 hp grows")
-	_expect_true(level_50.attack > level_10.attack, "level 50 attack grows")
-	_expect_true(level_100.max_hp > level_50.max_hp, "level 100 hp grows")
-	_expect_true(level_100.attack > level_50.attack, "level 100 attack grows")
-	print("ok - enemy stats grow from level 1 to level 100")
+	_expect_true(level_10.max_hp > level_1.max_hp, "level 10 hp grows over level 1")
+	_expect_true(level_50.max_hp > level_10.max_hp, "level 50 hp grows over level 10")
+	_expect_true(level_100.max_hp > level_50.max_hp, "level 100 hp grows over level 50")
+	print("ok - direct-mode enemy hp grows from level 1 to level 100")
 
 
-func _test_multipliers_are_linear(resolver) -> void:
-	var hp_delta_2_to_3: float = resolver.get_hp_multiplier(3) - resolver.get_hp_multiplier(2)
-	var hp_delta_7_to_8: float = resolver.get_hp_multiplier(8) - resolver.get_hp_multiplier(7)
-	var attack_delta_2_to_3: float = resolver.get_attack_multiplier(3) - resolver.get_attack_multiplier(2)
-	var attack_delta_7_to_8: float = resolver.get_attack_multiplier(8) - resolver.get_attack_multiplier(7)
-	_expect_nearly_equal(hp_delta_2_to_3, hp_delta_7_to_8, 0.0001, "hp non-wall deltas are linear")
-	_expect_nearly_equal(attack_delta_2_to_3, attack_delta_7_to_8, 0.0001, "attack non-wall deltas are linear")
-	print("ok - multiplier deltas are linear between non-wall levels")
+func _test_direct_mode_attack_stays_at_base(resolver, base_enemy) -> void:
+	for level_number in [1, 10, 50, 100]:
+		var scaled = resolver.scale_enemy(base_enemy, level_number)
+		_expect_equal(scaled.attack, base_enemy.attack, "level %s attack matches base in direct mode" % level_number)
+	print("ok - direct-mode attack never grows since enemy actions are neutralized")
 
 
 func _test_scaled_values_are_positive(resolver, base_enemy) -> void:
@@ -96,20 +91,35 @@ func _test_base_enemy_is_not_mutated(resolver, base_enemy) -> void:
 
 func _test_malformed_level_id_uses_level_one(resolver, base_enemy) -> void:
 	var malformed_level = load(LEVEL_CONFIG_SCRIPT).new("not_a_level", "Bad Level", base_enemy, 20, [], 0)
-	var scaled = resolver.scale_enemy_for_level(base_enemy, malformed_level)
-	_expect_equal(scaled.max_hp, base_enemy.max_hp, "malformed level id hp uses level 1")
-	_expect_equal(scaled.attack, base_enemy.attack, "malformed level id attack uses level 1")
+	var scaled_for_malformed = resolver.scale_enemy_for_level(base_enemy, malformed_level)
+	var scaled_for_level_one = resolver.scale_enemy(base_enemy, 1)
+	_expect_equal(scaled_for_malformed.max_hp, scaled_for_level_one.max_hp, "malformed level id hp uses level 1")
+	_expect_equal(scaled_for_malformed.attack, scaled_for_level_one.attack, "malformed level id attack uses level 1")
 	print("ok - malformed level ids scale as level 1")
 
 
 func _test_null_enemy_uses_default(resolver, catalog) -> void:
 	var scaled = resolver.scale_enemy(null, 1)
+	var expected = resolver.scale_enemy(catalog.get_default_enemy(), 1)
 	_expect_equal(scaled.enemy_id, catalog.get_default_enemy().enemy_id, "null enemy uses default enemy")
-	_expect_equal(scaled.max_hp, catalog.get_default_enemy().max_hp, "null enemy default hp at level 1")
+	_expect_equal(scaled.max_hp, expected.max_hp, "null enemy default hp at level 1")
 	print("ok - null enemy uses safe default")
 
 
-func _test_wall_bonus_is_mild_and_deterministic(resolver) -> void:
+## Stage 34 note: get_hp_multiplier/get_attack_multiplier/get_wall_level_bonus
+## remain the hero-mode formulas (used only if HERO_SYSTEMS_ENABLED is ever
+## re-enabled) and are still exercised directly here for regression safety.
+func _test_hero_mode_multipliers_are_linear(resolver) -> void:
+	var hp_delta_2_to_3: float = resolver.get_hp_multiplier(3) - resolver.get_hp_multiplier(2)
+	var hp_delta_7_to_8: float = resolver.get_hp_multiplier(8) - resolver.get_hp_multiplier(7)
+	var attack_delta_2_to_3: float = resolver.get_attack_multiplier(3) - resolver.get_attack_multiplier(2)
+	var attack_delta_7_to_8: float = resolver.get_attack_multiplier(8) - resolver.get_attack_multiplier(7)
+	_expect_nearly_equal(hp_delta_2_to_3, hp_delta_7_to_8, 0.0001, "hp non-wall deltas are linear")
+	_expect_nearly_equal(attack_delta_2_to_3, attack_delta_7_to_8, 0.0001, "attack non-wall deltas are linear")
+	print("ok - hero-mode multiplier deltas are linear between non-wall levels")
+
+
+func _test_hero_mode_wall_bonus_is_mild_and_deterministic(resolver) -> void:
 	var first_wall_bonus: float = resolver.get_wall_level_bonus(10)
 	var second_wall_bonus: float = resolver.get_wall_level_bonus(10)
 	var hp_delta_8_to_9: float = resolver.get_hp_multiplier(9) - resolver.get_hp_multiplier(8)
@@ -125,7 +135,7 @@ func _test_wall_bonus_is_mild_and_deterministic(resolver) -> void:
 	_expect_true(attack_delta_9_to_10 < 0.03, "level 9 to 10 attack bump is mild")
 	_expect_true(hp_delta_99_to_100 < 0.05, "level 99 to 100 hp bump is mild")
 	_expect_true(attack_delta_99_to_100 < 0.03, "level 99 to 100 attack bump is mild")
-	print("ok - wall-level bonus is mild and deterministic")
+	print("ok - hero-mode wall-level bonus is mild and deterministic")
 
 
 func _expect_true(value: bool, message: String) -> void:

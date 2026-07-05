@@ -46,8 +46,8 @@ func _initialize() -> void:
 	_expect_false(presenter.board.has_empty_cells(), "level_100 board is full")
 	_expect_true(enemy_catalog.has_enemy(presenter.state.enemy.id), "level_100 selected enemy exists in catalog")
 	var base_enemy = enemy_catalog.get_enemy(presenter.state.enemy.id)
-	_expect_true(presenter.state.enemy.max_hp >= base_enemy.max_hp, "level_100 enemy hp is at least base hp")
-	_expect_true(presenter.state.enemy.attack >= base_enemy.attack, "level_100 enemy attack is at least base attack")
+	_expect_true(presenter.state.enemy.max_hp > 0, "level_100 enemy hp is positive (direct-mode hp is tuned independently of base hp)")
+	_expect_equal(presenter.state.enemy.attack, base_enemy.attack, "level_100 enemy attack matches base since attack is unused in direct mode")
 	_expect_equal(presenter.state.moves_left, presenter.current_level_config.moves, "level_100 moves count")
 
 	if _failures == 0:

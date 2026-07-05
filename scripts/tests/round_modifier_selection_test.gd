@@ -13,6 +13,8 @@ func _initialize() -> void:
 	_test_null_catalog_falls_back_to_default()
 	_test_empty_catalog_falls_back_to_default()
 	_test_invalid_modifiers_are_skipped()
+	_test_random_pool_excludes_all_x2()
+	_test_fallback_catalog_without_pool_method_still_works()
 
 	if _failures == 0:
 		print("Round modifier selection tests passed.")
@@ -66,6 +68,29 @@ func _test_invalid_modifiers_are_skipped() -> void:
 	print("ok - invalid modifiers are skipped in favor of a safe fallback")
 
 
+func _test_random_pool_excludes_all_x2() -> void:
+	var catalog = load(ROUND_MODIFIER_CATALOG_SCRIPT).new()
+	var resolver = load(ROUND_MODIFIER_SELECTION_RESOLVER_SCRIPT).new()
+
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 1
+	for attempt in range(50):
+		var modifier = resolver.select_modifier(catalog, rng)
+		_expect_true(modifier.modifier_id != "all_x2", "random pool selection never returns all_x2")
+	print("ok - normal random selection excludes all_x2 in favor of single-color surges")
+
+
+func _test_fallback_catalog_without_pool_method_still_works() -> void:
+	var resolver = load(ROUND_MODIFIER_SELECTION_RESOLVER_SCRIPT).new()
+	var fake_catalog := _FakeCatalogWithOnlyAllModifiers.new()
+
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 1
+	var modifier = resolver.select_modifier(fake_catalog, rng)
+	_expect_true(modifier != null, "catalogs without get_random_pool_modifiers still select from get_all_modifiers")
+	print("ok - fallback catalog without get_random_pool_modifiers still selects a valid modifier")
+
+
 func _expect_true(value: bool, message: String) -> void:
 	if value:
 		return
@@ -87,3 +112,10 @@ class _FakeCatalogWithInvalidModifier:
 
 	func get_all_modifiers() -> Array:
 		return [load("res://scripts/game/config/round_modifier_config.gd").new("", "", "", {})]
+
+
+class _FakeCatalogWithOnlyAllModifiers:
+	extends RefCounted
+
+	func get_all_modifiers() -> Array:
+		return load("res://scripts/game/config/round_modifier_catalog.gd").new().get_all_modifiers()

@@ -35,6 +35,19 @@ func get_default_modifier():
 	return get_modifier("all_x2")
 
 
+## Stage 34 v0.1: normal random battles pick from single-color surges only, so
+## picking a modifier is a strategic color choice. all_x2 stays available as
+## the safe default/fallback via get_default_modifier(), but is excluded here
+## to keep the random pool color-focused.
+func get_random_pool_modifiers() -> Array:
+	var pool_ids := ["red_x3", "blue_x3", "green_x3", "yellow_x3", "purple_x3"]
+	var pool: Array = []
+	for modifier_id in pool_ids:
+		if has_modifier(modifier_id):
+			pool.append(get_modifier(modifier_id))
+	return pool
+
+
 func is_valid_modifier(modifier) -> bool:
 	if modifier == null:
 		return false

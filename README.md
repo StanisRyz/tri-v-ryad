@@ -320,6 +320,22 @@ Stage 33 is complete. Each battle now selects one `RoundModifierConfig` at battl
 
 Hero/RPG systems remain fully frozen (unchanged from Stage 32): TeamSelect, the Heroes/UpgradeScreen flow, `HeroPartyPanel`, hero abilities, hero charge, hero lane damage, and hero upgrades stay inactive in normal gameplay and have no effect on direct match damage. No debuffs, negative modifiers, player HP, enemy attacks against the player, new enemies, or new levels were added. Next planned stage: Stage 34, Direct match-3 balance pass v0.1.
 
+## Stage 34: Direct Match-3 Balance Pass v0.1
+
+Stage 34 is complete. This is a balance/configuration-only pass that re-tunes enemy HP, moves, and the round modifier random pool for the simplified direct match-3 loop introduced in Stage 32/33 — no new gameplay systems were added.
+
+`DirectBalanceConfig` (`scripts/game/config/direct_balance_config.gd`) is a new static config that centralizes direct-mode balance numbers instead of scattering magic numbers across `LevelCatalog`, `EnemyScalingResolver`, and tests: `get_moves_for_level(level_number)`, `get_enemy_hp_for_level(base_hp, level_number)`, `get_required_damage_per_move(enemy_hp, moves)`, `get_expected_damage_per_move(level_number)`, `get_balance_checkpoint_levels()` (`[1, 5, 10, 20, 30, 50, 75, 100]`), and `is_wall_level(level_number)`. All formulas are linear/stepwise (no `pow()`/`exp()`).
+
+`EnemyScalingResolver.scale_enemy()` now branches on `FeatureFlags.HERO_SYSTEMS_ENABLED`: when it is false (the default), enemy HP comes from `DirectBalanceConfig.get_enemy_hp_for_level()` — a linear HP target (`40 + 0.6 * (level - 1)`) nudged by each enemy's base HP (clamped to ±15% so level stays the dominant difficulty driver) — and attack is left at the enemy's base value, since enemy actions are neutralized in direct mode. The old hero-mode multiplier curve (`get_hp_multiplier`/`get_attack_multiplier`/`get_wall_level_bonus`) is preserved unchanged for a future hero-mode revisit. `EnemyCatalog` base stats are never mutated.
+
+`LevelCatalog._get_moves_for_level()` now delegates to `DirectBalanceConfig.get_moves_for_level()` (same stepwise curve as before, 24 moves down to a floor of 19 across the 100 levels) instead of holding its own copy of the formula.
+
+`RoundModifierCatalog.get_random_pool_modifiers()` is new: normal random battles now pick only from the 5 single-color surges (`red_x3`, `blue_x3`, `green_x3`, `yellow_x3`, `purple_x3`), making the modifier choice a color-focused strategic pick. `all_x2` is excluded from this random pool but remains fully valid and reachable via `get_default_modifier()` and direct `get_modifier("all_x2")` lookup — it is the default/fallback only. `RoundModifierSelectionResolver` now selects from `get_random_pool_modifiers()` when the catalog provides it, falling back to `get_all_modifiers()` for older catalog shapes, and still falls back to `all_x2` when no valid modifier is found.
+
+Balance checkpoint summary (required damage/move stays below expected damage/move at every checkpoint, so all are clearable with reasonable boosted-color play): level 1 (24 moves, ~40 HP, ~1.7 required vs 4.0 expected — very forgiving), level 10 (22 moves, ~45 HP, ~2.1 vs 4.0), level 20 (22 moves, ~51 HP, ~2.3 vs 4.2), level 30 (21 moves, ~57 HP, ~2.7 vs 4.4), level 50 (21 moves, ~69 HP, ~3.3 vs 4.8), level 75 (20 moves, ~84 HP, ~4.2 vs 5.4), level 100 (19 moves, ~99 HP, ~5.2 vs 5.8 — harder but still plausible). Wall levels (multiples of 10) introduce no extra HP spike beyond the smooth linear curve.
+
+Hero/RPG systems remain fully frozen (unchanged from Stage 32/33): `TeamSelect`, the Heroes/UpgradeScreen flow, `HeroPartyPanel`, hero abilities, hero charge, hero lane damage, and hero upgrades stay inactive in normal gameplay. Direct match damage and Stage 33's color multipliers remain fully active and unaffected. Progression, stars, and locked-zone unlocks (Zone 2 after Level 10, Zone 3 after Level 20) are unchanged since star thresholds are relative to each level's own move count. Balance is intentionally v0.1 and expected to be re-tuned after playtesting. No debuffs, player HP, enemy attacks against the player, new enemies, new levels, asset pipeline, audio, platform SDK, ads, or payments were added. Next planned stage: Stage 35, Simplified level flow and UX polish v0.1.
+
 ## How To Open And Run
 
 1. Open Godot 4.x.
@@ -613,8 +629,17 @@ Run the round modifier presenter test with:
 godot --headless --script res://scripts/tests/round_modifier_presenter_test.gd
 ```
 
+Run the Stage 34 direct balance tests with:
+
+```bash
+godot --headless --script res://scripts/tests/direct_balance_config_test.gd
+godot --headless --script res://scripts/tests/direct_enemy_scaling_balance_test.gd
+godot --headless --script res://scripts/tests/direct_level_balance_test.gd
+godot --headless --script res://scripts/tests/round_modifier_balance_test.gd
+```
+
 ## Next Planned Stages
 
-- Stage 26-30 block is complete. Stage 31 (hero portrait buttons and ability bars) is complete. Stage 32 (hero systems freeze and direct match damage foundation) is complete. Stage 33 (round modifiers and color damage rules) is complete.
-- Stage 34: Direct match-3 balance pass v0.1.
+- Stage 26-30 block is complete. Stage 31 (hero portrait buttons and ability bars) is complete. Stage 32 (hero systems freeze and direct match damage foundation) is complete. Stage 33 (round modifiers and color damage rules) is complete. Stage 34 (direct match-3 balance pass) is complete.
+- Stage 35: Simplified level flow and UX polish v0.1.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.

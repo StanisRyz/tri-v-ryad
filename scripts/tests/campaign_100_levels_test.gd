@@ -78,8 +78,8 @@ func _test_level_100_presenter_start() -> void:
 	_expect_true(presenter.state != null, "presenter creates level_100 state")
 	_expect_true(enemy_catalog.has_enemy(presenter.state.enemy.id), "presenter selected level_100 enemy from EnemyCatalog")
 	var base_enemy = enemy_catalog.get_enemy(presenter.state.enemy.id)
-	_expect_true(presenter.state.enemy.max_hp >= base_enemy.max_hp, "presenter level_100 enemy hp scales from base")
-	_expect_true(presenter.state.enemy.attack >= base_enemy.attack, "presenter level_100 enemy attack scales from base")
+	_expect_true(presenter.state.enemy.max_hp > 0, "presenter level_100 enemy hp is positive (direct-mode hp is tuned independently of base hp)")
+	_expect_equal(presenter.state.enemy.attack, base_enemy.attack, "presenter level_100 enemy attack matches base since attack is unused in direct mode")
 
 
 func _test_late_unlocks(catalog) -> void:
