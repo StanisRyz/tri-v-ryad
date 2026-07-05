@@ -1,6 +1,6 @@
 # Asset Folders
 
-Stage 36 adds the placeholder image folder pipeline only. Real image files are intentionally not included yet.
+Stage 37 uses the placeholder image folder pipeline in active battle background and enemy visual holders. Real image files are intentionally not included yet.
 
 ## Folder Structure
 
@@ -18,6 +18,6 @@ Image filenames should match the `GameAssetCatalog` path for their asset key. Fo
 
 ## Missing Assets
 
-Missing files are expected in Stage 36. `GameAssetCatalog.try_load_texture()` checks `ResourceLoader.exists()` before loading and returns `null` safely when a file is absent or when a loaded resource is not a `Texture2D`.
+Missing files are expected in Stage 37. `GameAssetCatalog.try_load_texture()` checks `ResourceLoader.exists()` before loading and returns `null` safely when a file is absent or when a loaded resource is not a `Texture2D`. `GameAssetCatalog.try_load_texture_cached()` reuses loaded textures and caches missing keys/paths so optional files are not rechecked excessively during a run.
 
-`ImageSlot` displays its configured placeholder color whenever no texture is available. Stage 37 will integrate `ImageSlot` into active image holders; Stage 36 only prepares the reusable pipeline.
+`ImageSlot` displays its configured placeholder color whenever no texture is available. Stage 37 integrates `ImageSlot` into active battle background handling and `EnemyPanel` enemy visuals. Tile image rendering is postponed, while tile asset keys remain reserved and mapped for later.

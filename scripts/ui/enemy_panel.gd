@@ -1,12 +1,14 @@
 extends PanelContainer
 
+const ASSET_KEY_RESOLVER_SCRIPT := preload("res://scripts/game/config/asset_key_resolver.gd")
+
 const TARGET_LANE_LABELS := {
 	0: "Left",
 	1: "Center",
 	2: "Right",
 }
 
-@onready var avatar_label: Label = %AvatarLabel
+@onready var enemy_image_slot: ImageSlot = %EnemyImageSlot
 @onready var enemy_name_label: Label = %EnemyNameLabel
 @onready var enemy_hp_label: Label = %EnemyHpLabel
 @onready var enemy_hp_bar: ProgressBar = %EnemyHpBar
@@ -15,12 +17,12 @@ const TARGET_LANE_LABELS := {
 
 
 func _ready() -> void:
-	set_placeholder_values("Training Enemy", "HP: -- / --", 1.0, "Intent: Waiting", "Target: --", "?")
+	set_placeholder_values("Training Enemy", "HP: -- / --", 1.0, "Intent: Waiting", "Target: --")
 
 
 func set_enemy_state(enemy: EnemyData, intent: EnemyIntent) -> void:
 	if enemy == null:
-		set_placeholder_values("Enemy", "HP: -- / --", 0.0, "Intent: --", "Target: --", "?")
+		set_placeholder_values("Enemy", "HP: -- / --", 0.0, "Intent: --", "Target: --")
 		return
 
 	var hp_ratio := float(enemy.current_hp) / float(enemy.max_hp) if enemy.max_hp > 0 else 0.0
@@ -38,17 +40,19 @@ func set_enemy_state(enemy: EnemyData, intent: EnemyIntent) -> void:
 		hp_ratio,
 		"%s | %s" % [intent_text, attack_text],
 		target_text,
-		enemy.display_name.substr(0, 1).to_upper() if enemy.display_name != "" else "?"
+		ASSET_KEY_RESOLVER_SCRIPT.get_enemy_asset_key(enemy.id)
 	)
 
 
-func set_placeholder_values(enemy_name: String, enemy_hp: String, hp_ratio: float, enemy_intent: String, enemy_target: String = "Target: --", avatar_text: String = "?") -> void:
+func set_placeholder_values(enemy_name: String, enemy_hp: String, hp_ratio: float, enemy_intent: String, enemy_target: String = "Target: --", enemy_asset_key: String = "") -> void:
 	enemy_name_label.text = enemy_name
 	enemy_hp_label.text = enemy_hp
 	enemy_hp_bar.value = clampf(hp_ratio, 0.0, 1.0)
 	enemy_intent_label.text = enemy_intent
 	enemy_target_label.text = enemy_target
-	avatar_label.text = avatar_text
+	if enemy_image_slot != null:
+		enemy_image_slot.set_placeholder_color(Color(0.18, 0.2, 0.24, 1.0))
+		enemy_image_slot.set_asset_key(enemy_asset_key)
 
 
 func _format_target_lane(target_lane: int) -> String:

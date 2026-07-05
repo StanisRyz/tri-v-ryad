@@ -9,6 +9,7 @@ const TURN_FEEDBACK_PRESENTER_SCRIPT := preload("res://scripts/game/presentation
 const ABILITY_FEEDBACK_PRESENTER_SCRIPT := preload("res://scripts/game/presentation/ability_feedback_presenter.gd")
 const LEVEL_LABEL_FORMATTER_SCRIPT := preload("res://scripts/game/config/level_label_formatter.gd")
 const BATTLE_MESSAGE_FORMATTER_SCRIPT := preload("res://scripts/game/presentation/battle_message_formatter.gd")
+const ASSET_KEY_RESOLVER_SCRIPT := preload("res://scripts/game/config/asset_key_resolver.gd")
 const PORTRAIT_CONTENT_WIDTH := 664.0
 const PORTRAIT_BOARD_SIZE := PORTRAIT_CONTENT_WIDTH
 const LANDSCAPE_CONTENT_WIDTH := 560.0
@@ -22,8 +23,7 @@ const LANDSCAPE_BOARD_SIZE := 320.0
 @onready var status_label: Label = %StatusLabel
 @onready var hero_party_panel: HBoxContainer = %HeroPartyPanel
 @onready var result_overlay: PanelContainer = %BattleResultOverlay
-@onready var background_rect: ColorRect = %Background
-@onready var background_texture: TextureRect = %BackgroundTexture
+@onready var background_slot: ImageSlot = %Background
 @onready var round_modifier_panel: PanelContainer = %RoundModifierPanel
 @onready var modifier_name_label: Label = %ModifierNameLabel
 @onready var modifier_description_label: Label = %ModifierDescriptionLabel
@@ -164,22 +164,15 @@ func _on_battle_background_changed(background_config) -> void:
 	if background_config == null:
 		return
 
-	if background_rect != null and background_config.placeholder_color is Color:
-		background_rect.color = background_config.placeholder_color
-
-	if background_texture == null:
+	if background_slot == null:
 		return
 
-	var texture_path: String = background_config.texture_path if "texture_path" in background_config else ""
-	if texture_path != "" and ResourceLoader.exists(texture_path):
-		var texture := load(texture_path)
-		if texture is Texture2D:
-			background_texture.texture = texture
-			background_texture.visible = true
-			return
-
-	background_texture.visible = false
-	background_texture.texture = null
+	if background_config.placeholder_color is Color:
+		background_slot.set_placeholder_color(background_config.placeholder_color)
+	var asset_key: String = background_config.asset_key if "asset_key" in background_config else ""
+	if asset_key == "":
+		asset_key = ASSET_KEY_RESOLVER_SCRIPT.get_background_asset_key(background_config.background_id)
+	background_slot.set_asset_key(asset_key)
 
 
 func _on_round_modifier_changed(modifier) -> void:

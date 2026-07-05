@@ -546,7 +546,23 @@ One-time rewards, level map, chapters, stars-based rewards, reset upgrades, and 
 - `GameAssetCatalog` maps reserved keys for backgrounds, enemies, tiles, UI panels, and future/frozen hero portraits to future `res://assets/images/` paths.
 - Missing asset files are expected and safe: catalog lookup returns `null`, and `ImageSlot` shows its placeholder color.
 - Empty asset folders were added under `assets/images/` with `.gitkeep` files only; no real image assets were added.
-- `ImageSlot` is not mass-integrated into active UI yet; Stage 37 will integrate it into active imageholders.
+- `ImageSlot` was not mass-integrated into active UI in Stage 36.
 - Active gameplay remains unchanged: LevelSelect startup, direct match damage, round modifiers, Stage 34 direct balance, enemies, levels, moves, stars, progression, zones, battle backgrounds, and enemy presentation remain active.
 - Hero/RPG systems remain frozen and inactive.
-- Next planned stage: Stage 37, Asset loading integration for active imageholders v0.1.
+- Stage 37 follows with asset loading integration for active imageholders.
+
+## Stage 37: Asset Loading Integration for Active Imageholders v0.1
+
+- Stage 37 is implemented.
+- `GameAssetCatalog` supports cached safe texture loading through `try_load_texture_cached(asset_key)` and test cleanup through `clear_texture_cache()`.
+- Cached loading returns `null` safely for empty, unknown, missing, and non-texture assets; optional missing files are not preloaded.
+- `ImageSlot.refresh()` uses the cached loader while direct `set_texture()` behavior remains available.
+- `AssetKeyResolver` maps all 5 background IDs, all 10 active enemy IDs, and all 5 active tile types to reserved `GameAssetCatalog` keys.
+- `BattleBackgroundConfig` now includes `asset_key`, and all 5 `BattleBackgroundCatalog` entries set it.
+- `GameScreen` uses an ImageSlot-backed background layer that applies the selected background asset key and placeholder color while staying behind the battle UI and ignoring input.
+- `EnemyPanel` uses `EnemyImageSlot` for enemy visuals, resolving enemy IDs to asset keys and showing a neutral placeholder when images are missing or enemy state is null.
+- Tile image rendering is postponed because `TileView` currently relies on Button/stylebox text markers and lightweight tween state; tile asset-key mapping is ready for a later, safer visual pass.
+- No real image assets were added.
+- Active gameplay remains unchanged: LevelSelect startup, direct match damage, round modifiers, Stage 34 direct balance, enemies, levels, moves, stars, progression, zones, battle flow, and Settings flow remain active.
+- Hero/RPG systems remain frozen and inactive.
+- Next planned stage: Stage 38, AudioManager foundation v0.1.

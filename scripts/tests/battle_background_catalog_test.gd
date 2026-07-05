@@ -1,6 +1,7 @@
 extends SceneTree
 
 const BATTLE_BACKGROUND_CATALOG_SCRIPT := "res://scripts/game/config/battle_background_catalog.gd"
+const GAME_ASSET_CATALOG := preload("res://scripts/game/config/game_asset_catalog.gd")
 
 var _failures := 0
 
@@ -14,6 +15,7 @@ func _initialize() -> void:
 	_test_all_backgrounds_valid(catalog)
 	_test_default_background_exists(catalog)
 	_test_get_background_returns_expected(catalog)
+	_test_background_asset_keys(catalog)
 	_test_has_background_works(catalog)
 	_test_unknown_background_returns_null(catalog)
 
@@ -64,6 +66,13 @@ func _test_get_background_returns_expected(catalog) -> void:
 	_expect_true(background_config != null, "get_background returns expected background")
 	_expect_equal(background_config.background_id, "background_3", "get_background returns matching id")
 	print("ok - get_background returns expected background")
+
+
+func _test_background_asset_keys(catalog) -> void:
+	for background_config in catalog.get_all_backgrounds():
+		_expect_equal(background_config.asset_key, background_config.background_id, "background asset key matches id")
+		_expect_true(GAME_ASSET_CATALOG.has_asset_key(background_config.asset_key), "background asset key exists in asset catalog")
+	print("ok - background asset keys are mapped")
 
 
 func _test_has_background_works(catalog) -> void:

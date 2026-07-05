@@ -2,7 +2,7 @@
 
 Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
-The project is currently through Stage 36: ImageSlot asset placeholder pipeline v0.1. Hero/RPG systems (TeamSelect, hero party UI, hero abilities/charge/lane damage, hero upgrades) remain frozen and hidden from the active flow via `FeatureFlags.HERO_SYSTEMS_ENABLED := false`, and gameplay deals direct match-3 damage to the enemy. Each battle selects one positive round modifier that multiplies damage for matched cells of specific colors, while Stage 34 direct balance controls moves and enemy HP. The active flow remains App startup -> LevelSelect -> GameScreen -> LevelSelect, with Settings opened from the LevelSelect top panel; MainMenu remains in the project as inactive legacy/future code but is skipped by normal startup and play. The app shell, a level-select hub with numbers-only labels for `level_1` through `level_100` grouped into 10 locked zones, a shared 10-enemy base roster with battle-start random enemy selection and direct-mode HP scaling, battle background placeholders, the safe `ImageSlot`/`GameAssetCatalog` placeholder image pipeline, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, saved campaign progress with stars/unlocks, and lightweight swap, clear, special activation, and refill feedback all remain active for a vertical 9:16 game. Hero code, MainMenu, TeamSelect, and UpgradeScreen remain in the project (not deleted) for a future revisit.
+The project is currently through Stage 37: Asset loading integration for active imageholders v0.1. Hero/RPG systems (TeamSelect, hero party UI, hero abilities/charge/lane damage, hero upgrades) remain frozen and hidden from the active flow via `FeatureFlags.HERO_SYSTEMS_ENABLED := false`, and gameplay deals direct match-3 damage to the enemy. Each battle selects one positive round modifier that multiplies damage for matched cells of specific colors, while Stage 34 direct balance controls moves and enemy HP. The active flow remains App startup -> LevelSelect -> GameScreen -> LevelSelect, with Settings opened from the LevelSelect top panel; MainMenu remains in the project as inactive legacy/future code but is skipped by normal startup and play. The app shell, a level-select hub with numbers-only labels for `level_1` through `level_100` grouped into 10 locked zones, a shared 10-enemy base roster with battle-start random enemy selection and direct-mode HP scaling, ImageSlot-backed battle background and enemy visual placeholders, the safe cached `ImageSlot`/`GameAssetCatalog` placeholder image pipeline, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, saved campaign progress with stars/unlocks, and lightweight swap, clear, special activation, and refill feedback all remain active for a vertical 9:16 game. Hero code, MainMenu, TeamSelect, and UpgradeScreen remain in the project (not deleted) for a future revisit.
 
 ## Project Direction
 
@@ -35,7 +35,10 @@ This stage includes:
 - A persistent `SettingsScreen` route opened from LevelSelect for presentation/audio setting toggles.
 - A playable battle screen with a top enemy panel, compact Level/Moves/Levels HUD row, widened 9x9 `BoardView`, placeholder `TileView` tiles, hidden inactive hero party panel, status text, result overlay, and a Levels button back to LevelSelect.
 - Reusable UI components: `BattleHud`, `EnemyPanel`, `HeroPartyPanel`, `HeroCard`, `BattleResultOverlay`, and `ImageSlot`.
-- `GameAssetCatalog` maps reserved image asset keys to future `res://assets/images/` paths and loads optional textures safely.
+- `GameAssetCatalog` maps reserved image asset keys to future `res://assets/images/` paths and loads optional textures safely with a small cache for loaded and missing textures.
+- `AssetKeyResolver` maps background IDs, enemy IDs, and tile types to `GameAssetCatalog` asset keys without scattering string literals through UI code.
+- `GameScreen` uses an `ImageSlot` for the active battle background, applying the selected background asset key and placeholder color.
+- `EnemyPanel` uses an `ImageSlot` for the active enemy visual, resolving the selected enemy ID to a reserved enemy asset key.
 - Empty asset folders under `assets/images/backgrounds/`, `assets/images/enemies/`, `assets/images/tiles/`, `assets/images/ui/`, and `assets/images/heroes/` for later real images.
 - A lightweight `LayoutManager` for UI-only portrait and landscape layout decisions.
 - UI-independent board generation, match detection, swap validation, gravity/refill, and cascade resolution under `scripts/game/board/`.
@@ -351,9 +354,21 @@ Stage 36 is complete. `ImageSlot` (`scripts/ui/image_slot.gd`) is a reusable Con
 
 `GameAssetCatalog` (`scripts/game/config/game_asset_catalog.gd`) is the central registry for reserved image asset keys and future paths. It covers 5 battle backgrounds, 10 enemies, 5 tiles, 5 UI panel assets, and 5 future/frozen hero portraits. It checks `ResourceLoader.exists()` before loading optional files, returns `null` for missing or non-texture resources, and does not preload missing assets.
 
-Empty asset folders were added under `assets/images/` with `.gitkeep` files only. No real image assets were added. `ImageSlot` was not mass-integrated into active UI yet; GameScreen backgrounds, EnemyPanel avatar, TileView, LevelSelect panels, BattleResultOverlay, and RoundModifierPanel still use their current placeholder paths. Stage 37 will integrate asset loading into active image holders.
+Empty asset folders were added under `assets/images/` with `.gitkeep` files only. No real image assets were added. In Stage 36, `ImageSlot` was not mass-integrated into active UI yet; GameScreen backgrounds, EnemyPanel avatar, TileView, LevelSelect panels, BattleResultOverlay, and RoundModifierPanel still used their current placeholder paths.
 
-Active gameplay remains unchanged: LevelSelect startup, Settings from LevelSelect, GameScreen Menu/Back to LevelSelect, direct match damage, round modifiers, Stage 34 balance, progression, stars, zones, enemies, and battle flow all remain active. Hero/RPG systems remain frozen and inactive. Next planned stage: Stage 37, Asset loading integration for active imageholders v0.1.
+Active gameplay remained unchanged in Stage 36: LevelSelect startup, Settings from LevelSelect, GameScreen Menu/Back to LevelSelect, direct match damage, round modifiers, Stage 34 balance, progression, stars, zones, enemies, and battle flow all remained active. Hero/RPG systems remained frozen and inactive.
+
+## Stage 37: Asset Loading Integration for Active Imageholders v0.1
+
+Stage 37 is complete. `GameAssetCatalog` now supports cached safe texture loading through `try_load_texture_cached(asset_key)` plus `clear_texture_cache()` for tests. Unknown keys, missing files, and non-texture resources still return `null` safely, and missing keys/paths are cached so optional files are not rechecked excessively during a run.
+
+`AssetKeyResolver` (`scripts/game/config/asset_key_resolver.gd`) maps active config/gameplay identifiers to reserved asset keys: 5 battle backgrounds, the 10 runtime enemy IDs, and the 5 active tile types. The resolver keeps asset-key string mapping outside UI scripts.
+
+`GameScreen` now uses an `ImageSlot` as the battle background layer. `BattleBackgroundConfig` includes `asset_key`, and `BattleBackgroundCatalog` fills it for all 5 placeholder backgrounds. The selected background applies both its asset key and placeholder color to the background slot; because no real background files were added, the current game still shows safe placeholder colors.
+
+`EnemyPanel` now uses `EnemyImageSlot` for the active enemy visual. Enemy IDs resolve through `AssetKeyResolver`, missing enemy images show the neutral placeholder, and direct-mode enemy copy remains unchanged. Tile image rendering is postponed: tile type to asset-key mapping and tests are ready, but `TileView` remains stylebox/button-based so current special markers and animation behavior stay stable.
+
+No real image assets were added. Active gameplay remains unchanged: LevelSelect startup, Settings from LevelSelect, GameScreen Menu/Back to LevelSelect, direct match damage, round modifiers, Stage 34 balance, progression, stars, zones, enemies, and battle flow all remain active. Hero/RPG systems remain frozen and inactive. Next planned stage: Stage 38, AudioManager foundation v0.1.
 
 ## How To Open And Run
 
@@ -498,10 +513,23 @@ Run the asset catalog test with:
 godot --headless --script res://scripts/tests/game_asset_catalog_test.gd
 ```
 
+Run the asset key resolver test with:
+
+```bash
+godot --headless --script res://scripts/tests/asset_key_resolver_test.gd
+```
+
 Run the image slot test with:
 
 ```bash
 godot --headless --script res://scripts/tests/image_slot_test.gd
+```
+
+Run the active imageholder integration tests with:
+
+```bash
+godot --headless --script res://scripts/tests/battle_background_asset_integration_test.gd
+godot --headless --script res://scripts/tests/enemy_panel_image_slot_test.gd
 ```
 
 Run the upgrade economy test with:
@@ -683,6 +711,6 @@ godot --headless --script res://scripts/tests/round_modifier_balance_test.gd
 
 ## Next Planned Stages
 
-- Stage 26-30 block is complete. Stage 31 (hero portrait buttons and ability bars) is complete. Stage 32 (hero systems freeze and direct match damage foundation) is complete. Stage 33 (round modifiers and color damage rules) is complete. Stage 34 (direct match-3 balance pass) is complete. Stage 35 (direct LevelSelect startup and simplified UX polish) is complete.
-- Stage 37: Asset loading integration for active imageholders v0.1.
+- Stage 26-30 block is complete. Stage 31 (hero portrait buttons and ability bars) is complete. Stage 32 (hero systems freeze and direct match damage foundation) is complete. Stage 33 (round modifiers and color damage rules) is complete. Stage 34 (direct match-3 balance pass) is complete. Stage 35 (direct LevelSelect startup and simplified UX polish) is complete. Stage 36 (ImageSlot asset placeholder pipeline) is complete. Stage 37 (asset loading integration for active imageholders) is complete.
+- Stage 38: AudioManager foundation v0.1.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.

@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://bfo3m71bj6cub"]
+[gd_scene load_steps=3 format=3 uid="uid://bfo3m71bj6cub"]
 
 [ext_resource type="Script" path="res://scripts/ui/enemy_panel.gd" id="1_5dnth"]
+[ext_resource type="Script" path="res://scripts/ui/image_slot.gd" id="2_c13rl"]
 
 [node name="EnemyPanel" type="PanelContainer"]
 custom_minimum_size = Vector2(0, 132)
@@ -19,18 +20,15 @@ theme_override_constants/margin_bottom = 14
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="AvatarArea" type="PanelContainer" parent="Margin/Row"]
+[node name="EnemyImageSlot" type="ColorRect" parent="Margin/Row"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 size_flags_vertical = 4
-
-[node name="AvatarLabel" type="Label" parent="Margin/Row/AvatarArea"]
-unique_name_in_owner = true
-layout_mode = 2
-horizontal_alignment = 1
-vertical_alignment = 1
-text = "?"
+mouse_filter = 2
+color = Color(0.18, 0.2, 0.24, 1)
+script = ExtResource("2_c13rl")
+placeholder_color = Color(0.18, 0.2, 0.24, 1)
 
 [node name="Text" type="VBoxContainer" parent="Margin/Row"]
 layout_mode = 2

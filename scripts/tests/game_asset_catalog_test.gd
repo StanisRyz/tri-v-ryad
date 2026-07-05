@@ -29,6 +29,8 @@ func _initialize() -> void:
 	_test_expected_paths()
 	_test_unknown_key_is_safe()
 	_test_missing_files_return_null()
+	_test_cached_loading_is_safe()
+	_test_clear_texture_cache()
 	_test_known_keys_are_unique()
 	_test_asset_map_is_non_empty()
 
@@ -75,6 +77,21 @@ func _test_missing_files_return_null() -> void:
 	_expect_equal(GAME_ASSET_CATALOG.try_load_texture("background_1"), null, "missing background texture returns null")
 	_expect_equal(GAME_ASSET_CATALOG.try_load_texture("enemy_small_slime"), null, "missing enemy texture returns null")
 	print("ok - missing optional files return null")
+
+
+func _test_cached_loading_is_safe() -> void:
+	GAME_ASSET_CATALOG.clear_texture_cache()
+	_expect_equal(GAME_ASSET_CATALOG.try_load_texture_cached("missing_key"), null, "cached unknown key returns null")
+	_expect_equal(GAME_ASSET_CATALOG.try_load_texture_cached("background_1"), null, "cached missing background returns null")
+	_expect_equal(GAME_ASSET_CATALOG.try_load_texture_cached("enemy_small_slime"), null, "cached missing enemy returns null")
+	print("ok - cached loading is safe for missing assets")
+
+
+func _test_clear_texture_cache() -> void:
+	GAME_ASSET_CATALOG.try_load_texture_cached("background_1")
+	GAME_ASSET_CATALOG.clear_texture_cache()
+	_expect_equal(GAME_ASSET_CATALOG.try_load_texture_cached("background_1"), null, "clear_texture_cache leaves missing assets safe")
+	print("ok - texture cache can be cleared")
 
 
 func _test_known_keys_are_unique() -> void:

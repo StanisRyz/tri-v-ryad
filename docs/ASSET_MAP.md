@@ -1,6 +1,6 @@
 # Asset Map
 
-All Stage 36 entries are reserved placeholders. Current status is `missing/placeholder expected` until real assets are added in later stages.
+All Stage 37 entries are reserved placeholders. Current status is `missing/placeholder expected` until real assets are added in later stages. Active battle backgrounds and enemy visuals now resolve through `AssetKeyResolver` and display via `ImageSlot`; tile keys are mapped but tile rendering is postponed.
 
 | asset_key | expected path | status | usage |
 |---|---|---|---|
@@ -35,4 +35,4 @@ All Stage 36 entries are reserved placeholders. Current status is `missing/place
 | hero_4_portrait | res://assets/images/heroes/hero_4_portrait.png | missing/placeholder expected | future/frozen hero portrait |
 | hero_5_portrait | res://assets/images/heroes/hero_5_portrait.png | missing/placeholder expected | future/frozen hero portrait |
 
-`ImageSlot` shows placeholders when files are missing. `GameAssetCatalog.try_load_texture()` returns `null` safely for missing files and does not preload optional assets. Stage 37 will integrate `ImageSlot` into active image holders.
+`ImageSlot` shows placeholders when files are missing. `GameAssetCatalog.try_load_texture()` and `try_load_texture_cached()` return `null` safely for missing files and do not preload optional assets. `clear_texture_cache()` exists for tests. No real image assets are included in Stage 37.

@@ -34,6 +34,9 @@ const ASSET_MAP := {
 	"hero_5_portrait": "res://assets/images/heroes/hero_5_portrait.png",
 }
 
+static var _texture_cache: Dictionary = {}
+static var _missing_texture_keys: Dictionary = {}
+
 
 static func get_asset_path(asset_key: String) -> String:
 	return ASSET_MAP.get(asset_key, "")
@@ -55,6 +58,28 @@ static func try_load_texture(asset_key: String) -> Texture2D:
 		return resource
 
 	return null
+
+
+static func try_load_texture_cached(asset_key: String) -> Texture2D:
+	if asset_key == "":
+		return null
+	if _texture_cache.has(asset_key):
+		return _texture_cache[asset_key]
+	if _missing_texture_keys.has(asset_key):
+		return null
+
+	var texture := try_load_texture(asset_key)
+	if texture == null:
+		_missing_texture_keys[asset_key] = true
+		return null
+
+	_texture_cache[asset_key] = texture
+	return texture
+
+
+static func clear_texture_cache() -> void:
+	_texture_cache.clear()
+	_missing_texture_keys.clear()
 
 
 static func get_known_asset_keys() -> Array[String]:

@@ -23,8 +23,7 @@ func _run() -> void:
 	var status_label := screen.get_node("%StatusLabel") as Label
 	var hero_party_panel := screen.get_node("%HeroPartyPanel") as Control
 	var result_overlay := screen.get_node("%BattleResultOverlay") as Control
-	var background_rect := screen.get_node("%Background") as ColorRect
-	var background_texture := screen.get_node("%BackgroundTexture") as TextureRect
+	var background_slot := screen.get_node("%Background") as ImageSlot
 	var round_modifier_panel := screen.get_node("%RoundModifierPanel") as Control
 	var modifier_name_label := screen.get_node("%ModifierNameLabel") as Label
 	var modifier_description_label := screen.get_node("%ModifierDescriptionLabel") as Label
@@ -37,14 +36,15 @@ func _run() -> void:
 	_expect_true(hero_party_panel != null, "game screen has HeroPartyPanel")
 	_expect_true(not hero_party_panel.visible, "hero party panel is hidden while hero systems are frozen")
 	_expect_true(result_overlay != null, "game screen has BattleResultOverlay")
-	_expect_true(background_rect != null, "game screen has background layer")
-	_expect_true(background_texture != null, "game screen has background texture layer")
+	_expect_true(background_slot != null, "game screen has ImageSlot background layer")
 	_expect_true(round_modifier_panel != null, "game screen has RoundModifierPanel")
 	_expect_true(round_modifier_panel.visible, "round modifier panel is visible once a battle starts")
 	_expect_true(modifier_name_label.text != "", "round modifier panel shows a modifier name")
 	_expect_true(modifier_description_label.text != "", "round modifier panel shows a modifier description")
-	_expect_equal(background_rect.mouse_filter, Control.MOUSE_FILTER_IGNORE, "background layer does not block input")
-	_expect_true(background_rect.get_index() < result_overlay.get_index(), "background layer stays behind result overlay")
+	_expect_equal(background_slot.mouse_filter, Control.MOUSE_FILTER_IGNORE, "background layer does not block input")
+	_expect_true(background_slot.get_index() < result_overlay.get_index(), "background layer stays behind result overlay")
+	_expect_false(background_slot.has_texture(), "missing background asset uses placeholder")
+	_expect_true(background_slot.get_asset_key().begins_with("background_"), "background slot receives a background asset key")
 
 	if enemy_panel != null and battle_hud != null and menu_button != null and board_view != null and status_label != null and hero_party_panel != null:
 		var battle_root := screen.get_node("%BattleRoot")
@@ -107,6 +107,10 @@ func _expect_true(value: bool, message: String) -> void:
 
 	_failures += 1
 	push_error("FAILED: %s" % message)
+
+
+func _expect_false(value: bool, message: String) -> void:
+	_expect_true(not value, message)
 
 
 func _expect_equal(actual, expected, message: String) -> void:

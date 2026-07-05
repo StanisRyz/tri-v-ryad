@@ -1,6 +1,7 @@
 extends SceneTree
 
 const IMAGE_SLOT_SCRIPT := preload("res://scripts/ui/image_slot.gd")
+const GAME_ASSET_CATALOG := preload("res://scripts/game/config/game_asset_catalog.gd")
 
 var _failures := 0
 
@@ -62,12 +63,15 @@ func _test_unknown_asset_key_shows_placeholder() -> void:
 
 
 func _test_missing_known_asset_shows_placeholder() -> void:
+	GAME_ASSET_CATALOG.clear_texture_cache()
 	var image_slot = IMAGE_SLOT_SCRIPT.new()
 	root.add_child(image_slot)
 	await process_frame
 	image_slot.set_asset_key("background_1")
 	_expect_false(image_slot.has_texture(), "missing known asset has no texture")
 	_expect_equal(image_slot.color, image_slot.placeholder_color, "missing known asset keeps placeholder visible")
+	image_slot.refresh()
+	_expect_false(image_slot.has_texture(), "cached missing known asset still has no texture")
 	image_slot.queue_free()
 	print("ok - missing known asset is safe")
 

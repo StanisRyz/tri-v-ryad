@@ -54,7 +54,7 @@ func refresh() -> void:
 		clear_texture()
 		return
 
-	set_texture(GAME_ASSET_CATALOG.try_load_texture(asset_key))
+	set_texture(GAME_ASSET_CATALOG.try_load_texture_cached(asset_key))
 
 
 func has_texture() -> bool:
