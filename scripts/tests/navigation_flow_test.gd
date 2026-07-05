@@ -3,6 +3,8 @@ extends SceneTree
 const MAIN_MENU_SCREEN := preload("res://scenes/screens/MainMenuScreen.tscn")
 const LEVEL_SELECT_SCREEN := preload("res://scenes/screens/LevelSelectScreen.tscn")
 const TEAM_SELECT_SCREEN := preload("res://scenes/screens/TeamSelectScreen.tscn")
+const GAME_SCREEN := preload("res://scenes/screens/GameScreen.tscn")
+const BOARD_VIEW := preload("res://scenes/game/BoardView.tscn")
 const PROGRESS_MANAGER_SCRIPT := preload("res://scripts/game/progression/progress_manager.gd")
 const SAVE_MANAGER_SCRIPT := preload("res://scripts/game/save/save_manager.gd")
 const HERO_CATALOG_SCRIPT := preload("res://scripts/game/config/hero_catalog.gd")
@@ -24,6 +26,8 @@ func _run() -> void:
 	await _test_level_select_signals()
 	await _test_team_select_start_battle()
 	await _test_team_select_rejects_invalid_team()
+	await _test_game_screen_layout_smoke()
+	await _test_board_view_layout_smoke()
 	_cleanup()
 
 	if _failures == 0:
@@ -125,6 +129,42 @@ func _test_team_select_rejects_invalid_team() -> void:
 	_expect_equal(started_with.size(), 0, "team select does not emit start_battle_pressed for an invalid team")
 
 	screen.queue_free()
+
+
+func _test_game_screen_layout_smoke() -> void:
+	var screen := GAME_SCREEN.instantiate()
+	root.add_child(screen)
+	await process_frame
+
+	var board_view := screen.get_node("%BoardView") as Control
+	var hero_party_panel := screen.get_node("%HeroPartyPanel") as Control
+	_expect_true(board_view != null, "game screen has BoardView")
+	_expect_true(hero_party_panel != null, "game screen has HeroPartyPanel")
+	_expect_equal(board_view.custom_minimum_size, Vector2(664, 664), "portrait board is widened and square")
+	_expect_equal(hero_party_panel.custom_minimum_size.x, board_view.custom_minimum_size.x, "portrait hero panel width matches board width")
+
+	screen._apply_landscape_layout()
+	_expect_equal(board_view.custom_minimum_size, Vector2(320, 320), "landscape board remains compact and square")
+	_expect_equal(hero_party_panel.custom_minimum_size.x, 560.0, "landscape hero panel keeps compact content width")
+
+	screen.queue_free()
+
+
+func _test_board_view_layout_smoke() -> void:
+	var board_view := BOARD_VIEW.instantiate() as BoardView
+	root.add_child(board_view)
+	await process_frame
+
+	var tile_grid := board_view.get_node("%TileGrid") as GridContainer
+	_expect_true(tile_grid != null, "board view has TileGrid")
+	_expect_equal(tile_grid.columns, 9, "board view grid has 9 columns")
+	_expect_equal(tile_grid.get_child_count(), 81, "board view creates 9x9 tile grid")
+	_expect_equal(board_view.custom_minimum_size, Vector2(664, 664), "board view default size is widened and square")
+
+	board_view.highlight_lanes({0: 3, 2: 1})
+	board_view.clear_lane_highlights()
+
+	board_view.queue_free()
 
 
 func _select_team(screen, hero_ids: Array) -> void:

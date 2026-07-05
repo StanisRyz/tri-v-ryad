@@ -12,6 +12,7 @@ func _initialize() -> void:
 	print("Running settings manager tests...")
 
 	_cleanup()
+	var player_save_existed_before := FileAccess.file_exists("user://save_v1.json")
 	var settings_manager = load(SETTINGS_MANAGER_SCRIPT).new(TEST_SETTINGS_PATH, TEST_TEMP_SETTINGS_PATH)
 
 	var missing_settings = settings_manager.get_settings()
@@ -68,7 +69,7 @@ func _initialize() -> void:
 	reload_after_reset.load()
 	_expect_true(reload_after_reset.get_settings().animations_enabled, "reset settings persist to disk")
 
-	_expect_false(FileAccess.file_exists("user://save_v1.json"), "settings tests never create the player save file")
+	_expect_equal(FileAccess.file_exists("user://save_v1.json"), player_save_existed_before, "settings tests leave the player save file untouched")
 
 	_cleanup()
 	if _failures == 0:

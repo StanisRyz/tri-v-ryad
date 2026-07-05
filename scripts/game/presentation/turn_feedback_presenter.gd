@@ -49,6 +49,7 @@ func _play_valid_feedback(data, board_view: BoardView, status_callback: Callable
 		status_callback.call(_build_enemy_action_message(data.enemy_action))
 		await _wait(board_view, LONG_DELAY)
 
+	board_view.clear_lane_highlights()
 	board_view.clear_cell_highlights()
 
 

@@ -7,6 +7,7 @@ signal tile_drag_released(cell: Vector2i, drag_delta: Vector2)
 const TILE_VIEW_SCENE := preload("res://scenes/game/TileView.tscn")
 const BOARD_SIZE := 9
 const LANE_WIDTH := 3
+const DEFAULT_BOARD_SIZE := 664.0
 
 @onready var tile_grid: GridContainer = %TileGrid
 
@@ -19,7 +20,7 @@ var _invalid_feedback_cells: Array[Vector2i] = []
 
 
 func _ready() -> void:
-	custom_minimum_size = Vector2(560, 560)
+	custom_minimum_size = Vector2(DEFAULT_BOARD_SIZE, DEFAULT_BOARD_SIZE)
 	tile_grid.columns = BOARD_SIZE
 	_create_tiles()
 	_update_grid_rect()
@@ -167,25 +168,23 @@ func _draw() -> void:
 	var board_rect := _get_board_rect()
 	var cell_size := board_rect.size.x / float(BOARD_SIZE)
 	var lane_colors := [
-		Color(0.12, 0.30, 0.62, 0.28),
-		Color(0.10, 0.46, 0.30, 0.28),
-		Color(0.56, 0.22, 0.20, 0.28),
+		Color(0.12, 0.30, 0.62, 0.24),
+		Color(0.10, 0.46, 0.30, 0.24),
+		Color(0.56, 0.22, 0.20, 0.24),
 	]
 
 	for lane_index in range(3):
+		if _lane_activations.get(lane_index, 0) <= 0:
+			continue
+
 		var lane_rect := Rect2(
 			board_rect.position + Vector2(cell_size * LANE_WIDTH * lane_index, 0.0),
 			Vector2(cell_size * LANE_WIDTH, board_rect.size.y)
 		)
 		var color: Color = lane_colors[lane_index]
-		if _lane_activations.get(lane_index, 0) > 0:
-			color = color.lightened(0.35)
-			color.a = 0.46
+		color = color.lightened(0.35)
+		color.a = 0.38
 		draw_rect(lane_rect, color, true)
-
-	for separator_column in [3, 6]:
-		var x: float = board_rect.position.x + cell_size * separator_column
-		draw_line(Vector2(x, board_rect.position.y), Vector2(x, board_rect.end.y), Color(1, 1, 1, 0.9), 4.0)
 
 	draw_rect(board_rect, Color(1, 1, 1, 0.85), false, 3.0)
 

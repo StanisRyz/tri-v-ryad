@@ -2,7 +2,7 @@
 
 Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
-The project is currently through Stage 20: UI/UX polish and settings v0.1. It defines the app shell, a MainMenu with Play, Heroes, and Settings entry points, a level-select-only level flow, a pre-battle team confirmation flow, a menu-accessible full roster hero upgrade screen, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, damage-only roster ability mappings, local hero upgrades, saved campaign progress, and lightweight swap, clear, special activation, and refill feedback for a vertical 9:16 game.
+The project is currently through Stage 21: Battle screen layout v0.2. It defines the app shell, a MainMenu with Play, Heroes, and Settings entry points, a level-select-only level flow, a pre-battle team confirmation flow, a menu-accessible full roster hero upgrade screen, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, damage-only roster ability mappings, local hero upgrades, saved campaign progress, and lightweight swap, clear, special activation, and refill feedback for a vertical 9:16 game.
 
 ## Project Direction
 
@@ -29,12 +29,12 @@ This stage includes:
 
 - A Godot project with `scenes/app/App.tscn` as the main scene.
 - A minimal screen router.
-- A main menu placeholder with a Play button.
-- A simple `LevelSelectScreen` with 10 early campaign level buttons.
-- A Team button on `LevelSelectScreen` that opens `TeamSelectScreen`.
-- A Heroes button on `LevelSelectScreen` that opens `UpgradeScreen`.
-- `TeamSelectScreen` shows 5 placeholder roster heroes and lets the player save exactly 3 unique selected heroes.
-- A playable battle screen with a HUD, enemy panel, 9x9 `BoardView`, placeholder `TileView` tiles, hero party panel, status text, result overlay, and a Menu button.
+- A MainMenu with Play, Heroes, and Settings buttons.
+- A `LevelSelectScreen` with 10 early campaign level buttons, lock/completion/star state, and routing to `TeamSelectScreen`.
+- A `TeamSelectScreen` that confirms or edits the saved 3-hero team before starting the selected level.
+- A main-menu `UpgradeScreen` route for roster hero upgrades.
+- A persistent `SettingsScreen` route for presentation/audio setting toggles.
+- A playable battle screen with a HUD, enemy panel, widened 9x9 `BoardView`, placeholder `TileView` tiles, hero party panel, status text, result overlay, and a Menu button.
 - Reusable UI components: `BattleHud`, `EnemyPanel`, `HeroPartyPanel`, `HeroCard`, and `BattleResultOverlay`.
 - A lightweight `LayoutManager` for UI-only portrait and landscape layout decisions.
 - UI-independent board generation, match detection, swap validation, gravity/refill, and cascade resolution under `scripts/game/board/`.
@@ -92,7 +92,8 @@ This stage includes:
 - Matched cells highlight and fade before board refresh/refill feedback.
 - Board refresh/refill gets lightweight appear feedback; this is not full falling animation.
 - Input locking during turn feedback and after victory/defeat remains tied to `feedback_finished`.
-- Swapped cell feedback, invalid swap feedback, match highlights, refill feedback, Hero Lane highlights, and short damage/enemy action status messages.
+- Swapped cell feedback, invalid swap feedback, match highlights, refill feedback, temporary Hero Lane highlights, and short damage/enemy action status messages.
+- The portrait battle board is scaled to match the hero party panel width, and permanent Hero Lane separator/debug grid visuals are removed from the normal board state.
 - Live HUD, enemy, and hero updates.
 - Basic victory/defeat overlay with restart flow.
 - Headless board core tests in `scripts/tests/board_core_test.gd`.
@@ -172,6 +173,14 @@ Music and Sound Effects toggles are persisted and reflected in the UI. No audio 
 **Reset Progress was intentionally not added.** There is no Reset Progress button, API, or settings action that deletes, clears, or migrates player progress.
 
 No gameplay, board, battle, progression, save-progress-format, hero, level, or special tile rules were changed in this stage. Yandex SDK, cloud save, ads, payments, final art, audio assets, and particles remain out of scope.
+
+## Stage 21: Battle Screen Layout v0.2
+
+Stage 21 is complete. The portrait battle board is scaled wider so its left and right edges visually align with the hero party panel. The board remains square and inside the 720x1280 safe-margin content width.
+
+Permanent Hero Lane separator lines and always-on lane background/debug fills were removed from the normal board state. Hero Lane activation feedback remains temporary and presentation-only.
+
+Hero Lane gameplay rules remain unchanged: columns 0-2, 3-5, and 6-8 still map to lanes 0, 1, and 2 through the existing battle logic. No gameplay, progression, enemy, level, save, settings, platform, audio, art, monetization, ability, board matching, or special tile rules were changed.
 
 ## How To Open And Run
 
@@ -329,4 +338,5 @@ godot --headless --script res://scripts/tests/settings_screen_data_test.gd
 
 ## Next Planned Stages
 
+- Stage 22: Battle HUD restructure v0.2: enemy top layout.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.

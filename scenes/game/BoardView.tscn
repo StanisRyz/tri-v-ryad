@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://scripts/game/view/board_view.gd" id="1_suf0l"]
 
 [node name="BoardView" type="Control"]
-custom_minimum_size = Vector2(560, 560)
+custom_minimum_size = Vector2(664, 664)
 layout_mode = 3
 anchors_preset = 0
 size_flags_horizontal = 4

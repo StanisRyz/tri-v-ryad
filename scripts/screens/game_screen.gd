@@ -7,6 +7,10 @@ const BATTLE_PRESENTER_SCRIPT := preload("res://scripts/game/presentation/battle
 const BOARD_INPUT_CONTROLLER_SCRIPT := preload("res://scripts/game/input/board_input_controller.gd")
 const TURN_FEEDBACK_PRESENTER_SCRIPT := preload("res://scripts/game/presentation/turn_feedback_presenter.gd")
 const ABILITY_FEEDBACK_PRESENTER_SCRIPT := preload("res://scripts/game/presentation/ability_feedback_presenter.gd")
+const PORTRAIT_CONTENT_WIDTH := 664.0
+const PORTRAIT_BOARD_SIZE := PORTRAIT_CONTENT_WIDTH
+const LANDSCAPE_CONTENT_WIDTH := 560.0
+const LANDSCAPE_BOARD_SIZE := 320.0
 
 @onready var menu_button: Button = %MenuButton
 @onready var battle_root: VBoxContainer = %BattleRoot
@@ -60,23 +64,23 @@ func _apply_layout(mode: int) -> void:
 
 
 func _apply_portrait_layout() -> void:
-	battle_root.custom_minimum_size = Vector2(664, 0)
+	battle_root.custom_minimum_size = Vector2(PORTRAIT_CONTENT_WIDTH, 0)
 	battle_root.add_theme_constant_override("separation", 14)
 	menu_button.custom_minimum_size = Vector2(118, 70)
 	battle_hud.custom_minimum_size = Vector2(0, 70)
 	enemy_panel.custom_minimum_size = Vector2(0, 132)
-	board_view.custom_minimum_size = Vector2(560, 560)
-	hero_party_panel.custom_minimum_size = Vector2(0, 132)
+	board_view.custom_minimum_size = Vector2(PORTRAIT_BOARD_SIZE, PORTRAIT_BOARD_SIZE)
+	hero_party_panel.custom_minimum_size = Vector2(PORTRAIT_CONTENT_WIDTH, 132)
 
 
 func _apply_landscape_layout() -> void:
-	battle_root.custom_minimum_size = Vector2(560, 0)
+	battle_root.custom_minimum_size = Vector2(LANDSCAPE_CONTENT_WIDTH, 0)
 	battle_root.add_theme_constant_override("separation", 10)
 	menu_button.custom_minimum_size = Vector2(104, 52)
 	battle_hud.custom_minimum_size = Vector2(0, 52)
 	enemy_panel.custom_minimum_size = Vector2(0, 92)
-	board_view.custom_minimum_size = Vector2(320, 320)
-	hero_party_panel.custom_minimum_size = Vector2(0, 96)
+	board_view.custom_minimum_size = Vector2(LANDSCAPE_BOARD_SIZE, LANDSCAPE_BOARD_SIZE)
+	hero_party_panel.custom_minimum_size = Vector2(LANDSCAPE_CONTENT_WIDTH, 96)
 
 
 func _setup_playable_battle() -> void:

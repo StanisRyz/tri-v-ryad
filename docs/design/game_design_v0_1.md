@@ -41,9 +41,10 @@ Exact activation, charge, targeting, and combo rules are intentionally not imple
 
 - Enemy panel at the top.
 - HUD near the top for level and moves placeholders.
-- 9x9 board frame in the center.
+- 9x9 board in the center, scaled in portrait to align visually with the hero party panel.
 - 3 hero cards below the board.
-- Board lanes visually map to the hero cards: Hero 1 left, Hero 2 center, Hero 3 right.
+- Board lanes map mechanically to the hero cards: Hero 1 left, Hero 2 center, Hero 3 right.
+- Permanent Hero Lane separator/debug grid visuals are not shown during the normal board state.
 
 ## Board Core v0.1
 
@@ -98,7 +99,7 @@ Animation, advanced feedback, sound, and gesture polish remain future work.
 - Valid swaps briefly flash involved cells.
 - Invalid swaps show simple feedback.
 - Initial matched cells highlight before temporary feedback is cleared.
-- Activated Hero Lanes highlight after the turn.
+- Activated Hero Lanes highlight temporarily after the turn.
 - Damage and enemy action are shown through short status messages.
 - Input remains locked during feedback and unlocks only after feedback completes.
 
@@ -307,3 +308,14 @@ One-time rewards, level map, chapters, stars-based rewards, max upgrade levels, 
 - Reset Progress was intentionally not added: no button, API, or settings action deletes, clears, or resets player progress.
 - No gameplay, board, battle, progression, hero, level, special tile, or save-progress-format rules were changed.
 - No Yandex SDK, cloud save, ads, payments, new levels, new heroes, hero unlocks, gacha, rarity, hero shards, equipment, skill trees, new abilities, new special tiles, new battle objectives, final art, audio assets, or particles were added.
+
+## Stage 21: Battle Screen Layout v0.2
+
+- Stage 21 is implemented.
+- The portrait `GameScreen` board is scaled wider and remains square.
+- The board's left and right edges visually align with the hero party panel at the 720x1280 base portrait layout.
+- Permanent Hero Lane separator lines and always-on lane background/debug fills were removed from the normal board state.
+- Temporary lane activation feedback remains presentation-only.
+- Hero Lane gameplay rules remain unchanged: columns 0-2, 3-5, and 6-8 still map to lanes 0, 1, and 2.
+- No battle rules, board rules, progression, save, settings, enemy, level, ability, special tile, platform, audio, art, or monetization systems were changed.
+- Next planned stage: Stage 22, Battle HUD restructure v0.2.
