@@ -111,10 +111,12 @@ func _on_zone_selected(item_index: int) -> void:
 
 
 func _on_level_button_pressed(level_id: String) -> void:
+	_play_level_select()
 	level_selected.emit(level_id)
 
 
 func _on_settings_button_pressed() -> void:
+	_play_button_click()
 	settings_pressed.emit()
 
 
@@ -163,3 +165,15 @@ func _is_debug_labels_enabled() -> bool:
 	if _settings_manager == null:
 		return false
 	return _settings_manager.get_settings().debug_labels_enabled
+
+
+func _play_button_click() -> void:
+	var audio_manager := get_node_or_null("/root/AudioManager")
+	if audio_manager != null:
+		audio_manager.play_button_click()
+
+
+func _play_level_select() -> void:
+	var audio_manager := get_node_or_null("/root/AudioManager")
+	if audio_manager != null:
+		audio_manager.play_level_select()

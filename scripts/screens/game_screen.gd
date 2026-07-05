@@ -57,6 +57,7 @@ func _ready() -> void:
 
 
 func _on_menu_button_pressed() -> void:
+	_play_button_click()
 	back_pressed.emit()
 
 
@@ -208,6 +209,7 @@ func _on_battle_finished(status: int) -> void:
 
 
 func _on_turn_presentation_ready(data) -> void:
+	_play_turn_audio(data)
 	_feedback_active = true
 	_turn_feedback_presenter.play_turn_feedback(data, board_view, Callable(self, "_set_status"))
 
@@ -230,11 +232,13 @@ func _on_feedback_finished() -> void:
 func _show_battle_result(status: int) -> void:
 	_input_controller.set_input_enabled(false)
 	if status == BattleState.Status.VICTORY:
+		_play_victory()
 		_grant_victory_reward_once()
 		_save_victory_completion_once()
 		_set_status(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_victory_message(_last_reward_amount, _last_stars_earned))
 		result_overlay.show_victory(_last_reward_amount, _last_stars_earned)
 	elif status == BattleState.Status.DEFEAT:
+		_play_defeat()
 		_set_status(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_defeat_message())
 		result_overlay.show_defeat()
 
@@ -276,6 +280,7 @@ func _on_selection_cleared() -> void:
 
 
 func _on_invalid_input(reason: String) -> void:
+	_play_invalid_swap()
 	_set_status(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_invalid_input_message(reason))
 
 
@@ -296,10 +301,12 @@ func _on_ability_requested(lane_index: int) -> void:
 
 
 func _on_restart_pressed() -> void:
+	_play_button_click()
 	_start_new_battle()
 
 
 func _on_upgrades_pressed() -> void:
+	_play_button_click()
 	upgrades_pressed.emit()
 
 
@@ -338,3 +345,72 @@ func _apply_presentation_settings() -> void:
 		_turn_feedback_presenter.configure_settings(animations_enabled, reduced_motion_enabled, _debug_labels_enabled)
 	if _ability_feedback_presenter != null:
 		_ability_feedback_presenter.configure_settings(animations_enabled, reduced_motion_enabled, _debug_labels_enabled)
+
+
+func _play_turn_audio(data) -> void:
+	if data == null:
+		return
+
+	if not data.is_valid:
+		_play_invalid_swap()
+		return
+
+	_play_tile_swap()
+	if not data.activated_special_tiles.is_empty():
+		_play_special_activate()
+
+	if data.total_damage_to_enemy > 0:
+		_play_match()
+		_play_enemy_damage()
+
+
+func _get_audio_manager():
+	return get_node_or_null("/root/AudioManager")
+
+
+func _play_button_click() -> void:
+	var audio_manager = _get_audio_manager()
+	if audio_manager != null:
+		audio_manager.play_button_click()
+
+
+func _play_tile_swap() -> void:
+	var audio_manager = _get_audio_manager()
+	if audio_manager != null:
+		audio_manager.play_tile_swap()
+
+
+func _play_match() -> void:
+	var audio_manager = _get_audio_manager()
+	if audio_manager != null:
+		audio_manager.play_match()
+
+
+func _play_invalid_swap() -> void:
+	var audio_manager = _get_audio_manager()
+	if audio_manager != null:
+		audio_manager.play_invalid_swap()
+
+
+func _play_special_activate() -> void:
+	var audio_manager = _get_audio_manager()
+	if audio_manager != null:
+		audio_manager.play_special_activate()
+
+
+func _play_enemy_damage() -> void:
+	var audio_manager = _get_audio_manager()
+	if audio_manager != null:
+		audio_manager.play_enemy_damage()
+
+
+func _play_victory() -> void:
+	var audio_manager = _get_audio_manager()
+	if audio_manager != null:
+		audio_manager.play_victory()
+
+
+func _play_defeat() -> void:
+	var audio_manager = _get_audio_manager()
+	if audio_manager != null:
+		audio_manager.play_defeat()

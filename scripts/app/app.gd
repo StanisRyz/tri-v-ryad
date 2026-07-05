@@ -22,6 +22,7 @@ func _ready() -> void:
 	_progress_manager.load()
 	_settings_manager = SETTINGS_MANAGER_SCRIPT.new()
 	_settings_manager.load()
+	_apply_audio_settings()
 	_show_level_select()
 
 
@@ -122,3 +123,15 @@ func _on_settings_pressed() -> void:
 
 func _on_settings_back_pressed() -> void:
 	_show_level_select()
+
+
+func _apply_audio_settings() -> void:
+	if _settings_manager == null:
+		return
+
+	var settings: PlayerSettings = _settings_manager.get_settings()
+	var audio_manager := get_node_or_null("/root/AudioManager")
+	if audio_manager == null:
+		return
+	audio_manager.set_music_enabled(settings.music_enabled)
+	audio_manager.set_sound_effects_enabled(settings.sound_effects_enabled)

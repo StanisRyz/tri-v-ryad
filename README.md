@@ -2,7 +2,7 @@
 
 Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
-The project is currently through Stage 37: Asset loading integration for active imageholders v0.1. Hero/RPG systems (TeamSelect, hero party UI, hero abilities/charge/lane damage, hero upgrades) remain frozen and hidden from the active flow via `FeatureFlags.HERO_SYSTEMS_ENABLED := false`, and gameplay deals direct match-3 damage to the enemy. Each battle selects one positive round modifier that multiplies damage for matched cells of specific colors, while Stage 34 direct balance controls moves and enemy HP. The active flow remains App startup -> LevelSelect -> GameScreen -> LevelSelect, with Settings opened from the LevelSelect top panel; MainMenu remains in the project as inactive legacy/future code but is skipped by normal startup and play. The app shell, a level-select hub with numbers-only labels for `level_1` through `level_100` grouped into 10 locked zones, a shared 10-enemy base roster with battle-start random enemy selection and direct-mode HP scaling, ImageSlot-backed battle background and enemy visual placeholders, the safe cached `ImageSlot`/`GameAssetCatalog` placeholder image pipeline, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, saved campaign progress with stars/unlocks, and lightweight swap, clear, special activation, and refill feedback all remain active for a vertical 9:16 game. Hero code, MainMenu, TeamSelect, and UpgradeScreen remain in the project (not deleted) for a future revisit.
+The project is currently through Stage 38: AudioManager foundation v0.1. Hero/RPG systems (TeamSelect, hero party UI, hero abilities/charge/lane damage, hero upgrades) remain frozen and hidden from the active flow via `FeatureFlags.HERO_SYSTEMS_ENABLED := false`, and gameplay deals direct match-3 damage to the enemy. Each battle selects one positive round modifier that multiplies damage for matched cells of specific colors, while Stage 34 direct balance controls moves and enemy HP. The active flow remains App startup -> LevelSelect -> GameScreen -> LevelSelect, with Settings opened from the LevelSelect top panel; MainMenu remains in the project as inactive legacy/future code but is skipped by normal startup and play. The app shell, a level-select hub with numbers-only labels for `level_1` through `level_100` grouped into 10 locked zones, a shared 10-enemy base roster with battle-start random enemy selection and direct-mode HP scaling, ImageSlot-backed battle background and enemy visual placeholders, the safe cached `ImageSlot`/`GameAssetCatalog` placeholder image pipeline, the safe cached `AudioAssetCatalog`/`AudioManager` no-op audio foundation, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, saved campaign progress with stars/unlocks, and lightweight swap, clear, special activation, and refill feedback all remain active for a vertical 9:16 game. Hero code, MainMenu, TeamSelect, and UpgradeScreen remain in the project (not deleted) for a future revisit.
 
 ## Project Direction
 
@@ -40,6 +40,11 @@ This stage includes:
 - `GameScreen` uses an `ImageSlot` for the active battle background, applying the selected background asset key and placeholder color.
 - `EnemyPanel` uses an `ImageSlot` for the active enemy visual, resolving the selected enemy ID to a reserved enemy asset key.
 - Empty asset folders under `assets/images/backgrounds/`, `assets/images/enemies/`, `assets/images/tiles/`, `assets/images/ui/`, and `assets/images/heroes/` for later real images.
+- `AudioAssetCatalog` maps reserved audio keys to future `res://assets/audio/` paths and loads optional streams safely with a small cache for loaded and missing audio.
+- `AudioManager` is registered as an autoload singleton, owns one music player and an 8-player SFX pool, and safely no-ops when audio files are missing.
+- Empty asset folders under `assets/audio/music/` and `assets/audio/sfx/` for later real audio.
+- Music and Sound Effects settings now drive `AudioManager` immediately, while existing settings persistence remains unchanged.
+- Minimal UI/battle audio hooks are present for buttons, level select, swap, invalid swap, match, special activation, enemy damage, victory, and defeat.
 - A lightweight `LayoutManager` for UI-only portrait and landscape layout decisions.
 - UI-independent board generation, match detection, swap validation, gravity/refill, and cascade resolution under `scripts/game/board/`.
 - Special tile board logic under `scripts/game/board/`: `SpecialTileType`, `SpecialTileData`, and `SpecialTileResolver`.
@@ -136,10 +141,10 @@ This stage includes:
 
 This stage excludes:
 
-- Wrapped bombs, special + special combos, special battle damage, cascade damage, full cascade-step animation, full falling animation, real tile movement, particles, sound, and final art.
+- Wrapped bombs, special + special combos, special battle damage, cascade damage, full cascade-step animation, full falling animation, real tile movement, particles, real/final audio assets, and final art.
 - Target selection, cooldowns, ability upgrades, gacha, rarity, hero unlocks, hero shards, hero inventory, portraits, final art, drag-and-drop team UI, and complex ability additions.
 - One-time rewards, stars-based rewards, level map, chapters, complex economy, reset upgrades, and complex objectives.
-- New heroes, hero unlocks, gacha, rarity, shards, ability upgrades, TeamSelectScreen rework, Yandex SDK, cloud save, ads, payments, sound, particles, and final art.
+- New heroes, hero unlocks, gacha, rarity, shards, ability upgrades, TeamSelectScreen rework, Yandex SDK, cloud save, ads, payments, real/final audio assets, particles, and final art.
 - Cloud saves, ads, payments, Yandex SDK, RuStore, Android-specific code, and monetization.
 - Battle backgrounds, enemy presentation polish, battle feedback polish, and full LevelSelect UX polish.
 
@@ -368,7 +373,21 @@ Stage 37 is complete. `GameAssetCatalog` now supports cached safe texture loadin
 
 `EnemyPanel` now uses `EnemyImageSlot` for the active enemy visual. Enemy IDs resolve through `AssetKeyResolver`, missing enemy images show the neutral placeholder, and direct-mode enemy copy remains unchanged. Tile image rendering is postponed: tile type to asset-key mapping and tests are ready, but `TileView` remains stylebox/button-based so current special markers and animation behavior stay stable.
 
-No real image assets were added. Active gameplay remains unchanged: LevelSelect startup, Settings from LevelSelect, GameScreen Menu/Back to LevelSelect, direct match damage, round modifiers, Stage 34 balance, progression, stars, zones, enemies, and battle flow all remain active. Hero/RPG systems remain frozen and inactive. Next planned stage: Stage 38, AudioManager foundation v0.1.
+No real image assets were added. Active gameplay remains unchanged: LevelSelect startup, Settings from LevelSelect, GameScreen Menu/Back to LevelSelect, direct match damage, round modifiers, Stage 34 balance, progression, stars, zones, enemies, and battle flow all remain active. Hero/RPG systems remain frozen and inactive.
+
+## Stage 38: AudioManager Foundation v0.1
+
+Stage 38 is complete. `AudioAssetCatalog` (`scripts/game/audio/audio_asset_catalog.gd`) maps reserved audio keys to future audio paths under `assets/audio/`, checks `ResourceLoader.exists()` before loading, returns `null` for unknown/missing/non-audio resources, and caches loaded and missing streams.
+
+`AudioManager` (`autoload/AudioManager.gd`) is registered as an autoload singleton in `project.godot`. It owns one music `AudioStreamPlayer`, an 8-player SFX pool, `music_enabled` and `sound_effects_enabled` state, and wrapper methods for the reserved UI/battle events. Missing audio streams safely no-op, so the game does not crash or block when no real audio files exist.
+
+Empty audio folders were added under `assets/audio/music/` and `assets/audio/sfx/` with `.gitkeep` files only. No real audio files, final music, or final sound design were added.
+
+Music and Sound Effects settings now apply to `AudioManager` on app startup and when toggles change in SettingsScreen. Existing settings persistence remains unchanged and separate from player progress.
+
+Minimal audio hooks were added for LevelSelect Settings/button interactions, level selection, GameScreen swap requests, invalid input/invalid swaps, valid direct-damage turns, special activation when `TurnPresentationData` exposes activated special tiles, enemy damage, victory, and defeat. These hooks respect `sound_effects_enabled` and remain presentation-only.
+
+Active gameplay remains unchanged: LevelSelect startup, Settings from LevelSelect, GameScreen Menu/Back to LevelSelect, direct match damage, round modifiers, Stage 34 balance, progression, stars, zones, ImageSlot-backed imageholders, enemies, and battle flow all remain active. Hero/RPG systems remain frozen and inactive. Next planned stage: Stage 39, Tile and UI asset integration polish v0.1.
 
 ## How To Open And Run
 
@@ -530,6 +549,14 @@ Run the active imageholder integration tests with:
 ```bash
 godot --headless --script res://scripts/tests/battle_background_asset_integration_test.gd
 godot --headless --script res://scripts/tests/enemy_panel_image_slot_test.gd
+```
+
+Run the audio foundation tests with:
+
+```bash
+godot --headless --script res://scripts/tests/audio_asset_catalog_test.gd
+godot --headless --script res://scripts/tests/audio_manager_test.gd
+godot --headless --script res://scripts/tests/audio_settings_integration_test.gd
 ```
 
 Run the upgrade economy test with:
@@ -711,6 +738,6 @@ godot --headless --script res://scripts/tests/round_modifier_balance_test.gd
 
 ## Next Planned Stages
 
-- Stage 26-30 block is complete. Stage 31 (hero portrait buttons and ability bars) is complete. Stage 32 (hero systems freeze and direct match damage foundation) is complete. Stage 33 (round modifiers and color damage rules) is complete. Stage 34 (direct match-3 balance pass) is complete. Stage 35 (direct LevelSelect startup and simplified UX polish) is complete. Stage 36 (ImageSlot asset placeholder pipeline) is complete. Stage 37 (asset loading integration for active imageholders) is complete.
-- Stage 38: AudioManager foundation v0.1.
+- Stage 26-30 block is complete. Stage 31 (hero portrait buttons and ability bars) is complete. Stage 32 (hero systems freeze and direct match damage foundation) is complete. Stage 33 (round modifiers and color damage rules) is complete. Stage 34 (direct match-3 balance pass) is complete. Stage 35 (direct LevelSelect startup and simplified UX polish) is complete. Stage 36 (ImageSlot asset placeholder pipeline) is complete. Stage 37 (asset loading integration for active imageholders) is complete. Stage 38 (AudioManager foundation) is complete.
+- Stage 39: Tile and UI asset integration polish v0.1.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.

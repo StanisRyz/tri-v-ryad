@@ -270,7 +270,7 @@ One-time rewards, level map, chapters, stars-based rewards, reset upgrades, and 
 - No target selection or ability upgrades.
 - No full cascade animations.
 - No real tile movement.
-- No sound or particles.
+- No real/final audio assets or particles.
 
 ## Stage 16: Balance and Content Expansion v0.1
 
@@ -565,4 +565,20 @@ One-time rewards, level map, chapters, stars-based rewards, reset upgrades, and 
 - No real image assets were added.
 - Active gameplay remains unchanged: LevelSelect startup, direct match damage, round modifiers, Stage 34 direct balance, enemies, levels, moves, stars, progression, zones, battle flow, and Settings flow remain active.
 - Hero/RPG systems remain frozen and inactive.
-- Next planned stage: Stage 38, AudioManager foundation v0.1.
+- Stage 38 follows with the AudioManager foundation.
+
+## Stage 38: AudioManager Foundation v0.1
+
+- Stage 38 is implemented.
+- `AudioAssetCatalog` maps reserved audio keys to future `res://assets/audio/` paths and safely returns `null` for empty, unknown, missing, or non-audio resources.
+- `AudioAssetCatalog` caches loaded streams and missing keys so optional missing files are not rechecked excessively.
+- `AudioManager` is registered as an autoload singleton and owns one music `AudioStreamPlayer` plus an 8-player SFX pool.
+- `AudioManager` exposes music and sound-effects enabled state, safe music/SFX play methods, and wrapper methods for reserved UI and battle events.
+- Missing audio files safely no-op and do not crash, block input, or change battle feedback timing.
+- `assets/audio/music/` and `assets/audio/sfx/` were added with `.gitkeep` files only.
+- No real audio files, final music, final sound design, volume sliders, or advanced audio mixing UI were added.
+- Music and Sound Effects settings now apply to `AudioManager` on app startup and when SettingsScreen toggles change; settings still persist through `SettingsManager` separately from player progress.
+- Minimal presentation-only audio hooks were added for buttons, level selection, swap requests, invalid input/invalid swaps, valid direct-damage turns, special activations, enemy damage, victory, and defeat.
+- Active gameplay remains unchanged: LevelSelect startup, direct match damage, round modifiers, Stage 34 direct balance, enemies, levels, moves, stars, progression, zones, battle flow, Settings flow, and ImageSlot-backed imageholders remain active.
+- Hero/RPG systems remain frozen and inactive.
+- Next planned stage: Stage 39, Tile and UI asset integration polish v0.1.
