@@ -8,6 +8,7 @@ const BOARD_INPUT_CONTROLLER_SCRIPT := preload("res://scripts/game/input/board_i
 const TURN_FEEDBACK_PRESENTER_SCRIPT := preload("res://scripts/game/presentation/turn_feedback_presenter.gd")
 const ABILITY_FEEDBACK_PRESENTER_SCRIPT := preload("res://scripts/game/presentation/ability_feedback_presenter.gd")
 const LEVEL_LABEL_FORMATTER_SCRIPT := preload("res://scripts/game/config/level_label_formatter.gd")
+const BATTLE_MESSAGE_FORMATTER_SCRIPT := preload("res://scripts/game/presentation/battle_message_formatter.gd")
 const PORTRAIT_CONTENT_WIDTH := 664.0
 const PORTRAIT_BOARD_SIZE := PORTRAIT_CONTENT_WIDTH
 const LANDSCAPE_CONTENT_WIDTH := 560.0
@@ -39,6 +40,7 @@ var _reward_granted_for_current_battle := false
 var _last_reward_amount := 0
 var _completion_saved_for_current_battle := false
 var _last_stars_earned := 0
+var _debug_labels_enabled := false
 
 func _ready() -> void:
 	if not menu_button.pressed.is_connected(_on_menu_button_pressed):
@@ -220,10 +222,10 @@ func _show_battle_result(status: int) -> void:
 	if status == BattleState.Status.VICTORY:
 		_grant_victory_reward_once()
 		_save_victory_completion_once()
-		_set_status("Victory")
+		_set_status(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_victory_message(_last_reward_amount, _last_stars_earned))
 		result_overlay.show_victory(_last_reward_amount, _last_stars_earned)
 	elif status == BattleState.Status.DEFEAT:
-		_set_status("Defeat")
+		_set_status(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_defeat_message())
 		result_overlay.show_defeat()
 
 
@@ -255,7 +257,7 @@ func _save_victory_completion_once() -> void:
 
 func _on_selection_changed(cell: Vector2i) -> void:
 	board_view.set_selected_cell(cell)
-	_set_status("Select a neighboring tile")
+	_set_status("Choose a neighboring tile")
 
 
 func _on_selection_cleared() -> void:
@@ -264,19 +266,14 @@ func _on_selection_cleared() -> void:
 
 
 func _on_invalid_input(reason: String) -> void:
-	var messages := {
-		"swipe_too_short": "Swipe too short",
-		"outside_board": "Outside board",
-		"input_locked": "Input locked",
-	}
-	_set_status(messages.get(reason, "Invalid input"))
+	_set_status(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_invalid_input_message(reason))
 
 
 func _on_swap_requested(from_cell: Vector2i, to_cell: Vector2i) -> void:
 	_input_controller.set_input_enabled(false)
 	board_view.clear_lane_highlights()
 	board_view.clear_cell_highlights()
-	_set_status("Resolving turn")
+	_set_status("Resolving match...")
 	_presenter.request_swap(from_cell, to_cell)
 
 
@@ -284,7 +281,7 @@ func _on_ability_requested(lane_index: int) -> void:
 	_input_controller.set_input_enabled(false)
 	board_view.clear_lane_highlights()
 	board_view.clear_cell_highlights()
-	_set_status("Using ability")
+	_set_status("Using ability...")
 	_presenter.request_ability(lane_index)
 
 
@@ -322,11 +319,11 @@ func _apply_presentation_settings() -> void:
 	var settings = _settings_manager.get_settings() if _settings_manager != null else null
 	var animations_enabled: bool = settings.animations_enabled if settings != null else true
 	var reduced_motion_enabled: bool = settings.reduced_motion_enabled if settings != null else false
-	var debug_labels_enabled: bool = settings.debug_labels_enabled if settings != null else false
+	_debug_labels_enabled = settings.debug_labels_enabled if settings != null else false
 
 	TileView.configure_presentation(animations_enabled, reduced_motion_enabled)
-	HeroCard.set_debug_labels_enabled(debug_labels_enabled)
+	HeroCard.set_debug_labels_enabled(_debug_labels_enabled)
 	if _turn_feedback_presenter != null:
-		_turn_feedback_presenter.configure_settings(animations_enabled, reduced_motion_enabled)
+		_turn_feedback_presenter.configure_settings(animations_enabled, reduced_motion_enabled, _debug_labels_enabled)
 	if _ability_feedback_presenter != null:
-		_ability_feedback_presenter.configure_settings(animations_enabled, reduced_motion_enabled)
+		_ability_feedback_presenter.configure_settings(animations_enabled, reduced_motion_enabled, _debug_labels_enabled)

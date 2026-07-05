@@ -2,7 +2,7 @@
 
 Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
-The project is currently through Stage 28: LevelSelect locked zones for 100 levels v0.2. It defines the app shell, a MainMenu with Play, Heroes, and Settings entry points, a level-select-only level flow with numbers-only labels for `level_1` through `level_100` grouped into 10 locked zones, a pre-battle team confirmation flow, a shared 10-enemy base roster with battle-start random enemy selection and linear battle-time HP/attack scaling, a menu-accessible full roster hero upgrade screen with linear costs/stat growth, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, damage-only roster ability mappings, local hero upgrades, saved campaign progress, and lightweight swap, clear, special activation, and refill feedback for a vertical 9:16 game.
+The project is currently through Stage 30: Battle readability and feedback polish v0.1. It defines the app shell, a MainMenu with Play, Heroes, and Settings entry points, a level-select-only level flow with numbers-only labels for `level_1` through `level_100` grouped into 10 locked zones, a pre-battle team confirmation flow, a shared 10-enemy base roster with battle-start random enemy selection and linear battle-time HP/attack scaling, a menu-accessible full roster hero upgrade screen with linear costs/stat growth, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, damage-only roster ability mappings, local hero upgrades, saved campaign progress, and lightweight swap, clear, special activation, and refill feedback for a vertical 9:16 game.
 
 ## Project Direction
 
@@ -274,6 +274,18 @@ Each battle now has independent random enemy selection (Stage 24) and random bac
 
 No gameplay, battle rules, board rules, rewards, upgrade economy, enemy scaling, progression, saves, settings, LevelSelect zones, hero abilities, special tiles, platform systems, final art, audio, or monetization systems were changed. Backgrounds are placeholders only; final background images will be added in a later stage.
 
+## Stage 30: Battle Readability and Feedback Polish v0.1
+
+Stage 30 is complete. `BattleMessageFormatter` centralizes all player-facing battle text in one place, keeping `TurnFeedbackPresenter`, `AbilityFeedbackPresenter`, and `GameScreen` free of ad-hoc string building.
+
+Turn damage messages are clearer ("Hero 1 dealt 12 damage", "2 heroes attacked for 46 total damage", "No damage dealt"), hero lane activations announce a short readable message ("Left lane activated", "2 lanes activated") while keeping the existing temporary lane highlight and without restoring permanent lane separator visuals, special tile activation gets readable feedback ("Line special activated", "Color bomb activated", or a cleared-tile count) with a safe generic fallback when the exact type is unavailable, and enemy action messages read as full sentences ("Enemy attacked Hero 2 for 18 damage").
+
+Invalid swap and invalid input messages are friendlier ("Swap must create a match", "Choose a neighboring tile", "Swipe a little farther", "Stay inside the board", "Wait until the turn finishes"). Ability feedback messages are clearer for both accepted ("Warrior Strike activated", "Warrior Strike dealt 30 damage") and rejected ("Ability is not ready yet", "This hero is down", "Battle is already over") cases. `GameScreen` status text for selecting tiles, resolving turns, using abilities, and the victory/defeat outcome is more player-facing, and the battle result overlay's reward/star display is unchanged.
+
+Presentation settings continue to be respected: `animations_enabled` and `reduced_motion_enabled` still control feedback timing and motion, and `debug_labels_enabled` only adds hero/ability IDs to messages when explicitly turned on; with it off, all messages stay plain player-facing text.
+
+No damage formulas, board rules, enemy scaling, rewards, upgrade economy, level progression, saves, settings, LevelSelect zones, battle backgrounds, hero abilities, special tile rules, platform systems, final art, audio, or monetization systems were changed. The Stage 26-30 block is now complete; the next roadmap block will be planned separately.
+
 ## How To Open And Run
 
 1. Open Godot 4.x.
@@ -512,7 +524,13 @@ Run the settings screen data test with:
 godot --headless --script res://scripts/tests/settings_screen_data_test.gd
 ```
 
+Run the battle message formatter test with:
+
+```bash
+godot --headless --script res://scripts/tests/battle_message_formatter_test.gd
+```
+
 ## Next Planned Stages
 
-- Stage 30: Battle readability and feedback polish v0.1.
+- Stage 26-30 block is complete. The next roadmap block will be planned separately.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.

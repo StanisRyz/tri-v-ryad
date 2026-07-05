@@ -3,15 +3,18 @@ class_name AbilityFeedbackPresenter
 
 signal feedback_finished
 
+const BATTLE_MESSAGE_FORMATTER_SCRIPT := preload("res://scripts/game/presentation/battle_message_formatter.gd")
 const SHORT_DELAY := 0.18
 const MEDIUM_DELAY := 0.32
 const MINIMAL_DELAY := 0.01
 
 var _animations_enabled := true
+var _debug_labels_enabled := false
 
 
-func configure_settings(animations_enabled: bool, _reduced_motion_enabled: bool = false) -> void:
+func configure_settings(animations_enabled: bool, _reduced_motion_enabled: bool = false, debug_labels_enabled: bool = false) -> void:
 	_animations_enabled = animations_enabled
+	_debug_labels_enabled = debug_labels_enabled
 
 
 func play_ability_feedback(data, board_view: BoardView, status_callback: Callable) -> void:
@@ -24,29 +27,18 @@ func play_ability_feedback(data, board_view: BoardView, status_callback: Callabl
 
 
 func _play_accepted_feedback(data, board_view: BoardView, status_callback: Callable) -> void:
-	status_callback.call("%s!" % data.display_name)
+	status_callback.call(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_ability_start_message(data, _debug_labels_enabled))
 	await _wait(board_view, SHORT_DELAY)
 
-	if data.damage_to_enemy > 0:
-		status_callback.call("%s dealt %d damage" % [data.display_name, data.damage_to_enemy])
+	var damage_message := BATTLE_MESSAGE_FORMATTER_SCRIPT.format_ability_damage_message(data, _debug_labels_enabled)
+	if damage_message != "":
+		status_callback.call(damage_message)
 		await _wait(board_view, MEDIUM_DELAY)
 
 
 func _play_rejected_feedback(data, board_view: BoardView, status_callback: Callable) -> void:
-	status_callback.call(_build_rejected_message(data.reason))
+	status_callback.call(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_ability_rejected_message(data.reason))
 	await _wait(board_view, SHORT_DELAY)
-
-
-func _build_rejected_message(reason: String) -> String:
-	match reason:
-		"ability_not_ready":
-			return "Ability not ready"
-		"hero_dead":
-			return "Hero is down"
-		"battle_finished":
-			return "Battle finished"
-		_:
-			return "Ability unavailable"
 
 
 func _wait(board_view: BoardView, duration: float) -> void:

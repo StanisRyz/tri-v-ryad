@@ -452,3 +452,15 @@ One-time rewards, level map, chapters, stars-based rewards, reset upgrades, and 
 - Current backgrounds are placeholders only; final background images will be added in a later stage.
 - No gameplay, battle rules, board rules, rewards, upgrade economy, enemy scaling, progression, saves, settings, LevelSelect zones, hero abilities, special tiles, platform systems, final art, audio, or monetization systems were changed.
 - Next planned stage: Stage 30, Battle readability and feedback polish v0.1.
+
+## Stage 30: Battle Readability and Feedback Polish v0.1
+
+- Stage 30 is implemented.
+- `BattleMessageFormatter` (`scripts/game/presentation/battle_message_formatter.gd`) centralizes all player-facing battle text so `TurnFeedbackPresenter`, `AbilityFeedbackPresenter`, and `GameScreen` stay free of ad-hoc string building.
+- Turn feedback messages are clearer: single/multi-hero damage messages ("Hero 1 dealt 12 damage", "2 heroes attacked for 46 total damage", "No damage dealt"), hero lane activation messages ("Left lane activated", "2 lanes activated") alongside the existing temporary lane highlight, special tile activation messages ("Line special activated", "Color bomb activated", cleared-tile counts, and a safe "Special tile activated" fallback), and full-sentence enemy action messages ("Enemy attacked Hero 2 for 18 damage", "Enemy is preparing an attack").
+- Ability feedback messages are clearer for accepted ("Warrior Strike activated", "Warrior Strike dealt 30 damage") and rejected ("Ability is not ready yet", "This hero is down", "Battle is already over", "Ability unavailable") cases.
+- Invalid swap/input messages are friendlier: "Swap must create a match", "Choose a neighboring tile", "Swipe a little farther", "Stay inside the board", "Wait until the turn finishes".
+- `GameScreen` status text for selecting tiles, resolving a turn, using an ability, and victory/defeat is more player-facing; the battle result overlay's reward/star display is unchanged.
+- Presentation settings are respected: `animations_enabled`/`reduced_motion_enabled` continue to control feedback timing and motion, and `debug_labels_enabled` only adds hero/ability IDs to messages when explicitly enabled.
+- No damage formulas, board rules, enemy scaling, rewards, upgrade economy, level progression, saves, settings, LevelSelect zones, battle backgrounds, hero abilities, special tile rules, platform systems, final art, audio, or monetization systems were changed.
+- The Stage 26-30 block is complete. The next roadmap block will be planned separately.
