@@ -2,7 +2,7 @@
 
 Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
-The project is currently through Stage 32: Hero systems freeze and direct match damage foundation v0.1. Hero/RPG systems (TeamSelect, hero party UI, hero abilities/charge/lane damage, hero upgrades) are frozen and hidden from the active flow via `FeatureFlags.HERO_SYSTEMS_ENABLED := false`, and gameplay now deals direct match-3 damage to the enemy: 1 cleared crystal = 1 damage. MainMenu -> Play -> LevelSelect -> GameScreen is the active flow (LevelSelect opens GameScreen directly; TeamSelect and UpgradeScreen remain in the project but are not reachable from normal play). The app shell, a MainMenu with Play and Settings entry points (Heroes hidden), a level-select-only level flow with numbers-only labels for `level_1` through `level_100` grouped into 10 locked zones, a shared 10-enemy base roster with battle-start random enemy selection and linear battle-time HP/attack scaling, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, saved campaign progress with stars/unlocks, and lightweight swap, clear, special activation, and refill feedback all remain active for a vertical 9:16 game. Hero code, TeamSelect, and UpgradeScreen remain in the project (not deleted) for a future revisit.
+The project is currently through Stage 33: Round modifiers and color damage rules v0.1. Hero/RPG systems (TeamSelect, hero party UI, hero abilities/charge/lane damage, hero upgrades) remain frozen and hidden from the active flow via `FeatureFlags.HERO_SYSTEMS_ENABLED := false`, and gameplay deals direct match-3 damage to the enemy. Each battle now also selects one positive round modifier (e.g. `red_x3`, `all_x2`) that multiplies damage for matched cells of specific colors; unbuffed colors stay at the Stage 32 baseline of 1 damage per uniquely cleared cell. MainMenu -> Play -> LevelSelect -> GameScreen is the active flow (LevelSelect opens GameScreen directly; TeamSelect and UpgradeScreen remain in the project but are not reachable from normal play). The app shell, a MainMenu with Play and Settings entry points (Heroes hidden), a level-select-only level flow with numbers-only labels for `level_1` through `level_100` grouped into 10 locked zones, a shared 10-enemy base roster with battle-start random enemy selection and linear battle-time HP/attack scaling, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, saved campaign progress with stars/unlocks, and lightweight swap, clear, special activation, and refill feedback all remain active for a vertical 9:16 game. Hero code, TeamSelect, and UpgradeScreen remain in the project (not deleted) for a future revisit.
 
 ## Project Direction
 
@@ -310,19 +310,30 @@ Stage 32 is complete. Hero/RPG systems are frozen and the active gameplay flow n
 
 No color damage multipliers, round modifiers, buff/debuff UI, player HP, enemy attacks against the player, new levels, new enemies, or new mechanics were added, and no hero, upgrade, or TeamSelect files were deleted. Next planned stage: Stage 33, Round modifiers and color damage rules v0.1.
 
+## Stage 33: Round Modifiers and Color Damage Rules v0.1
+
+Stage 33 is complete. Each battle now selects one `RoundModifierConfig` at battle start through `RoundModifierCatalog` and `RoundModifierSelectionResolver` (`scripts/game/config/`), mirroring the deterministic seeded-RNG style already used by `EnemySelectionResolver` and `BattleBackgroundSelectionResolver`. Modifiers are positive buffs only in this stage: `red_x3`, `blue_x3`, `green_x3`, `yellow_x3`, and `purple_x3` triple one color's damage while every other color stays at the default x1 multiplier, and `all_x2` doubles every color. `BattlePresenter.start_level()` selects a round modifier independently of enemy and background selection and emits `round_modifier_changed(modifier)`.
+
+`DirectMatchDamageResolver` now applies the selected modifier's color multiplier per uniquely cleared tile, using each match's `tile_type` (including per-step cascade matches from `BoardResolveResult`); special-tile activation clears without a known color still fall back to x1 damage, and passing no modifier keeps the exact Stage 32 behavior (1 cleared crystal = 1 damage). `BattleResolver.resolve_player_matches()` takes an optional `round_modifier` argument that only affects the direct-damage path; the frozen hero path ignores it.
+
+`GameScreen` shows a `RoundModifierPanel` (`ModifierNameLabel` + `ModifierDescriptionLabel`) with the active modifier's name and a short description (e.g. "Red crystals deal x3 damage"); the panel does not block board input. Direct-mode battle feedback text now includes a color-specific message for single buffed-color matches ("Matched 3 red tiles x3: 9 damage") alongside the existing generic messages. Stage 32 leftover text was cleaned up: the defeat message no longer references "upgrade heroes" and the victory overlay's reward text no longer says "upgrade points" while hero systems are frozen.
+
+Hero/RPG systems remain fully frozen (unchanged from Stage 32): TeamSelect, the Heroes/UpgradeScreen flow, `HeroPartyPanel`, hero abilities, hero charge, hero lane damage, and hero upgrades stay inactive in normal gameplay and have no effect on direct match damage. No debuffs, negative modifiers, player HP, enemy attacks against the player, new enemies, or new levels were added. Next planned stage: Stage 34, Direct match-3 balance pass v0.1.
+
 ## How To Open And Run
 
 1. Open Godot 4.x.
 2. Import or open this folder as a Godot project.
 3. Run the project. The configured main scene is `res://scenes/app/App.tscn`.
 4. From MainMenu, press Play to open LevelSelect.
-5. Choose an unlocked zone, then choose an unlocked level to open TeamSelect.
-6. Confirm or change your team, then press Start Battle to open GameScreen with that level.
-7. Click one tile, then click a neighboring tile to attempt a swap, or drag/swipe from a tile toward a neighbor.
-8. Win a battle to earn upgrade points, save completion, earn stars, and unlock the next level.
-9. From MainMenu, press Heroes to open UpgradeScreen and spend upgrade points.
-10. From MainMenu, press Settings to open SettingsScreen and toggle Animations, Reduced Motion, Debug Labels, Music, and Sound Effects.
-11. Press Menu/Back to return to the previous screen.
+5. Choose an unlocked zone, then choose an unlocked level to open GameScreen directly (TeamSelect is skipped in the active flow).
+6. Check the round modifier panel above the board to see the active battle's color damage buff (e.g. "Red Surge — Red crystals deal x3 damage").
+7. Click one tile, then click a neighboring tile to attempt a swap, or drag/swipe from a tile toward a neighbor. Clearing crystals deals direct damage to the enemy, boosted for any color the current round modifier buffs.
+8. Win a battle to save completion, earn stars, and unlock the next level.
+9. From MainMenu, press Settings to open SettingsScreen and toggle Animations, Reduced Motion, Debug Labels, Music, and Sound Effects.
+10. Press Menu/Back to return to the previous screen.
+
+The Heroes button and the TeamSelect/UpgradeScreen flow are hidden from active play while `FeatureFlags.HERO_SYSTEMS_ENABLED` is false; hero code remains in the project for a future revisit.
 
 ## Board Core Tests
 
@@ -578,8 +589,32 @@ Run the hero systems freeze test with:
 godot --headless --script res://scripts/tests/hero_systems_freeze_test.gd
 ```
 
+Run the round modifier catalog test with:
+
+```bash
+godot --headless --script res://scripts/tests/round_modifier_catalog_test.gd
+```
+
+Run the round modifier selection test with:
+
+```bash
+godot --headless --script res://scripts/tests/round_modifier_selection_test.gd
+```
+
+Run the color damage resolver test with:
+
+```bash
+godot --headless --script res://scripts/tests/color_damage_resolver_test.gd
+```
+
+Run the round modifier presenter test with:
+
+```bash
+godot --headless --script res://scripts/tests/round_modifier_presenter_test.gd
+```
+
 ## Next Planned Stages
 
-- Stage 26-30 block is complete. Stage 31 (hero portrait buttons and ability bars) is complete. Stage 32 (hero systems freeze and direct match damage foundation) is complete.
-- Stage 33: Round modifiers and color damage rules v0.1.
+- Stage 26-30 block is complete. Stage 31 (hero portrait buttons and ability bars) is complete. Stage 32 (hero systems freeze and direct match damage foundation) is complete. Stage 33 (round modifiers and color damage rules) is complete.
+- Stage 34: Direct match-3 balance pass v0.1.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.

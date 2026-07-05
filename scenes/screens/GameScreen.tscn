@@ -80,6 +80,33 @@ custom_minimum_size = Vector2(118, 60)
 layout_mode = 2
 text = "Menu"
 
+[node name="RoundModifierPanel" type="PanelContainer" parent="SafeMargin/BattleCenter/BattleRoot"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+
+[node name="RoundModifierBox" type="VBoxContainer" parent="SafeMargin/BattleCenter/BattleRoot/RoundModifierPanel"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 2
+
+[node name="ModifierNameLabel" type="Label" parent="SafeMargin/BattleCenter/BattleRoot/RoundModifierPanel/RoundModifierBox"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 16
+text = "Round Modifier"
+horizontal_alignment = 1
+
+[node name="ModifierDescriptionLabel" type="Label" parent="SafeMargin/BattleCenter/BattleRoot/RoundModifierPanel/RoundModifierBox"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 13
+text = ""
+horizontal_alignment = 1
+autowrap_mode = 3
+
 [node name="BoardArea" type="CenterContainer" parent="SafeMargin/BattleCenter/BattleRoot"]
 layout_mode = 2
 size_flags_vertical = 3

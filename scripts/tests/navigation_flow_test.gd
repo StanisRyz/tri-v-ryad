@@ -138,9 +138,12 @@ func _test_game_screen_layout_smoke() -> void:
 
 	var board_view := screen.get_node("%BoardView") as Control
 	var hero_party_panel := screen.get_node("%HeroPartyPanel") as Control
+	var round_modifier_panel := screen.get_node("%RoundModifierPanel") as Control
 	_expect_true(board_view != null, "game screen has BoardView")
 	_expect_true(hero_party_panel != null, "game screen has HeroPartyPanel")
 	_expect_true(not hero_party_panel.visible, "hero party panel stays hidden while hero systems are frozen")
+	_expect_true(round_modifier_panel != null, "game screen has RoundModifierPanel")
+	_expect_true(round_modifier_panel.visible, "round modifier panel is visible while a battle is active")
 	_expect_equal(board_view.custom_minimum_size, Vector2(664, 664), "portrait board is widened and square")
 	_expect_equal(hero_party_panel.custom_minimum_size.x, board_view.custom_minimum_size.x, "portrait hero panel width matches board width")
 

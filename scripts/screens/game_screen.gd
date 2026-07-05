@@ -24,6 +24,9 @@ const LANDSCAPE_BOARD_SIZE := 320.0
 @onready var result_overlay: PanelContainer = %BattleResultOverlay
 @onready var background_rect: ColorRect = %Background
 @onready var background_texture: TextureRect = %BackgroundTexture
+@onready var round_modifier_panel: PanelContainer = %RoundModifierPanel
+@onready var modifier_name_label: Label = %ModifierNameLabel
+@onready var modifier_description_label: Label = %ModifierDescriptionLabel
 
 var _layout_manager: LayoutManager
 var _presenter
@@ -117,6 +120,7 @@ func _setup_playable_battle() -> void:
 	_presenter.invalid_swap.connect(_on_invalid_swap)
 	_presenter.battle_finished.connect(_on_battle_finished)
 	_presenter.battle_background_changed.connect(_on_battle_background_changed)
+	_presenter.round_modifier_changed.connect(_on_round_modifier_changed)
 	_turn_feedback_presenter.feedback_finished.connect(_on_feedback_finished)
 	_ability_feedback_presenter.feedback_finished.connect(_on_feedback_finished)
 
@@ -176,6 +180,16 @@ func _on_battle_background_changed(background_config) -> void:
 
 	background_texture.visible = false
 	background_texture.texture = null
+
+
+func _on_round_modifier_changed(modifier) -> void:
+	if modifier == null:
+		round_modifier_panel.visible = false
+		return
+
+	round_modifier_panel.visible = true
+	modifier_name_label.text = modifier.display_name
+	modifier_description_label.text = modifier.description
 
 
 func _on_level_changed(level_config) -> void:

@@ -13,6 +13,8 @@ func _initialize() -> void:
 	_test_multiple_groups_sum_total_cells()
 	_test_calculate_damage_from_board_resolve_result()
 	_test_calculate_damage_from_turn_presentation_data()
+	_test_modified_damage_uses_round_modifier()
+	_test_no_modifier_keeps_stage_32_behavior()
 
 	if _failures == 0:
 		print("Direct match damage tests passed.")
@@ -72,6 +74,21 @@ func _test_calculate_damage_from_turn_presentation_data() -> void:
 	data.special_cleared_cells = [Vector2i(3, 0), Vector2i(0, 0)]
 	_expect_equal(DirectMatchDamageResolver.new().calculate_damage_from_turn_result(data), 4, "turn presentation data damage counts matched + special cells uniquely")
 	print("ok - calculate_damage_from_turn_result reads matched + special cleared cells")
+
+
+func _test_modified_damage_uses_round_modifier() -> void:
+	var red_x3 = load("res://scripts/game/config/round_modifier_config.gd").new("red_x3", "Red Surge", "Red crystals deal x3 damage", {TileType.RED: 3.0})
+	var matches: Array[MatchResult] = [MatchResult.new([Vector2i(0, 0), Vector2i(1, 0), Vector2i(2, 0)], TileType.RED, MatchResult.Direction.HORIZONTAL)]
+	var result: Dictionary = DirectMatchDamageResolver.new().calculate_damage_for_matches(matches, red_x3)
+	_expect_equal(result.get("total_damage"), 9, "3 red tiles with red_x3 deal 9 damage")
+	print("ok - direct damage applies the round modifier's color multiplier")
+
+
+func _test_no_modifier_keeps_stage_32_behavior() -> void:
+	var matches: Array[MatchResult] = [MatchResult.new([Vector2i(0, 0), Vector2i(1, 0), Vector2i(2, 0)], TileType.RED, MatchResult.Direction.HORIZONTAL)]
+	var result: Dictionary = DirectMatchDamageResolver.new().calculate_damage_for_matches(matches, null)
+	_expect_equal(result.get("total_damage"), 3, "no round modifier keeps 1 cleared crystal = 1 damage")
+	print("ok - direct damage without a round modifier still matches Stage 32 behavior")
 
 
 func _expect_equal(actual, expected, message: String) -> void:

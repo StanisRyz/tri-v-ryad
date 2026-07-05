@@ -49,10 +49,26 @@ static func format_direct_damage_message(data, _debug_labels_enabled: bool = fal
 	if total_damage <= 0:
 		return "No damage dealt"
 
-	if not data.special_cleared_cells.is_empty():
-		return "Special cleared %d tiles: %d damage" % [total_damage, total_damage]
+	var tile_count: int = total_damage
+	if "total_tiles_cleared" in data and data.total_tiles_cleared > 0:
+		tile_count = data.total_tiles_cleared
 
-	return "Matched %d tiles: %d damage" % [total_damage, total_damage]
+	if not data.special_cleared_cells.is_empty():
+		return "Special cleared %d tiles: %d damage" % [tile_count, total_damage]
+
+	var breakdown: Array = data.damage_breakdown if "damage_breakdown" in data else []
+	if breakdown.size() == 1:
+		var entry: Dictionary = breakdown[0]
+		var multiplier: float = entry.get("multiplier", 1.0)
+		var tile_type: int = entry.get("tile_type", -1)
+		if multiplier > 1.0 and tile_type != -1:
+			var color_name := _tile_color_name(tile_type)
+			return "Matched %d %s tiles x%s: %d damage" % [entry.get("tile_count", tile_count), color_name, _format_multiplier(multiplier), total_damage]
+
+	if breakdown.size() > 1:
+		return "Cleared %d tiles: %d damage" % [tile_count, total_damage]
+
+	return "Matched %d tiles: %d damage" % [tile_count, total_damage]
 
 
 static func format_enemy_defeated_message() -> String:
@@ -162,7 +178,7 @@ static func format_victory_message(reward_points: int, stars: int) -> String:
 
 
 static func format_defeat_message() -> String:
-	return "Defeat — upgrade heroes or try again"
+	return "Defeat — use boosted colors and try again"
 
 
 static func _ability_display_name(data, debug_labels_enabled: bool) -> String:
@@ -196,6 +212,29 @@ static func _hero_display_name(hero_id: String) -> String:
 			return "Hero 5"
 		_:
 			return hero_id.capitalize()
+
+
+static func _tile_color_name(tile_type: int) -> String:
+	match tile_type:
+		TileType.RED:
+			return "red"
+		TileType.BLUE:
+			return "blue"
+		TileType.GREEN:
+			return "green"
+		TileType.YELLOW:
+			return "yellow"
+		TileType.PURPLE:
+			return "purple"
+		_:
+			return "colored"
+
+
+static func _format_multiplier(multiplier: float) -> String:
+	if multiplier == floor(multiplier):
+		return str(int(multiplier))
+
+	return str(multiplier)
 
 
 static func _special_type_label(special_type: int) -> String:

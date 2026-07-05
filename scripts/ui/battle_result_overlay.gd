@@ -22,7 +22,7 @@ func _ready() -> void:
 
 func show_victory(reward_points: int = 0, stars: int = 0) -> void:
 	result_label.text = "Victory"
-	reward_label.text = "Reward: +%d upgrade points" % max(0, reward_points)
+	reward_label.text = "Reward: +%d points" % max(0, reward_points)
 	stars_label.text = "Stars: %d/3" % clampi(stars, 0, 3)
 	stars_label.visible = true
 	upgrades_button.visible = FeatureFlags.HERO_SYSTEMS_ENABLED

@@ -495,3 +495,21 @@ One-time rewards, level map, chapters, stars-based rewards, reset upgrades, and 
 - Color damage multipliers and round modifiers are not implemented yet.
 - No hero, upgrade, or TeamSelect files were deleted; no player HP, enemy-attacks-on-player, new levels, new enemies, or new mechanics were added.
 - Next planned stage: Stage 33, Round modifiers and color damage rules v0.1.
+
+## Stage 33: Round Modifiers and Color Damage Rules v0.1
+
+- Stage 33 is implemented.
+- Each battle now selects one `RoundModifierConfig` at battle start: a per-battle color damage multiplier applied on top of the Stage 32 direct-damage baseline.
+- `RoundModifierConfig` (`scripts/game/config/round_modifier_config.gd`) stores `modifier_id`, `display_name`, `description`, and a `color_multipliers` dictionary; `get_multiplier(tile_type)` defaults to x1 for any color not listed. Only positive multipliers are valid; debuffs/penalties are out of scope.
+- `RoundModifierCatalog` (`scripts/game/config/round_modifier_catalog.gd`) defines 6 positive modifiers: `red_x3`, `blue_x3`, `green_x3`, `yellow_x3`, `purple_x3` (each triples one color's damage, all others stay x1), and `all_x2` (doubles every color). `all_x2` is the safe default modifier.
+- `RoundModifierSelectionResolver` (`scripts/game/config/round_modifier_selection_resolver.gd`) selects one valid modifier deterministically/testably from a seeded `RandomNumberGenerator`, mirroring `EnemySelectionResolver`/`BattleBackgroundSelectionResolver`. A missing, empty, or invalid catalog falls back to the default modifier without crashing.
+- `BattlePresenter.start_level()` selects a round modifier independently of enemy and background selection (its own catalog, resolver, and RNG), stores it as `current_round_modifier`, and emits `round_modifier_changed(modifier)` alongside the existing level/board/state/background signals.
+- `BattleResolver.resolve_player_matches()` takes an optional `round_modifier` argument and passes it to the direct-damage path only; the frozen hero path ignores it entirely.
+- `DirectMatchDamageResolver` applies `modifier.get_multiplier(tile_type)` per uniquely cleared tile using each match's `tile_type`. Cascaded matches (via `BoardResolveResult` steps) also get color-aware damage since each step keeps its own match data; special-tile activation clears that lack a match (no known color) fall back to x1 damage. With no modifier supplied, behavior is unchanged from Stage 32 (1 cleared crystal = 1 damage).
+- Example: a match of 3 red tiles under `red_x3` deals 9 damage; the same match under an unrelated color buff still deals 3 damage.
+- `GameScreen` shows a `RoundModifierPanel` (`ModifierNameLabel` + `ModifierDescriptionLabel`) in the battle layout, updated from `round_modifier_changed`. The panel does not block board input and hides safely if no modifier is set.
+- Direct-mode battle feedback text was extended for single-color buffed matches ("Matched 3 red tiles x3: 9 damage") while keeping existing generic messages ("Matched 5 tiles: 5 damage", "Cleared 8 tiles: 14 damage" for mixed-color cascades, "Special cleared 9 tiles: 9 damage", "No damage dealt", "Enemy defeated!").
+- Stage 32 leftover text was cleaned up: the defeat message no longer says "upgrade heroes" (now "Defeat — use boosted colors and try again"), and the victory overlay's reward text no longer says "upgrade points" while hero systems are frozen.
+- Hero/RPG systems remain fully frozen: `TeamSelect`, `UpgradeScreen`/Heroes flow, `HeroPartyPanel`, hero abilities, hero charge, hero lane damage, and hero upgrades stay inactive in normal gameplay, and none of it affects direct match damage.
+- No debuffs, negative modifiers, player HP, enemy attacks against the player, new enemies, new levels, or hero systems were added.
+- Next planned stage: Stage 34, Direct match-3 balance pass v0.1.

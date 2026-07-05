@@ -8,7 +8,7 @@ var _enemy_action_resolver := EnemyActionResolver.new()
 var _direct_damage_resolver := DirectMatchDamageResolver.new()
 
 
-func resolve_player_matches(state: BattleState, matches: Array[MatchResult], board_result: BoardResolveResult = null) -> BattleTurnResult:
+func resolve_player_matches(state: BattleState, matches: Array[MatchResult], board_result: BoardResolveResult = null, round_modifier = null) -> BattleTurnResult:
 	var turn_result := BattleTurnResult.new()
 
 	if state.is_finished():
@@ -18,7 +18,7 @@ func resolve_player_matches(state: BattleState, matches: Array[MatchResult], boa
 	if FeatureFlags.HERO_SYSTEMS_ENABLED:
 		_resolve_hero_path(state, matches, turn_result)
 	else:
-		_resolve_direct_damage_path(state, matches, board_result, turn_result)
+		_resolve_direct_damage_path(state, matches, board_result, round_modifier, turn_result)
 
 	state.moves_left = max(0, state.moves_left - 1)
 	state.turn_number += 1
@@ -43,15 +43,18 @@ func _resolve_hero_path(state: BattleState, matches: Array[MatchResult], turn_re
 	turn_result.ability_charge_events = _ability_charge_resolver.apply_ability_charge(state, turn_result.lane_activations)
 
 
-func _resolve_direct_damage_path(state: BattleState, matches: Array[MatchResult], board_result: BoardResolveResult, turn_result: BattleTurnResult) -> void:
-	var cleared_cell_count := _count_cleared_cells(matches, board_result)
-	var damage := cleared_cell_count
+func _resolve_direct_damage_path(state: BattleState, matches: Array[MatchResult], board_result: BoardResolveResult, round_modifier, turn_result: BattleTurnResult) -> void:
+	var damage_info := _calculate_direct_damage(matches, board_result, round_modifier)
+	var damage: int = damage_info.get("damage", 0)
+	var tile_count: int = damage_info.get("tile_count", 0)
 
 	turn_result.total_damage_to_enemy = damage
+	turn_result.total_tiles_cleared = tile_count
+	turn_result.damage_breakdown = damage_info.get("breakdown", [])
 	turn_result.damage_events = [{
 		"lane_index": -1,
 		"hero_id": "",
-		"tile_count": cleared_cell_count,
+		"tile_count": tile_count,
 		"damage": damage,
 	}]
 
@@ -59,20 +62,18 @@ func _resolve_direct_damage_path(state: BattleState, matches: Array[MatchResult]
 		state.enemy.take_damage(damage)
 
 
-func _count_cleared_cells(matches: Array[MatchResult], board_result: BoardResolveResult) -> int:
+func _calculate_direct_damage(matches: Array[MatchResult], board_result: BoardResolveResult, round_modifier) -> Dictionary:
 	if board_result != null:
-		return _direct_damage_resolver.calculate_damage_from_turn_result(board_result)
+		var damage: int = _direct_damage_resolver.calculate_damage_for_board_result(board_result, round_modifier)
+		var breakdown: Array = _direct_damage_resolver.build_damage_breakdown(matches, board_result, round_modifier)
+		return {"damage": damage, "tile_count": board_result.total_cleared, "breakdown": breakdown}
 
-	var cells: Array[Vector2i] = []
-	var seen := {}
-	for match_result in matches:
-		for cell in match_result.cells:
-			if seen.has(cell):
-				continue
-			seen[cell] = true
-			cells.append(cell)
-
-	return _direct_damage_resolver.calculate_damage(cells)
+	var result: Dictionary = _direct_damage_resolver.calculate_damage_for_matches(matches, round_modifier)
+	return {
+		"damage": result.get("total_damage", 0),
+		"tile_count": result.get("tile_count", 0),
+		"breakdown": result.get("breakdown", []),
+	}
 
 
 func _empty_enemy_action() -> Dictionary:

@@ -12,6 +12,8 @@ const ENEMY_SCALING_RESOLVER_SCRIPT := preload("res://scripts/game/config/enemy_
 const BATTLE_FACTORY_SCRIPT := preload("res://scripts/game/battle/battle_factory.gd")
 const BATTLE_BACKGROUND_CATALOG_SCRIPT := preload("res://scripts/game/config/battle_background_catalog.gd")
 const BATTLE_BACKGROUND_SELECTION_RESOLVER_SCRIPT := preload("res://scripts/game/config/battle_background_selection_resolver.gd")
+const ROUND_MODIFIER_CATALOG_SCRIPT := preload("res://scripts/game/config/round_modifier_catalog.gd")
+const ROUND_MODIFIER_SELECTION_RESOLVER_SCRIPT := preload("res://scripts/game/config/round_modifier_selection_resolver.gd")
 
 signal board_changed(board: BoardModel)
 signal battle_state_changed(state: BattleState)
@@ -22,6 +24,7 @@ signal ability_presentation_ready(data)
 signal invalid_swap(reason: String)
 signal battle_finished(status: int)
 signal battle_background_changed(background_config)
+signal round_modifier_changed(modifier)
 
 var board: BoardModel
 var state: BattleState
@@ -45,11 +48,16 @@ var _battle_factory = BATTLE_FACTORY_SCRIPT.new()
 var _background_catalog = BATTLE_BACKGROUND_CATALOG_SCRIPT.new()
 var _background_selection_resolver = BATTLE_BACKGROUND_SELECTION_RESOLVER_SCRIPT.new()
 var _background_rng := RandomNumberGenerator.new()
+var _round_modifier_catalog = ROUND_MODIFIER_CATALOG_SCRIPT.new()
+var _round_modifier_selection_resolver = ROUND_MODIFIER_SELECTION_RESOLVER_SCRIPT.new()
+var _round_modifier_rng := RandomNumberGenerator.new()
+var current_round_modifier
 
 
 func _init() -> void:
 	_enemy_rng.randomize()
 	_background_rng.randomize()
+	_round_modifier_rng.randomize()
 
 
 func start_new_battle() -> void:
@@ -65,11 +73,13 @@ func start_level(level_id: String) -> void:
 	var selected_enemy = _enemy_selection_resolver.select_enemy_for_level(current_level_config, _enemy_catalog, _enemy_rng)
 	var scaled_enemy = _enemy_scaling_resolver.scale_enemy_for_level(selected_enemy, current_level_config)
 	current_background = _background_selection_resolver.select_background(_background_catalog, _background_rng)
+	current_round_modifier = _round_modifier_selection_resolver.select_modifier(_round_modifier_catalog, _round_modifier_rng)
 	state = _battle_factory.create_state(current_level_config, progress, hero_catalog, scaled_enemy)
 	level_changed.emit(current_level_config)
 	board_changed.emit(board)
 	battle_state_changed.emit(state)
 	battle_background_changed.emit(current_background)
+	round_modifier_changed.emit(current_round_modifier)
 
 
 func set_progress(player_progress) -> void:
@@ -110,6 +120,23 @@ func get_current_background():
 	return current_background
 
 
+func set_round_modifier_catalog(catalog) -> void:
+	_round_modifier_catalog = catalog
+
+
+func set_round_modifier_rng_seed(rng_seed: int) -> void:
+	_round_modifier_rng.seed = rng_seed
+
+
+func set_round_modifier_rng(rng: RandomNumberGenerator) -> void:
+	if rng != null:
+		_round_modifier_rng = rng
+
+
+func get_current_round_modifier():
+	return current_round_modifier
+
+
 func request_swap(from_cell: Vector2i, to_cell: Vector2i) -> void:
 	if board == null or state == null or is_battle_finished():
 		return
@@ -122,7 +149,7 @@ func request_swap(from_cell: Vector2i, to_cell: Vector2i) -> void:
 		return
 
 	var board_result := _board_resolver.resolve_board(board)
-	var battle_result := _battle_resolver.resolve_player_matches(state, swap_result.matches, board_result)
+	var battle_result := _battle_resolver.resolve_player_matches(state, swap_result.matches, board_result, current_round_modifier)
 	var presentation_data = TURN_PRESENTATION_DATA_SCRIPT.from_valid_turn(from_cell, to_cell, swap_result.matches, battle_result, board_result)
 
 	board_changed.emit(board)

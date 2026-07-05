@@ -25,6 +25,9 @@ func _run() -> void:
 	var result_overlay := screen.get_node("%BattleResultOverlay") as Control
 	var background_rect := screen.get_node("%Background") as ColorRect
 	var background_texture := screen.get_node("%BackgroundTexture") as TextureRect
+	var round_modifier_panel := screen.get_node("%RoundModifierPanel") as Control
+	var modifier_name_label := screen.get_node("%ModifierNameLabel") as Label
+	var modifier_description_label := screen.get_node("%ModifierDescriptionLabel") as Label
 
 	_expect_true(enemy_panel != null, "game screen has EnemyPanel")
 	_expect_true(battle_hud != null, "game screen has BattleHud")
@@ -36,6 +39,10 @@ func _run() -> void:
 	_expect_true(result_overlay != null, "game screen has BattleResultOverlay")
 	_expect_true(background_rect != null, "game screen has background layer")
 	_expect_true(background_texture != null, "game screen has background texture layer")
+	_expect_true(round_modifier_panel != null, "game screen has RoundModifierPanel")
+	_expect_true(round_modifier_panel.visible, "round modifier panel is visible once a battle starts")
+	_expect_true(modifier_name_label.text != "", "round modifier panel shows a modifier name")
+	_expect_true(modifier_description_label.text != "", "round modifier panel shows a modifier description")
 	_expect_equal(background_rect.mouse_filter, Control.MOUSE_FILTER_IGNORE, "background layer does not block input")
 	_expect_true(background_rect.get_index() < result_overlay.get_index(), "background layer stays behind result overlay")
 

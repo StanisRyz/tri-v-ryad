@@ -12,6 +12,8 @@ var matched_cells: Array[Vector2i] = []
 var lane_activations: Dictionary = {}
 var damage_events: Array[Dictionary] = []
 var total_damage_to_enemy := 0
+var total_tiles_cleared := 0
+var damage_breakdown: Array = []
 var ability_charge_events: Array[Dictionary] = []
 var enemy_action: Dictionary = {}
 var battle_status := BattleState.Status.IN_PROGRESS
@@ -30,6 +32,8 @@ static func from_valid_turn(from_cell: Vector2i, to_cell: Vector2i, matches: Arr
 	data.lane_activations = result.lane_activations.duplicate()
 	data.damage_events = result.damage_events.duplicate()
 	data.total_damage_to_enemy = result.total_damage_to_enemy
+	data.total_tiles_cleared = result.total_tiles_cleared
+	data.damage_breakdown = result.damage_breakdown.duplicate()
 	data.ability_charge_events = result.ability_charge_events.duplicate()
 	data.enemy_action = result.enemy_action.duplicate()
 	data.battle_status = result.battle_status
@@ -60,6 +64,8 @@ func to_dictionary() -> Dictionary:
 		"lane_activations": lane_activations.duplicate(),
 		"damage_events": damage_events.duplicate(),
 		"total_damage_to_enemy": total_damage_to_enemy,
+		"total_tiles_cleared": total_tiles_cleared,
+		"damage_breakdown": damage_breakdown.duplicate(),
 		"ability_charge_events": ability_charge_events.duplicate(),
 		"enemy_action": enemy_action.duplicate(),
 		"battle_status": battle_status,

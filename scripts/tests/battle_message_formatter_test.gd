@@ -31,6 +31,7 @@ func _initialize() -> void:
 	_test_debug_labels_include_ids()
 	_test_unknown_data_uses_safe_fallback()
 	_test_direct_damage_messages()
+	_test_direct_damage_color_breakdown_messages()
 	_test_enemy_defeated_message()
 
 	if _failures == 0:
@@ -138,7 +139,7 @@ func _test_victory_message() -> void:
 
 
 func _test_defeat_message() -> void:
-	_expect_equal(_formatter.format_defeat_message(), "Defeat — upgrade heroes or try again", "defeat message")
+	_expect_equal(_formatter.format_defeat_message(), "Defeat — use boosted colors and try again", "defeat message")
 	print("ok - defeat message")
 
 
@@ -178,6 +179,30 @@ func _test_direct_damage_messages() -> void:
 	_expect_equal(_formatter.format_direct_damage_message(no_damage_data), "No damage dealt", "no direct damage message")
 	_expect_equal(_formatter.format_direct_damage_message(null), "No damage dealt", "null direct damage data uses safe fallback")
 	print("ok - direct damage messages")
+
+
+func _test_direct_damage_color_breakdown_messages() -> void:
+	var single_color_data = load(TURN_PRESENTATION_DATA_SCRIPT).new()
+	single_color_data.total_damage_to_enemy = 9
+	single_color_data.total_tiles_cleared = 3
+	single_color_data.damage_breakdown = [{"tile_type": TileType.RED, "tile_count": 3, "multiplier": 3.0, "damage": 9}]
+	_expect_equal(_formatter.format_direct_damage_message(single_color_data), "Matched 3 red tiles x3: 9 damage", "single buffed color damage message")
+
+	var uniform_data = load(TURN_PRESENTATION_DATA_SCRIPT).new()
+	uniform_data.total_damage_to_enemy = 5
+	uniform_data.total_tiles_cleared = 5
+	uniform_data.damage_breakdown = [{"tile_type": TileType.BLUE, "tile_count": 5, "multiplier": 1.0, "damage": 5}]
+	_expect_equal(_formatter.format_direct_damage_message(uniform_data), "Matched 5 tiles: 5 damage", "unbuffed color falls back to generic matched message")
+
+	var multi_color_data = load(TURN_PRESENTATION_DATA_SCRIPT).new()
+	multi_color_data.total_damage_to_enemy = 14
+	multi_color_data.total_tiles_cleared = 8
+	multi_color_data.damage_breakdown = [
+		{"tile_type": TileType.RED, "tile_count": 4, "multiplier": 2.0, "damage": 8},
+		{"tile_type": TileType.BLUE, "tile_count": 4, "multiplier": 1.5, "damage": 6},
+	]
+	_expect_equal(_formatter.format_direct_damage_message(multi_color_data), "Cleared 8 tiles: 14 damage", "mixed color breakdown uses generic cleared wording")
+	print("ok - direct damage color breakdown messages")
 
 
 func _test_enemy_defeated_message() -> void:
