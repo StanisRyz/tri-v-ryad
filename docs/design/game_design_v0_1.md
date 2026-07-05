@@ -197,13 +197,15 @@ Hero unlocks, rarity, gacha, hero shards, ability upgrades, max levels, scaling 
 - Levels define moves, fallback/default enemy config, and fixed hero configs.
 - Battles select enemies from the shared `EnemyCatalog` roster through `EnemySelectionResolver` when the level starts.
 - `EnemySelectionResolver` is deterministic/testable when given a seeded `RandomNumberGenerator`.
+- Selected enemies are scaled by `EnemyScalingResolver` after selection and before `BattleFactory` creates `BattleState`.
+- Enemy level scaling is linear-only and changes only HP and attack.
 - `LevelSelectScreen` chooses a `level_id` and routes to `TeamSelectScreen` for pre-battle team confirmation (see Stage 19).
 - `GameScreen` starts the selected level through `BattlePresenter`.
 - Every level uses the same objective: defeat the enemy.
 - Victory and defeat rules stay unchanged.
 - 100-level balance is foundation-only v0.1 content tuning and is expected to change after playtesting.
 
-Enemy scaling, level multipliers, hero selection, complex objectives, final economy balance, and full LevelSelect UX polish remain future work.
+Hero economy rebalance, reward rebalance, upgrade cost rebalance, hero selection, complex objectives, final economy balance, and full LevelSelect UX polish remain future work.
 
 ## Enemy Roster and Selection v0.1
 
@@ -214,8 +216,11 @@ Enemy scaling, level multipliers, hero selection, complex objectives, final econ
 - Runtime enemy selection is coordinated by `BattlePresenter`.
 - `BattleFactory` accepts an optional selected enemy override and otherwise uses `LevelConfig.enemy_config` as fallback/default data.
 - Runtime level enemy selection remains separate from the generated 100-level campaign structure.
+- `EnemyScalingResolver` creates a battle-time scaled `EnemyConfig` without mutating `EnemyCatalog`.
+- Scaling preserves enemy ID, display name, intent turns, and target lane.
+- Scaling uses linear HP and attack multipliers with a mild every-10th-level wall bonus. No exponentials, power formulas, hard wall levels, new enemies, or new enemy mechanics are implemented.
 
-Enemy scaling, enemy level multipliers, new enemies, and new enemy stats remain future work.
+New enemies, new enemy mechanics, boss mechanics, and final enemy balance remain future work.
 
 ## Progression v0.1
 
@@ -383,3 +388,17 @@ One-time rewards, level map, chapters, stars-based rewards, max upgrade levels, 
 - Enemy scaling, level multipliers, final economy balance, and full LevelSelect UX polish are not implemented yet.
 - No gameplay, board, battle, save, settings, hero, ability, special tile, platform, art, audio, or monetization systems were changed.
 - Next planned stage: Stage 26, Enemy scaling and level multipliers v0.1.
+
+## Stage 26: Linear Enemy Scaling and Level Multipliers v0.1
+
+- Stage 26 is implemented.
+- `EnemyScalingResolver` scales selected enemies by level number at battle start.
+- `EnemyCatalog` remains the base roster; base enemy configs are not mutated.
+- `BattlePresenter` selects a base enemy from `EnemyCatalog`, scales it for the current `LevelConfig`, then passes the scaled config to `BattleFactory`.
+- Only enemy `max_hp` and `attack` are scaled.
+- Enemy ID, display name, intent turns, and target lane are preserved.
+- Scaling uses linear formulas only, with no `pow()`, exponentials, level powers, or hard difficulty spikes.
+- Every 10th level gets a small deterministic wall-level bonus that remains soft and forgiving.
+- Stage 25's 100-level campaign IDs, labels, move curve, reward curve, fallback enemy cycle, and default level remain unchanged.
+- Hero economy, rewards, upgrade costs, hero stat progression, LevelSelect zones, backgrounds, battle feedback polish, board rules, abilities, special tiles, saves, Yandex SDK, cloud save, ads, payments, sound, particles, and final art were not changed.
+- Next planned stage: Stage 27, Linear rewards and hero upgrade economy v0.2.

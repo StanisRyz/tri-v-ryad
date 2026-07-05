@@ -8,6 +8,7 @@ const ABILITY_RESOLVER_SCRIPT := preload("res://scripts/game/battle/ability_reso
 const LEVEL_CATALOG_SCRIPT := preload("res://scripts/game/config/level_catalog.gd")
 const ENEMY_CATALOG_SCRIPT := preload("res://scripts/game/config/enemy_catalog.gd")
 const ENEMY_SELECTION_RESOLVER_SCRIPT := preload("res://scripts/game/config/enemy_selection_resolver.gd")
+const ENEMY_SCALING_RESOLVER_SCRIPT := preload("res://scripts/game/config/enemy_scaling_resolver.gd")
 const BATTLE_FACTORY_SCRIPT := preload("res://scripts/game/battle/battle_factory.gd")
 
 signal board_changed(board: BoardModel)
@@ -34,6 +35,7 @@ var _ability_resolver = ABILITY_RESOLVER_SCRIPT.new()
 var _level_catalog = LEVEL_CATALOG_SCRIPT.new()
 var _enemy_catalog = ENEMY_CATALOG_SCRIPT.new()
 var _enemy_selection_resolver = ENEMY_SELECTION_RESOLVER_SCRIPT.new()
+var _enemy_scaling_resolver = ENEMY_SCALING_RESOLVER_SCRIPT.new()
 var _enemy_rng := RandomNumberGenerator.new()
 var _battle_factory = BATTLE_FACTORY_SCRIPT.new()
 
@@ -53,7 +55,8 @@ func start_level(level_id: String) -> void:
 	current_level_id = current_level_config.level_id
 	board = _generate_playable_board()
 	var selected_enemy = _enemy_selection_resolver.select_enemy_for_level(current_level_config, _enemy_catalog, _enemy_rng)
-	state = _battle_factory.create_state(current_level_config, progress, hero_catalog, selected_enemy)
+	var scaled_enemy = _enemy_scaling_resolver.scale_enemy_for_level(selected_enemy, current_level_config)
+	state = _battle_factory.create_state(current_level_config, progress, hero_catalog, scaled_enemy)
 	level_changed.emit(current_level_config)
 	board_changed.emit(board)
 	battle_state_changed.emit(state)

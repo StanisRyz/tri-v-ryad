@@ -2,7 +2,7 @@
 
 Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
-The project is currently through Stage 25: 100-level campaign foundation v0.1. It defines the app shell, a MainMenu with Play, Heroes, and Settings entry points, a level-select-only level flow with numbers-only labels for `level_1` through `level_100`, a pre-battle team confirmation flow, a shared 10-enemy roster with battle-start random enemy selection, a menu-accessible full roster hero upgrade screen, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, damage-only roster ability mappings, local hero upgrades, saved campaign progress, and lightweight swap, clear, special activation, and refill feedback for a vertical 9:16 game.
+The project is currently through Stage 26: linear enemy scaling and level multipliers v0.1. It defines the app shell, a MainMenu with Play, Heroes, and Settings entry points, a level-select-only level flow with numbers-only labels for `level_1` through `level_100`, a pre-battle team confirmation flow, a shared 10-enemy base roster with battle-start random enemy selection and linear battle-time HP/attack scaling, a menu-accessible full roster hero upgrade screen, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, damage-only roster ability mappings, local hero upgrades, saved campaign progress, and lightweight swap, clear, special activation, and refill feedback for a vertical 9:16 game.
 
 ## Project Direction
 
@@ -49,9 +49,11 @@ This stage includes:
 - Special tiles affect board clearing only; special-cleared cells do not add extra battle damage or ability charge yet.
 - `TileView` shows simple placeholder `H`/`V`/`B` markers for special tiles.
 - UI-independent battle logic under `scripts/game/battle/`: heroes, enemy, battle state, Hero Lane activation, damage, ability charge, enemy intent/action, and turn results.
-- Data-driven configs under `scripts/game/config/`: `HeroConfig`, `EnemyConfig`, `EnemyCatalog`, `EnemySelectionResolver`, `LevelConfig`, `LevelLabelFormatter`, and `LevelCatalog`.
+- Data-driven configs under `scripts/game/config/`: `HeroConfig`, `EnemyConfig`, `EnemyCatalog`, `EnemySelectionResolver`, `EnemyScalingResolver`, `LevelConfig`, `LevelLabelFormatter`, and `LevelCatalog`.
 - `EnemyCatalog` contains the shared 10-enemy roster, using the existing enemy IDs, display names, and base stats.
 - `EnemySelectionResolver` selects an enemy from that roster when a battle starts and supports deterministic tests through seeded `RandomNumberGenerator` injection.
+- `EnemyScalingResolver` applies soft linear level multipliers to selected enemies at battle start, after enemy selection and before `BattleFactory` creates `BattleState`.
+- Enemy scaling changes only battle-time `max_hp` and `attack`; enemy identity, display name, intent turns, and target lane are preserved, and `EnemyCatalog` base stats are not mutated.
 - `LevelCatalog` deterministically generates a 100-level campaign foundation with numbers-only display names and `level_1` through `level_100` IDs.
 - The Stage 25 moves and upgrade-point reward values are placeholder v0.1 curves, not final balance.
 - `LevelConfig.enemy_config` remains compatibility fallback/default data; runtime battle starts use the shared roster selection.
@@ -112,6 +114,7 @@ This stage includes:
 - Battle factory tests in `scripts/tests/battle_factory_test.gd`.
 - Enemy catalog tests in `scripts/tests/enemy_catalog_test.gd`.
 - Enemy selection tests in `scripts/tests/enemy_selection_test.gd`.
+- Enemy scaling tests in `scripts/tests/enemy_scaling_test.gd`.
 - Progression tests in `scripts/tests/progression_test.gd`.
 - Save manager tests in `scripts/tests/save_manager_test.gd`.
 - Battle factory progress tests in `scripts/tests/battle_factory_progress_test.gd`.
@@ -126,7 +129,7 @@ This stage excludes:
 - One-time rewards, stars-based rewards, level map, chapters, complex economy, max upgrade levels, scaling upgrade costs, reset upgrades, and complex objectives.
 - New heroes, hero unlocks, gacha, rarity, shards, ability upgrades, TeamSelectScreen rework, Yandex SDK, cloud save, ads, payments, sound, particles, and final art.
 - Cloud saves, ads, payments, Yandex SDK, RuStore, Android-specific code, and monetization.
-- Enemy scaling, enemy level multipliers, campaign reward rebalance, and full LevelSelect UX polish.
+- Campaign reward rebalance, hero economy rebalance, upgrade cost rebalance, LevelSelect zones, battle backgrounds, battle feedback polish, and full LevelSelect UX polish.
 
 ## Stage 16: Balance and Content Expansion v0.1
 
@@ -224,6 +227,16 @@ Moves use a safe placeholder curve: levels 1-10 use 24 to 22 moves, levels 11-30
 Runtime enemy selection still uses `EnemyCatalog` and `EnemySelectionResolver` from Stage 24. `LevelConfig.enemy_config` remains fallback/default data for compatibility and cycles through the existing roster; enemy scaling, enemy level multipliers, new enemies, and final economy balance were not added.
 
 No gameplay, board, battle, save, settings, hero, ability, special tile, platform, art, audio, or monetization systems were changed. Full LevelSelect UX polish remains future work.
+
+## Stage 26: Linear Enemy Scaling and Level Multipliers v0.1
+
+Stage 26 is complete. Enemies now scale linearly by level number at battle start.
+
+`EnemyCatalog` remains the source of base roster stats. `BattlePresenter` selects a base enemy through `EnemySelectionResolver`, scales that selected enemy through `EnemyScalingResolver`, and passes the scaled config to `BattleFactory.create_state()`.
+
+Only enemy `max_hp` and `attack` are scaled. Enemy ID, display name, intent turns, and target lane are preserved. Scaling uses readable linear formulas only: no exponentials, powers, or hard difficulty spikes. Every 10th level receives a small wall-level bonus that remains soft and deterministic.
+
+Hero economy, rewards, upgrade costs, LevelSelect zones, backgrounds, battle feedback polish, saves, board rules, hero abilities, special tiles, platform SDK, cloud save, ads, payments, sound, particles, and final art were not changed. Stage 25's 100-level campaign structure remains unchanged.
 
 ## How To Open And Run
 
@@ -325,6 +338,12 @@ Run the enemy selection test with:
 godot --headless --script res://scripts/tests/enemy_selection_test.gd
 ```
 
+Run the enemy scaling test with:
+
+```bash
+godot --headless --script res://scripts/tests/enemy_scaling_test.gd
+```
+
 Run the progression test with:
 
 ```bash
@@ -411,5 +430,5 @@ godot --headless --script res://scripts/tests/settings_screen_data_test.gd
 
 ## Next Planned Stages
 
-- Stage 26: Enemy scaling and level multipliers v0.1.
+- Stage 27: Linear rewards and hero upgrade economy v0.2.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.
