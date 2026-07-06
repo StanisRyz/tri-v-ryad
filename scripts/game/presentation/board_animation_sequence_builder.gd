@@ -4,7 +4,7 @@ class_name BoardAnimationSequenceBuilder
 const REQUEST_SCRIPT := preload("res://scripts/game/presentation/board_animation_request.gd")
 const SEQUENCE_SCRIPT := preload("res://scripts/game/presentation/board_animation_sequence.gd")
 
-const SWAP_ANIMATION_DURATION := 1.0
+const SWAP_ANIMATION_DURATION := 0.4
 const GRAVITY_ANIMATION_DURATION := 0.35
 const REFILL_ANIMATION_DURATION := 0.30
 const CASCADE_STEP_DURATION := 0.20

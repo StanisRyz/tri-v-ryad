@@ -62,7 +62,7 @@ func _test_game_screen_defers_board_during_booster_animation() -> void:
 	_expect_true(screen._pending_board_for_animation != null, "resolved board is pending while booster animation plays")
 	_expect_false(screen._input_controller._input_enabled, "input stays locked during booster gravity/refill animation")
 
-	await create_timer(1.2).timeout
+	await create_timer(2.2).timeout
 	_expect_true(screen._pending_board_for_animation == null, "pending board applies once booster animation finishes")
 	if not screen._presenter.is_battle_finished():
 		_expect_true(screen._input_controller._input_enabled, "input unlocks after booster animation flow")

@@ -2,7 +2,7 @@
 
 Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
-The project is currently through Stage 42: Swap and match clear animations v0.1. Hero/RPG systems (TeamSelect, hero party UI, hero abilities/charge/lane damage, hero upgrades) remain frozen and hidden from the active flow via `FeatureFlags.HERO_SYSTEMS_ENABLED := false`, and gameplay deals direct match-3 damage to the enemy. Each battle selects one positive round modifier that multiplies damage for matched cells of specific colors, while Stage 34 direct balance controls moves and enemy HP. The active flow remains App startup -> LevelSelect -> GameScreen -> LevelSelect, with Settings opened from the LevelSelect top panel; MainMenu remains in the project as inactive legacy/future code but is skipped by normal startup and play. The app shell, a level-select hub with numbers-only labels for `level_1` through `level_100` grouped into 10 locked zones, a shared 10-enemy base roster with battle-start random enemy selection and direct-mode HP scaling, ImageSlot-backed battle background and enemy visual placeholders, the safe cached `ImageSlot`/`GameAssetCatalog` placeholder image pipeline with complete reserved AssetKey coverage for tiles, special tiles, UI panels, LevelSelect/Settings visuals, boosters, stars, and future/frozen hero portraits, the safe cached `AudioAssetCatalog`/`AudioManager` no-op audio foundation, three battle-local boosters (Hammer, Time Freeze, Rocket Barrage), a settings-aware board animation request/sequence/controller foundation with concrete swap and clear animation hooks, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, saved campaign progress with stars/unlocks, and visible swap, invalid swap, match clear, special clear, and refill feedback all remain active for a vertical 9:16 game. Hero code, MainMenu, TeamSelect, and UpgradeScreen remain in the project (not deleted) for a future revisit.
+The project is currently through Stage 44: Damage particles and enemy hit feedback v0.1. Hero/RPG systems (TeamSelect, hero party UI, hero abilities/charge/lane damage, hero upgrades) remain frozen and hidden from the active flow via `FeatureFlags.HERO_SYSTEMS_ENABLED := false`, and gameplay deals direct match-3 damage to the enemy. Each battle selects one positive round modifier that multiplies damage for matched cells of specific colors, while Stage 34 direct balance controls moves and enemy HP. The active flow remains App startup -> LevelSelect -> GameScreen -> LevelSelect, with Settings opened from the LevelSelect top panel; MainMenu remains in the project as inactive legacy/future code but is skipped by normal startup and play. The app shell, a level-select hub with numbers-only labels for `level_1` through `level_100` grouped into 10 locked zones, a shared 10-enemy base roster with battle-start random enemy selection and direct-mode HP scaling, ImageSlot-backed battle background and enemy visual placeholders, the safe cached `ImageSlot`/`GameAssetCatalog` placeholder image pipeline with complete reserved AssetKey coverage for tiles, special tiles, UI panels, LevelSelect/Settings visuals, boosters, stars, and future/frozen hero portraits, the safe cached `AudioAssetCatalog`/`AudioManager` no-op audio foundation, three battle-local boosters (Hammer, Time Freeze, Rocket Barrage), a settings-aware board animation request/sequence/controller foundation with concrete swap and clear animation hooks, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, saved campaign progress with stars/unlocks, and visible swap, invalid swap, match clear, special clear, and refill feedback all remain active for a vertical 9:16 game. Hero code, MainMenu, TeamSelect, and UpgradeScreen remain in the project (not deleted) for a future revisit.
 
 ## Project Direction
 
@@ -143,6 +143,11 @@ This stage includes:
 - Level zone helper tests in `scripts/tests/level_zone_helper_test.gd`.
 - LevelSelect zone UI tests in `scripts/tests/level_select_zones_test.gd`.
 - Special tile tests in `scripts/tests/special_tile_test.gd`.
+- Damage particle event builder tests in `scripts/tests/damage_particle_event_builder_test.gd`.
+- Battle effect controller tests in `scripts/tests/battle_effect_controller_test.gd`.
+- Enemy panel hit feedback tests in `scripts/tests/enemy_panel_hit_feedback_test.gd`.
+- Game screen damage effect flow tests in `scripts/tests/game_screen_damage_effect_flow_test.gd`.
+- Booster damage effect flow tests in `scripts/tests/booster_damage_effect_flow_test.gd`.
 - Documentation for future implementation rules.
 
 This stage excludes:
@@ -439,7 +444,19 @@ Stage 43 is complete. Normal valid player swaps now use an exact `SWAP_ANIMATION
 
 `BoardView` plays gravity and refill through temporary `AnimationLayer` ghosts: `play_gravity_fall_animation` moves ghost tiles from their source cell to their target cell (slightly slower for a longer fall), `play_refill_animation` drops new ghost tiles from above their target column using `create_tile_ghost_from_data`, and `play_cascade_step_animation` gives cascade matches a short highlight/flash. Real `TileView` nodes inside `GridContainer` are never moved directly; original visuals are hidden only while ghosts animate and are restored afterward, with the `AnimationLayer` cleared once each step finishes. `BoardAnimationController` routes `TYPE_GRAVITY_FALL`, `TYPE_REFILL`, and `TYPE_CASCADE_STEP` requests to these methods, keeping the disabled/reduced-motion paths and the exactly-once finished callback guarantee.
 
-`GameScreen` now defers the resolved board update during the booster-targeting flow the same way it already did for swaps, so Hammer/Rocket gravity and refill animations play over the pre-clear board and the final board is only applied once the whole animation sequence finishes. Damage particles and richer enemy hit feedback remain future work. Next planned stage: Stage 44, Damage particles and enemy hit feedback v0.1.
+`GameScreen` now defers the resolved board update during the booster-targeting flow the same way it already did for swaps, so Hammer/Rocket gravity and refill animations play over the pre-clear board and the final board is only applied once the whole animation sequence finishes. Damage particles and richer enemy hit feedback remain future work.
+
+## Stage 44: Damage Particles and Enemy Hit Feedback v0.1
+
+Stage 44 is complete. Normal valid swaps now use an exact `BoardAnimationSequenceBuilder.SWAP_ANIMATION_DURATION := 0.4` second animation (down from 1.0 second), still shortened only by `reduced_motion_enabled`, with `animations_enabled = false` still skipping playback immediately.
+
+`GameScreen.tscn` gained a `BattleEffectLayer` `Control` positioned above the board/enemy UI (input-ignoring `mouse_filter`, cleaned after each effect) and owned by a new `BattleEffectController` (`scripts/game/view/battle_effect_controller.gd`). It flies small `ColorRect` particles from `BoardView.get_cell_global_center(cell)` toward `EnemyPanel.get_hit_target_global_position()`, using tile colors (brighter/larger for boosted cells), respects `animations_enabled`/`reduced_motion_enabled`, caps particle count (16 normal, 6 reduced motion), always calls its finished callback exactly once, and clears its temporary nodes afterward. Missing board view/enemy panel/effect layer, disabled animations, or empty events all finish immediately and safely.
+
+`DamageParticleEventBuilder` (`scripts/game/presentation/damage_particle_event_builder.gd`) turns `TurnPresentationData` and `BoosterResolveResult` into particle event dictionaries (`cell`, `tile_type`, `damage`, `multiplier`, `is_boosted`, `source`). It uses exact per-cell tile-color data from the initial match/booster clear where available and otherwise distributes total damage safely across representative cleared cells. Zero damage and Time Freeze both produce no events. `BoosterResolveResult`/`BoosterResolver` gained `cleared_cell_tile_types` (cell to tile type) so Hammer/Rocket clears carry enough data for accurate particle events.
+
+`EnemyPanel` gained `get_hit_target_global_position()`, `play_hit_feedback(damage)`, `show_floating_damage(damage)`, and `animate_hp_change(current_hp, max_hp)`. A new `HitEffectLayer` overlay hosts floating damage labels that rise and fade, the enemy portrait flashes/shakes briefly on hit (softened/removed under reduced motion), and the HP bar now tweens toward its new value through `configure_presentation(animations_enabled, reduced_motion_enabled)` instead of snapping instantly. All methods stay safe if their backing UI nodes are missing.
+
+`GameScreen` now plays damage particles and enemy hit feedback after each turn's or booster's board animation sequence finishes and before continuing the existing turn/booster feedback, status text, and result-overlay flow; input stays locked the entire time. Enemy-damage audio now fires alongside hit feedback instead of immediately at turn-presentation time, and victory/defeat overlays still only appear after this full feedback chain completes. No board rules, battle rules, booster rules, balance, progression, saves, Yandex SDK, cloud save, ads, payments, final art, or hero-system reactivation were added. Next planned stage: Stage 45, overall gameplay animation polish and reduced-motion support.
 
 ## How To Open And Run
 
@@ -829,6 +846,16 @@ godot --headless --script res://scripts/tests/board_gravity_animation_test.gd
 godot --headless --script res://scripts/tests/board_refill_animation_test.gd
 godot --headless --script res://scripts/tests/game_screen_cascade_animation_flow_test.gd
 godot --headless --script res://scripts/tests/booster_gravity_refill_animation_test.gd
+```
+
+Run the Stage 44 damage particle and enemy hit feedback tests with:
+
+```bash
+godot --headless --script res://scripts/tests/damage_particle_event_builder_test.gd
+godot --headless --script res://scripts/tests/battle_effect_controller_test.gd
+godot --headless --script res://scripts/tests/enemy_panel_hit_feedback_test.gd
+godot --headless --script res://scripts/tests/game_screen_damage_effect_flow_test.gd
+godot --headless --script res://scripts/tests/booster_damage_effect_flow_test.gd
 ```
 
 Run the Stage 34 direct balance tests with:

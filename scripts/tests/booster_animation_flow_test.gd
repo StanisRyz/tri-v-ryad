@@ -23,7 +23,7 @@ func _run() -> void:
 	screen._on_board_tile_pressed(Vector2i(4, 4))
 	_expect_equal(screen._input_mode, "normal", "targeted booster exits targeting mode")
 	_expect_false(screen._input_controller._input_enabled, "input locks during booster animation flow")
-	await create_timer(1.2).timeout
+	await create_timer(2.2).timeout
 
 	_expect_false(screen._feedback_active, "booster animation flow finishes")
 	_expect_true(booster_panel.visible, "booster panel remains visible")

@@ -84,6 +84,7 @@ func resolve_targeted_booster(battle_state: BattleState, booster_id: String, tar
 	result.cleared_cells = cells.duplicate()
 	result.damage_to_enemy = damage
 	result.affected_tile_types = _unique_tile_types(tile_types)
+	result.cleared_cell_tile_types = tile_types.duplicate()
 	result.message = _build_message(booster_id, cells.size(), damage, target_cell, tile_types)
 	result.fall_movements = (gravity_result.get("fall_movements", []) as Array).duplicate(true)
 	result.refill_cells = (gravity_result.get("refill_cells", []) as Array).duplicate(true)

@@ -13,6 +13,8 @@ const ASSET_KEY_RESOLVER_SCRIPT := preload("res://scripts/game/config/asset_key_
 const UI_ASSET_BINDING_SCRIPT := preload("res://scripts/ui/ui_asset_binding.gd")
 const BOARD_ANIMATION_CONTROLLER_SCRIPT := preload("res://scripts/game/view/board_animation_controller.gd")
 const BOARD_ANIMATION_SEQUENCE_BUILDER_SCRIPT := preload("res://scripts/game/presentation/board_animation_sequence_builder.gd")
+const BATTLE_EFFECT_CONTROLLER_SCRIPT := preload("res://scripts/game/view/battle_effect_controller.gd")
+const DAMAGE_PARTICLE_EVENT_BUILDER_SCRIPT := preload("res://scripts/game/presentation/damage_particle_event_builder.gd")
 const PORTRAIT_CONTENT_WIDTH := 664.0
 const PORTRAIT_BOARD_SIZE := PORTRAIT_CONTENT_WIDTH
 const LANDSCAPE_CONTENT_WIDTH := 560.0
@@ -31,6 +33,7 @@ const LANDSCAPE_BOARD_SIZE := 320.0
 @onready var round_modifier_panel: PanelContainer = %RoundModifierPanel
 @onready var modifier_name_label: Label = %ModifierNameLabel
 @onready var modifier_description_label: Label = %ModifierDescriptionLabel
+@onready var battle_effect_layer: Control = %BattleEffectLayer
 
 var _layout_manager: LayoutManager
 var _presenter
@@ -39,6 +42,8 @@ var _turn_feedback_presenter
 var _ability_feedback_presenter
 var _board_animation_controller
 var _board_animation_sequence_builder
+var _battle_effect_controller
+var _damage_particle_event_builder
 var _pending_battle_status := -1
 var _feedback_active := false
 var _current_level_id := "level_1"
@@ -123,6 +128,8 @@ func _setup_playable_battle() -> void:
 	_ability_feedback_presenter = ABILITY_FEEDBACK_PRESENTER_SCRIPT.new()
 	_board_animation_controller = BOARD_ANIMATION_CONTROLLER_SCRIPT.new()
 	_board_animation_sequence_builder = BOARD_ANIMATION_SEQUENCE_BUILDER_SCRIPT.new()
+	_battle_effect_controller = BATTLE_EFFECT_CONTROLLER_SCRIPT.new()
+	_damage_particle_event_builder = DAMAGE_PARTICLE_EVENT_BUILDER_SCRIPT.new()
 	_apply_presentation_settings()
 
 	board_view.tile_pressed.connect(_input_controller.handle_tile_pressed)
@@ -253,7 +260,7 @@ func _on_turn_presentation_ready(data) -> void:
 	_play_turn_audio(data)
 	_feedback_active = true
 	var sequence = _board_animation_sequence_builder.build_from_turn_presentation(data)
-	_play_board_animation_sequence(sequence, Callable(self, "_play_turn_feedback_after_animation").bind(data))
+	_play_board_animation_sequence(sequence, Callable(self, "_after_turn_board_animation").bind(data))
 
 
 func _on_ability_presentation_ready(data) -> void:
@@ -261,8 +268,16 @@ func _on_ability_presentation_ready(data) -> void:
 	_ability_feedback_presenter.play_ability_feedback(data, board_view, Callable(self, "_set_status"))
 
 
-func _play_turn_feedback_after_animation(data) -> void:
+func _after_turn_board_animation(data) -> void:
 	_apply_pending_board_for_animation()
+	var events: Array = _damage_particle_event_builder.build_from_turn_presentation(data) if _damage_particle_event_builder != null else []
+	_play_damage_particles(events, Callable(self, "_play_turn_feedback_after_animation").bind(data))
+
+
+func _play_turn_feedback_after_animation(data) -> void:
+	if data.total_damage_to_enemy > 0:
+		_play_enemy_damage()
+
 	if _turn_feedback_presenter == null:
 		_on_feedback_finished()
 		return
@@ -432,11 +447,16 @@ func _on_booster_resolved(result) -> void:
 	_feedback_active = true
 	_input_controller.set_input_enabled(false)
 	var sequence = _board_animation_sequence_builder.build_from_booster_result(result)
-	_play_board_animation_sequence(sequence, Callable(self, "_finish_booster_resolution").bind(result))
+	_play_board_animation_sequence(sequence, Callable(self, "_after_booster_board_animation").bind(result))
+
+
+func _after_booster_board_animation(result) -> void:
+	_apply_pending_board_for_animation()
+	var events: Array = _damage_particle_event_builder.build_from_booster_result(result) if _damage_particle_event_builder != null else []
+	_play_damage_particles(events, Callable(self, "_finish_booster_resolution").bind(result))
 
 
 func _finish_booster_resolution(result) -> void:
-	_apply_pending_board_for_animation()
 	if result.freeze_turns_added > 0:
 		_play_special_activate()
 	else:
@@ -511,6 +531,10 @@ func _apply_presentation_settings() -> void:
 		_ability_feedback_presenter.configure_settings(animations_enabled, reduced_motion_enabled, _debug_labels_enabled)
 	if _board_animation_controller != null:
 		_board_animation_controller.configure_settings(animations_enabled, reduced_motion_enabled)
+	if _battle_effect_controller != null:
+		_battle_effect_controller.configure_settings(animations_enabled, reduced_motion_enabled)
+	if enemy_panel != null and enemy_panel.has_method("configure_presentation"):
+		enemy_panel.configure_presentation(animations_enabled, reduced_motion_enabled)
 
 
 func _play_board_animation_sequence(sequence, finished_callback: Callable) -> void:
@@ -520,6 +544,15 @@ func _play_board_animation_sequence(sequence, finished_callback: Callable) -> vo
 		return
 
 	_board_animation_controller.play_sequence(sequence, board_view, finished_callback)
+
+
+func _play_damage_particles(events: Array, finished_callback: Callable) -> void:
+	if _battle_effect_controller == null or events.is_empty():
+		if finished_callback.is_valid():
+			finished_callback.call()
+		return
+
+	_battle_effect_controller.play_damage_particles(events, board_view, enemy_panel, battle_effect_layer, finished_callback)
 
 
 func _apply_pending_board_for_animation() -> void:
@@ -543,7 +576,6 @@ func _play_turn_audio(data) -> void:
 
 	if data.total_damage_to_enemy > 0:
 		_play_match()
-		_play_enemy_damage()
 
 
 func _get_audio_manager():
