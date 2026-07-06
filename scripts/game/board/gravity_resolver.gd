@@ -1,12 +1,16 @@
 extends RefCounted
 class_name GravityResolver
 
-## Stage 53 v0.1: gravity/refill runs per contiguous active column segment
-## instead of treating a whole column as one fall lane, so inactive cells
-## (future holes) behave like walls — tiles never fall through them and
-## refill never targets them. With a full active mask (current gameplay)
-## every column is exactly one segment spanning the whole board, so behavior
-## is identical to the pre-Stage-53 whole-column algorithm.
+## Stage 54.2 v0.1: gravity/refill treats each column as one pass-through
+## gravity lane again (replacing Stage 53's per-active-segment "wall"
+## behavior): inactive cells are skipped as storage rather than walled off,
+## so a tile above one or more inactive cells can fall all the way down into
+## the next active cell below the gap, and refill only ever targets active
+## cells. Inactive cells are never read from or written to during gravity,
+## so they always stay inactive and EMPTY with no special metadata. With a
+## full active mask (current normal/ice gameplay) every column has no
+## inactive cells at all, so this reduces to exactly the original
+## whole-column algorithm — full 9x9 behavior is unchanged.
 
 var rng: RandomNumberGenerator
 
@@ -23,9 +27,7 @@ func apply_gravity_and_refill(board: BoardModel) -> Dictionary:
 	var refill_cells: Array[Dictionary] = []
 
 	for x in range(board.width):
-		var segments := _get_active_segments_for_column(board, x)
-		for segment_index in range(segments.size()):
-			_resolve_segment(board, x, segments[segment_index], segment_index, spawned_cells, fall_movements, refill_cells)
+		_resolve_column(board, x, spawned_cells, fall_movements, refill_cells)
 
 	return {
 		"spawned_cells": spawned_cells,
@@ -34,47 +36,30 @@ func apply_gravity_and_refill(board: BoardModel) -> Dictionary:
 	}
 
 
-## Scans column x top-to-bottom (y=0 is top, increasing y is down) and groups
-## contiguous active cells into segments; an inactive cell always ends the
-## current segment. Returns only non-empty segments, ordered top-to-bottom.
-func _get_active_segments_for_column(board: BoardModel, x: int) -> Array[Dictionary]:
-	var segments: Array[Dictionary] = []
-	var segment_top := -1
-
-	for y in range(board.height):
-		if board.is_cell_active(Vector2i(x, y)):
-			if segment_top == -1:
-				segment_top = y
-			continue
-
-		if segment_top != -1:
-			segments.append({"top": segment_top, "bottom": y - 1})
-			segment_top = -1
-
-	if segment_top != -1:
-		segments.append({"top": segment_top, "bottom": board.height - 1})
-
-	return segments
-
-
-## Applies the same fall/refill algorithm as the pre-Stage-53 whole-column
-## version, but bounded to [segment.top, segment.bottom] so tiles/refills
-## never cross into an inactive cell or another segment.
-func _resolve_segment(
+## Scans column x bottom-to-top, skipping inactive cells entirely (they are
+## never read from or written to — pass-through space, not storage) and
+## collecting every active cell's tile/special data in scan order. Falling
+## tiles are written back starting at the lowest active cell in the column,
+## so a tile can fall straight through any number of inactive cells into the
+## next active cell below the gap. Remaining active cells (the ones nearer
+## the top of the column once falling tiles are placed) are refilled with
+## brand-new tiles.
+func _resolve_column(
 	board: BoardModel,
 	x: int,
-	segment: Dictionary,
-	segment_index: int,
 	spawned_cells: Array[Vector2i],
 	fall_movements: Array[Dictionary],
 	refill_cells: Array[Dictionary]
 ) -> void:
-	var segment_top: int = segment["top"]
-	var segment_bottom: int = segment["bottom"]
+	var active_cells_desc: Array[Vector2i] = []
 	var falling_tiles: Array[Dictionary] = []
 
-	for y in range(segment_bottom, segment_top - 1, -1):
+	for y in range(board.height - 1, -1, -1):
 		var cell := Vector2i(x, y)
+		if not board.is_cell_active(cell):
+			continue
+
+		active_cells_desc.append(cell)
 		var tile := board.get_tile(cell)
 		if tile != BoardModel.EMPTY:
 			falling_tiles.append({
@@ -85,45 +70,56 @@ func _resolve_segment(
 		board.set_tile(cell, BoardModel.EMPTY)
 		board.clear_special_tile(cell)
 
-	var write_y := segment_bottom
-	for tile_data in falling_tiles:
-		var target_cell := Vector2i(x, write_y)
+	for i in range(falling_tiles.size()):
+		var tile_data: Dictionary = falling_tiles[i]
+		var target_cell: Vector2i = active_cells_desc[i]
 		board.set_tile(target_cell, tile_data.get("tile", BoardModel.EMPTY))
 		board.set_special_tile(target_cell, tile_data.get("special", null))
+
 		var from_cell: Vector2i = tile_data.get("from")
 		var fall_distance: int = target_cell.y - from_cell.y
 		if fall_distance > 0:
+			var crossed_inactive_cells := _get_crossed_inactive_cells(board, x, from_cell.y, target_cell.y)
 			fall_movements.append({
 				"from": from_cell,
 				"to": target_cell,
 				"tile_type": tile_data.get("tile", BoardModel.EMPTY),
 				"special_data": tile_data.get("special", null),
 				"fall_distance": fall_distance,
-				"segment_index": segment_index,
-				"segment_top": segment_top,
-				"segment_bottom": segment_bottom,
+				"crossed_inactive_cells": crossed_inactive_cells,
+				"crosses_inactive_gap": not crossed_inactive_cells.is_empty(),
 			})
-		write_y -= 1
 
-	var segment_spawn_index := 0
-	while write_y >= segment_top:
-		var spawned_cell := Vector2i(x, write_y)
+	var column_spawn_index := 0
+	for i in range(falling_tiles.size(), active_cells_desc.size()):
+		var spawned_cell: Vector2i = active_cells_desc[i]
 		var tile_type := _get_random_tile_type()
 		board.set_tile(spawned_cell, tile_type)
 		board.clear_special_tile(spawned_cell)
 		spawned_cells.append(spawned_cell)
 		refill_cells.append({
-			"spawn_index": segment_spawn_index,
+			"spawn_index": column_spawn_index,
 			"to": spawned_cell,
 			"tile_type": tile_type,
 			"special_data": null,
-			"segment_index": segment_index,
-			"segment_top": segment_top,
-			"segment_bottom": segment_bottom,
-			"segment_spawn_index": segment_spawn_index,
+			"column_active_index": i,
+			"column_spawn_index": column_spawn_index,
 		})
-		segment_spawn_index += 1
-		write_y -= 1
+		column_spawn_index += 1
+
+
+## Lists the inactive cells strictly between from_y and to_y in column x —
+## always inactive cells by construction, since active_cells_desc already
+## accounts for every active cell in scan order. Reserved for a later visual
+## pass so BoardView/AnimationLayer can hide a falling ghost while it crosses
+## an inactive gap instead of visibly sliding over a hole.
+func _get_crossed_inactive_cells(board: BoardModel, x: int, from_y: int, to_y: int) -> Array[Vector2i]:
+	var crossed_inactive_cells: Array[Vector2i] = []
+	for cross_y in range(from_y + 1, to_y):
+		var cross_cell := Vector2i(x, cross_y)
+		if not board.is_cell_active(cross_cell):
+			crossed_inactive_cells.append(cross_cell)
+	return crossed_inactive_cells
 
 
 func _get_random_tile_type() -> int:
