@@ -1,6 +1,6 @@
 # Asset Map
 
-All Stage 37 entries are reserved placeholders. Current status is `missing/placeholder expected` until real assets are added in later stages. Active battle backgrounds and enemy visuals now resolve through `AssetKeyResolver` and display via `ImageSlot`; tile keys are mapped but tile rendering is postponed.
+All Stage 39 entries are reserved placeholders. Current status is `missing/placeholder expected` until real assets are added in later stages. Missing textures must stay safe and keep placeholder visuals.
 
 | asset_key | expected path | status | usage |
 |---|---|---|---|
@@ -19,20 +19,43 @@ All Stage 37 entries are reserved placeholders. Current status is `missing/place
 | enemy_orc_brute | res://assets/images/enemies/enemy_orc_brute.png | missing/placeholder expected | active future enemy image |
 | enemy_cave_shaman | res://assets/images/enemies/enemy_cave_shaman.png | missing/placeholder expected | active future enemy image |
 | enemy_gatekeeper | res://assets/images/enemies/enemy_gatekeeper.png | missing/placeholder expected | active future enemy image |
-| tile_red | res://assets/images/tiles/tile_red.png | missing/placeholder expected | active future tile image |
-| tile_blue | res://assets/images/tiles/tile_blue.png | missing/placeholder expected | active future tile image |
-| tile_green | res://assets/images/tiles/tile_green.png | missing/placeholder expected | active future tile image |
-| tile_yellow | res://assets/images/tiles/tile_yellow.png | missing/placeholder expected | active future tile image |
-| tile_purple | res://assets/images/tiles/tile_purple.png | missing/placeholder expected | active future tile image |
-| ui_level_select_panel | res://assets/images/ui/level_select_panel.png | missing/placeholder expected | future UI panel image |
-| ui_battle_panel | res://assets/images/ui/battle_panel.png | missing/placeholder expected | future UI panel image |
-| ui_enemy_panel | res://assets/images/ui/enemy_panel.png | missing/placeholder expected | future UI panel image |
-| ui_result_panel | res://assets/images/ui/result_panel.png | missing/placeholder expected | future UI panel image |
-| ui_round_modifier_panel | res://assets/images/ui/round_modifier_panel.png | missing/placeholder expected | future UI panel image |
+| tile_red | res://assets/images/tiles/tile_red.png | missing/placeholder expected | active optional tile texture |
+| tile_blue | res://assets/images/tiles/tile_blue.png | missing/placeholder expected | active optional tile texture |
+| tile_green | res://assets/images/tiles/tile_green.png | missing/placeholder expected | active optional tile texture |
+| tile_yellow | res://assets/images/tiles/tile_yellow.png | missing/placeholder expected | active optional tile texture |
+| tile_purple | res://assets/images/tiles/tile_purple.png | missing/placeholder expected | active optional tile texture |
+| tile_special_horizontal | res://assets/images/tiles/tile_special_horizontal.png | missing/placeholder expected | reserved special tile texture |
+| tile_special_vertical | res://assets/images/tiles/tile_special_vertical.png | missing/placeholder expected | reserved special tile texture |
+| tile_color_bomb | res://assets/images/tiles/tile_color_bomb.png | missing/placeholder expected | reserved special tile texture |
+| ui_board_frame | res://assets/images/ui/board_frame.png | missing/placeholder expected | reserved board frame image |
+| ui_battle_hud_panel | res://assets/images/ui/battle_hud_panel.png | missing/placeholder expected | active battle HUD panel binding |
+| ui_enemy_panel | res://assets/images/ui/enemy_panel.png | missing/placeholder expected | active enemy panel binding |
+| ui_round_modifier_panel | res://assets/images/ui/round_modifier_panel.png | missing/placeholder expected | active round modifier panel binding |
+| ui_status_panel | res://assets/images/ui/status_panel.png | missing/placeholder expected | active battle status panel binding |
+| ui_result_panel | res://assets/images/ui/result_panel.png | missing/placeholder expected | active result overlay binding |
+| ui_level_select_background | res://assets/images/ui/level_select_background.png | missing/placeholder expected | active LevelSelect background ImageSlot |
+| ui_level_select_panel | res://assets/images/ui/level_select_panel.png | missing/placeholder expected | active LevelSelect panel binding |
+| ui_zone_selector_panel | res://assets/images/ui/zone_selector_panel.png | missing/placeholder expected | active zone selector binding |
+| ui_level_button_open | res://assets/images/ui/level_button_open.png | missing/placeholder expected | active open level button binding |
+| ui_level_button_locked | res://assets/images/ui/level_button_locked.png | missing/placeholder expected | active locked level button binding |
+| ui_level_button_completed | res://assets/images/ui/level_button_completed.png | missing/placeholder expected | active completed level button binding |
+| ui_star_empty | res://assets/images/ui/star_empty.png | missing/placeholder expected | active empty star binding |
+| ui_star_filled | res://assets/images/ui/star_filled.png | missing/placeholder expected | active filled star binding |
+| ui_settings_background | res://assets/images/ui/settings_background.png | missing/placeholder expected | active Settings background ImageSlot |
+| ui_settings_panel | res://assets/images/ui/settings_panel.png | missing/placeholder expected | active Settings panel binding |
+| ui_toggle_on | res://assets/images/ui/toggle_on.png | missing/placeholder expected | active Settings toggle binding |
+| ui_toggle_off | res://assets/images/ui/toggle_off.png | missing/placeholder expected | active Settings toggle binding |
+| booster_hammer | res://assets/images/boosters/booster_hammer.png | missing/placeholder expected | reserved future booster icon |
+| booster_freeze_time | res://assets/images/boosters/booster_freeze_time.png | missing/placeholder expected | reserved future booster icon |
+| booster_rocket_barrage | res://assets/images/boosters/booster_rocket_barrage.png | missing/placeholder expected | reserved future booster icon |
+| ui_booster_panel | res://assets/images/ui/booster_panel.png | missing/placeholder expected | reserved future booster panel |
+| ui_booster_button_ready | res://assets/images/ui/booster_button_ready.png | missing/placeholder expected | visual-only BoosterButton state |
+| ui_booster_button_disabled | res://assets/images/ui/booster_button_disabled.png | missing/placeholder expected | visual-only BoosterButton state |
+| ui_booster_button_selected | res://assets/images/ui/booster_button_selected.png | missing/placeholder expected | visual-only BoosterButton state |
 | hero_1_portrait | res://assets/images/heroes/hero_1_portrait.png | missing/placeholder expected | future/frozen hero portrait |
 | hero_2_portrait | res://assets/images/heroes/hero_2_portrait.png | missing/placeholder expected | future/frozen hero portrait |
 | hero_3_portrait | res://assets/images/heroes/hero_3_portrait.png | missing/placeholder expected | future/frozen hero portrait |
 | hero_4_portrait | res://assets/images/heroes/hero_4_portrait.png | missing/placeholder expected | future/frozen hero portrait |
 | hero_5_portrait | res://assets/images/heroes/hero_5_portrait.png | missing/placeholder expected | future/frozen hero portrait |
 
-`ImageSlot` shows placeholders when files are missing. `GameAssetCatalog.try_load_texture()` and `try_load_texture_cached()` return `null` safely for missing files and do not preload optional assets. `clear_texture_cache()` exists for tests. No real image assets are included in Stage 37.
+`AssetKeyResolver` maps gameplay/UI identifiers to these keys. `ImageSlot` shows placeholders when files are missing. `GameAssetCatalog.try_load_texture()` and `try_load_texture_cached()` return `null` safely for missing files and do not preload optional assets. `clear_texture_cache()` exists for tests. No real image assets are included in Stage 39.

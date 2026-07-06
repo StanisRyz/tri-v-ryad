@@ -6,6 +6,8 @@ signal tile_drag_released(cell: Vector2i, drag_delta: Vector2)
 
 const SPECIAL_TILE_DATA_SCRIPT := preload("res://scripts/game/board/special_tile_data.gd")
 const SPECIAL_TILE_TYPE_SCRIPT := preload("res://scripts/game/board/special_tile_type.gd")
+const ASSET_KEY_RESOLVER_SCRIPT := preload("res://scripts/game/config/asset_key_resolver.gd")
+const GAME_ASSET_CATALOG := preload("res://scripts/game/config/game_asset_catalog.gd")
 
 const TILE_COLORS := {
 	TileType.RED: Color(0.86, 0.22, 0.22, 1.0),
@@ -38,6 +40,7 @@ static func configure_presentation(animations_enabled: bool, reduced_motion_enab
 func _ready() -> void:
 	custom_minimum_size = Vector2(48, 48)
 	focus_mode = Control.FOCUS_NONE
+	expand_icon = true
 	gui_input.connect(_on_gui_input)
 	if not pressed.is_connected(_on_pressed):
 		pressed.connect(_on_pressed)
@@ -137,6 +140,21 @@ func reset_visual_state() -> void:
 	_apply_visuals()
 
 
+func get_tile_asset_key() -> String:
+	return ASSET_KEY_RESOLVER_SCRIPT.get_tile_asset_key(tile_type)
+
+
+func get_special_tile_asset_key() -> String:
+	if special_tile_data is SPECIAL_TILE_DATA_SCRIPT:
+		return ASSET_KEY_RESOLVER_SCRIPT.get_special_tile_asset_key(special_tile_data.special_type)
+
+	return ""
+
+
+func has_tile_texture() -> bool:
+	return icon != null
+
+
 func _on_pressed() -> void:
 	if _suppress_next_pressed:
 		_suppress_next_pressed = false
@@ -204,6 +222,7 @@ func _apply_visuals() -> void:
 	add_theme_stylebox_override("normal", style)
 	add_theme_stylebox_override("hover", style)
 	add_theme_stylebox_override("pressed", style)
+	icon = GAME_ASSET_CATALOG.try_load_texture_cached(get_tile_asset_key())
 	text = _get_special_marker_text()
 	add_theme_color_override("font_color", Color.WHITE)
 	add_theme_color_override("font_hover_color", Color.WHITE)

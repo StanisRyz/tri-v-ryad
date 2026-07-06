@@ -581,4 +581,20 @@ One-time rewards, level map, chapters, stars-based rewards, reset upgrades, and 
 - Minimal presentation-only audio hooks were added for buttons, level selection, swap requests, invalid input/invalid swaps, valid direct-damage turns, special activations, enemy damage, victory, and defeat.
 - Active gameplay remains unchanged: LevelSelect startup, direct match damage, round modifiers, Stage 34 direct balance, enemies, levels, moves, stars, progression, zones, battle flow, Settings flow, and ImageSlot-backed imageholders remain active.
 - Hero/RPG systems remain frozen and inactive.
-- Next planned stage: Stage 39, Tile and UI asset integration polish v0.1.
+- Stage 39 follows with complete AssetKey texture binding.
+
+## Stage 39: Complete AssetKey Texture Binding v0.1
+
+- Stage 39 is implemented.
+- `GameAssetCatalog` now reserves safe `res://assets/images/` texture paths for base tiles, special tiles, battle UI panels, LevelSelect visuals, Settings visuals, booster icons, booster button states, stars, and future/frozen hero portraits.
+- `assets/images/boosters/` was added with `.gitkeep`; no real image files were added.
+- `AssetKeyResolver` now maps background ids, enemy ids, active tile types, special tile types, UI ids, booster ids, level button states, and star states to catalog asset keys. Unknown ids return an empty key safely.
+- `TileView` resolves its base tile texture through `AssetKeyResolver.get_tile_asset_key(tile_type)` and `GameAssetCatalog.try_load_texture_cached()`. When the texture is missing, the existing color stylebox placeholder remains visible.
+- `TileView` resolves special tile asset keys for future art while preserving the current `H`/`V`/`B` text markers above the fallback/current button visuals.
+- `UiAssetBinding` prepares safe metadata/cached lookup binding for panel-style controls that are not yet ImageSlot-backed.
+- LevelSelect and Settings background nodes are ImageSlot-backed. LevelSelect panel, zone selector, generated level buttons, star states, Settings panel/toggles, battle HUD, enemy panel, round modifier panel, status label, and result overlay now carry stable reserved asset keys for future texture integration.
+- A visual-only `BoosterButton` stub was added. It supports `set_booster_id()`, `set_uses_left()`, `set_selected()`, and `set_disabled_state()`, resolves booster icons through `AssetKeyResolver.get_booster_asset_key()`, and uses placeholder fallback when icon files are missing.
+- Booster gameplay, booster economy, booster inventory, target selection, cooldowns, particles, final art, and real image files remain out of scope.
+- Active gameplay is unchanged: LevelSelect startup, direct match damage, round modifiers, Stage 34 balance, enemies, levels, moves, stars, progression, zones, battle flow, Settings flow, audio no-op behavior, and ImageSlot-backed battle background/enemy visuals remain active.
+- Hero/RPG systems remain frozen and inactive.
+- Next planned stage: Stage 40, Booster system foundation v0.1.

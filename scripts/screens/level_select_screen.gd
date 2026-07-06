@@ -3,6 +3,8 @@ extends Control
 const LEVEL_CATALOG_SCRIPT := preload("res://scripts/game/config/level_catalog.gd")
 const LEVEL_LABEL_FORMATTER_SCRIPT := preload("res://scripts/game/config/level_label_formatter.gd")
 const LEVEL_ZONE_HELPER_SCRIPT := preload("res://scripts/game/config/level_zone_helper.gd")
+const ASSET_KEY_RESOLVER_SCRIPT := preload("res://scripts/game/config/asset_key_resolver.gd")
+const UI_ASSET_BINDING_SCRIPT := preload("res://scripts/ui/ui_asset_binding.gd")
 
 signal level_selected(level_id: String)
 signal settings_pressed
@@ -11,6 +13,8 @@ signal settings_pressed
 @onready var points_label: Label = %PointsLabel
 @onready var zone_selector: OptionButton = %ZoneSelector
 @onready var level_buttons: VBoxContainer = %LevelButtons
+@onready var background_slot: ImageSlot = %Background
+@onready var root_panel: Control = %Root
 
 var _level_catalog = LEVEL_CATALOG_SCRIPT.new()
 var _progress_manager
@@ -20,9 +24,16 @@ var _has_manual_zone_selection := false
 
 
 func _ready() -> void:
+	_bind_static_ui_assets()
 	settings_button.pressed.connect(_on_settings_button_pressed)
 	zone_selector.item_selected.connect(_on_zone_selected)
 	_refresh()
+
+
+func _bind_static_ui_assets() -> void:
+	UI_ASSET_BINDING_SCRIPT.bind_ui_asset(background_slot, "level_select_background")
+	UI_ASSET_BINDING_SCRIPT.bind_ui_asset(root_panel, "level_select_panel")
+	UI_ASSET_BINDING_SCRIPT.bind_ui_asset(zone_selector, "zone_selector_panel")
 
 
 func set_progress_manager(progress_manager) -> void:
@@ -101,6 +112,8 @@ func _build_level_buttons() -> void:
 		button.disabled = not unlocked
 		if unlocked:
 			button.pressed.connect(_on_level_button_pressed.bind(level_config.level_id))
+		button.set_meta("asset_key", _get_level_button_asset_key(completed, unlocked))
+		button.set_meta("star_asset_keys", _get_star_asset_keys(stars))
 		level_buttons.add_child(button)
 
 
@@ -159,6 +172,21 @@ func _get_level_stars(level_id: String) -> int:
 	if _progress_manager == null:
 		return 0
 	return _progress_manager.get_level_stars(level_id)
+
+
+func _get_level_button_asset_key(completed: bool, unlocked: bool) -> String:
+	if completed:
+		return ASSET_KEY_RESOLVER_SCRIPT.get_level_button_asset_key("completed")
+	if unlocked:
+		return ASSET_KEY_RESOLVER_SCRIPT.get_level_button_asset_key("open")
+	return ASSET_KEY_RESOLVER_SCRIPT.get_level_button_asset_key("locked")
+
+
+func _get_star_asset_keys(stars: int) -> Array[String]:
+	var keys: Array[String] = []
+	for star_index in range(3):
+		keys.append(ASSET_KEY_RESOLVER_SCRIPT.get_star_asset_key(star_index < stars))
+	return keys
 
 
 func _is_debug_labels_enabled() -> bool:

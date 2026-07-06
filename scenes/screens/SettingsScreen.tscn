@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://b3n64jvxsu5wj"]
+[gd_scene load_steps=3 format=3 uid="uid://b3n64jvxsu5wj"]
 
 [ext_resource type="Script" path="res://scripts/screens/settings_screen.gd" id="1_st0gs"]
+[ext_resource type="Script" path="res://scripts/ui/image_slot.gd" id="2_xux43"]
 
 [node name="SettingsScreen" type="Control"]
 layout_mode = 3
@@ -12,13 +13,18 @@ grow_vertical = 2
 script = ExtResource("1_st0gs")
 
 [node name="Background" type="ColorRect" parent="."]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 color = Color(0.055, 0.07, 0.1, 1)
+script = ExtResource("2_xux43")
+placeholder_color = Color(0.055, 0.07, 0.1, 1)
+stretch_mode = 6
 
 [node name="SafeMargin" type="MarginContainer" parent="."]
 layout_mode = 1
@@ -53,6 +59,7 @@ layout_mode = 2
 text = "Back"
 
 [node name="TogglesPanel" type="VBoxContainer" parent="SafeMargin/Root"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 18
 

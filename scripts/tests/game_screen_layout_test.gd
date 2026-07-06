@@ -45,6 +45,11 @@ func _run() -> void:
 	_expect_true(background_slot.get_index() < result_overlay.get_index(), "background layer stays behind result overlay")
 	_expect_false(background_slot.has_texture(), "missing background asset uses placeholder")
 	_expect_true(background_slot.get_asset_key().begins_with("background_"), "background slot receives a background asset key")
+	_expect_equal(battle_hud.get_meta("asset_key"), "ui_battle_hud_panel", "battle HUD panel has reserved asset key")
+	_expect_equal(enemy_panel.get_meta("asset_key"), "ui_enemy_panel", "enemy panel has reserved asset key")
+	_expect_equal(round_modifier_panel.get_meta("asset_key"), "ui_round_modifier_panel", "round modifier panel has reserved asset key")
+	_expect_equal(status_label.get_meta("asset_key"), "ui_status_panel", "status panel has reserved asset key")
+	_expect_equal(result_overlay.get_meta("asset_key"), "ui_result_panel", "result overlay has reserved asset key")
 
 	if enemy_panel != null and battle_hud != null and menu_button != null and board_view != null and status_label != null and hero_party_panel != null:
 		var battle_root := screen.get_node("%BattleRoot")

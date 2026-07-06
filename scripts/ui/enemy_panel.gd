@@ -1,6 +1,7 @@
 extends PanelContainer
 
 const ASSET_KEY_RESOLVER_SCRIPT := preload("res://scripts/game/config/asset_key_resolver.gd")
+const UI_ASSET_BINDING_SCRIPT := preload("res://scripts/ui/ui_asset_binding.gd")
 
 const TARGET_LANE_LABELS := {
 	0: "Left",
@@ -17,6 +18,7 @@ const TARGET_LANE_LABELS := {
 
 
 func _ready() -> void:
+	UI_ASSET_BINDING_SCRIPT.bind_ui_asset(self, "enemy_panel")
 	set_placeholder_values("Training Enemy", "HP: -- / --", 1.0, "Intent: Waiting", "Target: --")
 
 

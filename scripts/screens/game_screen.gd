@@ -10,6 +10,7 @@ const ABILITY_FEEDBACK_PRESENTER_SCRIPT := preload("res://scripts/game/presentat
 const LEVEL_LABEL_FORMATTER_SCRIPT := preload("res://scripts/game/config/level_label_formatter.gd")
 const BATTLE_MESSAGE_FORMATTER_SCRIPT := preload("res://scripts/game/presentation/battle_message_formatter.gd")
 const ASSET_KEY_RESOLVER_SCRIPT := preload("res://scripts/game/config/asset_key_resolver.gd")
+const UI_ASSET_BINDING_SCRIPT := preload("res://scripts/ui/ui_asset_binding.gd")
 const PORTRAIT_CONTENT_WIDTH := 664.0
 const PORTRAIT_BOARD_SIZE := PORTRAIT_CONTENT_WIDTH
 const LANDSCAPE_CONTENT_WIDTH := 560.0
@@ -49,11 +50,20 @@ func _ready() -> void:
 	if not menu_button.pressed.is_connected(_on_menu_button_pressed):
 		menu_button.pressed.connect(_on_menu_button_pressed)
 
+	_bind_static_ui_assets()
 	_layout_manager = LayoutManager.new(get_viewport())
 	_layout_manager.layout_changed.connect(_on_layout_changed)
 
 	_setup_playable_battle()
 	_apply_layout(_layout_manager.get_layout_mode())
+
+
+func _bind_static_ui_assets() -> void:
+	UI_ASSET_BINDING_SCRIPT.bind_ui_asset(battle_hud, "battle_hud_panel")
+	UI_ASSET_BINDING_SCRIPT.bind_ui_asset(enemy_panel, "enemy_panel")
+	UI_ASSET_BINDING_SCRIPT.bind_ui_asset(round_modifier_panel, "round_modifier_panel")
+	UI_ASSET_BINDING_SCRIPT.bind_ui_asset(status_label, "status_panel")
+	UI_ASSET_BINDING_SCRIPT.bind_ui_asset(result_overlay, "result_panel")
 
 
 func _on_menu_button_pressed() -> void:

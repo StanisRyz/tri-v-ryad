@@ -16,7 +16,32 @@ const ENEMY_KEYS := [
 	"enemy_gatekeeper",
 ]
 const TILE_KEYS := ["tile_red", "tile_blue", "tile_green", "tile_yellow", "tile_purple"]
-const UI_KEYS := ["ui_level_select_panel", "ui_battle_panel", "ui_enemy_panel", "ui_result_panel", "ui_round_modifier_panel"]
+const SPECIAL_TILE_KEYS := ["tile_special_horizontal", "tile_special_vertical", "tile_color_bomb"]
+const UI_KEYS := [
+	"ui_board_frame",
+	"ui_battle_hud_panel",
+	"ui_enemy_panel",
+	"ui_round_modifier_panel",
+	"ui_status_panel",
+	"ui_result_panel",
+	"ui_level_select_background",
+	"ui_level_select_panel",
+	"ui_zone_selector_panel",
+	"ui_level_button_open",
+	"ui_level_button_locked",
+	"ui_level_button_completed",
+	"ui_star_empty",
+	"ui_star_filled",
+	"ui_settings_background",
+	"ui_settings_panel",
+	"ui_toggle_on",
+	"ui_toggle_off",
+	"ui_booster_panel",
+	"ui_booster_button_ready",
+	"ui_booster_button_disabled",
+	"ui_booster_button_selected",
+]
+const BOOSTER_KEYS := ["booster_hammer", "booster_freeze_time", "booster_rocket_barrage"]
 const HERO_KEYS := ["hero_1_portrait", "hero_2_portrait", "hero_3_portrait", "hero_4_portrait", "hero_5_portrait"]
 
 var _failures := 0
@@ -50,8 +75,12 @@ func _test_known_keys_exist() -> void:
 		_expect_true(GAME_ASSET_CATALOG.has_asset_key(asset_key), "enemy key exists: %s" % asset_key)
 	for asset_key in TILE_KEYS:
 		_expect_true(GAME_ASSET_CATALOG.has_asset_key(asset_key), "tile key exists: %s" % asset_key)
+	for asset_key in SPECIAL_TILE_KEYS:
+		_expect_true(GAME_ASSET_CATALOG.has_asset_key(asset_key), "special tile key exists: %s" % asset_key)
 	for asset_key in UI_KEYS:
 		_expect_true(GAME_ASSET_CATALOG.has_asset_key(asset_key), "ui key exists: %s" % asset_key)
+	for asset_key in BOOSTER_KEYS:
+		_expect_true(GAME_ASSET_CATALOG.has_asset_key(asset_key), "booster key exists: %s" % asset_key)
 	for asset_key in HERO_KEYS:
 		_expect_true(GAME_ASSET_CATALOG.has_asset_key(asset_key), "future hero key exists: %s" % asset_key)
 	print("ok - expected asset keys exist")
@@ -61,7 +90,11 @@ func _test_expected_paths() -> void:
 	_expect_equal(GAME_ASSET_CATALOG.get_asset_path("background_1"), "res://assets/images/backgrounds/background_1.png", "background_1 path")
 	_expect_equal(GAME_ASSET_CATALOG.get_asset_path("enemy_small_slime"), "res://assets/images/enemies/enemy_small_slime.png", "enemy path")
 	_expect_equal(GAME_ASSET_CATALOG.get_asset_path("tile_red"), "res://assets/images/tiles/tile_red.png", "tile path")
+	_expect_equal(GAME_ASSET_CATALOG.get_asset_path("tile_color_bomb"), "res://assets/images/tiles/tile_color_bomb.png", "color bomb path")
 	_expect_equal(GAME_ASSET_CATALOG.get_asset_path("ui_enemy_panel"), "res://assets/images/ui/enemy_panel.png", "ui path")
+	_expect_equal(GAME_ASSET_CATALOG.get_asset_path("ui_battle_hud_panel"), "res://assets/images/ui/battle_hud_panel.png", "battle HUD path")
+	_expect_equal(GAME_ASSET_CATALOG.get_asset_path("ui_star_filled"), "res://assets/images/ui/star_filled.png", "filled star path")
+	_expect_equal(GAME_ASSET_CATALOG.get_asset_path("booster_hammer"), "res://assets/images/boosters/booster_hammer.png", "booster path")
 	_expect_equal(GAME_ASSET_CATALOG.get_asset_path("hero_5_portrait"), "res://assets/images/heroes/hero_5_portrait.png", "future hero path")
 	print("ok - expected asset paths are stable")
 
