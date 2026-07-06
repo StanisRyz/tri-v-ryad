@@ -65,6 +65,7 @@ var _completion_saved_for_current_battle := false
 var _last_stars_earned := 0
 var _last_victory_result_data: Dictionary = {}
 var _debug_labels_enabled := false
+var _current_generated_challenge
 var _input_mode := "normal"
 var _selected_booster_id := ""
 var _booster_preview_target_cell := Vector2i(-1, -1)
@@ -172,6 +173,7 @@ func _setup_playable_battle() -> void:
 	_presenter.battle_finished.connect(_on_battle_finished)
 	_presenter.battle_background_changed.connect(_on_battle_background_changed)
 	_presenter.round_modifier_changed.connect(_on_round_modifier_changed)
+	_presenter.generated_challenge_changed.connect(_on_generated_challenge_changed)
 	_presenter.booster_state_changed.connect(_on_booster_state_changed)
 	_presenter.booster_resolved.connect(_on_booster_resolved)
 	_presenter.swap_accepted.connect(_on_swap_accepted)
@@ -252,6 +254,14 @@ func _on_round_modifier_changed(modifier) -> void:
 func _on_level_changed(level_config) -> void:
 	_current_level_id = level_config.level_id
 	_current_level_name = level_config.display_name
+
+
+## Stage 51 v0.1: minimal, unobtrusive debug visibility into the generated
+## challenge archetype/seed. Only surfaces when debug labels are enabled.
+func _on_generated_challenge_changed(challenge) -> void:
+	_current_generated_challenge = challenge
+	if _debug_labels_enabled and challenge != null:
+		_set_status("Select a tile  |  %s" % challenge.get_debug_label())
 
 
 func _on_turn_resolved(_result: BattleTurnResult) -> void:

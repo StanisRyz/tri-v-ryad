@@ -16,6 +16,10 @@ const ROUND_MODIFIER_CATALOG_SCRIPT := preload("res://scripts/game/config/round_
 const ROUND_MODIFIER_SELECTION_RESOLVER_SCRIPT := preload("res://scripts/game/config/round_modifier_selection_resolver.gd")
 const BOOSTER_CATALOG_SCRIPT := preload("res://scripts/game/config/booster_catalog.gd")
 const BOOSTER_RESOLVER_SCRIPT := preload("res://scripts/game/battle/booster_resolver.gd")
+const LEVEL_LABEL_FORMATTER_SCRIPT := preload("res://scripts/game/config/level_label_formatter.gd")
+const CHALLENGE_ARCHETYPE_RESOLVER_SCRIPT := preload("res://scripts/game/config/challenge_archetype_resolver.gd")
+const DIFFICULTY_BUDGET_RESOLVER_SCRIPT := preload("res://scripts/game/config/difficulty_budget_resolver.gd")
+const BOARD_CHALLENGE_GENERATOR_SCRIPT := preload("res://scripts/game/board/board_challenge_generator.gd")
 
 signal board_changed(board: BoardModel)
 signal battle_state_changed(state: BattleState)
@@ -31,6 +35,7 @@ signal booster_state_changed(booster_state)
 signal booster_resolved(result)
 signal swap_accepted(from_cell: Vector2i, to_cell: Vector2i, matches: Array)
 signal targeted_booster_accepted(result)
+signal generated_challenge_changed(challenge)
 
 var board: BoardModel
 var state: BattleState
@@ -39,6 +44,7 @@ var current_level_id := ""
 var progress
 var hero_catalog: HeroCatalog
 var current_background
+var current_generated_challenge
 
 var _board_generator := BoardGenerator.new()
 var _swap_resolver := SwapResolver.new()
@@ -60,12 +66,17 @@ var _round_modifier_rng := RandomNumberGenerator.new()
 var _booster_catalog = BOOSTER_CATALOG_SCRIPT.new()
 var _booster_resolver = BOOSTER_RESOLVER_SCRIPT.new()
 var current_round_modifier
+var _challenge_archetype_resolver = CHALLENGE_ARCHETYPE_RESOLVER_SCRIPT.new()
+var _difficulty_budget_resolver = DIFFICULTY_BUDGET_RESOLVER_SCRIPT.new()
+var _board_challenge_generator = BOARD_CHALLENGE_GENERATOR_SCRIPT.new()
+var _challenge_rng := RandomNumberGenerator.new()
 
 
 func _init() -> void:
 	_enemy_rng.randomize()
 	_background_rng.randomize()
 	_round_modifier_rng.randomize()
+	_challenge_rng.randomize()
 
 
 func start_new_battle() -> void:
@@ -82,6 +93,7 @@ func start_level(level_id: String) -> void:
 	var scaled_enemy = _enemy_scaling_resolver.scale_enemy_for_level(selected_enemy, current_level_config)
 	current_background = _background_selection_resolver.select_background(_background_catalog, _background_rng)
 	current_round_modifier = _round_modifier_selection_resolver.select_modifier(_round_modifier_catalog, _round_modifier_rng)
+	current_generated_challenge = _generate_board_challenge(current_level_config.level_id)
 	state = _battle_factory.create_state(current_level_config, progress, hero_catalog, scaled_enemy)
 	state.board = board
 	state.get("booster_state").setup_from_catalog(_booster_catalog)
@@ -91,6 +103,7 @@ func start_level(level_id: String) -> void:
 	booster_state_changed.emit(state.get("booster_state"))
 	battle_background_changed.emit(current_background)
 	round_modifier_changed.emit(current_round_modifier)
+	generated_challenge_changed.emit(current_generated_challenge)
 
 
 func set_progress(player_progress) -> void:
@@ -146,6 +159,19 @@ func set_round_modifier_rng(rng: RandomNumberGenerator) -> void:
 
 func get_current_round_modifier():
 	return current_round_modifier
+
+
+func set_challenge_rng_seed(rng_seed: int) -> void:
+	_challenge_rng.seed = rng_seed
+
+
+func set_challenge_rng(rng: RandomNumberGenerator) -> void:
+	if rng != null:
+		_challenge_rng = rng
+
+
+func get_current_generated_challenge():
+	return current_generated_challenge
 
 
 func get_booster_catalog():
@@ -262,6 +288,19 @@ func request_ability(lane_index: int) -> void:
 
 func is_battle_finished() -> bool:
 	return state != null and state.is_finished()
+
+
+## Stage 51 v0.1: builds the procedural challenge foundation for a battle
+## start. board_mask/frozen_cells are placeholders for now (full 9x9 active
+## board); the resolved archetype/difficulty/seed already flow through so
+## later stages can generate real holes/ice without touching this wiring.
+func _generate_board_challenge(level_id: String) -> GeneratedBoardChallenge:
+	var level_number := LEVEL_LABEL_FORMATTER_SCRIPT.extract_level_number(level_id)
+	var safe_level_number: int = max(1, level_number)
+	var archetype := _challenge_archetype_resolver.resolve_for_level(safe_level_number)
+	var difficulty_budget := _difficulty_budget_resolver.calculate_for_level(safe_level_number)
+	var generation_seed := _challenge_rng.randi()
+	return _board_challenge_generator.generate(level_id, safe_level_number, archetype, difficulty_budget, generation_seed)
 
 
 func _generate_playable_board() -> BoardModel:
