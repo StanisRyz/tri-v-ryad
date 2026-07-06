@@ -57,17 +57,35 @@ static func default_rules() -> HoleGenerationRules:
 
 
 ## Stage 54.1 v0.1: tier-scoped safe hole/active-cell caps. Structural
-## settings (block sizes, symmetry mode, center/connectivity/enclosed/
-## single-cell toggles) stay the v0.1 defaults; only the numeric active/hole
-## ceiling grows with difficulty tier, so harder levels have enough hole
-## budget for 2x3/3x2 blocks and center shapes without ever allowing a
-## nearly-empty board. This is the single source of truth for the tier ->
-## cap mapping — callers (BoardMaskGenerator, BoardChallengeGenerator)
-## should call this instead of hardcoding per-tier numbers themselves.
+## settings (block sizes, symmetry mode, connectivity/enclosed/single-cell
+## toggles) stay the v0.1 defaults; only the numeric active/hole ceiling
+## grows with difficulty tier, so harder levels have enough hole budget for
+## 2x3/3x2 blocks and center shapes without ever allowing a nearly-empty
+## board. This is the single source of truth for the tier -> cap mapping —
+## callers (BoardMaskGenerator, BoardChallengeGenerator) should call this
+## instead of hardcoding per-tier numbers themselves.
+##
+## Stage 55.1 v0.1: keep_center_active is now tier-scoped too, rather than
+## always true. `early` still forces the center cell active (no center-hole
+## shape ever appears in its shape pool anyway, so this is mostly a safety
+## net). `medium`/`hard`/`very_hard` set it to false so the new "hole"
+## center presets (center_dot_plus/center_diamond_hole/center_circle_hole_light,
+## see HoleShapePreset) can actually validate when BoardMaskGenerator's shape
+## pool picks one — rectangular corner/axis-straddling blocks are provably
+## incapable of reaching the exact center cell (Stage 54.1), so relaxing
+## this flag for the whole tier has no effect on their behavior; it only
+## matters for whichever shape actually places a cell at the center.
 static func for_tier(tier: String) -> HoleGenerationRules:
 	var tier_max_hole_cells := _max_hole_cells_for_tier(tier)
 	var tier_min_active_cells := DEFAULT_BOARD_CELLS - tier_max_hole_cells
-	return HoleGenerationRules.new(2, 2, 3, 3, tier_min_active_cells, tier_max_hole_cells)
+	var tier_keep_center_active := _keep_center_active_for_tier(tier)
+	return HoleGenerationRules.new(
+		2, 2, 3, 3,
+		tier_min_active_cells,
+		tier_max_hole_cells,
+		SYMMETRY_QUADRANT_MIRROR,
+		tier_keep_center_active
+	)
 
 
 static func _max_hole_cells_for_tier(tier: String) -> int:
@@ -80,3 +98,11 @@ static func _max_hole_cells_for_tier(tier: String) -> int:
 			return 28
 		_:
 			return 16
+
+
+static func _keep_center_active_for_tier(tier: String) -> bool:
+	match tier:
+		DifficultyBudget.TIER_MEDIUM, DifficultyBudget.TIER_HARD, DifficultyBudget.TIER_VERY_HARD:
+			return false
+		_:
+			return true

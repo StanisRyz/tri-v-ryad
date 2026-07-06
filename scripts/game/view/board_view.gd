@@ -261,16 +261,18 @@ func is_animation_overlay_mode() -> bool:
 	return _overlay_mode
 
 
-## Stage 55 v0.1: inactive cells (holes) are never hidden here and never get
-## an overlay ghost either (see build_full_board_ghosts()), since gravity
-## never targets them (Stage 54.2) — their real TileView already shows the
-## correct static "hole" look and simply stays visible underneath/alongside
-## the ghost layer for the whole overlay session.
+## Stage 55.1 v0.1: hides every real tile uniformly, active or inactive.
+## Stage 55 tried leaving inactive real TileViews visible while active ones
+## were hidden, but GridContainer recomputes its row/column sizing from only
+## its *visible* children — with most of a row/column hidden, the still-
+## visible inactive cell would stretch to absorb the freed space, merging
+## into a tall dark area instead of keeping its own cell shape. Hiding
+## everyone keeps the grid's visible-child set (zero) uniform, and
+## build_full_board_ghosts() now gives every cell — including inactive ones
+## — a stable, absolutely-positioned placeholder in animation_layer instead
+## (a plain Control, immune to GridContainer's visible-child resizing).
 func hide_real_board_tiles() -> void:
 	for cell in _tile_views.keys():
-		var tile := _tile_views.get(cell) as TileView
-		if tile != null and not tile.is_cell_active():
-			continue
 		hide_tile_visual(cell)
 
 
@@ -292,6 +294,11 @@ func enter_animation_overlay_mode(snapshot: BoardVisualSnapshot) -> void:
 	build_full_board_ghosts(snapshot)
 
 
+## Stage 55.1 v0.1: refresh_all_tiles() at the end re-syncs every real tile's
+## active state/tile/special/selection from the current BoardModel the
+## moment the real board becomes visible again, so an inactive cell can
+## never briefly show stale data — safe/idempotent even when a caller (e.g.
+## apply_board_under_overlay()) already refreshed just before calling this.
 func exit_animation_overlay_mode() -> void:
 	if not _overlay_mode:
 		return
@@ -303,6 +310,7 @@ func exit_animation_overlay_mode() -> void:
 		_active_board_animation_tween = null
 	clear_animation_layer()
 	show_real_board_tiles()
+	refresh_all_tiles()
 
 
 ## Seamless final-board handoff: updates the real (currently hidden) TileView
@@ -322,11 +330,13 @@ func apply_board_under_overlay(board: BoardModel) -> void:
 	exit_animation_overlay_mode()
 
 
-## Stage 55 v0.1: no ghost is built for an inactive cell — its real TileView
-## was left visible by hide_real_board_tiles() and already shows the correct
-## hole look, and gravity/refill never target an inactive cell (Stage 54.2)
-## so no ghost lookup for that cell is ever needed during the overlay
-## session either.
+## Stage 55.1 v0.1: builds one ghost per cell, every cell — an inactive cell
+## gets a stable "hole" placeholder (create_inactive_hole_ghost()) instead of
+## a normal tile ghost, so it keeps its own per-cell shape/position in
+## animation_layer rather than depending on GridContainer visibility sizing.
+## Since gravity/refill never target an inactive cell (Stage 54.2), nothing
+## ever animates this placeholder — it just sits there, static, for the
+## whole overlay session.
 func build_full_board_ghosts(snapshot: BoardVisualSnapshot) -> void:
 	_overlay_ghosts.clear()
 	if animation_layer == null or snapshot == null:
@@ -334,14 +344,19 @@ func build_full_board_ghosts(snapshot: BoardVisualSnapshot) -> void:
 
 	for cell in snapshot.get_cells():
 		var data := snapshot.get_cell_data(cell)
-		if not bool(data.get("is_active", true)):
-			continue
-		var ghost := create_tile_ghost_from_data(
-			data.get("tile_type", BoardModel.EMPTY),
-			data.get("special_data"),
-			data.get("local_position", Vector2.ZERO),
-			data.get("size", Vector2(48, 48))
-		)
+		var local_position: Vector2 = data.get("local_position", Vector2.ZERO)
+		var cell_size: Vector2 = data.get("size", Vector2(48, 48))
+		var ghost: Control
+		if bool(data.get("is_active", true)):
+			ghost = create_tile_ghost_from_data(
+				data.get("tile_type", BoardModel.EMPTY),
+				data.get("special_data"),
+				local_position,
+				cell_size
+			)
+		else:
+			ghost = create_inactive_hole_ghost(local_position, cell_size)
+
 		if ghost != null:
 			_overlay_ghosts[cell] = ghost
 
@@ -431,6 +446,45 @@ func create_tile_ghost_from_data(tile_type: int, special_data, ghost_position: V
 	ghost.add_theme_font_size_override("font_size", 22)
 	if special_data is SPECIAL_TILE_DATA_SCRIPT:
 		ghost.text = SPECIAL_TILE_TYPE_SCRIPT.get_marker_text(special_data.special_type)
+	animation_layer.add_child(ghost)
+	return ghost
+
+
+## Stage 55.1 v0.1: the stable placeholder build_full_board_ghosts() uses for
+## an inactive cell — same visual language as TileView._apply_inactive_visuals()
+## (mostly-transparent dark inset, no border, no icon/text), but as a plain
+## absolutely-positioned Control in animation_layer rather than a
+## GridContainer child, so it can never be stretched by GridContainer's
+## visible-children-only sizing pass. Nothing ever animates it: gravity,
+## refill, swap, and clears never reference an inactive cell (Stage 52-54.2),
+## so it simply sits in place for the whole overlay session.
+func create_inactive_hole_ghost(ghost_position: Vector2, ghost_size: Vector2) -> Control:
+	if animation_layer == null:
+		return null
+
+	var ghost := Button.new()
+	ghost.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ghost.focus_mode = Control.FOCUS_NONE
+	ghost.disabled = true
+	ghost.size = ghost_size
+	ghost.position = ghost_position
+	ghost.pivot_offset = ghost_size * 0.5
+	ghost.icon = null
+	ghost.text = ""
+
+	var style := StyleBoxFlat.new()
+	style.bg_color = TileView.INACTIVE_CELL_BACKGROUND_COLOR
+	style.border_width_left = 0
+	style.border_width_top = 0
+	style.border_width_right = 0
+	style.border_width_bottom = 0
+	style.corner_radius_top_left = 6
+	style.corner_radius_top_right = 6
+	style.corner_radius_bottom_left = 6
+	style.corner_radius_bottom_right = 6
+	for state in ["normal", "hover", "pressed", "disabled"]:
+		ghost.add_theme_stylebox_override(state, style.duplicate())
+
 	animation_layer.add_child(ghost)
 	return ghost
 

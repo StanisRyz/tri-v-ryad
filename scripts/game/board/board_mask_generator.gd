@@ -1,13 +1,16 @@
 extends RefCounted
 class_name BoardMaskGenerator
 
-## Stage 54.1 v0.1: generates real symmetrical, validated procedural hole
+## Stage 55.1 v0.1: generates real symmetrical, validated procedural hole
 ## masks using HoleGenerationRules + BoardMaskSymmetry + HoleBlockPlacer/
 ## HoleShapePlacer + BoardMaskValidator. Candidates place a mix of
-## quadrant-mirrored rectangular blocks (2x2/2x3/3x2) and center-aware shape
-## presets (center_diamond/center_circle_light), chosen from a difficulty-tier
-## shape pool. Falls back to a full-active mask whenever no valid candidate
-## is found within the attempt budget.
+## quadrant-mirrored rectangular blocks (2x2/2x3/3x2), "light" center-aware
+## shape presets that never touch the exact center cell
+## (center_diamond/center_circle_light), and — starting at medium tier —
+## "hole" center presets that deliberately do include the exact center cell
+## (center_dot_plus/center_diamond_hole/center_circle_hole_light), chosen
+## from a difficulty-tier shape pool. Falls back to a full-active mask
+## whenever no valid candidate is found within the attempt budget.
 ##
 ## Stage 54 note: with the default (early-tier) max_hole_cells of 16, a
 ## single quadrant-mirrored 2x2 block already uses the entire hole budget
@@ -16,9 +19,16 @@ class_name BoardMaskGenerator
 ## mirrored cells) and any center shape were effectively unreachable.
 ## HoleGenerationRules.for_tier() now grows max_hole_cells/min_active_cells
 ## with difficulty tier so larger blocks and center shapes have room to be
-## validated in, and center shapes intentionally never hole all four of the
-## center cell's orthogonal neighbors at once, so the center cell can sit
-## inside a shape's silhouette while staying active and connected.
+## validated in.
+##
+## Stage 55.1 note: HoleGenerationRules.for_tier() also sets
+## keep_center_active = false starting at medium tier, which is what lets
+## the new "hole" center presets validate when the shape pool picks one —
+## rectangular blocks are provably incapable of reaching the exact center
+## cell (Stage 54.1), so this has no effect on their behavior. The "light"
+## center presets still never hole all four of the center cell's orthogonal
+## neighbors at once, so the center cell can sit inside their silhouette
+## while staying active and connected even when keep_center_active is true.
 
 const HOLE_GENERATION_RULES_SCRIPT := preload("res://scripts/game/config/hole_generation_rules.gd")
 const HOLE_BLOCK_PLACER_SCRIPT := preload("res://scripts/game/board/hole_block_placer.gd")
@@ -72,14 +82,14 @@ func generate_holes_mask_with_metadata(rng: RandomNumberGenerator = null, diffic
 		if validation.valid:
 			return {
 				"mask": candidate,
-				"metadata": _build_metadata(attempts_used, false, validation, shape_count, last_selected_shape_types),
+				"metadata": _build_metadata(attempts_used, false, validation, shape_count, last_selected_shape_types, candidate),
 			}
 
 	var fallback_mask := build_full_active_mask()
 	var fallback_validation := _validator.validate(fallback_mask, safe_rules)
 	return {
 		"mask": fallback_mask,
-		"metadata": _build_metadata(attempts_used, true, last_validation if last_validation != null else fallback_validation, shape_count, last_selected_shape_types),
+		"metadata": _build_metadata(attempts_used, true, last_validation if last_validation != null else fallback_validation, shape_count, last_selected_shape_types, fallback_mask),
 	}
 
 
@@ -223,10 +233,14 @@ func _try_place_center_shape(mask: Array, shape_type: String, rules: HoleGenerat
 
 
 ## Suggested v0.1 shape pool by difficulty tier: early is mostly 2x2 with
-## occasional 2x3/3x2; medium adds a rare center_diamond; hard includes both
-## center presets; very_hard leans further into center_circle_light so
-## larger/combined patterns (multiple shapes per candidate) are more likely,
-## always subject to BoardMaskValidator/HoleGenerationRules approval.
+## occasional 2x3/3x2 and no exact-center hole shapes at all; medium adds a
+## rare center_diamond plus a rare center_diamond_hole (the first shape
+## allowed to include the exact center cell, since HoleGenerationRules.for_tier()
+## sets keep_center_active = false starting at medium); hard adds
+## center_circle_hole_light and center_dot_plus alongside the existing
+## center presets; very_hard weights the center-hole presets more heavily so
+## they (and larger/combined multi-shape candidates) are more likely — always
+## still subject to BoardMaskValidator/HoleGenerationRules approval.
 func _resolve_shape_pool(tier: String) -> Array[String]:
 	match tier:
 		DifficultyBudget.TIER_MEDIUM:
@@ -234,16 +248,21 @@ func _resolve_shape_pool(tier: String) -> Array[String]:
 				HOLE_SHAPE_PRESET_SCRIPT.BLOCK_2X2, HOLE_SHAPE_PRESET_SCRIPT.BLOCK_2X2,
 				HOLE_SHAPE_PRESET_SCRIPT.BLOCK_2X3, HOLE_SHAPE_PRESET_SCRIPT.BLOCK_3X2,
 				HOLE_SHAPE_PRESET_SCRIPT.CENTER_DIAMOND,
+				HOLE_SHAPE_PRESET_SCRIPT.CENTER_DIAMOND_HOLE,
 			]
 		DifficultyBudget.TIER_HARD:
 			return [
 				HOLE_SHAPE_PRESET_SCRIPT.BLOCK_2X2, HOLE_SHAPE_PRESET_SCRIPT.BLOCK_2X3, HOLE_SHAPE_PRESET_SCRIPT.BLOCK_3X2,
 				HOLE_SHAPE_PRESET_SCRIPT.CENTER_DIAMOND, HOLE_SHAPE_PRESET_SCRIPT.CENTER_CIRCLE_LIGHT,
+				HOLE_SHAPE_PRESET_SCRIPT.CENTER_DOT_PLUS, HOLE_SHAPE_PRESET_SCRIPT.CENTER_DIAMOND_HOLE, HOLE_SHAPE_PRESET_SCRIPT.CENTER_CIRCLE_HOLE_LIGHT,
 			]
 		DifficultyBudget.TIER_VERY_HARD:
 			return [
 				HOLE_SHAPE_PRESET_SCRIPT.BLOCK_2X2, HOLE_SHAPE_PRESET_SCRIPT.BLOCK_2X3, HOLE_SHAPE_PRESET_SCRIPT.BLOCK_3X2,
-				HOLE_SHAPE_PRESET_SCRIPT.CENTER_DIAMOND, HOLE_SHAPE_PRESET_SCRIPT.CENTER_CIRCLE_LIGHT, HOLE_SHAPE_PRESET_SCRIPT.CENTER_CIRCLE_LIGHT,
+				HOLE_SHAPE_PRESET_SCRIPT.CENTER_DIAMOND, HOLE_SHAPE_PRESET_SCRIPT.CENTER_CIRCLE_LIGHT,
+				HOLE_SHAPE_PRESET_SCRIPT.CENTER_DOT_PLUS,
+				HOLE_SHAPE_PRESET_SCRIPT.CENTER_DIAMOND_HOLE, HOLE_SHAPE_PRESET_SCRIPT.CENTER_DIAMOND_HOLE,
+				HOLE_SHAPE_PRESET_SCRIPT.CENTER_CIRCLE_HOLE_LIGHT, HOLE_SHAPE_PRESET_SCRIPT.CENTER_CIRCLE_HOLE_LIGHT,
 			]
 		_:
 			return [
@@ -289,7 +308,10 @@ func _resolve_attempt_budget(difficulty_budget) -> int:
 	return DEFAULT_VALIDATION_ATTEMPTS
 
 
-func _build_metadata(attempts_used: int, fallback_used: bool, validation, requested_shape_count: int, selected_shape_types: Array[String]) -> Dictionary:
+## Stage 55.1 v0.1: also reports center_cell_inactive/center_axis_holes_count
+## so a generated holes challenge can be inspected for how (and whether) it
+## used the center/main-axis area, alongside the existing Stage 54 fields.
+func _build_metadata(attempts_used: int, fallback_used: bool, validation, requested_shape_count: int, selected_shape_types: Array[String], mask: Array) -> Dictionary:
 	var metadata := {
 		"generator_version": "0.1",
 		"layout_source": "fallback_full_board" if fallback_used else "procedural_holes",
@@ -297,6 +319,8 @@ func _build_metadata(attempts_used: int, fallback_used: bool, validation, reques
 		"fallback_used": fallback_used,
 		"requested_shape_count": requested_shape_count,
 		"selected_shape_types": selected_shape_types.duplicate(),
+		"center_cell_inactive": _is_center_cell_inactive(mask),
+		"center_axis_holes_count": _count_center_axis_holes(mask),
 	}
 
 	if validation != null:
@@ -305,3 +329,53 @@ func _build_metadata(attempts_used: int, fallback_used: bool, validation, reques
 		metadata["last_validation_reasons"] = (validation.reasons as Array).duplicate()
 
 	return metadata
+
+
+func _is_center_cell_inactive(mask: Array) -> bool:
+	if mask.is_empty():
+		return false
+
+	@warning_ignore("integer_division")
+	var center_x := BoardModel.DEFAULT_WIDTH / 2
+	@warning_ignore("integer_division")
+	var center_y := BoardModel.DEFAULT_HEIGHT / 2
+	if center_y >= mask.size():
+		return false
+	var row: Array = mask[center_y]
+	if center_x >= row.size():
+		return false
+
+	return not bool(row[center_x])
+
+
+## Counts distinct inactive cells along the two center axes (the main center
+## row and center column), deduplicating the exact center cell if it's
+## itself inactive. A lightweight signal for how much of the cross/diamond
+## center area a generated mask actually used.
+func _count_center_axis_holes(mask: Array) -> int:
+	if mask.is_empty():
+		return 0
+
+	var width := BoardModel.DEFAULT_WIDTH
+	var height := BoardModel.DEFAULT_HEIGHT
+	@warning_ignore("integer_division")
+	var center_x := width / 2
+	@warning_ignore("integer_division")
+	var center_y := height / 2
+	if center_y >= mask.size():
+		return 0
+
+	var seen := {}
+	var center_row: Array = mask[center_y]
+	for x in range(mini(width, center_row.size())):
+		if not bool(center_row[x]):
+			seen[Vector2i(x, center_y)] = true
+
+	for y in range(mini(height, mask.size())):
+		var row: Array = mask[y]
+		if center_x >= row.size():
+			continue
+		if not bool(row[center_x]):
+			seen[Vector2i(center_x, y)] = true
+
+	return seen.size()
