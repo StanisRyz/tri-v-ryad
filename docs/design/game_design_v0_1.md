@@ -269,7 +269,7 @@ One-time rewards, level map, chapters, stars-based rewards, reset upgrades, and 
 - No cloud save.
 - No target selection or ability upgrades.
 - No high-polish special activation animation pass beyond current Stage 48 v0.1 H/V/B activation behavior.
-- No further booster targeting/animation polish beyond current Stage 49 preview/effect behavior unless explicitly requested.
+- No further booster targeting/animation polish beyond current Stage 49.1 preview/effect behavior unless explicitly requested.
 - No result flow UX polish beyond current cleanup/result ordering.
 - No real tile movement.
 - No real/final audio assets or final particle/effect art.
@@ -762,4 +762,13 @@ One-time rewards, level map, chapters, stars-based rewards, reset upgrades, and 
 - Selected booster buttons show readable selected state; used boosters show dim/disabled-looking state but still produce short already-used feedback when pressed. Selected state clears after cancel, apply, or use.
 - `BoardView.show_booster_target_preview()` and `clear_booster_target_preview()` own presentation-only preview nodes on `AnimationLayer`; cleanup runs on apply, cancel, selected-booster changes, disabled-animation cleanup, result overlay, restart, and LevelSelect return.
 - `BoardAnimationRequest.TYPE_BOOSTER_ACTIVATION` runs before `TYPE_BOOSTER_CLEAR` through `AnimatedTurnFlow`, so damage particles and result overlays still start only after board animation and cleanup finish. `TurnFeedbackPresenter` must not replay booster board visuals.
+- Next roadmap stage: Stage 50 result screen and level flow UX polish.
+
+## Stage 49.1: Stronger Booster Affected-Cell Preview v0.1
+
+- Stage 49.1 is implemented. It improves booster preview readability without changing booster rules, targeting logic, activation order, damage formulas, balance, progression, saves, platform code, art assets, or hero-system behavior.
+- Hammer affected-cell preview still uses the clipped 3x3 area around the target crystal, now drawn with a stronger near-white inset overlay that is clearly visible on all tile colors.
+- Rocket Barrage affected-cell preview still uses all currently visible cells matching the target tile type, now using the same stronger near-white overlay.
+- Time Freeze remains non-board feedback only.
+- Preview nodes remain presentation-only through `BoardView.show_booster_target_preview()` and `clear_booster_target_preview()`, and cleanup expectations are unchanged: apply, cancel, selected-booster changes, disabled-animation cleanup, result overlay, restart, and LevelSelect return must leave no white overlay nodes behind.
 - Next roadmap stage: Stage 50 result screen and level flow UX polish.

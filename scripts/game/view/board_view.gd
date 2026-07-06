@@ -12,6 +12,8 @@ const GAME_ASSET_CATALOG := preload("res://scripts/game/config/game_asset_catalo
 const BOARD_SIZE := 9
 const LANE_WIDTH := 3
 const DEFAULT_BOARD_SIZE := 664.0
+const BOOSTER_TARGET_PREVIEW_COLOR := Color(1.0, 1.0, 1.0, 0.78)
+const BOOSTER_TARGET_PREVIEW_INSET_RATIO := 0.06
 
 @onready var tile_grid: GridContainer = %TileGrid
 @onready var animation_layer: Control = %AnimationLayer
@@ -175,19 +177,13 @@ func get_cells_with_visible_tile_type(tile_type: int) -> Array[Vector2i]:
 	return cells
 
 
-func show_booster_target_preview(cells: Array[Vector2i], preview_type: String) -> void:
+func show_booster_target_preview(cells: Array[Vector2i], _preview_type: String) -> void:
 	clear_booster_target_preview()
 	if animation_layer == null:
 		return
 
-	var color := Color(1.0, 0.86, 0.18, 0.34)
-	if preview_type == "rocket_barrage":
-		color = Color(0.98, 0.40, 0.28, 0.32)
-	elif preview_type == "hammer":
-		color = Color(1.0, 0.88, 0.24, 0.36)
-
 	for cell in cells:
-		var preview := _create_booster_preview_cell(cell, color)
+		var preview := _create_booster_preview_cell(cell, BOOSTER_TARGET_PREVIEW_COLOR)
 		if preview != null:
 			_booster_preview_nodes.append(preview)
 
@@ -1182,8 +1178,8 @@ func _create_booster_preview_cell(cell: Vector2i, color: Color) -> ColorRect:
 
 	var preview := ColorRect.new()
 	preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	preview.position = rect.position + rect.size * 0.07
-	preview.size = rect.size * 0.86
+	preview.position = rect.position + rect.size * BOOSTER_TARGET_PREVIEW_INSET_RATIO
+	preview.size = rect.size * (1.0 - BOOSTER_TARGET_PREVIEW_INSET_RATIO * 2.0)
 	preview.color = color
 	preview.modulate = Color(1.0, 1.0, 1.0, 0.0)
 	animation_layer.add_child(preview)
