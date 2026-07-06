@@ -86,6 +86,8 @@ func _play_request(request, board_view: Control, effective_duration: float) -> v
 			_play_match_clear_request(request, board_view, effective_duration)
 		REQUEST_SCRIPT.TYPE_SPECIAL_CLEAR:
 			_play_special_clear_request(request, board_view, effective_duration)
+		REQUEST_SCRIPT.TYPE_SPECIAL_CREATE:
+			_play_special_create_request(request, board_view, effective_duration)
 		REQUEST_SCRIPT.TYPE_BOOSTER_CLEAR:
 			if board_view.has_method("flash_cells"):
 				board_view.flash_cells(request.cells, effective_duration)
@@ -131,6 +133,13 @@ func _play_match_clear_request(request, board_view: Control, effective_duration:
 func _play_special_clear_request(request, board_view: Control, effective_duration: float) -> void:
 	if board_view.has_method("play_special_clear_animation"):
 		board_view.play_special_clear_animation(request.cells, effective_duration)
+	elif board_view.has_method("pulse_cells"):
+		board_view.pulse_cells(request.cells, effective_duration)
+
+
+func _play_special_create_request(request, board_view: Control, effective_duration: float) -> void:
+	if board_view.has_method("play_special_create_animation"):
+		board_view.play_special_create_animation(request.payload.get("created_special_tiles", []), effective_duration)
 	elif board_view.has_method("pulse_cells"):
 		board_view.pulse_cells(request.cells, effective_duration)
 

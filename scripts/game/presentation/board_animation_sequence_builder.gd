@@ -9,6 +9,7 @@ const GRAVITY_ANIMATION_DURATION := 0.35
 const REFILL_ANIMATION_DURATION := 0.30
 const CASCADE_STEP_DURATION := 0.20
 const INVALID_SWAP_ANIMATION_DURATION := 0.24
+const SPECIAL_CREATE_ANIMATION_DURATION := 0.22
 
 
 func build_from_turn_presentation(data):
@@ -99,14 +100,28 @@ func build_clear_sequence(step):
 
 	var source := "cascade" if step.cascade_index > 0 else "turn"
 
-	if not step.matched_cells.is_empty():
+	# step.matched_cells includes any cell protected from clearing because it
+	# is about to become a special tile (see StepwiseBoardResolver.build_clear_step).
+	# The visual clear must only target step.cleared_cells, or the creation
+	# cell would fade out even though it should transform into a special tile.
+	if not step.cleared_cells.is_empty():
 		sequence.add_request(REQUEST_SCRIPT.new_request(REQUEST_SCRIPT.TYPE_MATCH_CLEAR)
-			.with_cells(step.matched_cells)
+			.with_cells(step.cleared_cells)
 			.with_duration(0.16)
 			.with_payload({
 				"source": source,
 				"cascade_index": step.cascade_index,
-				"cells_count": step.matched_cells.size(),
+				"cells_count": step.cleared_cells.size(),
+			}))
+
+	if not step.created_special_tiles.is_empty():
+		sequence.add_request(REQUEST_SCRIPT.new_request(REQUEST_SCRIPT.TYPE_SPECIAL_CREATE)
+			.with_cells(_special_creation_cells(step.created_special_tiles))
+			.with_duration(SPECIAL_CREATE_ANIMATION_DURATION)
+			.with_payload({
+				"source": source,
+				"cascade_index": step.cascade_index,
+				"created_special_tiles": step.created_special_tiles.duplicate(true),
 			}))
 
 	if not step.special_cleared_cells.is_empty():
@@ -187,3 +202,12 @@ func _to_vector2i_array(values: Array) -> Array[Vector2i]:
 	for value in values:
 		typed_values.append(value as Vector2i)
 	return typed_values
+
+
+func _special_creation_cells(created_special_tiles: Array) -> Array[Vector2i]:
+	var cells: Array[Vector2i] = []
+	for item in created_special_tiles:
+		var cell = (item as Dictionary).get("cell", Vector2i(-1, -1))
+		if cell is Vector2i:
+			cells.append(cell)
+	return cells

@@ -299,7 +299,15 @@ func _play_turn_feedback_after_animation(data) -> void:
 		_on_feedback_finished()
 		return
 
-	_turn_feedback_presenter.play_turn_feedback(data, board_view, Callable(self, "_set_status"))
+	if data.is_valid:
+		# Valid turns already played their real board animation live through
+		# AnimatedTurnFlow, so only status/lane/damage text remains — the old
+		# full board-visual feedback path would replay swap/clear/highlight
+		# effects on the already-final board, causing a visible blink and
+		# leaving matched cells highlighted.
+		_turn_feedback_presenter.play_turn_text_feedback_only(data, board_view, Callable(self, "_set_status"))
+	else:
+		_turn_feedback_presenter.play_turn_feedback(data, board_view, Callable(self, "_set_status"))
 
 
 func _on_feedback_finished() -> void:

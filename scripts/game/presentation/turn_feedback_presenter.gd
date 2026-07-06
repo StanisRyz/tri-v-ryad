@@ -30,6 +30,55 @@ func play_turn_feedback(data, board_view: BoardView, status_callback: Callable) 
 	feedback_finished.emit()
 
 
+## Valid turns resolved through AnimatedTurnFlow already played their real
+## swap/clear/gravity/refill/cascade animation live, board-cell by board-cell,
+## before this fires. Replaying _play_valid_feedback()'s board visuals here
+## (swap pulse, highlight_cells(), match/special clear fade, full-board
+## refill/refresh feedback) on the already-final board caused a visible
+## "double" flash/blink and left cells highlighted yellow with nothing left
+## to clear them. This entry point only plays status text / lane banners /
+## damage-and-result messages, and still clears any lingering highlight state
+## as a safety net.
+func play_turn_text_feedback_only(data, board_view: BoardView, status_callback: Callable) -> void:
+	await _play_valid_text_feedback(data, board_view, status_callback)
+	feedback_finished.emit()
+
+
+func _play_valid_text_feedback(data, board_view: BoardView, status_callback: Callable) -> void:
+	board_view.highlight_lanes(data.lane_activations)
+	var lane_message := BATTLE_MESSAGE_FORMATTER_SCRIPT.format_lane_activation_message(data.lane_activations)
+	if lane_message != "":
+		status_callback.call(lane_message)
+		await _wait(board_view, SHORT_DELAY)
+
+	if not data.special_cleared_cells.is_empty():
+		var special_message := BATTLE_MESSAGE_FORMATTER_SCRIPT.format_special_activation_message(data, _debug_labels_enabled)
+		if special_message != "":
+			status_callback.call(special_message)
+			await _wait(board_view, SHORT_DELAY)
+
+	if FeatureFlags.HERO_SYSTEMS_ENABLED:
+		status_callback.call(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_damage_message(data, _debug_labels_enabled))
+	else:
+		status_callback.call(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_direct_damage_message(data, _debug_labels_enabled))
+	await _wait(board_view, MEDIUM_DELAY)
+
+	if data.enemy_action.get("acted", false):
+		status_callback.call(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_enemy_action_message(data.enemy_action, _debug_labels_enabled))
+		await _wait(board_view, LONG_DELAY)
+	elif not FeatureFlags.HERO_SYSTEMS_ENABLED and data.battle_status == BattleState.Status.VICTORY:
+		status_callback.call(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_enemy_defeated_message())
+		await _wait(board_view, SHORT_DELAY)
+
+	board_view.clear_lane_highlights()
+	board_view.clear_cell_highlights()
+
+
+## Legacy/full board-visual feedback path. Still used for invalid swaps (via
+## _play_invalid_feedback) and any other caller that has not already played
+## board animation live (e.g. animations disabled entirely and no stepwise
+## flow ran). Not used for valid stepwise-animated turns anymore — see
+## play_turn_text_feedback_only().
 func _play_valid_feedback(data, board_view: BoardView, status_callback: Callable) -> void:
 	await _board_motion_animator.play_valid_swap_feedback(board_view, data.swapped_from, data.swapped_to)
 

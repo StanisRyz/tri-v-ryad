@@ -815,9 +815,83 @@ func play_special_clear_animation(cells: Array[Vector2i], duration: float) -> vo
 		_play_overlay_fade(cells, duration)
 		return
 
-	highlight_cells(cells)
+	# No highlight_cells() here: it would persist _highlighted_cells past the
+	# end of this temporary flash. tile.play_special_clear() already flashes
+	# each tile directly; callers clear any lingering highlight state via
+	# BoardView.clear_cell_highlights() once the whole turn/booster flow ends.
 	for tile in get_tile_views(cells):
 		tile.play_special_clear(duration)
+
+
+func play_special_create_animation(created_special_tiles: Array, duration: float) -> void:
+	if created_special_tiles.is_empty():
+		return
+
+	if _overlay_mode:
+		_play_overlay_special_create(created_special_tiles, duration)
+		return
+
+	for item in created_special_tiles:
+		var data := item as Dictionary
+		var cell: Vector2i = data.get("cell", Vector2i(-1, -1))
+		var special_type: int = int(data.get("special_type", SPECIAL_TILE_TYPE_SCRIPT.NONE))
+		var tile := get_tile_view(cell)
+		if tile == null:
+			continue
+
+		tile.set_special_tile(SPECIAL_TILE_DATA_SCRIPT.from_type(special_type))
+		tile.play_special_flash()
+
+
+## Overlay-mode special creation: the creation cell's ghost was never faded
+## by the match-clear step (see build_clear_sequence(), which now animates
+## only step.cleared_cells), so it should already exist here. Update its
+## marker and pulse it in place instead of fading anything out.
+func _play_overlay_special_create(created_special_tiles: Array, duration: float) -> void:
+	var safe_duration := maxf(duration, 0.01)
+	for item in created_special_tiles:
+		var data := item as Dictionary
+		var cell: Vector2i = data.get("cell", Vector2i(-1, -1))
+		var special_type: int = int(data.get("special_type", SPECIAL_TILE_TYPE_SCRIPT.NONE))
+
+		var ghost := _get_valid_overlay_ghost(cell)
+		if ghost == null:
+			ghost = _spawn_fallback_special_ghost(cell)
+			if ghost == null:
+				continue
+			_overlay_ghosts[cell] = ghost
+
+		ghost.text = SPECIAL_TILE_TYPE_SCRIPT.get_marker_text(special_type)
+
+		var base_scale: Vector2 = ghost.scale if ghost.scale != Vector2.ZERO else Vector2.ONE
+		var pulse_scale := base_scale * 1.12
+		var half_duration := safe_duration * 0.5
+		var flash_color := Color(1.35, 1.18, 0.55, 1.0)
+
+		var tween := create_tween()
+		tween.tween_property(ghost, "modulate", flash_color, half_duration)
+		tween.parallel().tween_property(ghost, "scale", pulse_scale, half_duration)
+		tween.chain().tween_property(ghost, "modulate", Color.WHITE, half_duration)
+		tween.parallel().tween_property(ghost, "scale", base_scale, half_duration)
+
+
+## Safety net for _play_overlay_special_create() if the creation-cell ghost
+## was somehow already freed/missing; rebuilds one from live board/snapshot
+## data so the creation cell is never left visually empty.
+func _spawn_fallback_special_ghost(cell: Vector2i) -> Control:
+	var cell_size: float = _get_board_rect().size.x / float(BOARD_SIZE)
+	var reference_tile := get_tile_view(cell)
+	var ghost_size: Vector2 = reference_tile.size if reference_tile != null else Vector2(cell_size, cell_size)
+	var ghost_position: Vector2
+	if _overlay_snapshot != null and _overlay_snapshot.has_cell(cell):
+		ghost_position = _overlay_snapshot.get_cell_data(cell).get("local_position", Vector2.ZERO)
+	elif reference_tile != null and animation_layer != null:
+		ghost_position = reference_tile.global_position - animation_layer.global_position
+	else:
+		return null
+
+	var tile_type: int = _board.get_tile(cell) if _board != null else BoardModel.EMPTY
+	return create_tile_ghost_from_data(tile_type, null, ghost_position, ghost_size)
 
 
 func play_swap_feedback(from_cell: Vector2i, to_cell: Vector2i) -> void:
