@@ -34,6 +34,7 @@ func try_place_hole_block(mask: Array, top_left: Vector2i, block_width: int, blo
 			return false
 
 	if rules.keep_center_active:
+		@warning_ignore("integer_division")
 		var center := Vector2i(width / 2, height / 2)
 		for cell in mirrored_cells:
 			if cell == center:

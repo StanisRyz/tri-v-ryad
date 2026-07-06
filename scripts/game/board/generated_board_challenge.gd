@@ -43,10 +43,19 @@ func _init(
 	metadata = config_metadata.duplicate(true)
 
 
-## Stage 52 v0.1: reports active-cell count out of total board_mask cells so
-## the debug label reflects real hole counts once later stages generate them.
+## Stage 54 v0.1: reports active/hole counts out of total board_mask cells,
+## and flags when generation fell back to a full board (see
+## BoardMaskGenerator/BoardChallengeGenerator metadata["fallback_used"]).
 func get_debug_label() -> String:
-	return "Challenge: %s, seed: %d, active: %d/%d" % [archetype, generation_seed, _count_active_cells(), _count_total_cells()]
+	var active_count := _count_active_cells()
+	var total_count := _count_total_cells()
+	var hole_count := total_count - active_count
+	var label := "Challenge: %s, seed: %d, active: %d/%d, holes: %d" % [archetype, generation_seed, active_count, total_count, hole_count]
+
+	if bool(metadata.get("fallback_used", false)):
+		label += ", fallback: true"
+
+	return label
 
 
 func _count_active_cells() -> int:

@@ -27,6 +27,7 @@ func validate(mask: Array, rules: HoleGenerationRules) -> BoardMaskValidationRes
 		reasons.append("hole_cells_above_maximum")
 
 	if rules.keep_center_active:
+		@warning_ignore("integer_division")
 		var center := Vector2i(width / 2, height / 2)
 		if not bool(mask[center.y][center.x]):
 			reasons.append("center_cell_inactive")
@@ -136,7 +137,7 @@ func _flood_fill(mask: Array, start_cell: Vector2i, visited: Dictionary, width: 
 
 	while not stack.is_empty():
 		var cell: Vector2i = stack.pop_back()
-		for offset in [Vector2i.UP, Vector2i.DOWN, Vector2i.LEFT, Vector2i.RIGHT]:
+		for offset: Vector2i in [Vector2i.UP, Vector2i.DOWN, Vector2i.LEFT, Vector2i.RIGHT]:
 			var neighbor := cell + offset
 			if neighbor.x < 0 or neighbor.y < 0 or neighbor.x >= width or neighbor.y >= height:
 				continue
