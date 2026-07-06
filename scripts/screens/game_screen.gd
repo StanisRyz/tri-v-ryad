@@ -304,6 +304,7 @@ func _play_turn_feedback_after_animation(data) -> void:
 
 func _on_feedback_finished() -> void:
 	_apply_pending_board_for_animation()
+	board_view.clear_cell_highlights()
 	_feedback_active = false
 	if _pending_battle_status != -1:
 		_show_battle_result(_pending_battle_status)
@@ -501,9 +502,10 @@ func _finish_booster_resolution(result) -> void:
 		_play_special_activate()
 		if result.damage_to_enemy > 0:
 			_play_enemy_damage()
-		board_view.highlight_cells(result.cleared_cells)
+		board_view.flash_cells(result.cleared_cells)
 
 	_set_status(result.message)
+	board_view.clear_cell_highlights()
 	_feedback_active = false
 	if _pending_battle_status != -1:
 		_show_battle_result(_pending_battle_status)
@@ -606,9 +608,13 @@ func _begin_animated_turn() -> void:
 
 func _apply_pending_board_for_animation() -> void:
 	if board_view.is_animation_overlay_mode():
-		board_view.exit_animation_overlay_mode()
-	if _pending_board_for_animation != null:
+		if _pending_board_for_animation != null:
+			board_view.apply_board_under_overlay(_pending_board_for_animation)
+		else:
+			board_view.exit_animation_overlay_mode()
+	elif _pending_board_for_animation != null:
 		board_view.set_board(_pending_board_for_animation)
+
 	_pending_board_for_animation = null
 	_defer_board_update_for_turn = false
 
@@ -620,6 +626,7 @@ func _force_cleanup_visual_state() -> void:
 		_board_animation_controller.clear_queue()
 	if board_view != null:
 		board_view.force_reset_animation_state()
+		board_view.clear_cell_highlights()
 	if _battle_effect_controller != null:
 		_battle_effect_controller.clear_effects(battle_effect_layer)
 	_pending_board_for_animation = null

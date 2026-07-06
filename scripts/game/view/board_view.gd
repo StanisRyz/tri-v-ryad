@@ -207,6 +207,22 @@ func exit_animation_overlay_mode() -> void:
 	show_real_board_tiles()
 
 
+## Seamless final-board handoff: updates the real (currently hidden) TileView
+## data to the resolved board while overlay ghosts are still covering the
+## board, then exits overlay mode so the real board is already showing the
+## correct final state the instant it becomes visible. This avoids a frame
+## where the real board is shown with its stale pre-turn data (or blank)
+## before refresh_all_tiles() catches up.
+func apply_board_under_overlay(board: BoardModel) -> void:
+	if not _overlay_mode:
+		set_board(board)
+		return
+
+	_board = board
+	refresh_all_tiles()
+	exit_animation_overlay_mode()
+
+
 func build_full_board_ghosts(snapshot: BoardVisualSnapshot) -> void:
 	_overlay_ghosts.clear()
 	if animation_layer == null or snapshot == null:
@@ -469,6 +485,7 @@ func _play_overlay_fade(cells: Array[Vector2i], duration: float) -> void:
 
 func _play_overlay_refill(refill_cells: Array, duration: float) -> void:
 	var cell_size: float = _get_board_rect().size.x / float(BOARD_SIZE)
+	var safe_duration := maxf(duration, 0.01)
 	for refill_item in refill_cells:
 		var refill_data := refill_item as Dictionary
 		var to_cell: Vector2i = refill_data.get("to", Vector2i(-1, -1))
@@ -487,14 +504,22 @@ func _play_overlay_refill(refill_cells: Array, duration: float) -> void:
 		else:
 			continue
 
-		var ghost := create_tile_ghost_from_data(refill_data.get("tile_type", BoardModel.EMPTY), refill_data.get("special_data"), to_position, to_size)
+		# Match the non-overlay play_refill_animation() start position so
+		# refill crystals fall in from above the board instead of appearing
+		# directly in their target cell.
+		var spawn_index: int = int(refill_data.get("spawn_index", 0))
+		var start_position: Vector2 = to_position - Vector2(0, cell_size * float(spawn_index + 1))
+
+		var ghost := create_tile_ghost_from_data(refill_data.get("tile_type", BoardModel.EMPTY), refill_data.get("special_data"), start_position, to_size)
 		if ghost == null:
 			continue
 
 		ghost.modulate = Color(1.0, 1.0, 1.0, 0.0)
 		_overlay_ghosts[to_cell] = ghost
 		var tween := create_tween()
-		tween.tween_property(ghost, "modulate", Color.WHITE, maxf(duration, 0.01))
+		tween.set_parallel(true)
+		tween.tween_property(ghost, "position", to_position, safe_duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+		tween.tween_property(ghost, "modulate", Color.WHITE, minf(safe_duration, 0.12))
 
 
 func _play_overlay_gravity_fall(movements: Array, duration: float) -> void:
@@ -639,7 +664,11 @@ func play_cascade_step_animation(payload: Dictionary, duration: float) -> void:
 		_play_overlay_fade(matched_cells, maxf(duration, 0.01))
 		return
 
-	highlight_cells(matched_cells)
+	# Temporary flash only: highlight_cells() would leave _highlighted_cells
+	# set after the cascade finishes, since nothing clears it automatically
+	# once the flash tween ends. Callers are responsible for clearing
+	# highlights once the whole turn/booster flow completes (see
+	# GameScreen._on_feedback_finished()).
 	for tile in get_tile_views(matched_cells):
 		tile.play_flash()
 
@@ -652,8 +681,88 @@ func play_invalid_swap_animation(from_cell: Vector2i, to_cell: Vector2i, duratio
 	_invalid_feedback_cells = cells
 	_highlighted_cells.clear()
 	refresh_all_tiles()
+
+	if cells.size() == 2 and _overlay_mode and _get_valid_overlay_ghost(from_cell) != null and _get_valid_overlay_ghost(to_cell) != null:
+		_play_overlay_invalid_swap(from_cell, to_cell, duration)
+		return
+
+	if cells.size() != 2 or animation_layer == null:
+		_play_invalid_swap_bounce(cells, from_cell, to_cell, duration)
+		return
+
 	cancel_active_board_animation()
 
+	var from_tile := get_tile_view(from_cell)
+	var to_tile := get_tile_view(to_cell)
+	if from_tile == null or to_tile == null:
+		restore_hidden_tile_visuals()
+		play_invalid_swap_feedback(from_cell, to_cell)
+		return
+
+	var from_position: Vector2 = from_tile.global_position - animation_layer.global_position
+	var to_position: Vector2 = to_tile.global_position - animation_layer.global_position
+	var from_ghost := create_tile_ghost(from_cell)
+	var to_ghost := create_tile_ghost(to_cell)
+	if from_ghost == null or to_ghost == null:
+		restore_hidden_tile_visuals()
+		clear_animation_layer()
+		play_invalid_swap_feedback(from_cell, to_cell)
+		return
+
+	from_ghost.position = from_position
+	to_ghost.position = to_position
+	hide_tile_visual(from_cell)
+	hide_tile_visual(to_cell)
+
+	var half_duration := maxf(duration * 0.5, 0.01)
+	_active_board_animation_tween = create_tween()
+	_active_board_animation_tween.tween_property(from_ghost, "position", to_position, half_duration)
+	_active_board_animation_tween.parallel().tween_property(to_ghost, "position", from_position, half_duration)
+	_active_board_animation_tween.chain().tween_property(from_ghost, "position", from_position, half_duration)
+	_active_board_animation_tween.parallel().tween_property(to_ghost, "position", to_position, half_duration)
+	_active_board_animation_tween.finished.connect(func() -> void:
+		_active_board_animation_tween = null
+		restore_hidden_tile_visuals()
+		clear_animation_layer()
+	)
+
+
+## Overlay-mode variant of the invalid swap: the two matched full-board
+## ghosts already represent from_cell/to_cell, so this animates them to swap
+## and back in place without ever touching _overlay_ghosts, since the board
+## model does not change on an invalid swap.
+func _play_overlay_invalid_swap(from_cell: Vector2i, to_cell: Vector2i, duration: float) -> void:
+	if _active_board_animation_tween != null:
+		_active_board_animation_tween.kill()
+		_active_board_animation_tween = null
+
+	var from_ghost := _get_valid_overlay_ghost(from_cell)
+	var to_ghost := _get_valid_overlay_ghost(to_cell)
+	if from_ghost == null or to_ghost == null:
+		return
+
+	var from_position: Vector2 = from_ghost.position
+	var to_position: Vector2 = to_ghost.position
+	var half_duration := maxf(duration * 0.5, 0.01)
+
+	_active_board_animation_tween = create_tween()
+	_active_board_animation_tween.tween_property(from_ghost, "position", to_position, half_duration)
+	_active_board_animation_tween.parallel().tween_property(to_ghost, "position", from_position, half_duration)
+	_active_board_animation_tween.chain().tween_property(from_ghost, "position", from_position, half_duration)
+	_active_board_animation_tween.parallel().tween_property(to_ghost, "position", to_position, half_duration)
+	_active_board_animation_tween.finished.connect(func() -> void:
+		_active_board_animation_tween = null
+	)
+
+
+## Fallback bounce used only when a real swap-and-return can't be built (e.g.
+## a single-cell invalid input with no valid neighbor).
+func _play_invalid_swap_bounce(cells: Array[Vector2i], from_cell: Vector2i, to_cell: Vector2i, duration: float) -> void:
+	if animation_layer == null:
+		play_invalid_swap_feedback(from_cell, to_cell)
+		return
+
+	cancel_active_board_animation()
 	var direction := Vector2(to_cell - from_cell)
 	if direction.length() <= 0.0:
 		direction = Vector2.RIGHT

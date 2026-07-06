@@ -8,6 +8,7 @@ const SWAP_ANIMATION_DURATION := 0.4
 const GRAVITY_ANIMATION_DURATION := 0.35
 const REFILL_ANIMATION_DURATION := 0.30
 const CASCADE_STEP_DURATION := 0.20
+const INVALID_SWAP_ANIMATION_DURATION := 0.24
 
 
 func build_from_turn_presentation(data):
@@ -150,7 +151,7 @@ func build_invalid_swap(from_cell: Vector2i, to_cell: Vector2i, reason: String =
 	var sequence := SEQUENCE_SCRIPT.new()
 	sequence.add_request(REQUEST_SCRIPT.new_request(REQUEST_SCRIPT.TYPE_INVALID_SWAP)
 		.with_swap(from_cell, to_cell)
-		.with_duration(0.12)
+		.with_duration(INVALID_SWAP_ANIMATION_DURATION)
 		.with_payload({"reason": reason}))
 	return sequence
 
