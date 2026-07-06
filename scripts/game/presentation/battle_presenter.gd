@@ -29,6 +29,8 @@ signal battle_background_changed(background_config)
 signal round_modifier_changed(modifier)
 signal booster_state_changed(booster_state)
 signal booster_resolved(result)
+signal swap_accepted(from_cell: Vector2i, to_cell: Vector2i, matches: Array)
+signal targeted_booster_accepted(result)
 
 var board: BoardModel
 var state: BattleState
@@ -160,11 +162,28 @@ func request_booster_activation(booster_id: String) -> void:
 	booster_resolved.emit(result)
 
 
-func request_targeted_booster(booster_id: String, target_cell: Vector2i) -> void:
+## defer_resolution lets an animated caller (GameScreen + AnimatedTurnFlow)
+## receive targeted_booster_accepted and drive the stepwise clear/gravity/
+## cascade animation before finalize_booster_turn() runs. Callers that never
+## hook targeted_booster_accepted (headless tests, tools) keep the original
+## fully synchronous contract by leaving this false.
+func request_targeted_booster(booster_id: String, target_cell: Vector2i, defer_resolution: bool = false) -> void:
 	if board == null or state == null or is_battle_finished():
 		return
 
 	var result = _booster_resolver.resolve_targeted_booster(state, booster_id, target_cell, current_round_modifier)
+	if not result.is_valid:
+		booster_resolved.emit(result)
+		return
+
+	if defer_resolution:
+		targeted_booster_accepted.emit(result)
+		return
+
+	finalize_booster_turn(result)
+
+
+func finalize_booster_turn(result) -> void:
 	board_changed.emit(board)
 	booster_state_changed.emit(state.get("booster_state"))
 	battle_state_changed.emit(state)
@@ -173,7 +192,12 @@ func request_targeted_booster(booster_id: String, target_cell: Vector2i) -> void
 		battle_finished.emit(state.status)
 
 
-func request_swap(from_cell: Vector2i, to_cell: Vector2i) -> void:
+## defer_resolution lets an animated caller (GameScreen + AnimatedTurnFlow)
+## receive swap_accepted and drive the stepwise clear/gravity/cascade
+## animation before finalize_swap_turn() runs. Callers that never hook
+## swap_accepted (headless tests, tools) keep the original fully synchronous
+## contract by leaving this false.
+func request_swap(from_cell: Vector2i, to_cell: Vector2i, defer_resolution: bool = false) -> void:
 	if board == null or state == null or is_battle_finished():
 		return
 
@@ -184,11 +208,27 @@ func request_swap(from_cell: Vector2i, to_cell: Vector2i) -> void:
 		board_changed.emit(board)
 		return
 
+	if defer_resolution:
+		swap_accepted.emit(from_cell, to_cell, swap_result.matches)
+		return
+
+	resolve_accepted_swap_immediately(from_cell, to_cell, swap_result.matches)
+
+
+func resolve_accepted_swap_immediately(from_cell: Vector2i, to_cell: Vector2i, matches: Array) -> void:
 	var board_result := _board_resolver.resolve_board(board)
+	_finalize_swap(from_cell, to_cell, matches, board_result)
+
+
+func finalize_swap_turn(from_cell: Vector2i, to_cell: Vector2i, matches: Array, board_result: BoardResolveResult) -> void:
+	_finalize_swap(from_cell, to_cell, matches, board_result)
+
+
+func _finalize_swap(from_cell: Vector2i, to_cell: Vector2i, matches: Array, board_result: BoardResolveResult) -> void:
 	if _battle_resolver.has_method("set_round_modifier"):
 		_battle_resolver.set_round_modifier(current_round_modifier)
-	var battle_result := _battle_resolver.resolve_player_matches(state, swap_result.matches, board_result)
-	var presentation_data = TURN_PRESENTATION_DATA_SCRIPT.from_valid_turn(from_cell, to_cell, swap_result.matches, battle_result, board_result)
+	var battle_result := _battle_resolver.resolve_player_matches(state, matches, board_result)
+	var presentation_data = TURN_PRESENTATION_DATA_SCRIPT.from_valid_turn(from_cell, to_cell, matches, battle_result, board_result)
 
 	board_changed.emit(board)
 	battle_state_changed.emit(state)

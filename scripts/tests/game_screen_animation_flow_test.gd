@@ -25,11 +25,11 @@ func _run() -> void:
 		var visible_to_type: int = screen.board_view.get_tile_view(swap["to"]).tile_type
 		screen._on_swap_requested(swap["from"], swap["to"])
 		_expect_false(screen._input_controller._input_enabled, "input is locked during animated turn flow")
-		_expect_true(screen._pending_board_for_animation != null, "resolved board is pending during swap animation")
+		_expect_true(screen._pending_board_for_animation == null, "board is not resolved yet while the stepwise turn flow is still running")
 		_expect_true(screen.board_view.is_animation_overlay_mode(), "board view enters overlay mode for the animated turn")
 		_expect_equal(screen.board_view.get_tile_view(swap["from"]).tile_type, visible_from_type, "visible from tile is not refreshed before swap animation")
 		_expect_equal(screen.board_view.get_tile_view(swap["to"]).tile_type, visible_to_type, "visible to tile is not refreshed before swap animation")
-		await create_timer(4.0).timeout
+		await create_timer(8.0).timeout
 		_expect_false(screen._feedback_active, "turn animation and feedback finish")
 		_expect_true(screen._pending_board_for_animation == null, "pending board applies after animation flow")
 		_expect_false(screen.board_view.is_animation_overlay_mode(), "board view exits overlay mode once the turn flow is done")

@@ -477,6 +477,16 @@ Stage 45 is complete. It fixes double-board visuals, ghost/final-board overlap, 
 
 No board rules, battle rules, booster rules, balance, progression, saves, Yandex SDK, cloud save, ads, payments, final art, or hero-system reactivation were added. Detailed per-tile gravity/refill fall animation remains a documented follow-up for a future stage.
 
+## Stage 46: Stepwise Board Resolution Animation Pipeline v0.1
+
+Stage 46 is complete. It replaces eager full-board precompute with a stepwise, animation-locked resolution pipeline for animated player turns: swap -> check current matches -> clear -> gravity/refill -> check cascades -> repeat until stable -> only then compute damage/battle state.
+
+`StepwiseBoardResolver` (`scripts/game/board/stepwise_board_resolver.gd`) exposes the same match/clear/gravity/special-tile rules as `BoardResolver` one phase at a time (`find_current_matches`, `build_clear_step`, `apply_clear_step`, `apply_gravity_step`, `resolve_next_step`) instead of resolving the whole cascade in one call, returning a `BoardResolveStep` (`scripts/game/board/board_resolve_step.gd`) per phase. `AnimatedTurnFlow` (`scripts/game/presentation/animated_turn_flow.gd`) drives a live turn through these phases against the real `BoardModel`, playing each phase's animation (via new `BoardAnimationSequenceBuilder.build_swap_sequence`/`build_clear_sequence`/`build_gravity_refill_sequence`/`build_booster_clear_sequence` helpers) before applying the next phase's board mutation, and only hands the accumulated `BoardResolveResult` to `BattlePresenter` once the board is fully stable.
+
+`BattlePresenter.request_swap()` now only validates and applies the swap, then emits `swap_accepted` instead of resolving the whole board immediately; `GameScreen` routes an accepted swap into `AnimatedTurnFlow.start_swap_turn()`, which calls the new `BattlePresenter.finalize_swap_turn()` once stable to run `BattleResolver`/`TurnPresentationData`/signal emission exactly as before. `BattlePresenter.request_targeted_booster()` emits `targeted_booster_accepted` the same way, and `AnimatedTurnFlow.start_booster_clear()` now also checks for cascades after Hammer/Rocket's clear+gravity pass (a real behavior addition — Hammer/Rocket clears previously never triggered cascades), accumulating any extra cleared cells/damage before calling `finalize_booster_turn()`.
+
+Because the board only mutates one phase at a time, match-clear animations now always target the current, post-swap board state instead of a precomputed final result, and gravity/refill animation plays and completes before the next cascade check runs — `BoardView` gained a real overlay-mode gravity fall animation (`_play_overlay_gravity_fall`, relocating the falling ghost instead of the previous v0.1 no-op fallback) to support this. `animations_enabled = false` still resolves a turn immediately and synchronously through the original `BoardResolver.resolve_board()` path (`BattlePresenter.resolve_accepted_swap_immediately()`), unchanged from before. No board rules, damage formulas, booster targeting rules, balance, progression, saves, Yandex SDK, cloud save, ads, payments, final art, or hero-system reactivation were added.
+
 ## How To Open And Run
 
 1. Open Godot 4.x.

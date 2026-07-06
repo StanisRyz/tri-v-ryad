@@ -451,11 +451,42 @@ func _play_overlay_refill(refill_cells: Array, duration: float) -> void:
 		tween.tween_property(ghost, "modulate", Color.WHITE, maxf(duration, 0.01))
 
 
+func _play_overlay_gravity_fall(movements: Array, duration: float) -> void:
+	var max_distance := 1
+	for movement in movements:
+		max_distance = maxi(max_distance, int((movement as Dictionary).get("fall_distance", 1)))
+
+	var tween := create_tween()
+	tween.set_parallel(true)
+	var animated := false
+
+	for movement in movements:
+		var movement_data := movement as Dictionary
+		var from_cell: Vector2i = movement_data.get("from", Vector2i(-1, -1))
+		var to_cell: Vector2i = movement_data.get("to", Vector2i(-1, -1))
+		var ghost := _get_valid_overlay_ghost(from_cell)
+		var to_tile := get_tile_view(to_cell)
+		if ghost == null or to_tile == null:
+			continue
+
+		var to_position: Vector2 = to_tile.global_position - animation_layer.global_position
+		var distance_ratio: float = float(movement_data.get("fall_distance", 1)) / float(max_distance)
+		var movement_duration := duration * clampf(0.6 + 0.4 * distance_ratio, 0.6, 1.0)
+		tween.tween_property(ghost, "position", to_position, movement_duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+		_overlay_ghosts.erase(from_cell)
+		_overlay_ghosts[to_cell] = ghost
+		animated = true
+
+	if not animated:
+		tween.kill()
+
+
 func play_gravity_fall_animation(movements: Array, duration: float) -> void:
-	if _overlay_mode:
+	if movements.is_empty() or animation_layer == null:
 		return
 
-	if movements.is_empty() or animation_layer == null:
+	if _overlay_mode:
+		_play_overlay_gravity_fall(movements, duration)
 		return
 
 	cancel_active_board_animation()

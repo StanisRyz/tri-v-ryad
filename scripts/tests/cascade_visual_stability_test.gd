@@ -27,15 +27,19 @@ func _run() -> void:
 	await create_timer(0.15).timeout
 	_expect_equal(board_view.get_animation_layer().get_child_count(), 78, "match clear fades matched ghosts without leaving stray nodes")
 
-	# A no-op gravity phase (v0.1 fallback) must not create empty-looking gaps
-	# beyond the already-cleared cells, nor duplicate any ghost.
+	# Stage 46: gravity fall now really relocates the overlay ghost from its
+	# source cell to its target cell (no ghost is created or destroyed by the
+	# move itself), so the ghost count must stay unchanged right after it.
 	board_view.play_gravity_fall_animation([{"from": Vector2i(0, 1), "to": Vector2i(0, 0), "tile_type": TileType.RED, "special_data": null, "fall_distance": 1}], 0.05)
-	_expect_equal(board_view.get_animation_layer().get_child_count(), 78, "gravity fallback does not alter overlay ghost count")
+	_expect_equal(board_view.get_animation_layer().get_child_count(), 78, "gravity fall relocates a ghost without changing the overlay ghost count")
 
+	# (0, 1) is now the vacated source cell of the tile that fell into (0, 0),
+	# so it needs its own refill spawn alongside the two other matched cells.
 	var refill_cells: Array = [
 		{"spawn_index": 0, "to": Vector2i(0, 0), "tile_type": TileType.BLUE, "special_data": null},
 		{"spawn_index": 0, "to": Vector2i(1, 0), "tile_type": TileType.GREEN, "special_data": null},
 		{"spawn_index": 0, "to": Vector2i(2, 0), "tile_type": TileType.YELLOW, "special_data": null},
+		{"spawn_index": 1, "to": Vector2i(0, 1), "tile_type": TileType.RED, "special_data": null},
 	]
 	board_view.play_refill_animation(refill_cells, 0.05)
 	await create_timer(0.15).timeout

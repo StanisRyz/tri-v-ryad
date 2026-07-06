@@ -13,6 +13,7 @@ const ASSET_KEY_RESOLVER_SCRIPT := preload("res://scripts/game/config/asset_key_
 const UI_ASSET_BINDING_SCRIPT := preload("res://scripts/ui/ui_asset_binding.gd")
 const BOARD_ANIMATION_CONTROLLER_SCRIPT := preload("res://scripts/game/view/board_animation_controller.gd")
 const BOARD_ANIMATION_SEQUENCE_BUILDER_SCRIPT := preload("res://scripts/game/presentation/board_animation_sequence_builder.gd")
+const ANIMATED_TURN_FLOW_SCRIPT := preload("res://scripts/game/presentation/animated_turn_flow.gd")
 const BATTLE_EFFECT_CONTROLLER_SCRIPT := preload("res://scripts/game/view/battle_effect_controller.gd")
 const DAMAGE_PARTICLE_EVENT_BUILDER_SCRIPT := preload("res://scripts/game/presentation/damage_particle_event_builder.gd")
 const PORTRAIT_CONTENT_WIDTH := 664.0
@@ -42,8 +43,10 @@ var _turn_feedback_presenter
 var _ability_feedback_presenter
 var _board_animation_controller
 var _board_animation_sequence_builder
+var _animated_turn_flow
 var _battle_effect_controller
 var _damage_particle_event_builder
+var _animations_enabled := true
 var _pending_battle_status := -1
 var _feedback_active := false
 var _current_level_id := "level_1"
@@ -129,6 +132,8 @@ func _setup_playable_battle() -> void:
 	_ability_feedback_presenter = ABILITY_FEEDBACK_PRESENTER_SCRIPT.new()
 	_board_animation_controller = BOARD_ANIMATION_CONTROLLER_SCRIPT.new()
 	_board_animation_sequence_builder = BOARD_ANIMATION_SEQUENCE_BUILDER_SCRIPT.new()
+	_animated_turn_flow = ANIMATED_TURN_FLOW_SCRIPT.new()
+	_animated_turn_flow.configure(board_view, _board_animation_controller, _board_animation_sequence_builder)
 	_battle_effect_controller = BATTLE_EFFECT_CONTROLLER_SCRIPT.new()
 	_damage_particle_event_builder = DAMAGE_PARTICLE_EVENT_BUILDER_SCRIPT.new()
 	_apply_presentation_settings()
@@ -161,6 +166,8 @@ func _setup_playable_battle() -> void:
 	_presenter.round_modifier_changed.connect(_on_round_modifier_changed)
 	_presenter.booster_state_changed.connect(_on_booster_state_changed)
 	_presenter.booster_resolved.connect(_on_booster_resolved)
+	_presenter.swap_accepted.connect(_on_swap_accepted)
+	_presenter.targeted_booster_accepted.connect(_on_targeted_booster_accepted)
 	_turn_feedback_presenter.feedback_finished.connect(_on_feedback_finished)
 	_ability_feedback_presenter.feedback_finished.connect(_on_feedback_finished)
 
@@ -259,8 +266,18 @@ func _on_battle_finished(status: int) -> void:
 func _on_turn_presentation_ready(data) -> void:
 	_play_turn_audio(data)
 	_feedback_active = true
-	var sequence = _board_animation_sequence_builder.build_from_turn_presentation(data)
-	_play_board_animation_sequence(sequence, Callable(self, "_after_turn_board_animation").bind(data))
+
+	if not data.is_valid:
+		# Rejected swaps never enter the stepwise AnimatedTurnFlow, so this is
+		# still the only place the invalid-swap animation plays.
+		var sequence = _board_animation_sequence_builder.build_invalid_swap(data.swapped_from, data.swapped_to, data.invalid_reason)
+		_play_board_animation_sequence(sequence, Callable(self, "_after_turn_board_animation").bind(data))
+		return
+
+	# Valid turns already played their swap/clear/gravity/cascade animation
+	# live through AnimatedTurnFlow (or animations are disabled and there is
+	# nothing to play), so go straight to applying the final board.
+	_after_turn_board_animation(data)
 
 
 func _on_ability_presentation_ready(data) -> void:
@@ -368,7 +385,15 @@ func _on_swap_requested(from_cell: Vector2i, to_cell: Vector2i) -> void:
 	board_view.clear_lane_highlights()
 	board_view.clear_cell_highlights()
 	_set_status("Resolving match...")
-	_presenter.request_swap(from_cell, to_cell)
+	_presenter.request_swap(from_cell, to_cell, true)
+
+
+func _on_swap_accepted(from_cell: Vector2i, to_cell: Vector2i, matches: Array) -> void:
+	if not _animations_enabled or _animated_turn_flow == null:
+		_presenter.resolve_accepted_swap_immediately(from_cell, to_cell, matches)
+		return
+
+	_animated_turn_flow.start_swap_turn(_presenter.board, _presenter, from_cell, to_cell, matches)
 
 
 func _on_ability_requested(lane_index: int) -> void:
@@ -429,7 +454,19 @@ func _on_board_tile_pressed(cell: Vector2i) -> void:
 	_set_status("Using booster...")
 	_begin_animated_turn()
 	_set_input_mode("normal", "")
-	_presenter.request_targeted_booster(booster_id, cell)
+	_input_controller.set_input_enabled(false)
+	_presenter.request_targeted_booster(booster_id, cell, true)
+
+
+func _on_targeted_booster_accepted(result) -> void:
+	_feedback_active = true
+	_input_controller.set_input_enabled(false)
+
+	if not _animations_enabled or _animated_turn_flow == null:
+		_presenter.finalize_booster_turn(result)
+		return
+
+	_animated_turn_flow.start_booster_clear(_presenter.board, _presenter, result)
 
 
 func _on_booster_resolved(result) -> void:
@@ -446,8 +483,9 @@ func _on_booster_resolved(result) -> void:
 
 	_feedback_active = true
 	_input_controller.set_input_enabled(false)
-	var sequence = _board_animation_sequence_builder.build_from_booster_result(result)
-	_play_board_animation_sequence(sequence, Callable(self, "_after_booster_board_animation").bind(result))
+	# The board animation (if any) already played live through AnimatedTurnFlow
+	# before this fires; go straight to particles/feedback.
+	_after_booster_board_animation(result)
 
 
 func _after_booster_board_animation(result) -> void:
@@ -521,6 +559,7 @@ func _apply_presentation_settings() -> void:
 	var animations_enabled: bool = settings.animations_enabled if settings != null else true
 	var reduced_motion_enabled: bool = settings.reduced_motion_enabled if settings != null else false
 	_debug_labels_enabled = settings.debug_labels_enabled if settings != null else false
+	_animations_enabled = animations_enabled
 
 	TileView.configure_presentation(animations_enabled, reduced_motion_enabled)
 	HeroCard.set_debug_labels_enabled(_debug_labels_enabled)
@@ -575,6 +614,8 @@ func _apply_pending_board_for_animation() -> void:
 
 
 func _force_cleanup_visual_state() -> void:
+	if _animated_turn_flow != null:
+		_animated_turn_flow.cancel()
 	if _board_animation_controller != null:
 		_board_animation_controller.clear_queue()
 	if board_view != null:

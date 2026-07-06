@@ -59,7 +59,7 @@ func _test_game_screen_defers_board_during_booster_animation() -> void:
 	_expect_equal(screen._input_mode, "booster_targeting", "hammer enters targeting mode")
 
 	screen._on_board_tile_pressed(Vector2i(4, 4))
-	_expect_true(screen._pending_board_for_animation != null, "resolved board is pending while booster animation plays")
+	_expect_true(screen._pending_board_for_animation == null, "board is not resolved yet while the stepwise booster flow is still running")
 	_expect_false(screen._input_controller._input_enabled, "input stays locked during booster gravity/refill animation")
 
 	await create_timer(2.2).timeout
