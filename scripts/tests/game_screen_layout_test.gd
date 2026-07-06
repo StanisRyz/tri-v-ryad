@@ -22,6 +22,7 @@ func _run() -> void:
 	var board_view := screen.get_node("%BoardView") as Control
 	var status_label := screen.get_node("%StatusLabel") as Label
 	var hero_party_panel := screen.get_node("%HeroPartyPanel") as Control
+	var booster_panel = screen.get_node("%BoosterPanel")
 	var result_overlay := screen.get_node("%BattleResultOverlay") as Control
 	var background_slot := screen.get_node("%Background") as ImageSlot
 	var round_modifier_panel := screen.get_node("%RoundModifierPanel") as Control
@@ -35,6 +36,9 @@ func _run() -> void:
 	_expect_true(status_label != null, "game screen has StatusLabel")
 	_expect_true(hero_party_panel != null, "game screen has HeroPartyPanel")
 	_expect_true(not hero_party_panel.visible, "hero party panel is hidden while hero systems are frozen")
+	_expect_true(booster_panel != null, "game screen has BoosterPanel")
+	_expect_true(booster_panel.visible, "booster panel is visible while hero systems are frozen")
+	_expect_equal(booster_panel.get_button_count(), 3, "booster panel shows three boosters")
 	_expect_true(result_overlay != null, "game screen has BattleResultOverlay")
 	_expect_true(background_slot != null, "game screen has ImageSlot background layer")
 	_expect_true(round_modifier_panel != null, "game screen has RoundModifierPanel")
@@ -49,9 +53,10 @@ func _run() -> void:
 	_expect_equal(enemy_panel.get_meta("asset_key"), "ui_enemy_panel", "enemy panel has reserved asset key")
 	_expect_equal(round_modifier_panel.get_meta("asset_key"), "ui_round_modifier_panel", "round modifier panel has reserved asset key")
 	_expect_equal(status_label.get_meta("asset_key"), "ui_status_panel", "status panel has reserved asset key")
+	_expect_equal(booster_panel.get_meta("asset_key"), "ui_booster_panel", "booster panel has reserved asset key")
 	_expect_equal(result_overlay.get_meta("asset_key"), "ui_result_panel", "result overlay has reserved asset key")
 
-	if enemy_panel != null and battle_hud != null and menu_button != null and board_view != null and status_label != null and hero_party_panel != null:
+	if enemy_panel != null and battle_hud != null and menu_button != null and board_view != null and status_label != null and hero_party_panel != null and booster_panel != null:
 		var battle_root := screen.get_node("%BattleRoot")
 		_expect_equal(battle_root.get_child(0), enemy_panel, "enemy panel is first in BattleRoot")
 		_expect_equal(battle_root.get_child(1), battle_hud.get_parent(), "HUD row is directly below enemy panel")
@@ -60,9 +65,11 @@ func _run() -> void:
 		_expect_true(battle_hud.get_parent().get_index() < board_view.get_parent().get_index(), "HUD row appears above board area")
 		_expect_true(board_view.get_parent().get_index() < status_label.get_index(), "board area appears above status label")
 		_expect_true(status_label.get_index() < hero_party_panel.get_index(), "status label appears above hero party panel")
+		_expect_true(hero_party_panel.get_index() < booster_panel.get_index(), "booster panel replaces the old hero area after hidden hero panel")
 
 	_expect_equal(board_view.custom_minimum_size, Vector2(664, 664), "portrait board remains widened and square")
 	_expect_equal(hero_party_panel.custom_minimum_size.x, board_view.custom_minimum_size.x, "hero panel remains aligned to board width")
+	_expect_equal(booster_panel.custom_minimum_size.x, board_view.custom_minimum_size.x, "booster panel aligns to board width")
 
 	screen.set_level_id("level_1")
 	await process_frame

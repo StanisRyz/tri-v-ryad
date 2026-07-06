@@ -14,6 +14,8 @@ const BATTLE_BACKGROUND_CATALOG_SCRIPT := preload("res://scripts/game/config/bat
 const BATTLE_BACKGROUND_SELECTION_RESOLVER_SCRIPT := preload("res://scripts/game/config/battle_background_selection_resolver.gd")
 const ROUND_MODIFIER_CATALOG_SCRIPT := preload("res://scripts/game/config/round_modifier_catalog.gd")
 const ROUND_MODIFIER_SELECTION_RESOLVER_SCRIPT := preload("res://scripts/game/config/round_modifier_selection_resolver.gd")
+const BOOSTER_CATALOG_SCRIPT := preload("res://scripts/game/config/booster_catalog.gd")
+const BOOSTER_RESOLVER_SCRIPT := preload("res://scripts/game/battle/booster_resolver.gd")
 
 signal board_changed(board: BoardModel)
 signal battle_state_changed(state: BattleState)
@@ -25,6 +27,8 @@ signal invalid_swap(reason: String)
 signal battle_finished(status: int)
 signal battle_background_changed(background_config)
 signal round_modifier_changed(modifier)
+signal booster_state_changed(booster_state)
+signal booster_resolved(result)
 
 var board: BoardModel
 var state: BattleState
@@ -51,6 +55,8 @@ var _background_rng := RandomNumberGenerator.new()
 var _round_modifier_catalog = ROUND_MODIFIER_CATALOG_SCRIPT.new()
 var _round_modifier_selection_resolver = ROUND_MODIFIER_SELECTION_RESOLVER_SCRIPT.new()
 var _round_modifier_rng := RandomNumberGenerator.new()
+var _booster_catalog = BOOSTER_CATALOG_SCRIPT.new()
+var _booster_resolver = BOOSTER_RESOLVER_SCRIPT.new()
 var current_round_modifier
 
 
@@ -75,9 +81,12 @@ func start_level(level_id: String) -> void:
 	current_background = _background_selection_resolver.select_background(_background_catalog, _background_rng)
 	current_round_modifier = _round_modifier_selection_resolver.select_modifier(_round_modifier_catalog, _round_modifier_rng)
 	state = _battle_factory.create_state(current_level_config, progress, hero_catalog, scaled_enemy)
+	state.board = board
+	state.get("booster_state").setup_from_catalog(_booster_catalog)
 	level_changed.emit(current_level_config)
 	board_changed.emit(board)
 	battle_state_changed.emit(state)
+	booster_state_changed.emit(state.get("booster_state"))
 	battle_background_changed.emit(current_background)
 	round_modifier_changed.emit(current_round_modifier)
 
@@ -137,6 +146,33 @@ func get_current_round_modifier():
 	return current_round_modifier
 
 
+func get_booster_catalog():
+	return _booster_catalog
+
+
+func request_booster_activation(booster_id: String) -> void:
+	if state == null or is_battle_finished():
+		return
+
+	var result = _booster_resolver.activate_booster(state, booster_id)
+	booster_state_changed.emit(state.get("booster_state"))
+	battle_state_changed.emit(state)
+	booster_resolved.emit(result)
+
+
+func request_targeted_booster(booster_id: String, target_cell: Vector2i) -> void:
+	if board == null or state == null or is_battle_finished():
+		return
+
+	var result = _booster_resolver.resolve_targeted_booster(state, booster_id, target_cell, current_round_modifier)
+	board_changed.emit(board)
+	booster_state_changed.emit(state.get("booster_state"))
+	battle_state_changed.emit(state)
+	booster_resolved.emit(result)
+	if state.is_finished():
+		battle_finished.emit(state.status)
+
+
 func request_swap(from_cell: Vector2i, to_cell: Vector2i) -> void:
 	if board == null or state == null or is_battle_finished():
 		return
@@ -156,6 +192,7 @@ func request_swap(from_cell: Vector2i, to_cell: Vector2i) -> void:
 
 	board_changed.emit(board)
 	battle_state_changed.emit(state)
+	booster_state_changed.emit(state.get("booster_state"))
 	turn_resolved.emit(battle_result)
 	turn_presentation_ready.emit(presentation_data)
 

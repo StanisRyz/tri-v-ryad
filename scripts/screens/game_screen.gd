@@ -23,6 +23,7 @@ const LANDSCAPE_BOARD_SIZE := 320.0
 @onready var board_view: Control = %BoardView
 @onready var status_label: Label = %StatusLabel
 @onready var hero_party_panel: HBoxContainer = %HeroPartyPanel
+@onready var booster_panel = %BoosterPanel
 @onready var result_overlay: PanelContainer = %BattleResultOverlay
 @onready var background_slot: ImageSlot = %Background
 @onready var round_modifier_panel: PanelContainer = %RoundModifierPanel
@@ -45,6 +46,8 @@ var _last_reward_amount := 0
 var _completion_saved_for_current_battle := false
 var _last_stars_earned := 0
 var _debug_labels_enabled := false
+var _input_mode := "normal"
+var _selected_booster_id := ""
 
 func _ready() -> void:
 	if not menu_button.pressed.is_connected(_on_menu_button_pressed):
@@ -90,6 +93,7 @@ func _apply_portrait_layout() -> void:
 	enemy_panel.custom_minimum_size = Vector2(0, 132)
 	board_view.custom_minimum_size = Vector2(PORTRAIT_BOARD_SIZE, PORTRAIT_BOARD_SIZE)
 	hero_party_panel.custom_minimum_size = Vector2(PORTRAIT_CONTENT_WIDTH, 132)
+	booster_panel.custom_minimum_size = Vector2(PORTRAIT_CONTENT_WIDTH, 132)
 
 
 func _apply_landscape_layout() -> void:
@@ -100,6 +104,7 @@ func _apply_landscape_layout() -> void:
 	enemy_panel.custom_minimum_size = Vector2(0, 92)
 	board_view.custom_minimum_size = Vector2(LANDSCAPE_BOARD_SIZE, LANDSCAPE_BOARD_SIZE)
 	hero_party_panel.custom_minimum_size = Vector2(LANDSCAPE_CONTENT_WIDTH, 96)
+	booster_panel.custom_minimum_size = Vector2(LANDSCAPE_CONTENT_WIDTH, 96)
 
 
 func _setup_playable_battle() -> void:
@@ -112,6 +117,7 @@ func _setup_playable_battle() -> void:
 	_ability_feedback_presenter = ABILITY_FEEDBACK_PRESENTER_SCRIPT.new()
 
 	board_view.tile_pressed.connect(_input_controller.handle_tile_pressed)
+	board_view.tile_pressed.connect(_on_board_tile_pressed)
 	board_view.tile_drag_released.connect(_input_controller.handle_tile_drag_released)
 	_input_controller.swap_requested.connect(_on_swap_requested)
 	_input_controller.selection_changed.connect(_on_selection_changed)
@@ -119,8 +125,12 @@ func _setup_playable_battle() -> void:
 	_input_controller.invalid_input.connect(_on_invalid_input)
 	if FeatureFlags.HERO_SYSTEMS_ENABLED:
 		hero_party_panel.ability_requested.connect(_on_ability_requested)
+		booster_panel.visible = false
 	else:
 		hero_party_panel.visible = false
+		booster_panel.visible = true
+		booster_panel.setup_boosters(_presenter.get_booster_catalog())
+		booster_panel.booster_pressed.connect(_on_booster_pressed)
 
 	_presenter.board_changed.connect(_on_board_changed)
 	_presenter.battle_state_changed.connect(_on_battle_state_changed)
@@ -132,6 +142,8 @@ func _setup_playable_battle() -> void:
 	_presenter.battle_finished.connect(_on_battle_finished)
 	_presenter.battle_background_changed.connect(_on_battle_background_changed)
 	_presenter.round_modifier_changed.connect(_on_round_modifier_changed)
+	_presenter.booster_state_changed.connect(_on_booster_state_changed)
+	_presenter.booster_resolved.connect(_on_booster_resolved)
 	_turn_feedback_presenter.feedback_finished.connect(_on_feedback_finished)
 	_ability_feedback_presenter.feedback_finished.connect(_on_feedback_finished)
 
@@ -151,6 +163,7 @@ func _start_new_battle() -> void:
 	result_overlay.hide_result()
 	board_view.clear_lane_highlights()
 	board_view.clear_cell_highlights()
+	_set_input_mode("normal", "")
 	_input_controller.set_input_enabled(true)
 	_set_status("Select a tile")
 	_presenter.start_level(_current_level_id)
@@ -169,6 +182,9 @@ func _on_battle_state_changed(state: BattleState) -> void:
 
 	if FeatureFlags.HERO_SYSTEMS_ENABLED and hero_party_panel.has_method("set_heroes"):
 		hero_party_panel.set_heroes(state.heroes)
+
+	if not FeatureFlags.HERO_SYSTEMS_ENABLED and booster_panel != null and state.get("booster_state") != null:
+		booster_panel.set_booster_state(state.get("booster_state"))
 
 
 func _on_battle_background_changed(background_config) -> void:
@@ -237,6 +253,8 @@ func _on_feedback_finished() -> void:
 
 	if not _presenter.is_battle_finished():
 		_input_controller.set_input_enabled(true)
+		if _input_mode == "booster_targeting":
+			_input_controller.set_input_enabled(false)
 
 
 func _show_battle_result(status: int) -> void:
@@ -280,21 +298,29 @@ func _save_victory_completion_once() -> void:
 
 
 func _on_selection_changed(cell: Vector2i) -> void:
+	if _input_mode == "booster_targeting":
+		return
 	board_view.set_selected_cell(cell)
 	_set_status("Choose a neighboring tile")
 
 
 func _on_selection_cleared() -> void:
+	if _input_mode == "booster_targeting":
+		return
 	board_view.clear_selected_cell()
 	_set_status("Select a tile")
 
 
 func _on_invalid_input(reason: String) -> void:
+	if reason == "input_locked" and (_input_mode == "booster_targeting" or _feedback_active):
+		return
 	_play_invalid_swap()
 	_set_status(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_invalid_input_message(reason))
 
 
 func _on_swap_requested(from_cell: Vector2i, to_cell: Vector2i) -> void:
+	if _input_mode != "normal":
+		return
 	_input_controller.set_input_enabled(false)
 	board_view.clear_lane_highlights()
 	board_view.clear_cell_highlights()
@@ -310,6 +336,80 @@ func _on_ability_requested(lane_index: int) -> void:
 	_presenter.request_ability(lane_index)
 
 
+func _on_booster_state_changed(booster_state) -> void:
+	if booster_panel != null:
+		booster_panel.set_booster_state(booster_state)
+
+
+func _on_booster_pressed(booster_id: String) -> void:
+	if _presenter == null or _presenter.state == null or _presenter.is_battle_finished():
+		return
+
+	var config = _presenter.get_booster_catalog().get_booster(booster_id)
+	if config == null:
+		_play_invalid_swap()
+		_set_status("Booster unavailable.")
+		return
+
+	var booster_state = _presenter.state.get("booster_state")
+	if booster_state == null or not booster_state.can_use(booster_id):
+		_play_invalid_swap()
+		_set_status("Booster already used.")
+		return
+
+	if config.is_targeted():
+		if _input_mode == "booster_targeting" and _selected_booster_id == booster_id:
+			_set_input_mode("normal", "")
+			_set_status("Select a tile")
+			return
+
+		_play_button_click()
+		_set_input_mode("booster_targeting", booster_id)
+		if booster_id == "hammer":
+			_set_status("Select a crystal for Hammer.")
+		else:
+			_set_status("Select a crystal for Rocket Barrage.")
+		return
+
+	_play_special_activate()
+	_presenter.request_booster_activation(booster_id)
+
+
+func _on_board_tile_pressed(cell: Vector2i) -> void:
+	if _input_mode != "booster_targeting" or _selected_booster_id == "":
+		return
+
+	_input_controller.set_input_enabled(false)
+	board_view.clear_selected_cell()
+	board_view.clear_cell_highlights()
+	_set_status("Using booster...")
+	_presenter.request_targeted_booster(_selected_booster_id, cell)
+	_set_input_mode("normal", "")
+
+
+func _on_booster_resolved(result) -> void:
+	if result == null:
+		return
+
+	if not result.is_valid:
+		_play_invalid_swap()
+		_set_status(result.message)
+		_input_controller.set_input_enabled(true)
+		return
+
+	if result.freeze_turns_added > 0:
+		_play_special_activate()
+	else:
+		_play_special_activate()
+		if result.damage_to_enemy > 0:
+			_play_enemy_damage()
+		board_view.highlight_cells(result.cleared_cells)
+
+	_set_status(result.message)
+	if not _presenter.is_battle_finished():
+		_input_controller.set_input_enabled(true)
+
+
 func _on_restart_pressed() -> void:
 	_play_button_click()
 	_start_new_battle()
@@ -322,6 +422,15 @@ func _on_upgrades_pressed() -> void:
 
 func _set_status(message: String) -> void:
 	status_label.text = message
+
+
+func _set_input_mode(mode: String, booster_id: String) -> void:
+	_input_mode = mode
+	_selected_booster_id = booster_id
+	if booster_panel != null:
+		booster_panel.set_selected_booster(booster_id)
+	if _input_controller != null:
+		_input_controller.set_input_enabled(mode == "normal")
 
 
 func set_level_id(level_id: String) -> void:

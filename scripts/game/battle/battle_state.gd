@@ -1,6 +1,8 @@
 extends RefCounted
 class_name BattleState
 
+const BOOSTER_STATE_SCRIPT := preload("res://scripts/game/battle/booster_state.gd")
+
 enum Status {
 	IN_PROGRESS,
 	VICTORY,
@@ -10,6 +12,8 @@ enum Status {
 var heroes: Array[HeroData] = []
 var enemy: EnemyData
 var enemy_intent: EnemyIntent
+var board: BoardModel
+var booster_state
 var moves_left := 0
 var turn_number := 0
 var status := Status.IN_PROGRESS
@@ -25,6 +29,7 @@ func _init(
 	enemy = battle_enemy if battle_enemy != null else EnemyData.new()
 	enemy_intent = battle_enemy_intent if battle_enemy_intent != null else EnemyIntent.new()
 	moves_left = starting_moves
+	booster_state = BOOSTER_STATE_SCRIPT.new()
 	update_status()
 
 

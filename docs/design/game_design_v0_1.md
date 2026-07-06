@@ -598,3 +598,20 @@ One-time rewards, level map, chapters, stars-based rewards, reset upgrades, and 
 - Active gameplay is unchanged: LevelSelect startup, direct match damage, round modifiers, Stage 34 balance, enemies, levels, moves, stars, progression, zones, battle flow, Settings flow, audio no-op behavior, and ImageSlot-backed battle background/enemy visuals remain active.
 - Hero/RPG systems remain frozen and inactive.
 - Next planned stage: Stage 40, Booster system foundation v0.1.
+
+## Stage 40: Booster System Foundation v0.1
+
+- Stage 40 is implemented.
+- Active battle now has three battle-local boosters: Hammer, Time Freeze, and Rocket Barrage.
+- `BoosterConfig` and `BoosterCatalog` define booster id, display name, description, asset key, uses per battle, and targeting mode. The default v0.1 set is `hammer`, `freeze_time`, and `rocket_barrage`.
+- `BoosterState` is created fresh for each `BattleState`, tracks uses left, active booster id, and Time Freeze turns, and is not saved as player inventory or economy data.
+- `BoosterResolver` owns booster rules. Hammer clears a clipped 3x3 area around a selected crystal; Rocket Barrage clears all crystals of the selected color; Time Freeze adds 3 move-free successful turns.
+- Each booster is usable once per battle. Booster activation and targeted booster resolution do not consume moves.
+- Hammer and Rocket read tile colors before clearing, calculate direct damage through `DirectMatchDamageResolver`, and apply the current round modifier where tile color is known. Unknown color data falls back to x1.
+- Booster clears apply gravity/refill and leave the board full. Extra cascade resolution after booster clears is intentionally not part of v0.1.
+- Regular successful swaps consume Time Freeze turns before reducing moves. Invalid swaps do not consume moves or freeze turns.
+- `BoosterPanel` displays the three booster buttons, uses left, selected/disabled state, and freeze turns. It replaces the old hidden hero area in active direct-mode combat.
+- `GameScreen` owns only UI mode and wiring for booster selection/targeting; `BattlePresenter` coordinates booster requests and emits booster state/result updates.
+- `HeroPartyPanel` remains hidden, and hero/RPG systems remain frozen and inactive.
+- No booster inventory, persistence, economy, purchases, Yandex SDK, cloud save, ads, payments, particles, final art, new enemies, new levels, or hero-system reactivation were added.
+- Next planned stage: Stage 41, Booster UX, balance and feedback polish v0.1.

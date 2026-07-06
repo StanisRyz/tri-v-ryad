@@ -2,7 +2,7 @@
 
 Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
-The project is currently through Stage 39: Complete AssetKey texture binding v0.1. Hero/RPG systems (TeamSelect, hero party UI, hero abilities/charge/lane damage, hero upgrades) remain frozen and hidden from the active flow via `FeatureFlags.HERO_SYSTEMS_ENABLED := false`, and gameplay deals direct match-3 damage to the enemy. Each battle selects one positive round modifier that multiplies damage for matched cells of specific colors, while Stage 34 direct balance controls moves and enemy HP. The active flow remains App startup -> LevelSelect -> GameScreen -> LevelSelect, with Settings opened from the LevelSelect top panel; MainMenu remains in the project as inactive legacy/future code but is skipped by normal startup and play. The app shell, a level-select hub with numbers-only labels for `level_1` through `level_100` grouped into 10 locked zones, a shared 10-enemy base roster with battle-start random enemy selection and direct-mode HP scaling, ImageSlot-backed battle background and enemy visual placeholders, the safe cached `ImageSlot`/`GameAssetCatalog` placeholder image pipeline with complete reserved AssetKey coverage for tiles, special tiles, UI panels, LevelSelect/Settings visuals, boosters, stars, and future/frozen hero portraits, the safe cached `AudioAssetCatalog`/`AudioManager` no-op audio foundation, a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, saved campaign progress with stars/unlocks, and lightweight swap, clear, special activation, and refill feedback all remain active for a vertical 9:16 game. Hero code, MainMenu, TeamSelect, and UpgradeScreen remain in the project (not deleted) for a future revisit.
+The project is currently through Stage 40: Booster system foundation v0.1. Hero/RPG systems (TeamSelect, hero party UI, hero abilities/charge/lane damage, hero upgrades) remain frozen and hidden from the active flow via `FeatureFlags.HERO_SYSTEMS_ENABLED := false`, and gameplay deals direct match-3 damage to the enemy. Each battle selects one positive round modifier that multiplies damage for matched cells of specific colors, while Stage 34 direct balance controls moves and enemy HP. The active flow remains App startup -> LevelSelect -> GameScreen -> LevelSelect, with Settings opened from the LevelSelect top panel; MainMenu remains in the project as inactive legacy/future code but is skipped by normal startup and play. The app shell, a level-select hub with numbers-only labels for `level_1` through `level_100` grouped into 10 locked zones, a shared 10-enemy base roster with battle-start random enemy selection and direct-mode HP scaling, ImageSlot-backed battle background and enemy visual placeholders, the safe cached `ImageSlot`/`GameAssetCatalog` placeholder image pipeline with complete reserved AssetKey coverage for tiles, special tiles, UI panels, LevelSelect/Settings visuals, boosters, stars, and future/frozen hero portraits, the safe cached `AudioAssetCatalog`/`AudioManager` no-op audio foundation, three battle-local boosters (Hammer, Time Freeze, Rocket Barrage), a persistent Settings screen, a playable 9x9 board with placeholder tiles, hybrid two-click plus drag/swipe swapping, UI-independent board and battle logic, line special tiles, color bombs, saved campaign progress with stars/unlocks, and lightweight swap, clear, special activation, and refill feedback all remain active for a vertical 9:16 game. Hero code, MainMenu, TeamSelect, and UpgradeScreen remain in the project (not deleted) for a future revisit.
 
 ## Project Direction
 
@@ -41,7 +41,7 @@ This stage includes:
 - `EnemyPanel` uses an `ImageSlot` for the active enemy visual, resolving the selected enemy ID to a reserved enemy asset key.
 - `TileView` resolves optional tile textures through the cached asset pipeline; missing tile textures preserve the current color placeholders and special `H`/`V`/`B` markers.
 - LevelSelect, Settings, battle HUD/status/result panels, and RoundModifierPanel now carry stable reserved UI asset keys for later texture art.
-- A visual-only `BoosterButton` stub reserves booster icon and button-state asset keys for Stage 40 without adding booster gameplay.
+- `BoosterPanel` uses the existing `BoosterButton` icon/state placeholder pipeline for Hammer, Time Freeze, and Rocket Barrage in active combat.
 - Empty asset folders under `assets/images/backgrounds/`, `assets/images/enemies/`, `assets/images/tiles/`, `assets/images/ui/`, `assets/images/boosters/`, and `assets/images/heroes/` for later real images.
 - `AudioAssetCatalog` maps reserved audio keys to future `res://assets/audio/` paths and loads optional streams safely with a small cache for loaded and missing audio.
 - `AudioManager` is registered as an autoload singleton, owns one music player and an 8-player SFX pool, and safely no-ops when audio files are missing.
@@ -392,6 +392,22 @@ Minimal audio hooks were added for LevelSelect Settings/button interactions, lev
 
 Active gameplay remains unchanged: LevelSelect startup, Settings from LevelSelect, GameScreen Menu/Back to LevelSelect, direct match damage, round modifiers, Stage 34 balance, progression, stars, zones, ImageSlot-backed imageholders, enemies, and battle flow all remain active. Hero/RPG systems remain frozen and inactive. Next planned stage: Stage 39, Tile and UI asset integration polish v0.1.
 
+## Stage 39: Complete AssetKey Texture Binding v0.1
+
+Stage 39 is complete. `GameAssetCatalog` now reserves safe `res://assets/images/` texture paths for base tiles, special tiles, battle UI panels, LevelSelect visuals, Settings visuals, booster icons, booster button states, stars, and future/frozen hero portraits. `AssetKeyResolver` maps background IDs, enemy IDs, active tile types, special tile types, UI IDs, booster IDs, level button states, and star states to catalog asset keys. Missing optional image files still show placeholders and never crash.
+
+`TileView` resolves optional base tile and special tile asset keys while preserving the current color fallback and `H`/`V`/`B` special markers. LevelSelect, Settings, battle HUD/status/result panels, EnemyPanel, and RoundModifierPanel carry stable reserved UI asset keys. A visual-only `BoosterButton` stub was added for future booster icons and states without gameplay in Stage 39.
+
+Active gameplay remained unchanged in Stage 39. Hero/RPG systems remained frozen and inactive. Next planned stage: Stage 40, Booster system foundation v0.1.
+
+## Stage 40: Booster System Foundation v0.1
+
+Stage 40 is complete. Active combat now has three battle-local boosters in a new `BoosterPanel` that replaces the old hidden hero area while direct mode is active. Hammer clears a clipped 3x3 area around the selected crystal, Time Freeze makes the next 3 successful turns not reduce moves, and Rocket Barrage clears every crystal of the selected color.
+
+Each booster is usable once per battle through `BoosterState`; there is no saved inventory, persistence, economy, cooldown, purchase flow, Yandex SDK integration, particles, or final art. Booster usage itself does not consume moves. Hammer and Rocket read tile colors before clearing, apply direct damage through `DirectMatchDamageResolver`, use the current round modifier when color data is known, then clear/refill the board safely. Booster clears do not trigger extra cascade resolution in v0.1.
+
+Hero/RPG systems remain frozen and inactive: `HeroPartyPanel` stays hidden in active direct-mode combat, and `BoosterPanel` is the visible control row. Next planned stage: Stage 41, Booster UX, balance and feedback polish v0.1.
+
 ## How To Open And Run
 
 1. Open Godot 4.x.
@@ -401,9 +417,10 @@ Active gameplay remains unchanged: LevelSelect startup, Settings from LevelSelec
 5. Choose an unlocked zone, then choose an unlocked level to open GameScreen directly (TeamSelect is skipped in the active flow).
 6. Check the round modifier panel above the board to see the active battle's color damage buff (e.g. "Red Surge — Red crystals deal x3 damage").
 7. Click one tile, then click a neighboring tile to attempt a swap, or drag/swipe from a tile toward a neighbor. Clearing crystals deals direct damage to the enemy, boosted for any color the current round modifier buffs.
-8. Win a battle to save completion, earn stars, and unlock the next level.
-9. Press Settings in the LevelSelect top panel to open SettingsScreen and toggle Animations, Reduced Motion, Debug Labels, Music, and Sound Effects.
-10. Press Levels/Back to return to LevelSelect.
+8. Use the booster panel under the board: Hammer and Rocket ask for a crystal target, while Time Freeze activates immediately.
+9. Win a battle to save completion, earn stars, and unlock the next level.
+10. Press Settings in the LevelSelect top panel to open SettingsScreen and toggle Animations, Reduced Motion, Debug Labels, Music, and Sound Effects.
+11. Press Levels/Back to return to LevelSelect.
 
 The Heroes button and the TeamSelect/UpgradeScreen flow are hidden from active play while `FeatureFlags.HERO_SYSTEMS_ENABLED` is false; hero code remains in the project for a future revisit.
 
@@ -738,6 +755,18 @@ Run the round modifier presenter test with:
 godot --headless --script res://scripts/tests/round_modifier_presenter_test.gd
 ```
 
+Run the Stage 40 booster tests with:
+
+```bash
+godot --headless --script res://scripts/tests/booster_catalog_test.gd
+godot --headless --script res://scripts/tests/booster_state_test.gd
+godot --headless --script res://scripts/tests/booster_resolver_test.gd
+godot --headless --script res://scripts/tests/booster_damage_test.gd
+godot --headless --script res://scripts/tests/time_freeze_moves_test.gd
+godot --headless --script res://scripts/tests/booster_panel_test.gd
+godot --headless --script res://scripts/tests/game_screen_booster_flow_test.gd
+```
+
 Run the Stage 34 direct balance tests with:
 
 ```bash
@@ -749,6 +778,6 @@ godot --headless --script res://scripts/tests/round_modifier_balance_test.gd
 
 ## Next Planned Stages
 
-- Stage 26-30 block is complete. Stage 31 (hero portrait buttons and ability bars) is complete. Stage 32 (hero systems freeze and direct match damage foundation) is complete. Stage 33 (round modifiers and color damage rules) is complete. Stage 34 (direct match-3 balance pass) is complete. Stage 35 (direct LevelSelect startup and simplified UX polish) is complete. Stage 36 (ImageSlot asset placeholder pipeline) is complete. Stage 37 (asset loading integration for active imageholders) is complete. Stage 38 (AudioManager foundation) is complete. Stage 39 (Complete AssetKey texture binding) is complete.
-- Stage 40: Booster system foundation v0.1.
+- Stage 26-30 block is complete. Stage 31 (hero portrait buttons and ability bars) is complete. Stage 32 (hero systems freeze and direct match damage foundation) is complete. Stage 33 (round modifiers and color damage rules) is complete. Stage 34 (direct match-3 balance pass) is complete. Stage 35 (direct LevelSelect startup and simplified UX polish) is complete. Stage 36 (ImageSlot asset placeholder pipeline) is complete. Stage 37 (asset loading integration for active imageholders) is complete. Stage 38 (AudioManager foundation) is complete. Stage 39 (Complete AssetKey texture binding) is complete. Stage 40 (Booster system foundation) is complete.
+- Stage 41: Booster UX, balance and feedback polish v0.1.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.

@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://dsqit1j6lh7mq"]
+[gd_scene load_steps=9 format=3 uid="uid://dsqit1j6lh7mq"]
 
 [ext_resource type="Script" path="res://scripts/screens/game_screen.gd" id="1_jyptq"]
 [ext_resource type="PackedScene" path="res://scenes/ui/BattleHud.tscn" id="2_2dfvm"]
@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/HeroPartyPanel.tscn" id="5_uw1i4"]
 [ext_resource type="PackedScene" path="res://scenes/ui/BattleResultOverlay.tscn" id="6_mdu30"]
 [ext_resource type="Script" path="res://scripts/ui/image_slot.gd" id="7_i0qml"]
+[ext_resource type="PackedScene" path="res://scenes/ui/BoosterPanel.tscn" id="8_hn13u"]
 
 [node name="GameScreen" type="Control"]
 layout_mode = 3
@@ -115,6 +116,10 @@ horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="HeroPartyPanel" parent="SafeMargin/BattleCenter/BattleRoot" instance=ExtResource("5_uw1i4")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="BoosterPanel" parent="SafeMargin/BattleCenter/BattleRoot" instance=ExtResource("8_hn13u")]
 unique_name_in_owner = true
 layout_mode = 2
 

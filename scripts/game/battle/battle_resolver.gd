@@ -25,7 +25,11 @@ func resolve_player_matches(state: BattleState, matches: Array[MatchResult], boa
 	else:
 		_resolve_direct_damage_path(state, matches, board_result, _round_modifier, turn_result)
 
-	state.moves_left = max(0, state.moves_left - 1)
+	var booster_state = state.get("booster_state")
+	if booster_state != null and booster_state.consume_freeze_turn():
+		pass
+	else:
+		state.moves_left = max(0, state.moves_left - 1)
 	state.turn_number += 1
 	state.update_status()
 

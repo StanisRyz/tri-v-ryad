@@ -82,6 +82,39 @@ func calculate_damage_for_matches(matches: Array, round_modifier = null) -> Dict
 	}
 
 
+func calculate_damage_for_typed_cells(cells: Array[Vector2i], tile_types: Dictionary, round_modifier = null) -> Dictionary:
+	var seen := {}
+	var breakdown_by_type := {}
+	var total_damage := 0.0
+	var tile_count := 0
+
+	for cell in cells:
+		if seen.has(cell):
+			continue
+		seen[cell] = true
+		tile_count += 1
+
+		var tile_type: int = int(tile_types.get(cell, -1))
+		var multiplier := _get_multiplier(round_modifier, tile_type) if TileType.is_valid_tile_type(tile_type) else 1.0
+		total_damage += multiplier
+
+		if not breakdown_by_type.has(tile_type):
+			breakdown_by_type[tile_type] = {
+				"tile_type": tile_type,
+				"tile_count": 0,
+				"multiplier": multiplier,
+				"damage": 0,
+			}
+		breakdown_by_type[tile_type].tile_count += 1
+		breakdown_by_type[tile_type].damage += int(round(multiplier))
+
+	return {
+		"total_damage": int(round(total_damage)),
+		"tile_count": tile_count,
+		"breakdown": breakdown_by_type.values(),
+	}
+
+
 ## Computes color-aware damage across a resolved cascade (BoardResolveResult). Each
 ## step's matches carry known tile colors; any remaining cleared cell in that step
 ## without a matching color (special-tile activation clears) counts as x1 damage.
