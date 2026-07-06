@@ -54,3 +54,29 @@ func _init(
 
 static func default_rules() -> HoleGenerationRules:
 	return HoleGenerationRules.new()
+
+
+## Stage 54.1 v0.1: tier-scoped safe hole/active-cell caps. Structural
+## settings (block sizes, symmetry mode, center/connectivity/enclosed/
+## single-cell toggles) stay the v0.1 defaults; only the numeric active/hole
+## ceiling grows with difficulty tier, so harder levels have enough hole
+## budget for 2x3/3x2 blocks and center shapes without ever allowing a
+## nearly-empty board. This is the single source of truth for the tier ->
+## cap mapping — callers (BoardMaskGenerator, BoardChallengeGenerator)
+## should call this instead of hardcoding per-tier numbers themselves.
+static func for_tier(tier: String) -> HoleGenerationRules:
+	var tier_max_hole_cells := _max_hole_cells_for_tier(tier)
+	var tier_min_active_cells := DEFAULT_BOARD_CELLS - tier_max_hole_cells
+	return HoleGenerationRules.new(2, 2, 3, 3, tier_min_active_cells, tier_max_hole_cells)
+
+
+static func _max_hole_cells_for_tier(tier: String) -> int:
+	match tier:
+		DifficultyBudget.TIER_MEDIUM:
+			return 20
+		DifficultyBudget.TIER_HARD:
+			return 24
+		DifficultyBudget.TIER_VERY_HARD:
+			return 28
+		_:
+			return 16
