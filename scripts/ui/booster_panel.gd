@@ -36,6 +36,12 @@ func set_selected_booster(booster_id: String) -> void:
 	refresh()
 
 
+func play_booster_feedback(booster_id: String, animations_enabled: bool = true, reduced_motion_enabled: bool = false) -> void:
+	var button: BoosterButton = _buttons.get(booster_id)
+	if button != null and button.has_method("play_feedback"):
+		button.play_feedback(animations_enabled, reduced_motion_enabled)
+
+
 func refresh() -> void:
 	if button_row == null:
 		return

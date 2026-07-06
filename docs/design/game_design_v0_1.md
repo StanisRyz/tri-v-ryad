@@ -98,23 +98,23 @@ Animation, advanced feedback, sound, and gesture polish remain future work.
 
 - Valid animated turns are owned by `AnimatedTurnFlow`: swap, current match clear, special creation, gravity/refill, cascade repeats, final board handoff, then damage particles/enemy hit/text/result feedback.
 - Invalid swaps show simple rejection feedback and then clear transient board state.
-- Initial matched cells, cascade cells, booster targets, and special creation sources may show temporary feedback, but selected/highlight/invalid/lane state must be cleared before the final board/result flow continues.
+- Initial matched cells, cascade cells, booster target previews, booster activation flashes, and special creation sources may show temporary feedback, but selected/highlight/preview/invalid/lane state must be cleared before the final board/result flow continues.
 - Activated Hero Lanes highlight temporarily after the turn.
 - Damage and enemy action are shown through short status messages.
 - Input remains locked during feedback and unlocks only after feedback completes.
 
-Booster targeting polish, final result UX polish, real tile movement, final particle art, real audio, and deeper progression remain future work.
+Final result UX polish, real tile movement, final particle art, real audio, and deeper progression remain future work.
 
 ## Board Animation Polish v0.1
 
 - Valid animated turns use the Stage 46-48 stepwise pipeline through `AnimatedTurnFlow`; `TurnFeedbackPresenter` must not replay board movement, match highlights, clear effects, special activation visuals, refill effects, or full-board refresh animations afterward.
 - Invalid swaps receive visual rejection feedback on the involved cells.
-- Matched/cascade/special/booster clear visuals are transient and must clean overlay ghosts, `AnimationLayer` children, tile tint/scale drift, selected-cell state, and highlights before damage particles or result overlay display.
+- Matched/cascade/special/booster clear visuals and booster targeting previews are transient and must clean overlay ghosts, preview nodes, `AnimationLayer` children, tile tint/scale drift, selected-cell state, and highlights before damage particles or result overlay display.
 - Board final handoff updates the real `TileView` state while overlay ghosts still cover the board, then removes the overlay only after the real board is ready.
 - Input remains locked during the full feedback sequence and unlocks only after `feedback_finished`.
 - Board rules, battle rules, progression, rewards, stars, unlocks, upgrades, and save format are unchanged.
 
-Wrapped bombs, special combos, booster targeting polish, full falling polish, final particle art, real audio, final art, and real tile movement remain future work.
+Wrapped bombs, special combos, full falling polish, final particle art, real audio, final art, and real tile movement remain future work.
 
 ## Special Tiles v0.2
 
@@ -269,7 +269,7 @@ One-time rewards, level map, chapters, stars-based rewards, reset upgrades, and 
 - No cloud save.
 - No target selection or ability upgrades.
 - No high-polish special activation animation pass beyond current Stage 48 v0.1 H/V/B activation behavior.
-- No booster targeting/animation polish beyond current cleanup/stability behavior.
+- No further booster targeting/animation polish beyond current Stage 49 preview/effect behavior unless explicitly requested.
 - No result flow UX polish beyond current cleanup/result ordering.
 - No real tile movement.
 - No real/final audio assets or final particle/effect art.
@@ -739,7 +739,7 @@ One-time rewards, level map, chapters, stars-based rewards, reset upgrades, and 
 - Damage particles and enemy hit feedback start only after board stepwise animation is complete, transient highlights are cleared, overlay ghosts are removed, and the final board is applied. Victory/defeat result overlay appears only after that full board + damage + feedback chain completes.
 - `BattleEffectController.clear_effects()` cancels in-flight particle playback and suppresses stale callbacks during restart/menu/result cleanup. `AnimatedTurnFlow.cancel()` releases pending step awaits during forced cleanup.
 - Normal animations, reduced motion, and disabled animations preserve the same logical order. Reduced motion shortens/softens visuals; disabled animations resolve immediately without leaving ghosts, highlights, stuck awaits, or stale effects.
-- Next roadmap stages: Stage 49 booster targeting/animation polish and Stage 50 result flow UX polish.
+- Next roadmap stage: Stage 50 result flow UX polish.
 
 ## Stage 48: Special Tile Activation Animations v0.1
 
@@ -750,4 +750,16 @@ One-time rewards, level map, chapters, stars-based rewards, reset upgrades, and 
 - In overlay mode, `BoardView` animates overlay ghosts and temporary `AnimationLayer` highlights only; real board tiles remain hidden until final board handoff. Outside overlay mode, fallback visuals pulse/highlight existing controls without manually moving real `TileView` nodes inside the `GridContainer`.
 - Cleanup continues through the Stage 47 transient-state and final-handoff path: no row/column/color highlights, ghost nodes, tint, scale, or selected-cell state should remain after the visual chain completes. Reduced motion shortens/softens the same order; disabled animations resolve immediately and safely.
 - `TurnFeedbackPresenter` remains text/status/enemy feedback only after a valid animated turn. It may show the special activation status text, but it must not replay H/V/B board visuals, special clears, match highlights, refill effects, or full-board refresh animation.
-- Next roadmap stages: Stage 49 booster targeting/animation polish and Stage 50 result flow UX polish.
+- Next roadmap stage: Stage 50 result flow UX polish.
+
+## Stage 49: Booster Targeting and Booster Animation Polish v0.1
+
+- Stage 49 is implemented. It improves active direct-mode booster targeting and feedback without changing booster rules, damage formulas, balance, progression, saves, platform code, art assets, or hero-system behavior.
+- Hammer and Rocket Barrage use a preview-confirm flow: select a booster, tap a crystal to preview affected cells, then tap the same crystal again to apply. Pressing the same selected booster cancels targeting.
+- Hammer preview shows the clipped 3x3 area around the target crystal, including board edges and corners. Activation pulses the target and flashes the 3x3 impact area before the existing booster clear/gravity/refill/cascade path.
+- Rocket Barrage preview reads the current visible board tile type at the target cell and highlights all visible cells of that type. Activation pulses the target and flashes the same-color group before the existing clear path.
+- Time Freeze stays non-board feedback only: it activates immediately, pulses the booster button/status path, adds free turns, and does not request board clear animation when no cells are cleared.
+- Selected booster buttons show readable selected state; used boosters show dim/disabled-looking state but still produce short already-used feedback when pressed. Selected state clears after cancel, apply, or use.
+- `BoardView.show_booster_target_preview()` and `clear_booster_target_preview()` own presentation-only preview nodes on `AnimationLayer`; cleanup runs on apply, cancel, selected-booster changes, disabled-animation cleanup, result overlay, restart, and LevelSelect return.
+- `BoardAnimationRequest.TYPE_BOOSTER_ACTIVATION` runs before `TYPE_BOOSTER_CLEAR` through `AnimatedTurnFlow`, so damage particles and result overlays still start only after board animation and cleanup finish. `TurnFeedbackPresenter` must not replay booster board visuals.
+- Next roadmap stage: Stage 50 result screen and level flow UX polish.

@@ -28,6 +28,7 @@ var _special_activation_tweens: Array[Tween] = []
 var _overlay_mode := false
 var _overlay_ghosts: Dictionary = {}
 var _overlay_snapshot: BoardVisualSnapshot
+var _booster_preview_nodes: Array[Control] = []
 
 
 func _ready() -> void:
@@ -99,6 +100,7 @@ func clear_cell_highlights() -> void:
 
 
 func clear_transient_visual_state() -> void:
+	clear_booster_target_preview()
 	_selected_cell = Vector2i(-1, -1)
 	_lane_activations.clear()
 	_highlighted_cells.clear()
@@ -153,12 +155,70 @@ func pulse_cells(cells: Array[Vector2i], _duration: float = 0.08) -> void:
 		tile.play_swap_pulse()
 
 
+func get_visible_tile_type(cell: Vector2i) -> int:
+	var tile := get_tile_view(cell)
+	if tile != null:
+		return tile.tile_type
+	if _board != null and _board.is_inside(cell):
+		return _board.get_tile(cell)
+	return BoardModel.EMPTY
+
+
+func get_cells_with_visible_tile_type(tile_type: int) -> Array[Vector2i]:
+	var cells: Array[Vector2i] = []
+	if not TileType.is_valid_tile_type(tile_type):
+		return cells
+
+	for cell in _tile_views.keys():
+		if get_visible_tile_type(cell) == tile_type:
+			cells.append(cell)
+	return cells
+
+
+func show_booster_target_preview(cells: Array[Vector2i], preview_type: String) -> void:
+	clear_booster_target_preview()
+	if animation_layer == null:
+		return
+
+	var color := Color(1.0, 0.86, 0.18, 0.34)
+	if preview_type == "rocket_barrage":
+		color = Color(0.98, 0.40, 0.28, 0.32)
+	elif preview_type == "hammer":
+		color = Color(1.0, 0.88, 0.24, 0.36)
+
+	for cell in cells:
+		var preview := _create_booster_preview_cell(cell, color)
+		if preview != null:
+			_booster_preview_nodes.append(preview)
+
+
+func clear_booster_target_preview() -> void:
+	for preview in _booster_preview_nodes:
+		if is_instance_valid(preview):
+			preview.free()
+	_booster_preview_nodes.clear()
+
+
+func play_booster_activation_animation(booster_id: String, target_cell: Vector2i, affected_cells: Array[Vector2i], _affected_tile_types: Array, duration: float) -> void:
+	clear_booster_target_preview()
+	var safe_duration := maxf(duration, 0.01)
+	if booster_id == "hammer":
+		_play_activation_cell_pulse(target_cell, safe_duration, Color(1.45, 1.18, 0.38, 1.0))
+		_play_booster_impact_flash(affected_cells, safe_duration, Color(1.0, 0.86, 0.18, 0.72))
+	elif booster_id == "rocket_barrage":
+		_play_activation_cell_pulse(target_cell, safe_duration, Color(1.35, 0.60, 0.44, 1.0))
+		_play_booster_impact_flash(affected_cells, safe_duration, Color(1.0, 0.46, 0.30, 0.58))
+	else:
+		pulse_cells(affected_cells, safe_duration)
+
+
 func get_animation_layer() -> Control:
 	return animation_layer
 
 
 func clear_animation_layer() -> void:
 	_overlay_ghosts.clear()
+	_booster_preview_nodes.clear()
 	_clear_special_activation_tweens()
 	if animation_layer == null:
 		return
@@ -203,6 +263,7 @@ func enter_animation_overlay_mode(snapshot: BoardVisualSnapshot) -> void:
 	if _overlay_mode:
 		exit_animation_overlay_mode()
 
+	clear_booster_target_preview()
 	_overlay_mode = true
 	_overlay_snapshot = snapshot
 	hide_real_board_tiles()
@@ -268,6 +329,7 @@ func force_reset_animation_state() -> void:
 
 	_overlay_mode = false
 	_overlay_snapshot = null
+	clear_booster_target_preview()
 	clear_animation_layer()
 	_hidden_animation_cells.clear()
 	_selected_cell = Vector2i(-1, -1)
@@ -1108,6 +1170,44 @@ func _create_cell_highlight(cell: Vector2i, horizontal: bool, color: Color) -> C
 	animation_layer.add_child(highlight)
 	highlight.move_to_front()
 	return highlight
+
+
+func _create_booster_preview_cell(cell: Vector2i, color: Color) -> ColorRect:
+	if animation_layer == null:
+		return null
+
+	var rect := _get_animation_cell_rect(cell)
+	if rect.size == Vector2.ZERO:
+		return null
+
+	var preview := ColorRect.new()
+	preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	preview.position = rect.position + rect.size * 0.07
+	preview.size = rect.size * 0.86
+	preview.color = color
+	preview.modulate = Color(1.0, 1.0, 1.0, 0.0)
+	animation_layer.add_child(preview)
+	preview.move_to_front()
+
+	var tween := create_tween()
+	tween.tween_property(preview, "modulate:a", 1.0, 0.05)
+	return preview
+
+
+func _play_booster_impact_flash(cells: Array[Vector2i], duration: float, color: Color) -> void:
+	for cell in cells:
+		var highlight := _create_booster_preview_cell(cell, color)
+		if highlight == null:
+			continue
+
+		var tween := create_tween()
+		_register_special_activation_tween(tween)
+		tween.tween_property(highlight, "modulate:a", 1.0, duration * 0.38)
+		tween.tween_property(highlight, "modulate:a", 0.0, duration * 0.62)
+		tween.tween_callback(func() -> void:
+			if is_instance_valid(highlight):
+				highlight.free()
+		)
 
 
 func _get_animation_cell_rect(cell: Vector2i) -> Rect2:

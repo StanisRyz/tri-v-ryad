@@ -87,7 +87,7 @@ func start_swap_turn(board: BoardModel, presenter, from_cell: Vector2i, to_cell:
 func start_booster_clear(board: BoardModel, presenter, result) -> void:
 	var generation := _begin()
 
-	await _play_sequence(_sequence_builder.build_booster_clear_sequence(result.cleared_cells, result.booster_id, result.damage_to_enemy, result.affected_tile_types))
+	await _play_sequence(_sequence_builder.build_booster_activation_and_clear_sequence(result.cleared_cells, result.booster_id, result.target_cell, result.damage_to_enemy, result.affected_tile_types))
 	if not _is_current(generation):
 		return
 

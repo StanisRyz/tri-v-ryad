@@ -10,6 +10,7 @@ const REFILL_ANIMATION_DURATION := 0.30
 const CASCADE_STEP_DURATION := 0.20
 const INVALID_SWAP_ANIMATION_DURATION := 0.24
 const SPECIAL_ACTIVATION_ANIMATION_DURATION := 0.22
+const BOOSTER_ACTIVATION_ANIMATION_DURATION := 0.18
 ## Covers the matched-crystal gather-into-creation-cell phase plus the
 ## creation-cell pulse/flash phase; see BoardView._play_overlay_special_create().
 const SPECIAL_CREATE_ANIMATION_DURATION := 0.36
@@ -71,6 +72,7 @@ func build_from_booster_result(result):
 	if result.cleared_cells.is_empty():
 		return sequence
 
+	_add_booster_activation_request(sequence, result.cleared_cells, result.booster_id, result.target_cell, result.affected_tile_types)
 	sequence.add_request(REQUEST_SCRIPT.new_request(REQUEST_SCRIPT.TYPE_BOOSTER_CLEAR)
 		.with_cells(result.cleared_cells)
 		.with_duration(0.08)
@@ -167,6 +169,24 @@ func build_booster_clear_sequence(cleared_cells: Array[Vector2i], booster_id: St
 	if cleared_cells.is_empty():
 		return sequence
 
+	_add_booster_activation_request(sequence, cleared_cells, booster_id, Vector2i(-1, -1), affected_tile_types)
+	sequence.add_request(REQUEST_SCRIPT.new_request(REQUEST_SCRIPT.TYPE_BOOSTER_CLEAR)
+		.with_cells(cleared_cells)
+		.with_duration(0.08)
+		.with_payload({
+			"booster_id": booster_id,
+			"damage_to_enemy": damage_to_enemy,
+			"affected_tile_types": affected_tile_types.duplicate(),
+		}))
+	return sequence
+
+
+func build_booster_activation_and_clear_sequence(cleared_cells: Array[Vector2i], booster_id: String, target_cell: Vector2i, damage_to_enemy: int, affected_tile_types: Array):
+	var sequence := SEQUENCE_SCRIPT.new()
+	if cleared_cells.is_empty():
+		return sequence
+
+	_add_booster_activation_request(sequence, cleared_cells, booster_id, target_cell, affected_tile_types)
 	sequence.add_request(REQUEST_SCRIPT.new_request(REQUEST_SCRIPT.TYPE_BOOSTER_CLEAR)
 		.with_cells(cleared_cells)
 		.with_duration(0.08)
@@ -197,6 +217,21 @@ func _add_gravity_and_refill_requests(sequence, fall_movements: Array, refill_ce
 		sequence.add_request(REQUEST_SCRIPT.new_request(REQUEST_SCRIPT.TYPE_REFILL)
 			.with_duration(REFILL_ANIMATION_DURATION)
 			.with_payload({"refill_cells": (refill_cells as Array).duplicate(true)}))
+
+
+func _add_booster_activation_request(sequence, cleared_cells: Array[Vector2i], booster_id: String, target_cell: Vector2i, affected_tile_types: Array) -> void:
+	var resolved_target := target_cell
+	if resolved_target == Vector2i(-1, -1) and not cleared_cells.is_empty():
+		resolved_target = cleared_cells[0]
+
+	sequence.add_request(REQUEST_SCRIPT.new_request(REQUEST_SCRIPT.TYPE_BOOSTER_ACTIVATION)
+		.with_cells(cleared_cells)
+		.with_duration(BOOSTER_ACTIVATION_ANIMATION_DURATION)
+		.with_payload({
+			"booster_id": booster_id,
+			"target_cell": resolved_target,
+			"affected_tile_types": affected_tile_types.duplicate(),
+		}))
 
 
 func _add_cascade_step_requests(sequence, cascade_step: Dictionary) -> void:

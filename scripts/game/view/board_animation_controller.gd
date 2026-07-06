@@ -91,6 +91,8 @@ func _play_request(request, board_view: Control, effective_duration: float) -> v
 			_play_special_activation_request(request, board_view, effective_duration)
 		REQUEST_SCRIPT.TYPE_SPECIAL_CREATE:
 			_play_special_create_request(request, board_view, effective_duration)
+		REQUEST_SCRIPT.TYPE_BOOSTER_ACTIVATION:
+			_play_booster_activation_request(request, board_view, effective_duration)
 		REQUEST_SCRIPT.TYPE_BOOSTER_CLEAR:
 			_play_booster_clear_request(request, board_view, effective_duration)
 		REQUEST_SCRIPT.TYPE_GRAVITY_FALL:
@@ -178,6 +180,19 @@ func _play_booster_clear_request(request, board_view: Control, effective_duratio
 		board_view.play_booster_clear_animation(request.cells, effective_duration)
 	elif board_view.has_method("flash_cells"):
 		board_view.flash_cells(request.cells, effective_duration)
+
+
+func _play_booster_activation_request(request, board_view: Control, effective_duration: float) -> void:
+	if board_view.has_method("play_booster_activation_animation"):
+		board_view.play_booster_activation_animation(
+			String(request.payload.get("booster_id", "")),
+			request.payload.get("target_cell", Vector2i(-1, -1)),
+			request.cells,
+			request.payload.get("affected_tile_types", []),
+			effective_duration
+		)
+	elif board_view.has_method("pulse_cells"):
+		board_view.pulse_cells(request.cells, effective_duration)
 
 
 func _get_swap_cells(request) -> Array[Vector2i]:

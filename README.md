@@ -2,7 +2,7 @@
 
 Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
-The project is currently through Stage 48: Special tile activation animations v0.1. Hero/RPG systems (TeamSelect, hero party UI, hero abilities/charge/lane damage, hero upgrades) remain frozen and hidden from the active flow via `FeatureFlags.HERO_SYSTEMS_ENABLED := false`, and gameplay deals direct match-3 damage to the enemy. Each battle selects one positive round modifier that multiplies damage for matched cells of specific colors, while Stage 34 direct balance controls moves and enemy HP. The active flow remains App startup -> LevelSelect -> GameScreen -> LevelSelect, with Settings opened from the LevelSelect top panel; MainMenu remains in the project as inactive legacy/future code but is skipped by normal startup and play. The app shell, a level-select hub with numbers-only labels for `level_1` through `level_100` grouped into 10 locked zones, a shared 10-enemy base roster with battle-start random enemy selection and direct-mode HP scaling, ImageSlot-backed battle background and enemy visual placeholders, the safe cached `ImageSlot`/`GameAssetCatalog` placeholder image pipeline, the safe cached `AudioAssetCatalog`/`AudioManager` no-op audio foundation, three battle-local boosters (Hammer, Time Freeze, Rocket Barrage), and the Stage 46-48 stepwise board animation pipeline all remain active for a vertical 9:16 game. `AnimatedTurnFlow` is the active owner of stepwise swap, clear, special creation, special activation, gravity/refill, cascade, booster clear, and final-board handoff visuals during animated turns; `TurnFeedbackPresenter` is limited to text/status/enemy feedback for valid animated turns and must not replay board movement, clear, special activation, highlight, refill, or full-board refresh effects after `AnimatedTurnFlow` has already handled them. Hero code, MainMenu, TeamSelect, and UpgradeScreen remain in the project (not deleted) for a future revisit.
+The project is currently through Stage 49: Booster targeting and booster animation polish v0.1. Hero/RPG systems (TeamSelect, hero party UI, hero abilities/charge/lane damage, hero upgrades) remain frozen and hidden from the active flow via `FeatureFlags.HERO_SYSTEMS_ENABLED := false`, and gameplay deals direct match-3 damage to the enemy. Each battle selects one positive round modifier that multiplies damage for matched cells of specific colors, while Stage 34 direct balance controls moves and enemy HP. The active flow remains App startup -> LevelSelect -> GameScreen -> LevelSelect, with Settings opened from the LevelSelect top panel; MainMenu remains in the project as inactive legacy/future code but is skipped by normal startup and play. The app shell, a level-select hub with numbers-only labels for `level_1` through `level_100` grouped into 10 locked zones, a shared 10-enemy base roster with battle-start random enemy selection and direct-mode HP scaling, ImageSlot-backed battle background and enemy visual placeholders, the safe cached `ImageSlot`/`GameAssetCatalog` placeholder image pipeline, the safe cached `AudioAssetCatalog`/`AudioManager` no-op audio foundation, three battle-local boosters (Hammer, Time Freeze, Rocket Barrage) with selected/used states and targeting previews, and the Stage 46-49 stepwise board animation pipeline all remain active for a vertical 9:16 game. `AnimatedTurnFlow` is the active owner of stepwise swap, clear, special creation, special activation, gravity/refill, cascade, booster activation/clear, and final-board handoff visuals during animated turns; `TurnFeedbackPresenter` is limited to text/status/enemy feedback for valid animated turns and must not replay board movement, clear, special activation, booster board visuals, highlight, refill, or full-board refresh effects after `AnimatedTurnFlow` has already handled them. Hero code, MainMenu, TeamSelect, and UpgradeScreen remain in the project (not deleted) for a future revisit.
 
 ## Project Direction
 
@@ -41,7 +41,7 @@ This stage includes:
 - `EnemyPanel` uses an `ImageSlot` for the active enemy visual, resolving the selected enemy ID to a reserved enemy asset key.
 - `TileView` resolves optional tile textures through the cached asset pipeline; missing tile textures preserve the current color placeholders and special `H`/`V`/`B` markers.
 - LevelSelect, Settings, battle HUD/status/result panels, and RoundModifierPanel now carry stable reserved UI asset keys for later texture art.
-- `BoosterPanel` uses the existing `BoosterButton` icon/state placeholder pipeline for Hammer, Time Freeze, and Rocket Barrage in active combat.
+- `BoosterPanel` uses the existing `BoosterButton` icon/state placeholder pipeline for Hammer, Time Freeze, and Rocket Barrage in active combat, including readable selected and used visual states.
 - Empty asset folders under `assets/images/backgrounds/`, `assets/images/enemies/`, `assets/images/tiles/`, `assets/images/ui/`, `assets/images/boosters/`, and `assets/images/heroes/` for later real images.
 - `AudioAssetCatalog` maps reserved audio keys to future `res://assets/audio/` paths and loads optional streams safely with a small cache for loaded and missing audio.
 - `AudioManager` is registered as an autoload singleton, owns one music player and an 8-player SFX pool, and safely no-ops when audio files are missing.
@@ -107,7 +107,7 @@ This stage includes:
 - Hybrid tile swapping through `BoardInputController`: two-click fallback, mouse drag, and touch/swipe style input.
 - `BoardMotionAnimator` coordinates view-only board motion feedback without changing board, battle, progression, or save rules.
 - `BoardAnimationRequest` and `BoardAnimationSequence` define ordered future board animation events without owning gameplay rules.
-- `AnimatedTurnFlow` owns active stepwise board visuals during animated turns: swap, clear, special creation, special activation, gravity/refill, cascade, booster clear, and final board handoff.
+- `AnimatedTurnFlow` owns active stepwise board visuals during animated turns: swap, clear, special creation, special activation, gravity/refill, cascade, booster activation/clear, and final board handoff.
 - `BoardAnimationController` plays settings-aware board animation requests with `animations_enabled` and `reduced_motion_enabled` support.
 - `BoardAnimationSequenceBuilder` builds both per-phase stepwise sequences for `AnimatedTurnFlow` and legacy presentation sequences for older/fallback callers.
 - `TurnFeedbackPresenter` must not duplicate board movement, match highlights, clear effects, special activation visuals, refill effects, or full-board refresh animations after `AnimatedTurnFlow` has already played a valid turn. Valid animated turns use text/status feedback only; invalid swaps keep their rejection feedback path.
@@ -116,7 +116,7 @@ This stage includes:
 - `BoardView` exposes presentation-only animation helpers over existing tile views, including tile lookup, cell centers, cell flashes, and cell pulses.
 - Valid animated turns resolve in order: swap -> current match clear/special creation -> gravity/refill -> cascade checks/repeats -> final board handoff -> damage particles/enemy hit -> text/result feedback.
 - Invalid swaps get brief rejection feedback on the involved cells and clean their transient visuals afterward.
-- Match/cascade/special/booster clears clean selected cells, highlights, overlay ghosts, `AnimationLayer` children, tile tint/scale drift, and board particles before result overlays, restart, or LevelSelect return.
+- Match/cascade/special/booster clears and booster targeting previews clean selected cells, highlights, preview nodes, overlay ghosts, `AnimationLayer` children, tile tint/scale drift, and board particles before result overlays, restart, or LevelSelect return.
 - Input locking during turn feedback and after victory/defeat remains tied to `feedback_finished`.
 - Swapped cell feedback, invalid swap feedback, match highlights, refill feedback, temporary Hero Lane highlights, and short damage/enemy action status messages.
 - The portrait battle board is scaled to match the hero party panel width, and permanent Hero Lane separator/debug grid visuals are removed from the normal board state.
@@ -161,7 +161,7 @@ This stage includes:
 
 This stage excludes:
 
-- Wrapped bombs, special + special combos, special battle damage, cascade damage beyond the current direct-mode stepwise flow, booster targeting/animation polish, result flow UX polish, full falling polish, real tile movement, real/final audio assets, final particle/effect art, and final art.
+- Wrapped bombs, special + special combos, special battle damage, cascade damage beyond the current direct-mode stepwise flow, result flow UX polish, full falling polish, real tile movement, real/final audio assets, final particle/effect art, and final art.
 - Target selection, cooldowns, ability upgrades, gacha, rarity, hero unlocks, hero shards, hero inventory, portraits, final art, drag-and-drop team UI, and complex ability additions.
 - One-time rewards, stars-based rewards, level map, chapters, complex economy, reset upgrades, and complex objectives.
 - New heroes, hero unlocks, gacha, rarity, shards, ability upgrades, TeamSelectScreen rework, Yandex SDK, cloud save, ads, payments, real/final audio assets, final particle/effect art, and final art.
@@ -553,7 +553,21 @@ Stage 48 is complete. It adds lightweight, presentation-only activation reads fo
 - Cleanup remains unchanged through the existing final handoff and transient-state cleanup; reduced motion keeps the same order with shorter/lighter playback, and disabled animations finish immediately through the controller.
 - `TurnFeedbackPresenter` remains text/status/enemy feedback only after valid animated turns and must not replay special board visuals.
 
-No board rules, damage formulas, progression, battle state, saves, Yandex SDK, cloud save, ads, payments, final art, or hero-system reactivation were changed. Next roadmap stages: Stage 49 booster targeting/animation polish and Stage 50 result flow UX polish.
+No board rules, damage formulas, progression, battle state, saves, Yandex SDK, cloud save, ads, payments, final art, or hero-system reactivation were changed.
+
+## Stage 49: Booster Targeting and Booster Animation Polish v0.1
+
+Stage 49 is complete. It improves active direct-mode booster UX without changing booster rules, damage formulas, balance, progression, saves, platform code, art assets, or hero-system behavior.
+
+- Hammer and Rocket Barrage now use a preview-confirm targeting flow: select the booster, tap a crystal to preview affected cells, then tap that same crystal again to apply. Pressing the same selected booster cancels targeting.
+- Hammer previews the clipped 3x3 area around the selected crystal, including edge and corner targets, and then plays a target pulse plus full-cell impact flash before the existing booster clear/gravity/refill/cascade flow.
+- Rocket Barrage previews all currently visible cells that match the selected crystal's tile type and then pulses the target plus briefly flashes the same-color group before the existing clear flow.
+- Time Freeze remains non-board feedback only: it activates immediately, pulses the booster button/status path, adds free turns, and does not request board clear animation when no cells are cleared.
+- Used boosters stay visibly unavailable through dimmed/disabled-looking button state, but pressing them still gives a short "already used" response instead of silently doing nothing. Selected booster state is cleared after cancel/apply/use.
+- `BoardView.show_booster_target_preview()` and `clear_booster_target_preview()` own presentation-only preview nodes on `AnimationLayer`. Preview/effect cleanup runs on booster apply, cancel, selected-booster changes, disabled-animation cleanup, result overlay, restart, and LevelSelect return.
+- `BoardAnimationRequest.TYPE_BOOSTER_ACTIVATION` plays before `TYPE_BOOSTER_CLEAR` inside the existing `AnimatedTurnFlow` booster path, so damage particles and result overlays still wait until board animation and cleanup finish.
+
+Next roadmap stage: Stage 50 result screen and level flow UX polish.
 
 ## How To Open And Run
 
@@ -564,7 +578,7 @@ No board rules, damage formulas, progression, battle state, saves, Yandex SDK, c
 5. Choose an unlocked zone, then choose an unlocked level to open GameScreen directly (TeamSelect is skipped in the active flow).
 6. Check the round modifier panel above the board to see the active battle's color damage buff (e.g. "Red Surge — Red crystals deal x3 damage").
 7. Click one tile, then click a neighboring tile to attempt a swap, or drag/swipe from a tile toward a neighbor. Clearing crystals deals direct damage to the enemy, boosted for any color the current round modifier buffs.
-8. Use the booster panel under the board: Hammer and Rocket ask for a crystal target, while Time Freeze activates immediately.
+8. Use the booster panel under the board: Hammer and Rocket enter targeting mode, tap a crystal to preview affected cells, then tap the same crystal again to apply; pressing the same selected booster cancels targeting. Time Freeze activates immediately with non-board feedback.
 9. Win a battle to save completion, earn stars, and unlock the next level.
 10. Press Settings in the LevelSelect top panel to open SettingsScreen and toggle Animations, Reduced Motion, Debug Labels, Music, and Sound Effects.
 11. Press Levels/Back to return to LevelSelect.
@@ -980,6 +994,6 @@ godot --headless --script res://scripts/tests/booster_damage_effect_flow_test.gd
 
 ## Next Planned Stages
 
-- Stage 26-30 block is complete. Stage 31 (hero portrait buttons and ability bars) is complete. Stage 32 (hero systems freeze and direct match damage foundation) is complete. Stage 33 (round modifiers and color damage rules) is complete. Stage 34 (direct match-3 balance pass) is complete. Stage 35 (direct LevelSelect startup and simplified UX polish) is complete. Stage 36 (ImageSlot asset placeholder pipeline) is complete. Stage 37 (asset loading integration for active imageholders) is complete. Stage 38 (AudioManager foundation) is complete. Stage 39 (Complete AssetKey texture binding) is complete. Stage 40 (Booster system foundation) is complete. Stage 41 (Board animation foundation) is complete. Stage 42 (Swap and match clear animations) is complete. Stage 43 (Gravity, refill and cascade animation flow) is complete. Stage 44 (Damage particles and enemy hit feedback) is complete. Stage 45 (Gameplay animation timeline stabilization) is complete. Stage 46 (Stepwise board resolution animation pipeline) is complete. Stage 47 (Animation QA and board visual stability pass) is complete. Stage 48 (Special tile activation animations) is complete.
-- Next roadmap stages: Stage 49 booster targeting/animation polish and Stage 50 result flow UX polish.
+- Stage 26-30 block is complete. Stage 31 (hero portrait buttons and ability bars) is complete. Stage 32 (hero systems freeze and direct match damage foundation) is complete. Stage 33 (round modifiers and color damage rules) is complete. Stage 34 (direct match-3 balance pass) is complete. Stage 35 (direct LevelSelect startup and simplified UX polish) is complete. Stage 36 (ImageSlot asset placeholder pipeline) is complete. Stage 37 (asset loading integration for active imageholders) is complete. Stage 38 (AudioManager foundation) is complete. Stage 39 (Complete AssetKey texture binding) is complete. Stage 40 (Booster system foundation) is complete. Stage 41 (Board animation foundation) is complete. Stage 42 (Swap and match clear animations) is complete. Stage 43 (Gravity, refill and cascade animation flow) is complete. Stage 44 (Damage particles and enemy hit feedback) is complete. Stage 45 (Gameplay animation timeline stabilization) is complete. Stage 46 (Stepwise board resolution animation pipeline) is complete. Stage 47 (Animation QA and board visual stability pass) is complete. Stage 48 (Special tile activation animations) is complete. Stage 49 (Booster targeting and booster animation polish) is complete.
+- Next roadmap stage: Stage 50 result screen and level flow UX polish.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.

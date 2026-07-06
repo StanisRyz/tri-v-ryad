@@ -3,6 +3,7 @@ class_name BoosterResolveResult
 
 var is_valid := false
 var booster_id := ""
+var target_cell := Vector2i(-1, -1)
 var cleared_cells: Array[Vector2i] = []
 var damage_to_enemy := 0
 var affected_tile_types: Array[int] = []
@@ -18,6 +19,7 @@ func to_dictionary() -> Dictionary:
 	return {
 		"is_valid": is_valid,
 		"booster_id": booster_id,
+		"target_cell": target_cell,
 		"cleared_cells": cleared_cells.duplicate(),
 		"damage_to_enemy": damage_to_enemy,
 		"affected_tile_types": affected_tile_types.duplicate(),

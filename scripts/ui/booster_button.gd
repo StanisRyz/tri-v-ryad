@@ -11,6 +11,7 @@ var _booster_id := ""
 var _uses_left := 0
 var _selected := false
 var _disabled_state := false
+var _feedback_tween: Tween
 
 
 func _ready() -> void:
@@ -39,7 +40,7 @@ func set_selected(value: bool) -> void:
 
 func set_disabled_state(value: bool) -> void:
 	_disabled_state = value
-	disabled = value
+	disabled = false
 	_refresh()
 
 
@@ -61,3 +62,31 @@ func _refresh() -> void:
 	if uses_label != null:
 		uses_label.text = "x%d" % _uses_left
 	UI_ASSET_BINDING_SCRIPT.bind_asset_key(self, get_button_state_asset_key(), "booster_button")
+	modulate = Color(1.0, 1.0, 1.0, 0.45) if _disabled_state else Color.WHITE
+	if _selected:
+		scale = Vector2(1.04, 1.04)
+	elif _feedback_tween == null:
+		scale = Vector2.ONE
+
+
+func play_feedback(animations_enabled: bool = true, reduced_motion_enabled: bool = false) -> void:
+	if _feedback_tween != null:
+		_feedback_tween.kill()
+		_feedback_tween = null
+
+	pivot_offset = size * 0.5
+	if not animations_enabled:
+		return
+
+	var pulse_scale := Vector2(1.05, 1.05) if reduced_motion_enabled else Vector2(1.10, 1.10)
+	var base_scale := Vector2(1.04, 1.04) if _selected else Vector2.ONE
+	var pulse_duration := 0.05 if reduced_motion_enabled else 0.08
+	var settle_duration := 0.08 if reduced_motion_enabled else 0.12
+	_feedback_tween = create_tween()
+	_feedback_tween.tween_property(self, "scale", pulse_scale, pulse_duration)
+	_feedback_tween.parallel().tween_property(self, "modulate", Color(1.0, 0.92, 0.42, 1.0), pulse_duration)
+	_feedback_tween.tween_property(self, "scale", base_scale, settle_duration)
+	_feedback_tween.parallel().tween_property(self, "modulate", Color(1.0, 1.0, 1.0, 0.45) if _disabled_state else Color.WHITE, settle_duration)
+	_feedback_tween.finished.connect(func() -> void:
+		_feedback_tween = null
+	)

@@ -81,6 +81,7 @@ func resolve_targeted_booster(battle_state: BattleState, booster_id: String, tar
 	battle_state.update_status()
 
 	result.is_valid = true
+	result.target_cell = target_cell
 	result.cleared_cells = cells.duplicate()
 	result.damage_to_enemy = damage
 	result.affected_tile_types = _unique_tile_types(tile_types)

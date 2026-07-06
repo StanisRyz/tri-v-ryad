@@ -47,6 +47,7 @@ var _animated_turn_flow
 var _battle_effect_controller
 var _damage_particle_event_builder
 var _animations_enabled := true
+var _reduced_motion_enabled := false
 var _pending_battle_status := -1
 var _feedback_active := false
 var _current_level_id := "level_1"
@@ -60,6 +61,7 @@ var _last_stars_earned := 0
 var _debug_labels_enabled := false
 var _input_mode := "normal"
 var _selected_booster_id := ""
+var _booster_preview_target_cell := Vector2i(-1, -1)
 var _defer_board_update_for_turn := false
 var _pending_board_for_animation: BoardModel
 
@@ -414,6 +416,8 @@ func _on_ability_requested(lane_index: int) -> void:
 func _on_booster_state_changed(booster_state) -> void:
 	if booster_panel != null:
 		booster_panel.set_booster_state(booster_state)
+	if booster_state != null and _selected_booster_id != "" and not booster_state.can_use(_selected_booster_id):
+		_cancel_booster_targeting("Select a tile")
 
 
 func _on_booster_pressed(booster_id: String) -> void:
@@ -429,26 +433,27 @@ func _on_booster_pressed(booster_id: String) -> void:
 	var booster_state = _presenter.state.get("booster_state")
 	if booster_state == null or not booster_state.can_use(booster_id):
 		_play_invalid_swap()
+		_play_booster_button_feedback(booster_id)
 		_set_status("Booster already used.")
 		return
 
 	if config.is_targeted():
 		if _input_mode == "booster_targeting" and _selected_booster_id == booster_id:
-			_set_input_mode("normal", "")
-			board_view.clear_transient_visual_state()
-			_set_status("Select a tile")
+			_cancel_booster_targeting("Select a tile")
 			return
 
 		_play_button_click()
-		_set_input_mode("booster_targeting", booster_id)
+		_enter_booster_targeting(booster_id)
 		if booster_id == "hammer":
-			_set_status("Select a crystal for Hammer.")
+			_set_status("Hammer: tap a crystal to preview, tap again to use.")
 		else:
-			_set_status("Select a crystal for Rocket Barrage.")
+			_set_status("Rocket: tap a crystal to preview, tap again to use.")
 		return
 
 	_play_special_activate()
-	_begin_animated_turn()
+	_play_booster_button_feedback(booster_id)
+	_clear_booster_target_preview()
+	_input_controller.set_input_enabled(false)
 	_presenter.request_booster_activation(booster_id)
 
 
@@ -457,8 +462,11 @@ func _on_board_tile_pressed(cell: Vector2i) -> void:
 		return
 
 	var booster_id := _selected_booster_id
-	board_view.clear_selected_cell()
-	board_view.clear_cell_highlights()
+	if _booster_preview_target_cell != cell:
+		_show_booster_target_preview(booster_id, cell)
+		return
+
+	_clear_booster_target_preview()
 	_set_status("Using booster...")
 	_begin_animated_turn()
 	_set_input_mode("normal", "")
@@ -505,8 +513,10 @@ func _after_booster_board_animation(result) -> void:
 func _finish_booster_resolution(result) -> void:
 	if result.freeze_turns_added > 0:
 		_play_special_activate()
+		_play_booster_button_feedback(result.booster_id)
 	else:
 		_play_special_activate()
+		_play_booster_button_feedback(result.booster_id)
 		if result.damage_to_enemy > 0:
 			_play_enemy_damage()
 
@@ -538,10 +548,78 @@ func _set_status(message: String) -> void:
 func _set_input_mode(mode: String, booster_id: String) -> void:
 	_input_mode = mode
 	_selected_booster_id = booster_id
+	if mode != "booster_targeting":
+		_booster_preview_target_cell = Vector2i(-1, -1)
 	if booster_panel != null:
 		booster_panel.set_selected_booster(booster_id)
 	if _input_controller != null:
 		_input_controller.set_input_enabled(mode == "normal")
+
+
+func _enter_booster_targeting(booster_id: String) -> void:
+	_clear_booster_target_preview()
+	board_view.clear_transient_visual_state()
+	_set_input_mode("booster_targeting", booster_id)
+
+
+func _cancel_booster_targeting(status_message: String) -> void:
+	_clear_booster_target_preview()
+	board_view.clear_transient_visual_state()
+	_set_input_mode("normal", "")
+	_set_status(status_message)
+
+
+func _show_booster_target_preview(booster_id: String, target_cell: Vector2i) -> void:
+	var cells := _get_booster_preview_cells(booster_id, target_cell)
+	if cells.is_empty():
+		_clear_booster_target_preview()
+		_play_invalid_swap()
+		_set_status("Select a crystal on the board.")
+		return
+
+	_booster_preview_target_cell = target_cell
+	board_view.set_selected_cell(target_cell)
+	board_view.show_booster_target_preview(cells, booster_id)
+	if booster_id == "hammer":
+		_set_status("Hammer will clear this area. Tap the same crystal to use.")
+	else:
+		_set_status("Rocket will clear this color. Tap the same crystal to use.")
+
+
+func _get_booster_preview_cells(booster_id: String, target_cell: Vector2i) -> Array[Vector2i]:
+	var cells: Array[Vector2i] = []
+	if board_view == null or not board_view.has_method("get_visible_tile_type"):
+		return cells
+
+	var target_tile_type: int = board_view.get_visible_tile_type(target_cell)
+	if target_tile_type == BoardModel.EMPTY:
+		return cells
+
+	if booster_id == "hammer":
+		for y in range(target_cell.y - 1, target_cell.y + 2):
+			for x in range(target_cell.x - 1, target_cell.x + 2):
+				var cell := Vector2i(x, y)
+				if x < 0 or y < 0 or x >= BoardView.BOARD_SIZE or y >= BoardView.BOARD_SIZE:
+					continue
+				if board_view.get_visible_tile_type(cell) != BoardModel.EMPTY:
+					cells.append(cell)
+	elif booster_id == "rocket_barrage" and board_view.has_method("get_cells_with_visible_tile_type"):
+		cells = board_view.get_cells_with_visible_tile_type(target_tile_type)
+
+	return cells
+
+
+func _clear_booster_target_preview() -> void:
+	_booster_preview_target_cell = Vector2i(-1, -1)
+	if board_view != null and board_view.has_method("clear_booster_target_preview"):
+		board_view.clear_booster_target_preview()
+	if board_view != null:
+		board_view.clear_selected_cell()
+
+
+func _play_booster_button_feedback(booster_id: String) -> void:
+	if booster_panel != null and booster_panel.has_method("play_booster_feedback"):
+		booster_panel.play_booster_feedback(booster_id, _animations_enabled, _reduced_motion_enabled)
 
 
 func set_level_id(level_id: String) -> void:
@@ -568,6 +646,7 @@ func _apply_presentation_settings() -> void:
 	var reduced_motion_enabled: bool = settings.reduced_motion_enabled if settings != null else false
 	_debug_labels_enabled = settings.debug_labels_enabled if settings != null else false
 	_animations_enabled = animations_enabled
+	_reduced_motion_enabled = reduced_motion_enabled
 
 	TileView.configure_presentation(animations_enabled, reduced_motion_enabled)
 	HeroCard.set_debug_labels_enabled(_debug_labels_enabled)
@@ -586,6 +665,8 @@ func _apply_presentation_settings() -> void:
 	if not animations_enabled and board_view != null and board_view.is_animation_overlay_mode():
 		_apply_pending_board_for_animation()
 		board_view.clear_transient_visual_state()
+	if not animations_enabled and board_view != null:
+		board_view.clear_booster_target_preview()
 
 
 func _play_board_animation_sequence(sequence, finished_callback: Callable) -> void:
@@ -607,6 +688,7 @@ func _play_damage_particles(events: Array, finished_callback: Callable) -> void:
 
 
 func _begin_animated_turn() -> void:
+	_clear_booster_target_preview()
 	_defer_board_update_for_turn = true
 	_pending_board_for_animation = null
 	var snapshot := BoardVisualSnapshot.from_board_view(board_view)
@@ -635,6 +717,7 @@ func _force_cleanup_visual_state() -> void:
 		_board_animation_controller.clear_queue()
 	if board_view != null:
 		board_view.force_reset_animation_state()
+	_booster_preview_target_cell = Vector2i(-1, -1)
 	if _battle_effect_controller != null:
 		_battle_effect_controller.clear_effects(battle_effect_layer)
 	_pending_board_for_animation = null
