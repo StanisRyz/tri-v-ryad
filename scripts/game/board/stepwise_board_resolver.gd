@@ -23,7 +23,7 @@ func find_current_matches(board: BoardModel) -> Array[MatchResult]:
 	return _match_finder.find_matches(board)
 
 
-func build_clear_step(board: BoardModel, matches: Array[MatchResult], cascade_index: int) -> BoardResolveStep:
+func build_clear_step(board: BoardModel, matches: Array[MatchResult], cascade_index: int, preferred_cells: Array[Vector2i] = []) -> BoardResolveStep:
 	var step := BOARD_RESOLVE_STEP_SCRIPT.new()
 	step.cascade_index = cascade_index
 	step.matches = matches.duplicate()
@@ -35,7 +35,7 @@ func build_clear_step(board: BoardModel, matches: Array[MatchResult], cascade_in
 	for match_result in matches:
 		var creation_cell := Vector2i(-1, -1)
 		if _special_tile_resolver.should_create_special(match_result):
-			creation_cell = _special_tile_resolver.choose_special_cell(match_result)
+			creation_cell = _special_tile_resolver.choose_special_cell_for_match(match_result, preferred_cells)
 			var special_type := _special_tile_resolver.get_special_type_for_match(match_result)
 			if board.is_inside(creation_cell) and SPECIAL_TILE_TYPE_SCRIPT.is_valid(special_type) and special_type != SPECIAL_TILE_TYPE_SCRIPT.NONE:
 				board.set_special_tile(creation_cell, SPECIAL_TILE_DATA_SCRIPT.from_type(special_type))
@@ -43,6 +43,8 @@ func build_clear_step(board: BoardModel, matches: Array[MatchResult], cascade_in
 				step.created_special_tiles.append({
 					"cell": creation_cell,
 					"special_type": special_type,
+					"source_cells": match_result.cells.duplicate(),
+					"tile_type": match_result.tile_type,
 				})
 
 		for cell in match_result.cells:

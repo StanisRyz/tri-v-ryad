@@ -512,6 +512,16 @@ The previous polish hotfix fixed the overlay-to-real-board handoff itself, but t
 
 Stepwise board resolution and the improved invalid-swap (swap-and-return) behavior are unchanged.
 
+### Stage 46 polish hotfix 3: special creation gather animation and preferred spawn cell v0.1
+
+The previous hotfix kept a special's creation cell visually occupied but the special tile still just appeared there after a flat pulse; this hotfix makes the matched crystals visibly gather into the creation cell first, and makes player-created specials land on the cell the player actually swapped rather than a fixed match-center cell.
+
+- **Matched crystals gather into the creation cell.** `StepwiseBoardResolver.build_clear_step()` now records `source_cells` (the full matched-cell list) and `tile_type` on each `created_special_tiles` entry. `BoardAnimationSequenceBuilder.build_clear_sequence()` excludes those source cells from the plain `TYPE_MATCH_CLEAR` fade so they don't just fade in place. `BoardView._play_overlay_special_create()` now slides, shrinks, and fades each gathered ghost into the creation-cell ghost's position before the existing marker-update/pulse plays; the non-overlay real-tile fallback cannot move real `TileView` nodes inside `GridContainer`, so it instead fades the source tiles in place via `play_match_clear()` while the creation tile still gets its marker + flash.
+- **Player-created specials prefer the swapped cell.** A new `SpecialTileResolver.choose_special_cell_for_match(match_result, preferred_cells)` tries each cell in `preferred_cells` in order (returning the first one that's part of the match) before falling back to the existing deterministic center-cell `choose_special_cell()`. `StepwiseBoardResolver.build_clear_step()` gained an optional `preferred_cells` parameter that's threaded through to this new chooser. `AnimatedTurnFlow.start_swap_turn()` passes `[to_cell, from_cell]` as `preferred_cells` only for the very first resolve step (`cascade_index == 0`) right after a player swap, so a match created directly by that swap spawns its special on the swapped-into cell if it's part of the match, else the swapped-from cell, else the old center cell.
+- **Cascade/gravity-created specials are unaffected.** No preferred cells are passed for any cascade step after the first, so specials created by falling/refilled matches keep the unchanged center-cell placement.
+
+Stepwise board resolution, the swap-and-return invalid-swap behavior, and prior overlay/handoff fixes are unchanged.
+
 ## How To Open And Run
 
 1. Open Godot 4.x.

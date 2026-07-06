@@ -9,7 +9,9 @@ const GRAVITY_ANIMATION_DURATION := 0.35
 const REFILL_ANIMATION_DURATION := 0.30
 const CASCADE_STEP_DURATION := 0.20
 const INVALID_SWAP_ANIMATION_DURATION := 0.24
-const SPECIAL_CREATE_ANIMATION_DURATION := 0.22
+## Covers the matched-crystal gather-into-creation-cell phase plus the
+## creation-cell pulse/flash phase; see BoardView._play_overlay_special_create().
+const SPECIAL_CREATE_ANIMATION_DURATION := 0.36
 
 
 func build_from_turn_presentation(data):
@@ -104,14 +106,22 @@ func build_clear_sequence(step):
 	# is about to become a special tile (see StepwiseBoardResolver.build_clear_step).
 	# The visual clear must only target step.cleared_cells, or the creation
 	# cell would fade out even though it should transform into a special tile.
-	if not step.cleared_cells.is_empty():
+	# Cells that instead gather into a creation cell (see below) are excluded
+	# here too, so they animate as a gather-in rather than a plain fade-out.
+	var gather_source_cells := _special_gather_source_cells(step.created_special_tiles)
+	var direct_clear_cells: Array[Vector2i] = []
+	for cell in step.cleared_cells:
+		if not gather_source_cells.has(cell):
+			direct_clear_cells.append(cell)
+
+	if not direct_clear_cells.is_empty():
 		sequence.add_request(REQUEST_SCRIPT.new_request(REQUEST_SCRIPT.TYPE_MATCH_CLEAR)
-			.with_cells(step.cleared_cells)
+			.with_cells(direct_clear_cells)
 			.with_duration(0.16)
 			.with_payload({
 				"source": source,
 				"cascade_index": step.cascade_index,
-				"cells_count": step.cleared_cells.size(),
+				"cells_count": direct_clear_cells.size(),
 			}))
 
 	if not step.created_special_tiles.is_empty():
@@ -210,4 +220,17 @@ func _special_creation_cells(created_special_tiles: Array) -> Array[Vector2i]:
 		var cell = (item as Dictionary).get("cell", Vector2i(-1, -1))
 		if cell is Vector2i:
 			cells.append(cell)
+	return cells
+
+
+## Matched cells that gather into a created special's creation cell instead of
+## fading out in place with the rest of the plain match clear.
+func _special_gather_source_cells(created_special_tiles: Array) -> Dictionary:
+	var cells := {}
+	for item in created_special_tiles:
+		var data := item as Dictionary
+		var creation_cell = data.get("cell", Vector2i(-1, -1))
+		for source_cell in data.get("source_cells", []):
+			if source_cell != creation_cell:
+				cells[source_cell] = true
 	return cells

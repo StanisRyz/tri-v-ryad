@@ -835,6 +835,17 @@ func play_special_create_animation(created_special_tiles: Array, duration: float
 		var data := item as Dictionary
 		var cell: Vector2i = data.get("cell", Vector2i(-1, -1))
 		var special_type: int = int(data.get("special_type", SPECIAL_TILE_TYPE_SCRIPT.NONE))
+
+		# Real TileView nodes inside GridContainer are never moved manually, so
+		# outside overlay mode the gathered source crystals just fade in place
+		# via their own existing match-clear fade rather than sliding.
+		for source_cell in data.get("source_cells", []):
+			if source_cell == cell:
+				continue
+			var source_tile := get_tile_view(source_cell)
+			if source_tile != null:
+				source_tile.play_match_clear(duration)
+
 		var tile := get_tile_view(cell)
 		if tile == null:
 			continue
@@ -844,15 +855,21 @@ func play_special_create_animation(created_special_tiles: Array, duration: float
 
 
 ## Overlay-mode special creation: the creation cell's ghost was never faded
-## by the match-clear step (see build_clear_sequence(), which now animates
-## only step.cleared_cells), so it should already exist here. Update its
-## marker and pulse it in place instead of fading anything out.
+## by the match-clear step (see build_clear_sequence(), which excludes both the
+## creation cell and its gather-source cells from the plain match clear), so it
+## should already exist here. The other matched crystals' ghosts visually
+## gather into the creation cell (slide, shrink, fade), then the creation-cell
+## ghost's marker updates and pulses/flashes in place.
 func _play_overlay_special_create(created_special_tiles: Array, duration: float) -> void:
 	var safe_duration := maxf(duration, 0.01)
+	var gather_duration := safe_duration * 0.55
+	var pulse_duration := maxf(safe_duration - gather_duration, 0.01)
+
 	for item in created_special_tiles:
 		var data := item as Dictionary
 		var cell: Vector2i = data.get("cell", Vector2i(-1, -1))
 		var special_type: int = int(data.get("special_type", SPECIAL_TILE_TYPE_SCRIPT.NONE))
+		var source_cells: Array = data.get("source_cells", [])
 
 		var ghost := _get_valid_overlay_ghost(cell)
 		if ghost == null:
@@ -861,18 +878,46 @@ func _play_overlay_special_create(created_special_tiles: Array, duration: float)
 				continue
 			_overlay_ghosts[cell] = ghost
 
+		var creation_position: Vector2 = ghost.position
+
+		var gather_ghosts: Array[Control] = []
+		for source_cell_variant in source_cells:
+			var source_cell: Vector2i = source_cell_variant
+			if source_cell == cell:
+				continue
+			var gather_ghost := _get_valid_overlay_ghost(source_cell)
+			if gather_ghost == null:
+				continue
+			gather_ghosts.append(gather_ghost)
+			_overlay_ghosts.erase(source_cell)
+
+		if not gather_ghosts.is_empty():
+			var gather_tween := create_tween()
+			gather_tween.set_parallel(true)
+			for gather_ghost in gather_ghosts:
+				gather_tween.tween_property(gather_ghost, "position", creation_position, gather_duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+				gather_tween.tween_property(gather_ghost, "scale", Vector2.ZERO, gather_duration)
+				gather_tween.tween_property(gather_ghost, "modulate:a", 0.0, gather_duration)
+			gather_tween.chain().tween_callback(func() -> void:
+				for gather_ghost in gather_ghosts:
+					if is_instance_valid(gather_ghost):
+						gather_ghost.free()
+			)
+
 		ghost.text = SPECIAL_TILE_TYPE_SCRIPT.get_marker_text(special_type)
 
 		var base_scale: Vector2 = ghost.scale if ghost.scale != Vector2.ZERO else Vector2.ONE
 		var pulse_scale := base_scale * 1.12
-		var half_duration := safe_duration * 0.5
+		var half_pulse_duration := pulse_duration * 0.5
 		var flash_color := Color(1.35, 1.18, 0.55, 1.0)
 
-		var tween := create_tween()
-		tween.tween_property(ghost, "modulate", flash_color, half_duration)
-		tween.parallel().tween_property(ghost, "scale", pulse_scale, half_duration)
-		tween.chain().tween_property(ghost, "modulate", Color.WHITE, half_duration)
-		tween.parallel().tween_property(ghost, "scale", base_scale, half_duration)
+		var pulse_tween := create_tween()
+		if not gather_ghosts.is_empty():
+			pulse_tween.tween_interval(gather_duration)
+		pulse_tween.tween_property(ghost, "modulate", flash_color, half_pulse_duration)
+		pulse_tween.parallel().tween_property(ghost, "scale", pulse_scale, half_pulse_duration)
+		pulse_tween.chain().tween_property(ghost, "modulate", Color.WHITE, half_pulse_duration)
+		pulse_tween.parallel().tween_property(ghost, "scale", base_scale, half_pulse_duration)
 
 
 ## Safety net for _play_overlay_special_create() if the creation-cell ghost

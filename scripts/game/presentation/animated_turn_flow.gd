@@ -49,9 +49,13 @@ func start_swap_turn(board: BoardModel, presenter, from_cell: Vector2i, to_cell:
 	var board_result := BoardResolveResult.new()
 	var cascade_index := 0
 	var current_matches := _stepwise_resolver.find_current_matches(board)
+	# Only the first (player-swap) resolve step prefers the swapped cells for
+	# special-tile placement; cascade/gravity-created specials fall back to
+	# StepwiseBoardResolver's deterministic center-cell logic.
+	var preferred_cells: Array[Vector2i] = [to_cell, from_cell]
 
 	while not current_matches.is_empty():
-		var step := _stepwise_resolver.build_clear_step(board, current_matches, cascade_index)
+		var step := _stepwise_resolver.build_clear_step(board, current_matches, cascade_index, preferred_cells)
 		await _play_sequence(_sequence_builder.build_clear_sequence(step))
 		if not _is_current(generation):
 			return
@@ -73,6 +77,7 @@ func start_swap_turn(board: BoardModel, presenter, from_cell: Vector2i, to_cell:
 
 		cascade_index += 1
 		current_matches = _stepwise_resolver.find_current_matches(board)
+		preferred_cells = []
 
 	_end(generation)
 	presenter.finalize_swap_turn(from_cell, to_cell, matches, board_result)

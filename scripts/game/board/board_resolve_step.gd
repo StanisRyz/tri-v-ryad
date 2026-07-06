@@ -9,6 +9,9 @@ var cascade_index := 0
 var matches: Array[MatchResult] = []
 var matched_cells: Array[Vector2i] = []
 var special_cleared_cells: Array[Vector2i] = []
+## Each entry: {"cell": Vector2i, "special_type": int, "source_cells": Array[Vector2i], "tile_type": int}.
+## source_cells is the full matched-cell list that created the special (including "cell" itself),
+## used to animate the matched crystals gathering into the creation cell.
 var created_special_tiles: Array[Dictionary] = []
 var activated_special_tiles: Array[Dictionary] = []
 var cleared_cells: Array[Vector2i] = []

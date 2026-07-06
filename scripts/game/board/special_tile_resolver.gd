@@ -32,6 +32,21 @@ func choose_special_cell(match_result: MatchResult) -> Vector2i:
 	return match_result.cells[floori(float(match_result.cells.size()) / 2.0)]
 
 
+## preferred_cells is tried in order (e.g. [swapped_target_cell, swapped_source_cell])
+## so a player-created special lands on the cell the player actually swapped
+## into/out of; falls back to the deterministic center cell for
+## cascade/gravity-created specials or when no preferred cell is part of the match.
+func choose_special_cell_for_match(match_result: MatchResult, preferred_cells: Array[Vector2i] = []) -> Vector2i:
+	if match_result == null or match_result.cells.is_empty():
+		return Vector2i(-1, -1)
+
+	for preferred_cell in preferred_cells:
+		if match_result.contains_cell(preferred_cell):
+			return preferred_cell
+
+	return choose_special_cell(match_result)
+
+
 func get_line_clear_cells(board: BoardModel, cell: Vector2i, special_data) -> Array[Vector2i]:
 	var cells: Array[Vector2i] = []
 	if board == null or special_data == null or special_data.is_empty() or not board.is_inside(cell):
