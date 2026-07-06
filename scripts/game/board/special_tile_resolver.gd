@@ -47,6 +47,8 @@ func choose_special_cell_for_match(match_result: MatchResult, preferred_cells: A
 	return choose_special_cell(match_result)
 
 
+## Stage 52 v0.1: inactive cells (future holes) never appear in the returned
+## cells, so a line/color-bomb activation can never sweep through a hole.
 func get_line_clear_cells(board: BoardModel, cell: Vector2i, special_data) -> Array[Vector2i]:
 	var cells: Array[Vector2i] = []
 	if board == null or special_data == null or special_data.is_empty() or not board.is_inside(cell):
@@ -54,10 +56,14 @@ func get_line_clear_cells(board: BoardModel, cell: Vector2i, special_data) -> Ar
 
 	if special_data.is_horizontal_line():
 		for x in range(board.width):
-			cells.append(Vector2i(x, cell.y))
+			var candidate := Vector2i(x, cell.y)
+			if board.is_playable_cell(candidate):
+				cells.append(candidate)
 	elif special_data.is_vertical_line():
 		for y in range(board.height):
-			cells.append(Vector2i(cell.x, y))
+			var candidate := Vector2i(cell.x, y)
+			if board.is_playable_cell(candidate):
+				cells.append(candidate)
 
 	return cells
 
@@ -74,7 +80,7 @@ func get_color_bomb_clear_cells(board: BoardModel, cell: Vector2i, special_data)
 		return cells
 
 	for board_cell in board.get_all_cells():
-		if board.get_tile(board_cell) == target_tile_type:
+		if board.is_playable_cell(board_cell) and board.get_tile(board_cell) == target_tile_type:
 			cells.append(board_cell)
 
 	return cells
@@ -90,7 +96,7 @@ func collect_special_activation_cells(board: BoardModel, clear_cells: Array[Vect
 		if seen.has(cell):
 			continue
 		seen[cell] = true
-		if board.has_special_tile(cell):
+		if board.is_playable_cell(cell) and board.has_special_tile(cell):
 			activation_cells.append(cell)
 
 	return activation_cells

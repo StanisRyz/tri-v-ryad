@@ -51,7 +51,7 @@ func resolve_targeted_booster(battle_state: BattleState, booster_id: String, tar
 	if board == null or not board.is_inside(target_cell):
 		result.message = "Select a crystal on the board."
 		return result
-	if board.get_tile(target_cell) == BoardModel.EMPTY:
+	if not board.is_playable_cell(target_cell) or board.get_tile(target_cell) == BoardModel.EMPTY:
 		result.message = "Select a crystal on the board."
 		return result
 
@@ -92,6 +92,8 @@ func resolve_targeted_booster(battle_state: BattleState, booster_id: String, tar
 	return result
 
 
+## Stage 52 v0.1: inactive cells (future holes) are never affected by Hammer
+## or Rocket, since both only collect cells that are is_playable_cell().
 func get_hammer_cells(board: BoardModel, target_cell: Vector2i) -> Array[Vector2i]:
 	var cells: Array[Vector2i] = []
 	if board == null:
@@ -100,7 +102,7 @@ func get_hammer_cells(board: BoardModel, target_cell: Vector2i) -> Array[Vector2
 	for y in range(target_cell.y - 1, target_cell.y + 2):
 		for x in range(target_cell.x - 1, target_cell.x + 2):
 			var cell := Vector2i(x, y)
-			if board.is_inside(cell) and board.get_tile(cell) != BoardModel.EMPTY:
+			if board.is_playable_cell(cell) and board.get_tile(cell) != BoardModel.EMPTY:
 				cells.append(cell)
 	return cells
 
@@ -115,7 +117,7 @@ func get_rocket_cells(board: BoardModel, target_cell: Vector2i) -> Array[Vector2
 		return cells
 
 	for cell in board.get_all_cells():
-		if board.get_tile(cell) == target_tile_type:
+		if board.is_playable_cell(cell) and board.get_tile(cell) == target_tile_type:
 			cells.append(cell)
 	return cells
 

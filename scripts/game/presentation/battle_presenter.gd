@@ -88,12 +88,12 @@ func start_level(level_id: String) -> void:
 	var resolved_level_id := level_id if _level_catalog.has_level(level_id) else _level_catalog.get_default_level_id()
 	current_level_config = _level_catalog.get_level(resolved_level_id)
 	current_level_id = current_level_config.level_id
-	board = _generate_playable_board()
+	current_generated_challenge = _generate_board_challenge(current_level_id)
+	board = _generate_playable_board(current_generated_challenge.board_mask)
 	var selected_enemy = _enemy_selection_resolver.select_enemy_for_level(current_level_config, _enemy_catalog, _enemy_rng)
 	var scaled_enemy = _enemy_scaling_resolver.scale_enemy_for_level(selected_enemy, current_level_config)
 	current_background = _background_selection_resolver.select_background(_background_catalog, _background_rng)
 	current_round_modifier = _round_modifier_selection_resolver.select_modifier(_round_modifier_catalog, _round_modifier_rng)
-	current_generated_challenge = _generate_board_challenge(current_level_config.level_id)
 	state = _battle_factory.create_state(current_level_config, progress, hero_catalog, scaled_enemy)
 	state.board = board
 	state.get("booster_state").setup_from_catalog(_booster_catalog)
@@ -303,13 +303,16 @@ func _generate_board_challenge(level_id: String) -> GeneratedBoardChallenge:
 	return _board_challenge_generator.generate(level_id, safe_level_number, archetype, difficulty_budget, generation_seed)
 
 
-func _generate_playable_board() -> BoardModel:
+## Stage 52 v0.1: mask defaults to the Stage 51 full-9x9 placeholder shape
+## (Array of height rows of width bool-ish values) via BoardGenerator/BoardModel
+## falling back to fully active on an empty/invalid mask.
+func _generate_playable_board(mask: Array = []) -> BoardModel:
 	for attempt in range(100):
-		var candidate := _board_generator.generate()
+		var candidate := _board_generator.generate(BoardModel.DEFAULT_WIDTH, BoardModel.DEFAULT_HEIGHT, mask)
 		if _has_valid_move(candidate):
 			return candidate
 
-	return _board_generator.generate()
+	return _board_generator.generate(BoardModel.DEFAULT_WIDTH, BoardModel.DEFAULT_HEIGHT, mask)
 
 
 func _has_valid_move(candidate: BoardModel) -> bool:

@@ -43,5 +43,23 @@ func _init(
 	metadata = config_metadata.duplicate(true)
 
 
+## Stage 52 v0.1: reports active-cell count out of total board_mask cells so
+## the debug label reflects real hole counts once later stages generate them.
 func get_debug_label() -> String:
-	return "Challenge: %s, seed: %d" % [archetype, generation_seed]
+	return "Challenge: %s, seed: %d, active: %d/%d" % [archetype, generation_seed, _count_active_cells(), _count_total_cells()]
+
+
+func _count_active_cells() -> int:
+	var count := 0
+	for row in board_mask:
+		for value in row:
+			if value:
+				count += 1
+	return count
+
+
+func _count_total_cells() -> int:
+	var count := 0
+	for row in board_mask:
+		count += (row as Array).size()
+	return count

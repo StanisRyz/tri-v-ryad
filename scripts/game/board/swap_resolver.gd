@@ -8,6 +8,9 @@ func try_swap(board: BoardModel, from_cell: Vector2i, to_cell: Vector2i) -> Swap
 	if not board.is_inside(from_cell) or not board.is_inside(to_cell):
 		return SwapResult.new(false, from_cell, to_cell, [], "out_of_bounds")
 
+	if not board.is_cell_active(from_cell) or not board.is_cell_active(to_cell):
+		return SwapResult.new(false, from_cell, to_cell, [], "inactive_cell")
+
 	if not _are_adjacent(from_cell, to_cell):
 		return SwapResult.new(false, from_cell, to_cell, [], "not_adjacent")
 

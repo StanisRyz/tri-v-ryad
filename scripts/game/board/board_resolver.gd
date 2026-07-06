@@ -57,7 +57,7 @@ func _build_clear_step_data(board: BoardModel, matches: Array[MatchResult]) -> D
 		if _special_tile_resolver.should_create_special(match_result):
 			creation_cell = _special_tile_resolver.choose_special_cell(match_result)
 			var special_type := _special_tile_resolver.get_special_type_for_match(match_result)
-			if board.is_inside(creation_cell) and SPECIAL_TILE_TYPE_SCRIPT.is_valid(special_type) and special_type != SPECIAL_TILE_TYPE_SCRIPT.NONE:
+			if board.is_playable_cell(creation_cell) and SPECIAL_TILE_TYPE_SCRIPT.is_valid(special_type) and special_type != SPECIAL_TILE_TYPE_SCRIPT.NONE:
 				board.set_special_tile(creation_cell, SPECIAL_TILE_DATA_SCRIPT.from_type(special_type))
 				protected_special_cells[creation_cell] = true
 				created_special_tiles.append({
