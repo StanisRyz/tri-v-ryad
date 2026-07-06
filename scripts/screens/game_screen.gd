@@ -8,6 +8,9 @@ const BOARD_INPUT_CONTROLLER_SCRIPT := preload("res://scripts/game/input/board_i
 const TURN_FEEDBACK_PRESENTER_SCRIPT := preload("res://scripts/game/presentation/turn_feedback_presenter.gd")
 const ABILITY_FEEDBACK_PRESENTER_SCRIPT := preload("res://scripts/game/presentation/ability_feedback_presenter.gd")
 const LEVEL_LABEL_FORMATTER_SCRIPT := preload("res://scripts/game/config/level_label_formatter.gd")
+const LEVEL_CATALOG_SCRIPT := preload("res://scripts/game/config/level_catalog.gd")
+const LEVEL_ZONE_HELPER_SCRIPT := preload("res://scripts/game/config/level_zone_helper.gd")
+const LEVEL_COMPLETION_RESOLVER_SCRIPT := preload("res://scripts/game/progression/level_completion_resolver.gd")
 const BATTLE_MESSAGE_FORMATTER_SCRIPT := preload("res://scripts/game/presentation/battle_message_formatter.gd")
 const ASSET_KEY_RESOLVER_SCRIPT := preload("res://scripts/game/config/asset_key_resolver.gd")
 const UI_ASSET_BINDING_SCRIPT := preload("res://scripts/ui/ui_asset_binding.gd")
@@ -46,6 +49,8 @@ var _board_animation_sequence_builder
 var _animated_turn_flow
 var _battle_effect_controller
 var _damage_particle_event_builder
+var _level_catalog = LEVEL_CATALOG_SCRIPT.new()
+var _level_completion_resolver = LEVEL_COMPLETION_RESOLVER_SCRIPT.new()
 var _animations_enabled := true
 var _reduced_motion_enabled := false
 var _pending_battle_status := -1
@@ -58,6 +63,7 @@ var _reward_granted_for_current_battle := false
 var _last_reward_amount := 0
 var _completion_saved_for_current_battle := false
 var _last_stars_earned := 0
+var _last_victory_result_data: Dictionary = {}
 var _debug_labels_enabled := false
 var _input_mode := "normal"
 var _selected_booster_id := ""
@@ -174,6 +180,7 @@ func _setup_playable_battle() -> void:
 	_ability_feedback_presenter.feedback_finished.connect(_on_feedback_finished)
 
 	result_overlay.restart_pressed.connect(_on_restart_pressed)
+	result_overlay.next_level_pressed.connect(_on_next_level_pressed)
 	result_overlay.menu_pressed.connect(_on_menu_button_pressed)
 	result_overlay.upgrades_pressed.connect(_on_upgrades_pressed)
 	_start_new_battle()
@@ -187,6 +194,7 @@ func _start_new_battle() -> void:
 	_last_reward_amount = 0
 	_completion_saved_for_current_battle = false
 	_last_stars_earned = 0
+	_last_victory_result_data = {}
 	result_overlay.hide_result()
 	_set_input_mode("normal", "")
 	_input_controller.set_input_enabled(true)
@@ -326,17 +334,18 @@ func _on_feedback_finished() -> void:
 
 func _show_battle_result(status: int) -> void:
 	_input_controller.set_input_enabled(false)
-	_force_cleanup_visual_state()
 	if status == BattleState.Status.VICTORY:
 		_play_victory()
 		_grant_victory_reward_once()
 		_save_victory_completion_once()
 		_set_status(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_victory_message(_last_reward_amount, _last_stars_earned))
-		result_overlay.show_victory(_last_reward_amount, _last_stars_earned)
+		_force_cleanup_visual_state()
+		result_overlay.show_victory_result(_last_victory_result_data)
 	elif status == BattleState.Status.DEFEAT:
 		_play_defeat()
 		_set_status(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_defeat_message())
-		result_overlay.show_defeat()
+		_force_cleanup_visual_state()
+		result_overlay.show_defeat_result(_build_defeat_result_data())
 
 
 func _grant_victory_reward_once() -> void:
@@ -358,11 +367,74 @@ func _save_victory_completion_once() -> void:
 	_completion_saved_for_current_battle = true
 	_last_stars_earned = 0
 	if _progress_manager == null or _presenter == null or _presenter.current_level_config == null or _presenter.state == null:
+		_last_victory_result_data = _build_victory_result_data(null, false, false)
 		return
 
+	var next_level_id := _get_next_level_id(_presenter.current_level_config.level_id)
+	var was_current_completed: bool = _progress_manager.is_level_completed(_presenter.current_level_config.level_id)
+	var was_next_unlocked: bool = next_level_id != "" and _progress_manager.is_level_unlocked(_level_catalog, next_level_id)
+	var was_next_zone_unlocked: bool = next_level_id != "" and _is_zone_unlocked_for_level(next_level_id)
+	_last_stars_earned = _level_completion_resolver.calculate_stars(_presenter.current_level_config, _presenter.state.moves_left)
 	var state = _progress_manager.complete_level(_presenter.current_level_config, _presenter.state.moves_left)
 	if state != null:
-		_last_stars_earned = state.stars
+		var is_next_unlocked: bool = next_level_id != "" and _progress_manager.is_level_unlocked(_level_catalog, next_level_id)
+		var is_next_zone_unlocked: bool = next_level_id != "" and _is_zone_unlocked_for_level(next_level_id)
+		var next_level_newly_unlocked: bool = not was_current_completed and not was_next_unlocked and is_next_unlocked
+		var zone_newly_unlocked: bool = not was_current_completed and not was_next_zone_unlocked and is_next_zone_unlocked
+		_last_victory_result_data = _build_victory_result_data(state, next_level_newly_unlocked, zone_newly_unlocked)
+	else:
+		_last_victory_result_data = _build_victory_result_data(null, false, false)
+
+
+func _build_victory_result_data(level_progress_state, next_level_newly_unlocked: bool, zone_newly_unlocked: bool) -> Dictionary:
+	var level_config = _presenter.current_level_config if _presenter != null else null
+	var level_id: String = level_config.level_id if level_config != null else _current_level_id
+	var level_label := LEVEL_LABEL_FORMATTER_SCRIPT.format_level_label(level_id, _current_level_name)
+	var moves_left: int = max(0, _presenter.state.moves_left) if _presenter != null and _presenter.state != null else 0
+	var next_level_id := _get_next_level_id(level_id)
+	if next_level_id != "" and (_progress_manager == null or not _progress_manager.is_level_unlocked(_level_catalog, next_level_id)):
+		next_level_id = ""
+	var best_stars: int = int(level_progress_state.stars) if level_progress_state != null else _last_stars_earned
+	return {
+		"level_id": level_id,
+		"level_label": level_label,
+		"stars_earned": _last_stars_earned,
+		"best_stars": best_stars,
+		"moves_left": moves_left,
+		"reward_amount": _last_reward_amount,
+		"next_level_id": next_level_id,
+		"next_level_unlocked": next_level_newly_unlocked,
+		"new_zone_unlocked": zone_newly_unlocked,
+	}
+
+
+func _build_defeat_result_data() -> Dictionary:
+	var level_config = _presenter.current_level_config if _presenter != null else null
+	var level_id: String = level_config.level_id if level_config != null else _current_level_id
+	var level_label := LEVEL_LABEL_FORMATTER_SCRIPT.format_level_label(level_id, _current_level_name)
+	var moves_left: int = max(0, _presenter.state.moves_left) if _presenter != null and _presenter.state != null else 0
+	return {
+		"level_id": level_id,
+		"level_label": level_label,
+		"moves_left": moves_left,
+		"message": "Try again with bigger matches and special tiles.",
+	}
+
+
+func _get_next_level_id(level_id: String) -> String:
+	var level_number := LEVEL_LABEL_FORMATTER_SCRIPT.extract_level_number(level_id)
+	if level_number <= 0:
+		return ""
+	var next_level_id := "level_%d" % (level_number + 1)
+	return next_level_id if _level_catalog.has_level(next_level_id) else ""
+
+
+func _is_zone_unlocked_for_level(level_id: String) -> bool:
+	var zone_index: int = LEVEL_ZONE_HELPER_SCRIPT.get_zone_index_for_level_id(level_id)
+	if zone_index <= 0:
+		return true
+	var unlock_level_id: String = LEVEL_ZONE_HELPER_SCRIPT.get_zone_unlock_level_id(zone_index)
+	return _progress_manager != null and _progress_manager.is_level_completed(unlock_level_id)
 
 
 func _on_selection_changed(cell: Vector2i) -> void:
@@ -533,6 +605,16 @@ func _finish_booster_resolution(result) -> void:
 
 func _on_restart_pressed() -> void:
 	_play_button_click()
+	_start_new_battle()
+
+
+func _on_next_level_pressed() -> void:
+	_play_button_click()
+	var next_level_id := str(_last_victory_result_data.get("next_level_id", ""))
+	if next_level_id == "" or _progress_manager == null or not _progress_manager.is_level_unlocked(_level_catalog, next_level_id):
+		return
+
+	_current_level_id = next_level_id
 	_start_new_battle()
 
 

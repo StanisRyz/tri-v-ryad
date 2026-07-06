@@ -189,7 +189,6 @@ func reset_visual_state() -> void:
 	visible = true
 	modulate = Color.WHITE
 	scale = Vector2.ONE
-	position = Vector2.ZERO
 	_is_invalid_feedback = false
 	_apply_visuals()
 

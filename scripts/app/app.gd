@@ -39,6 +39,8 @@ func _show_level_select() -> void:
 		screen.set_progress_manager(_progress_manager)
 	if screen.has_method("set_settings_manager"):
 		screen.set_settings_manager(_settings_manager)
+	if screen.has_method("refresh_progress_state"):
+		screen.refresh_progress_state()
 	screen.level_selected.connect(_on_level_selected)
 	screen.settings_pressed.connect(_on_settings_pressed)
 

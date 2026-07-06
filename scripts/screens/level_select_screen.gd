@@ -48,6 +48,10 @@ func set_settings_manager(settings_manager) -> void:
 		_refresh()
 
 
+func refresh_progress_state() -> void:
+	_refresh()
+
+
 func _refresh() -> void:
 	_refresh_points()
 	_build_zone_selector()
