@@ -17,6 +17,11 @@ const TILE_COLORS := {
 	TileType.PURPLE: Color(0.56, 0.28, 0.82, 1.0),
 }
 
+## Stage 55 v0.1: inactive cells (holes) render as a mostly-transparent dark
+## inset with no border, no icon, and no marker text, so they read as "not
+## playable" rather than "empty but playable".
+const INACTIVE_CELL_BACKGROUND_COLOR := Color(0.04, 0.045, 0.06, 0.55)
+
 static var _animations_enabled := true
 static var _reduced_motion_enabled := false
 
@@ -26,6 +31,12 @@ var special_tile_data
 var _is_selected := false
 var _is_highlighted := false
 var _is_invalid_feedback := false
+## Stage 55 v0.1: true for a normal playable cell, false for an inactive
+## cell (hole). While false, _apply_visuals() always renders the inactive
+## look regardless of tile_type/special_tile_data/selected/highlighted/
+## invalid-feedback state, so no later call can accidentally make an
+## inactive cell look active/playable again.
+var _is_active := true
 var _press_start_position := Vector2.ZERO
 var _has_press_start := false
 var _suppress_next_pressed := false
@@ -45,6 +56,36 @@ func _ready() -> void:
 	if not pressed.is_connected(_on_pressed):
 		pressed.connect(_on_pressed)
 	_apply_visuals()
+
+
+## Stage 55 v0.1: switches this tile between normal playable rendering and
+## the inactive "hole" look. Deactivating clears every transient visual
+## state (selection, highlight, invalid feedback, in-flight tween) so
+## nothing lingers once the cell stops being playable; input is also cut
+## off at the source (mouse_filter) in addition to the _is_active guards in
+## _on_gui_input()/_on_pressed().
+func set_cell_active(active: bool) -> void:
+	if _is_active == active:
+		return
+
+	_is_active = active
+	if not _is_active:
+		_stop_active_tween()
+		_is_selected = false
+		_is_highlighted = false
+		_is_invalid_feedback = false
+		visible = true
+		modulate = Color.WHITE
+		scale = Vector2.ONE
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
+	else:
+		mouse_filter = Control.MOUSE_FILTER_STOP
+
+	_apply_visuals()
+
+
+func is_cell_active() -> bool:
+	return _is_active
 
 
 func set_tile(cell: Vector2i, new_tile_type: int) -> void:
@@ -81,25 +122,38 @@ func set_invalid_feedback(enabled: bool) -> void:
 
 
 func play_flash() -> void:
+	if not _is_active:
+		return
 	set_highlighted(true)
 	_play_flash_tween(Color(1.25, 1.25, 1.25, 1.0), Vector2(1.07, 1.07))
 
 
 func play_invalid_flash() -> void:
+	if not _is_active:
+		return
 	set_invalid_feedback(true)
 	_play_flash_tween(Color(1.25, 0.55, 0.55, 1.0), Vector2(1.04, 1.04))
 
 
 func play_swap_pulse() -> void:
+	if not _is_active:
+		return
 	_play_flash_tween(Color(1.18, 1.18, 1.18, 1.0), Vector2(1.08, 1.08))
 
 
 func play_invalid_pulse() -> void:
+	if not _is_active:
+		return
 	set_invalid_feedback(true)
 	_play_flash_tween(Color(1.30, 0.48, 0.45, 1.0), Vector2(0.94, 0.94))
 
 
+## Stage 55 v0.1: transient tint/scale effects (match/special/invalid/refill
+## feedback) are all guarded the same way — an inactive cell (hole) never
+## plays them, even if a caller mistakenly targets one directly.
 func play_match_fade() -> void:
+	if not _is_active:
+		return
 	_stop_active_tween()
 	visible = true
 	pivot_offset = size * 0.5
@@ -115,6 +169,8 @@ func play_match_fade() -> void:
 
 
 func play_match_clear(duration: float = 0.16) -> void:
+	if not _is_active:
+		return
 	_stop_active_tween()
 	visible = true
 	pivot_offset = size * 0.5
@@ -133,11 +189,15 @@ func play_match_clear(duration: float = 0.16) -> void:
 
 
 func play_special_flash() -> void:
+	if not _is_active:
+		return
 	set_highlighted(true)
 	_play_flash_tween(Color(1.35, 1.08, 0.45, 1.0), Vector2(1.12, 1.12))
 
 
 func play_special_clear(duration: float = 0.18) -> void:
+	if not _is_active:
+		return
 	set_highlighted(true)
 	_stop_active_tween()
 	visible = true
@@ -157,6 +217,8 @@ func play_special_clear(duration: float = 0.18) -> void:
 
 
 func play_invalid_bounce(_offset: Vector2, step_duration: float = 0.04) -> void:
+	if not _is_active:
+		return
 	set_invalid_feedback(true)
 	_stop_active_tween()
 	visible = true
@@ -173,6 +235,8 @@ func play_invalid_bounce(_offset: Vector2, step_duration: float = 0.04) -> void:
 
 
 func play_refill_appear() -> void:
+	if not _is_active:
+		return
 	_stop_active_tween()
 	visible = true
 	pivot_offset = size * 0.5
@@ -221,6 +285,9 @@ func has_tile_texture() -> bool:
 
 
 func _on_pressed() -> void:
+	if not _is_active:
+		return
+
 	if _suppress_next_pressed:
 		_suppress_next_pressed = false
 		return
@@ -228,7 +295,13 @@ func _on_pressed() -> void:
 	tile_pressed.emit(board_cell)
 
 
+## Stage 55 v0.1: inactive cells never select/drag, even if mouse_filter
+## somehow still let an event through — guarded explicitly rather than
+## relying only on mouse_filter/disabled semantics.
 func _on_gui_input(event: InputEvent) -> void:
+	if not _is_active:
+		return
+
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		var mouse_event := event as InputEventMouseButton
 		if mouse_event.pressed:
@@ -260,6 +333,11 @@ func _release_pointer(pointer_position: Vector2) -> void:
 
 
 func _apply_visuals() -> void:
+	if not _is_active:
+		_apply_inactive_visuals()
+		return
+
+	disabled = false
 	var base_color: Color = TILE_COLORS.get(tile_type, Color(0.20, 0.22, 0.26, 1.0))
 	var style := StyleBoxFlat.new()
 	style.bg_color = base_color.lightened(0.22) if _is_selected or _is_highlighted else base_color
@@ -293,6 +371,30 @@ func _apply_visuals() -> void:
 	add_theme_color_override("font_hover_color", Color.WHITE)
 	add_theme_color_override("font_pressed_color", Color.WHITE)
 	add_theme_font_size_override("font_size", 24 if _get_special_marker_text() == "B" else 22)
+
+
+## Stage 55 v0.1: inactive cells never show a tile texture/color, a special
+## marker, or any selected/highlight/invalid border — just a low, mostly
+## transparent inset so the 9x9 GridContainer layout stays stable while the
+## cell clearly reads as "not playable" rather than an empty playable cell.
+func _apply_inactive_visuals() -> void:
+	var style := StyleBoxFlat.new()
+	style.bg_color = INACTIVE_CELL_BACKGROUND_COLOR
+	style.border_width_left = 0
+	style.border_width_top = 0
+	style.border_width_right = 0
+	style.border_width_bottom = 0
+	style.corner_radius_top_left = 6
+	style.corner_radius_top_right = 6
+	style.corner_radius_bottom_left = 6
+	style.corner_radius_bottom_right = 6
+	add_theme_stylebox_override("normal", style)
+	add_theme_stylebox_override("hover", style)
+	add_theme_stylebox_override("pressed", style)
+	add_theme_stylebox_override("disabled", style)
+	icon = null
+	text = ""
+	disabled = true
 
 
 func _get_special_marker_text() -> String:

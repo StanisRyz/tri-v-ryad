@@ -37,6 +37,9 @@ static func from_board_view(board_view: BoardView) -> BoardVisualSnapshot:
 				"asset_key": tile.get_tile_asset_key() if tile.has_method("get_tile_asset_key") else "",
 				"placeholder_color": TileView.TILE_COLORS.get(tile.tile_type, Color(0.20, 0.22, 0.26, 1.0)),
 				"marker_text": tile.get_marker_text() if tile.has_method("get_marker_text") else "",
+				## Stage 55 v0.1: lets build_full_board_ghosts() skip inactive
+				## cells entirely (their real TileView stays visible instead).
+				"is_active": tile.is_cell_active() if tile.has_method("is_cell_active") else true,
 			}
 
 	return snapshot

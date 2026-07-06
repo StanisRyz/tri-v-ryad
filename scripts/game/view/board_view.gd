@@ -55,6 +55,13 @@ func set_board(board: BoardModel) -> void:
 	refresh_all_tiles()
 
 
+## Stage 55 v0.1: the single choke point that syncs every TileView's active
+## state from the board mask (set_cell_active() first, since TileView
+## ignores tile/special/selected/highlighted/invalid state entirely while
+## inactive). Covers initial render, full refresh, restart/next-level/retry
+## (all route through GameScreen -> BattlePresenter.start_level() ->
+## board_changed -> set_board()), and the post-overlay handoff in
+## apply_board_under_overlay(), which also calls this.
 func refresh_all_tiles() -> void:
 	if _board == null:
 		return
@@ -62,6 +69,7 @@ func refresh_all_tiles() -> void:
 	for cell in _board.get_all_cells():
 		var tile := _tile_views.get(cell) as TileView
 		if tile != null:
+			tile.set_cell_active(_board.is_cell_active(cell))
 			tile.set_tile(cell, _board.get_tile(cell))
 			tile.set_special_tile(_board.get_special_tile(cell))
 			tile.set_selected(cell == _selected_cell)
@@ -115,10 +123,8 @@ func clear_transient_visual_state() -> void:
 
 
 func flash_cells(cells: Array[Vector2i], _duration: float = 0.08) -> void:
-	for cell in cells:
-		var tile := get_tile_view(cell)
-		if tile != null:
-			tile.play_flash()
+	for tile in get_tile_views(cells):
+		tile.play_flash()
 
 
 func flash_invalid_cells(cells: Array[Vector2i]) -> void:
@@ -143,9 +149,15 @@ func get_cell_global_center(cell: Vector2i) -> Vector2:
 	return tile.global_position + tile.size * 0.5
 
 
+## Stage 55 v0.1: filters out inactive cells so every transient-visual caller
+## that gathers tiles this way (highlights, match/special/booster clear
+## flashes, swap/invalid feedback, refill feedback, cascade flashes) safely
+## skips holes without each caller having to remember to filter itself.
 func get_tile_views(cells: Array[Vector2i]) -> Array:
 	var views := []
 	for cell in cells:
+		if _board != null and not _board.is_cell_active(cell):
+			continue
 		var tile := get_tile_view(cell)
 		if tile != null:
 			views.append(tile)
@@ -177,12 +189,18 @@ func get_cells_with_visible_tile_type(tile_type: int) -> Array[Vector2i]:
 	return cells
 
 
+## Stage 55 v0.1: Hammer's 3x3 preview and Rocket's same-color preview both
+## route through here, so skipping inactive cells here is enough to keep
+## either preview from ever drawing an overlay on a hole, regardless of what
+## the caller's cell list contains.
 func show_booster_target_preview(cells: Array[Vector2i], _preview_type: String) -> void:
 	clear_booster_target_preview()
 	if animation_layer == null:
 		return
 
 	for cell in cells:
+		if _board != null and not _board.is_cell_active(cell):
+			continue
 		var preview := _create_booster_preview_cell(cell, BOOSTER_TARGET_PREVIEW_COLOR)
 		if preview != null:
 			_booster_preview_nodes.append(preview)
@@ -243,8 +261,16 @@ func is_animation_overlay_mode() -> bool:
 	return _overlay_mode
 
 
+## Stage 55 v0.1: inactive cells (holes) are never hidden here and never get
+## an overlay ghost either (see build_full_board_ghosts()), since gravity
+## never targets them (Stage 54.2) — their real TileView already shows the
+## correct static "hole" look and simply stays visible underneath/alongside
+## the ghost layer for the whole overlay session.
 func hide_real_board_tiles() -> void:
 	for cell in _tile_views.keys():
+		var tile := _tile_views.get(cell) as TileView
+		if tile != null and not tile.is_cell_active():
+			continue
 		hide_tile_visual(cell)
 
 
@@ -296,6 +322,11 @@ func apply_board_under_overlay(board: BoardModel) -> void:
 	exit_animation_overlay_mode()
 
 
+## Stage 55 v0.1: no ghost is built for an inactive cell — its real TileView
+## was left visible by hide_real_board_tiles() and already shows the correct
+## hole look, and gravity/refill never target an inactive cell (Stage 54.2)
+## so no ghost lookup for that cell is ever needed during the overlay
+## session either.
 func build_full_board_ghosts(snapshot: BoardVisualSnapshot) -> void:
 	_overlay_ghosts.clear()
 	if animation_layer == null or snapshot == null:
@@ -303,6 +334,8 @@ func build_full_board_ghosts(snapshot: BoardVisualSnapshot) -> void:
 
 	for cell in snapshot.get_cells():
 		var data := snapshot.get_cell_data(cell)
+		if not bool(data.get("is_active", true)):
+			continue
 		var ghost := create_tile_ghost_from_data(
 			data.get("tile_type", BoardModel.EMPTY),
 			data.get("special_data"),
@@ -561,12 +594,17 @@ func _play_overlay_fade(cells: Array[Vector2i], duration: float) -> void:
 		)
 
 
+## Stage 55 v0.1: GravityResolver never emits a refill_cells entry whose
+## "to" is inactive (Stage 54.2), so this is a defensive safety net rather
+## than the primary guarantee.
 func _play_overlay_refill(refill_cells: Array, duration: float) -> void:
 	var cell_size: float = _get_board_rect().size.x / float(BOARD_SIZE)
 	var safe_duration := maxf(duration, 0.01)
 	for refill_item in refill_cells:
 		var refill_data := refill_item as Dictionary
 		var to_cell: Vector2i = refill_data.get("to", Vector2i(-1, -1))
+		if _board != null and not _board.is_cell_active(to_cell):
+			continue
 		var existing := _get_valid_overlay_ghost(to_cell)
 		if existing != null:
 			existing.free()
@@ -600,6 +638,11 @@ func _play_overlay_refill(refill_cells: Array, duration: float) -> void:
 		tween.tween_property(ghost, "modulate", Color.WHITE, minf(safe_duration, 0.12))
 
 
+## Stage 55 v0.1: a movement whose crosses_inactive_gap metadata (Stage 54.2)
+## is true never visibly slides its ghost across the hole — it gets its own
+## fade-out/jump/drop-in tween via _animate_overlay_pass_through_fall()
+## instead of joining the shared parallel position tween below. Movements
+## that don't cross a gap are completely unchanged.
 func _play_overlay_gravity_fall(movements: Array, duration: float) -> void:
 	var max_distance := 1
 	for movement in movements:
@@ -621,13 +664,39 @@ func _play_overlay_gravity_fall(movements: Array, duration: float) -> void:
 		var to_position: Vector2 = to_tile.global_position - animation_layer.global_position
 		var distance_ratio: float = float(movement_data.get("fall_distance", 1)) / float(max_distance)
 		var movement_duration := duration * clampf(0.6 + 0.4 * distance_ratio, 0.6, 1.0)
-		tween.tween_property(ghost, "position", to_position, movement_duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+
+		if bool(movement_data.get("crosses_inactive_gap", false)):
+			_animate_overlay_pass_through_fall(ghost, to_position, movement_duration)
+		else:
+			tween.tween_property(ghost, "position", to_position, movement_duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+
 		_overlay_ghosts.erase(from_cell)
 		_overlay_ghosts[to_cell] = ghost
 		animated = true
 
 	if not animated:
 		tween.kill()
+
+
+## Safe v0.1 pass-through visual: fade the ghost out near the source, jump
+## it straight to just above the target (no visible motion over the hole),
+## then drop/fade it in at the target. Runs on its own tween (registered
+## for cleanup) rather than the shared parallel tween above, since it needs
+## its own fade-then-move-then-fade sequence.
+func _animate_overlay_pass_through_fall(ghost: Control, to_position: Vector2, duration: float) -> void:
+	var fade_out_duration := maxf(duration * 0.3, 0.01)
+	var drop_duration := maxf(duration - fade_out_duration, 0.01)
+	var drop_start_position := to_position - Vector2(0, ghost.size.y * 0.6)
+
+	var pass_through_tween := create_tween()
+	_register_special_activation_tween(pass_through_tween)
+	pass_through_tween.tween_property(ghost, "modulate:a", 0.0, fade_out_duration)
+	pass_through_tween.tween_callback(func() -> void:
+		if is_instance_valid(ghost):
+			ghost.position = drop_start_position
+	)
+	pass_through_tween.tween_property(ghost, "position", to_position, drop_duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	pass_through_tween.parallel().tween_property(ghost, "modulate:a", 1.0, minf(drop_duration, 0.12))
 
 
 func play_gravity_fall_animation(movements: Array, duration: float) -> void:
@@ -700,6 +769,8 @@ func play_refill_animation(refill_cells: Array, duration: float) -> void:
 	for refill_item in refill_cells:
 		var refill_data := refill_item as Dictionary
 		var to_cell: Vector2i = refill_data.get("to", Vector2i(-1, -1))
+		if _board != null and not _board.is_cell_active(to_cell):
+			continue
 		var to_tile := get_tile_view(to_cell)
 		if to_tile == null:
 			continue
@@ -1192,6 +1263,8 @@ func _create_booster_preview_cell(cell: Vector2i, color: Color) -> ColorRect:
 
 func _play_booster_impact_flash(cells: Array[Vector2i], duration: float, color: Color) -> void:
 	for cell in cells:
+		if _board != null and not _board.is_cell_active(cell):
+			continue
 		var highlight := _create_booster_preview_cell(cell, color)
 		if highlight == null:
 			continue
