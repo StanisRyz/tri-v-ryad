@@ -636,10 +636,12 @@ One-time rewards, level map, chapters, stars-based rewards, reset upgrades, and 
 - `BoardAnimationController` routes `TYPE_SWAP`, `TYPE_INVALID_SWAP`, `TYPE_MATCH_CLEAR`, and `TYPE_SPECIAL_CLEAR` requests to concrete `BoardView` animation methods.
 - `BoardView` has an `AnimationLayer` above `TileGrid` for temporary visual nodes used by swap animations.
 - Valid swap animation creates two ghost tile controls, hides the original tile visuals while ghosts move toward each other, restores the originals, and cleans the animation layer.
-- Invalid swap animation applies a short bounce/shake to the involved cells, leaves board state unchanged, and keeps invalid visual feedback readable.
+- Valid swap animation defers resolved board refresh so the currently displayed crystals visibly trade places before the board view updates to the resolved turn.
+- Invalid swap animation applies a short overlay ghost bounce/shake to the involved cells, leaves board state unchanged, does not move real `TileView` nodes inside `GridContainer`, and keeps invalid visual feedback readable.
 - Match clear animation visibly flashes, scales, fades, and restores matched cells.
 - Special clear animation uses a stronger gold flash/scale/fade placeholder while final line-blast and color-bomb effects remain future work.
 - `animations_enabled` skips animation playback safely, and `reduced_motion_enabled` shortens durations and softens scale/motion.
 - Input remains locked through the existing `GameScreen` animation plus `TurnFeedbackPresenter` flow and unlocks after feedback when the battle is not finished.
 - No gravity/refill/cascade animation flow, damage particles, enemy hit animation, board rules, battle rules, booster rules, balance, progression, saves, Yandex SDK, cloud save, ads, payments, final art, particles, or hero-system reactivation were added.
 - Next planned stage: Stage 43, Gravity, refill and cascade animation flow v0.1.
+- Stage 42 hotfix: swap duration and pending-board timing were corrected for visible swap flow, and invalid swap cleanup now restores hidden tiles and clears temporary ghosts safely.

@@ -21,10 +21,16 @@ func _run() -> void:
 	var swap := _find_valid_swap(screen._presenter.board)
 	_expect_true(not swap.is_empty(), "game screen board has valid swap")
 	if not swap.is_empty():
+		var visible_from_type: int = screen.board_view.get_tile_view(swap["from"]).tile_type
+		var visible_to_type: int = screen.board_view.get_tile_view(swap["to"]).tile_type
 		screen._on_swap_requested(swap["from"], swap["to"])
 		_expect_false(screen._input_controller._input_enabled, "input is locked during animated turn flow")
+		_expect_true(screen._pending_board_for_animation != null, "resolved board is pending during swap animation")
+		_expect_equal(screen.board_view.get_tile_view(swap["from"]).tile_type, visible_from_type, "visible from tile is not refreshed before swap animation")
+		_expect_equal(screen.board_view.get_tile_view(swap["to"]).tile_type, visible_to_type, "visible to tile is not refreshed before swap animation")
 		await create_timer(2.0).timeout
 		_expect_false(screen._feedback_active, "turn animation and feedback finish")
+		_expect_true(screen._pending_board_for_animation == null, "pending board applies after animation flow")
 		if not screen._presenter.is_battle_finished():
 			_expect_true(screen._input_controller._input_enabled, "input unlocks after animation and feedback")
 
@@ -64,3 +70,10 @@ func _expect_true(value: bool, message: String) -> void:
 
 func _expect_false(value: bool, message: String) -> void:
 	_expect_true(not value, message)
+
+
+func _expect_equal(actual, expected, message: String) -> void:
+	if actual == expected:
+		return
+	_failures += 1
+	push_error("FAILED: %s | expected=%s actual=%s" % [message, expected, actual])

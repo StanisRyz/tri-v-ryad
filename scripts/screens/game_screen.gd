@@ -52,6 +52,8 @@ var _last_stars_earned := 0
 var _debug_labels_enabled := false
 var _input_mode := "normal"
 var _selected_booster_id := ""
+var _defer_board_update_for_turn := false
+var _pending_board_for_animation: BoardModel
 
 func _ready() -> void:
 	if not menu_button.pressed.is_connected(_on_menu_button_pressed):
@@ -163,6 +165,8 @@ func _setup_playable_battle() -> void:
 func _start_new_battle() -> void:
 	_pending_battle_status = -1
 	_feedback_active = false
+	_defer_board_update_for_turn = false
+	_pending_board_for_animation = null
 	_reward_granted_for_current_battle = false
 	_last_reward_amount = 0
 	_completion_saved_for_current_battle = false
@@ -177,6 +181,10 @@ func _start_new_battle() -> void:
 
 
 func _on_board_changed(board: BoardModel) -> void:
+	if _defer_board_update_for_turn:
+		_pending_board_for_animation = board
+		return
+
 	board_view.set_board(board)
 
 
@@ -254,6 +262,7 @@ func _on_ability_presentation_ready(data) -> void:
 
 
 func _play_turn_feedback_after_animation(data) -> void:
+	_apply_pending_board_for_animation()
 	if _turn_feedback_presenter == null:
 		_on_feedback_finished()
 		return
@@ -262,6 +271,7 @@ func _play_turn_feedback_after_animation(data) -> void:
 
 
 func _on_feedback_finished() -> void:
+	_apply_pending_board_for_animation()
 	_feedback_active = false
 	if _pending_battle_status != -1:
 		_show_battle_result(_pending_battle_status)
@@ -338,6 +348,8 @@ func _on_swap_requested(from_cell: Vector2i, to_cell: Vector2i) -> void:
 	if _input_mode != "normal":
 		return
 	_input_controller.set_input_enabled(false)
+	_defer_board_update_for_turn = true
+	_pending_board_for_animation = null
 	board_view.clear_lane_highlights()
 	board_view.clear_cell_highlights()
 	_set_status("Resolving match...")
@@ -503,6 +515,13 @@ func _play_board_animation_sequence(sequence, finished_callback: Callable) -> vo
 		return
 
 	_board_animation_controller.play_sequence(sequence, board_view, finished_callback)
+
+
+func _apply_pending_board_for_animation() -> void:
+	if _pending_board_for_animation != null:
+		board_view.set_board(_pending_board_for_animation)
+	_pending_board_for_animation = null
+	_defer_board_update_for_turn = false
 
 
 func _play_turn_audio(data) -> void:

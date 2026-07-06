@@ -156,19 +156,20 @@ func play_special_clear(duration: float = 0.18) -> void:
 	_active_tween.parallel().tween_property(self, "scale", Vector2.ONE, step_duration)
 
 
-func play_invalid_bounce(offset: Vector2, step_duration: float = 0.04) -> void:
+func play_invalid_bounce(_offset: Vector2, step_duration: float = 0.04) -> void:
 	set_invalid_feedback(true)
 	_stop_active_tween()
 	visible = true
 	pivot_offset = size * 0.5
 	modulate = Color.WHITE
-	position = Vector2.ZERO
-	var adjusted_offset := offset.lerp(Vector2.ZERO, 0.55) if _reduced_motion_enabled else offset
+	scale = Vector2.ONE
+	var invalid_scale := _adjust_scale(Vector2(0.94, 0.94))
 	var adjusted_duration := _adjust_duration(step_duration)
 	_active_tween = create_tween()
-	_active_tween.tween_property(self, "position", adjusted_offset, adjusted_duration)
-	_active_tween.tween_property(self, "position", -adjusted_offset * 0.45, adjusted_duration)
-	_active_tween.tween_property(self, "position", Vector2.ZERO, adjusted_duration)
+	_active_tween.tween_property(self, "modulate", _adjust_color(Color(1.30, 0.48, 0.45, 1.0)), adjusted_duration)
+	_active_tween.parallel().tween_property(self, "scale", invalid_scale, adjusted_duration)
+	_active_tween.tween_property(self, "modulate", Color.WHITE, adjusted_duration)
+	_active_tween.parallel().tween_property(self, "scale", Vector2.ONE, adjusted_duration)
 
 
 func play_refill_appear() -> void:

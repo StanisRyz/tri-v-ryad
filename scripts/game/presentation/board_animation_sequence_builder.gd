@@ -15,7 +15,7 @@ func build_from_turn_presentation(data):
 
 	sequence.add_request(REQUEST_SCRIPT.new_request(REQUEST_SCRIPT.TYPE_SWAP)
 		.with_swap(data.swapped_from, data.swapped_to)
-		.with_duration(0.14)
+		.with_duration(0.20)
 		.with_payload({"source": "turn"}))
 
 	if not data.matched_cells.is_empty():

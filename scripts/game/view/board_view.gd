@@ -18,6 +18,8 @@ var _selected_cell := Vector2i(-1, -1)
 var _lane_activations: Dictionary = {}
 var _highlighted_cells: Array[Vector2i] = []
 var _invalid_feedback_cells: Array[Vector2i] = []
+var _hidden_animation_cells: Array[Vector2i] = []
+var _active_board_animation_tween: Tween
 
 
 func _ready() -> void:
@@ -34,6 +36,8 @@ func _notification(what: int) -> void:
 
 
 func set_board(board: BoardModel) -> void:
+	restore_hidden_tile_visuals()
+	clear_animation_layer()
 	_board = board
 	refresh_all_tiles()
 
@@ -136,7 +140,20 @@ func clear_animation_layer() -> void:
 		return
 
 	for child in animation_layer.get_children():
-		child.queue_free()
+		child.free()
+
+
+func restore_hidden_tile_visuals() -> void:
+	show_tile_visuals(_hidden_animation_cells)
+	_hidden_animation_cells.clear()
+
+
+func cancel_active_board_animation() -> void:
+	if _active_board_animation_tween != null:
+		_active_board_animation_tween.kill()
+		_active_board_animation_tween = null
+	restore_hidden_tile_visuals()
+	clear_animation_layer()
 
 
 func create_tile_ghost(cell: Vector2i) -> Control:
@@ -169,6 +186,8 @@ func hide_tile_visual(cell: Vector2i) -> void:
 	var tile := get_tile_view(cell)
 	if tile != null:
 		tile.visible = false
+		if not cell in _hidden_animation_cells:
+			_hidden_animation_cells.append(cell)
 
 
 func show_tile_visual(cell: Vector2i) -> void:
@@ -180,26 +199,32 @@ func show_tile_visual(cell: Vector2i) -> void:
 func show_tile_visuals(cells: Array[Vector2i]) -> void:
 	for cell in cells:
 		show_tile_visual(cell)
+	_hidden_animation_cells = _hidden_animation_cells.filter(func(hidden_cell: Vector2i) -> bool:
+		return not hidden_cell in cells
+	)
 
 
 func play_swap_animation(from_cell: Vector2i, to_cell: Vector2i, duration: float) -> void:
 	var cells := get_valid_cells_from_pair(from_cell, to_cell)
 	if cells.size() != 2 or animation_layer == null:
+		restore_hidden_tile_visuals()
 		play_swap_feedback(from_cell, to_cell)
 		return
 
-	clear_animation_layer()
+	cancel_active_board_animation()
 	var from_tile := get_tile_view(from_cell)
 	var to_tile := get_tile_view(to_cell)
 	if from_tile == null or to_tile == null:
+		restore_hidden_tile_visuals()
 		play_swap_feedback(from_cell, to_cell)
 		return
 
 	var from_position: Vector2 = from_tile.global_position - animation_layer.global_position
 	var to_position: Vector2 = to_tile.global_position - animation_layer.global_position
-	var from_ghost := create_tile_ghost(to_cell)
-	var to_ghost := create_tile_ghost(from_cell)
+	var from_ghost := create_tile_ghost(from_cell)
+	var to_ghost := create_tile_ghost(to_cell)
 	if from_ghost == null or to_ghost == null:
+		restore_hidden_tile_visuals()
 		clear_animation_layer()
 		play_swap_feedback(from_cell, to_cell)
 		return
@@ -208,11 +233,12 @@ func play_swap_animation(from_cell: Vector2i, to_cell: Vector2i, duration: float
 	to_ghost.position = to_position
 	hide_tile_visual(from_cell)
 	hide_tile_visual(to_cell)
-	var tween := create_tween()
-	tween.tween_property(from_ghost, "position", to_position, duration)
-	tween.parallel().tween_property(to_ghost, "position", from_position, duration)
-	tween.finished.connect(func() -> void:
-		show_tile_visuals(cells)
+	_active_board_animation_tween = create_tween()
+	_active_board_animation_tween.tween_property(from_ghost, "position", to_position, duration)
+	_active_board_animation_tween.parallel().tween_property(to_ghost, "position", from_position, duration)
+	_active_board_animation_tween.finished.connect(func() -> void:
+		_active_board_animation_tween = null
+		restore_hidden_tile_visuals()
 		clear_animation_layer()
 	)
 
@@ -225,6 +251,7 @@ func play_invalid_swap_animation(from_cell: Vector2i, to_cell: Vector2i, duratio
 	_invalid_feedback_cells = cells
 	_highlighted_cells.clear()
 	refresh_all_tiles()
+	cancel_active_board_animation()
 
 	var direction := Vector2(to_cell - from_cell)
 	if direction.length() <= 0.0:
@@ -233,8 +260,35 @@ func play_invalid_swap_animation(from_cell: Vector2i, to_cell: Vector2i, duratio
 	var distance := minf(_get_board_rect().size.x / float(BOARD_SIZE) * 0.18, 18.0)
 	var offset := direction * distance
 	var step_duration := maxf(duration / 3.0, 0.01)
-	for tile in get_tile_views(cells):
-		tile.play_invalid_bounce(offset, step_duration)
+	var ghosts: Array[Control] = []
+	for cell in cells:
+		var ghost := create_tile_ghost(cell)
+		if ghost != null:
+			ghosts.append(ghost)
+			hide_tile_visual(cell)
+
+	if ghosts.is_empty():
+		restore_hidden_tile_visuals()
+		play_invalid_swap_feedback(from_cell, to_cell)
+		return
+
+	var start_positions: Array[Vector2] = []
+	for ghost in ghosts:
+		start_positions.append(ghost.position)
+	_active_board_animation_tween = create_tween()
+	_active_board_animation_tween.set_parallel(true)
+	for index in range(ghosts.size()):
+		var ghost := ghosts[index]
+		var ghost_offset := offset if index == 0 else -offset * 0.35
+		_active_board_animation_tween.tween_property(ghost, "position", start_positions[index] + ghost_offset, step_duration)
+	_active_board_animation_tween.chain().set_parallel(true)
+	for index in range(ghosts.size()):
+		_active_board_animation_tween.tween_property(ghosts[index], "position", start_positions[index], step_duration)
+	_active_board_animation_tween.finished.connect(func() -> void:
+		_active_board_animation_tween = null
+		restore_hidden_tile_visuals()
+		clear_animation_layer()
+	)
 
 
 func play_match_clear_animation(cells: Array[Vector2i], duration: float) -> void:
@@ -285,6 +339,7 @@ func play_refill_feedback(cells: Array[Vector2i] = []) -> void:
 
 
 func reset_tile_visuals() -> void:
+	cancel_active_board_animation()
 	for tile in _tile_views.values():
 		if tile != null and tile.has_method("reset_visual_state"):
 			tile.reset_visual_state()

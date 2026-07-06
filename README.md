@@ -423,9 +423,11 @@ Stage 41 is complete. `BoardAnimationRequest` and `BoardAnimationSequence` now p
 
 Stage 42 is complete. `BoardAnimationController` now routes swap, invalid swap, match clear, and special clear requests to concrete `BoardView` animation methods instead of generic placeholder flashes.
 
-`BoardView` has an `AnimationLayer` above the tile grid for temporary visual nodes. Valid swaps create two ghost tiles, hide the original tile visuals while the ghosts move toward each other, then restore the originals and clean the layer. Invalid swaps use a short bounce/shake on the involved cells without changing board data or consuming moves.
+`BoardView` has an `AnimationLayer` above the tile grid for temporary visual nodes. Valid swaps create two ghost tiles, hide the original tile visuals while the ghosts move toward each other, then restore the originals and clean the layer. Swap board updates are deferred during turn animation so the player sees the currently displayed crystals move before the resolved board is refreshed. Invalid swaps use overlay ghosts for bounce/shake feedback, never move real `TileView` nodes inside `GridContainer`, and do not change board data or consume moves.
 
 Matched cells now use a visible flash/fade/scale clear effect, and special-cleared cells use a stronger gold placeholder clear. `animations_enabled` still skips animation playback at the controller level, while `reduced_motion_enabled` shortens durations and softens TileView scale/motion. Gravity, refill movement, cascade-step animation, damage particles, enemy hit animation, final effects, particles, art, and gameplay-rule changes remain future work. Next planned stage: Stage 43, Gravity, refill and cascade animation flow v0.1.
+
+Stage 42 hotfix: swap timing and visibility were corrected by increasing the default swap request duration and holding resolved board updates until the animation step completes. Invalid swap animation now uses the overlay/ghost path only, with cleanup that restores hidden tiles and clears temporary ghosts.
 
 ## How To Open And Run
 

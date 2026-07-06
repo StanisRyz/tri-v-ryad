@@ -24,7 +24,7 @@ func _run() -> void:
 	_expect_false(board_view.get_tile_view(Vector2i(0, 0)).visible, "swap hides first original tile")
 	_expect_false(board_view.get_tile_view(Vector2i(1, 0)).visible, "swap hides second original tile")
 
-	await create_timer(0.09).timeout
+	await create_timer(0.20).timeout
 	_expect_equal(board_view.get_animation_layer().get_child_count(), 0, "swap cleans ghost tiles")
 	_expect_true(board_view.get_tile_view(Vector2i(0, 0)).visible, "swap restores first original tile")
 	_expect_true(board_view.get_tile_view(Vector2i(1, 0)).visible, "swap restores second original tile")
