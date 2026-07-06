@@ -66,6 +66,9 @@ func _play_requests_async(requests: Array, board_view: Control, finished_callbac
 		_play_request(request, board_view, effective_duration)
 		await board_view.get_tree().create_timer(effective_duration).timeout
 
+		if request.animation_type == REQUEST_SCRIPT.TYPE_SWAP and board_view.has_method("finalize_pending_overlay_swap"):
+			board_view.finalize_pending_overlay_swap()
+
 	if generation != _playback_generation:
 		return
 

@@ -385,14 +385,60 @@ func _play_overlay_swap(from_cell: Vector2i, to_cell: Vector2i, duration: float)
 	var from_position: Vector2 = from_ghost.position
 	var to_position: Vector2 = to_ghost.position
 
+	# The board model is already post-swap by the time this animation plays,
+	# so _overlay_ghosts must flip to the new cell identities immediately
+	# (not in tween.finished) or a match-clear request queued right after can
+	# read the stale pre-swap mapping and fade the wrong ghost. See Stage 46
+	# hotfix notes.
+	_swap_overlay_ghost_mapping(from_cell, to_cell)
+
 	_active_board_animation_tween = create_tween()
 	_active_board_animation_tween.tween_property(from_ghost, "position", to_position, duration)
 	_active_board_animation_tween.parallel().tween_property(to_ghost, "position", from_position, duration)
 	_active_board_animation_tween.finished.connect(func() -> void:
 		_active_board_animation_tween = null
-		_overlay_ghosts[from_cell] = to_ghost
-		_overlay_ghosts[to_cell] = from_ghost
+		_finalize_overlay_swap(from_cell, to_cell)
 	)
+
+
+## Flips which ghost is considered "at" from_cell/to_cell so overlay lookups
+## reflect the post-swap board identity as soon as the swap begins, rather
+## than only once the tween finishes.
+func _swap_overlay_ghost_mapping(from_cell: Vector2i, to_cell: Vector2i) -> void:
+	if not _overlay_mode:
+		return
+
+	var from_ghost := _get_valid_overlay_ghost(from_cell)
+	var to_ghost := _get_valid_overlay_ghost(to_cell)
+
+	if to_ghost != null:
+		_overlay_ghosts[from_cell] = to_ghost
+	else:
+		_overlay_ghosts.erase(from_cell)
+
+	if from_ghost != null:
+		_overlay_ghosts[to_cell] = from_ghost
+	else:
+		_overlay_ghosts.erase(to_cell)
+
+
+## Called when the swap tween completes; the mapping was already flipped in
+## _swap_overlay_ghost_mapping, so this only prunes ghosts that were freed or
+## invalidated (e.g. overlay mode cancelled mid-tween) while it was running.
+func _finalize_overlay_swap(from_cell: Vector2i, to_cell: Vector2i) -> void:
+	if not _overlay_mode:
+		return
+
+	if _get_valid_overlay_ghost(from_cell) == null:
+		_overlay_ghosts.erase(from_cell)
+	if _get_valid_overlay_ghost(to_cell) == null:
+		_overlay_ghosts.erase(to_cell)
+
+
+func finalize_pending_overlay_swap() -> void:
+	if _active_board_animation_tween != null:
+		_active_board_animation_tween.kill()
+		_active_board_animation_tween = null
 
 
 func _get_valid_overlay_ghost(cell: Vector2i) -> Control:
