@@ -645,3 +645,16 @@ One-time rewards, level map, chapters, stars-based rewards, reset upgrades, and 
 - No gravity/refill/cascade animation flow, damage particles, enemy hit animation, board rules, battle rules, booster rules, balance, progression, saves, Yandex SDK, cloud save, ads, payments, final art, particles, or hero-system reactivation were added.
 - Next planned stage: Stage 43, Gravity, refill and cascade animation flow v0.1.
 - Stage 42 hotfix: swap duration and pending-board timing were corrected for visible swap flow, and invalid swap cleanup now restores hidden tiles and clears temporary ghosts safely.
+
+## Stage 43: Gravity, Refill and Cascade Animation Flow v0.1
+
+- Stage 43 is implemented.
+- Normal valid swap animation duration is now exactly 1.0 second (`BoardAnimationSequenceBuilder.SWAP_ANIMATION_DURATION`); `reduced_motion_enabled` may still shorten the effective duration, and `animations_enabled = false` still skips the animation immediately.
+- Board resolve data now provides animation-friendly fall/refill/cascade data: `GravityResolver` returns `fall_movements` (from, to, tile type, special data, fall distance) and richer `refill_cells` (spawn index, target cell, tile type, special data); `BoardResolveResult` preserves this per cascade step and exposes aggregated `fall_movements`, `refill_cells`, and ordered `cascade_steps`.
+- `TurnPresentationData` and `BoosterResolveResult` carry the same fall/refill/cascade data forward from `BoardResolver` and `BoosterResolver` so the presentation layer no longer needs to fake animation over the final board state.
+- `BoardAnimationSequenceBuilder` now emits `gravity_fall` and `refill` requests after clear/special-clear requests when movement/refill data exists, followed by a `cascade_step` request (plus its own `gravity_fall`/`refill` requests) for every automatic cascade in resolve order, before the placeholder `enemy_hit` request.
+- `BoardView` plays gravity/refill movement through temporary `AnimationLayer` ghosts (`play_gravity_fall_animation`, `play_refill_animation`, `create_tile_ghost_from_data`) and gives cascade matches a short highlight (`play_cascade_step_animation`); real `TileView` nodes inside `GridContainer` are never moved manually, and hidden tile visuals are restored once each step finishes.
+- Hammer and Rocket booster clears participate in gravity/refill animation where the booster resolver produces movement data; Time Freeze remains status/audio only. `GameScreen` defers the resolved board update during booster targeting the same way it already did for swaps, so the animation plays before the final board is applied.
+- `animations_enabled` and `reduced_motion_enabled` continue to be respected by `BoardAnimationController`.
+- No damage particles, richer enemy hit animation, board rules, battle rules, booster rules, balance, progression, saves, Yandex SDK, cloud save, ads, payments, final art, particles, or hero-system reactivation were added.
+- Next planned stage: Stage 44, Damage particles and enemy hit feedback v0.1.

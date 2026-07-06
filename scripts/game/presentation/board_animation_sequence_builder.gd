@@ -4,6 +4,11 @@ class_name BoardAnimationSequenceBuilder
 const REQUEST_SCRIPT := preload("res://scripts/game/presentation/board_animation_request.gd")
 const SEQUENCE_SCRIPT := preload("res://scripts/game/presentation/board_animation_sequence.gd")
 
+const SWAP_ANIMATION_DURATION := 1.0
+const GRAVITY_ANIMATION_DURATION := 0.35
+const REFILL_ANIMATION_DURATION := 0.30
+const CASCADE_STEP_DURATION := 0.20
+
 
 func build_from_turn_presentation(data):
 	var sequence := SEQUENCE_SCRIPT.new()
@@ -15,7 +20,7 @@ func build_from_turn_presentation(data):
 
 	sequence.add_request(REQUEST_SCRIPT.new_request(REQUEST_SCRIPT.TYPE_SWAP)
 		.with_swap(data.swapped_from, data.swapped_to)
-		.with_duration(0.20)
+		.with_duration(SWAP_ANIMATION_DURATION)
 		.with_payload({"source": "turn"}))
 
 	if not data.matched_cells.is_empty():
@@ -37,6 +42,11 @@ func build_from_turn_presentation(data):
 				"activated_special_tiles": data.activated_special_tiles.duplicate(true),
 				"cells_count": data.special_cleared_cells.size(),
 			}))
+
+	_add_gravity_and_refill_requests(sequence, data.fall_movements, data.refill_cells)
+
+	for cascade_step in data.cascade_steps:
+		_add_cascade_step_requests(sequence, cascade_step)
 
 	if data.total_damage_to_enemy > 0:
 		sequence.add_request(REQUEST_SCRIPT.new_request(REQUEST_SCRIPT.TYPE_ENEMY_HIT)
@@ -64,6 +74,11 @@ func build_from_booster_result(result):
 			"affected_tile_types": result.affected_tile_types.duplicate(),
 		}))
 
+	_add_gravity_and_refill_requests(sequence, result.fall_movements, result.refill_cells)
+
+	for cascade_step in result.cascade_steps:
+		_add_cascade_step_requests(sequence, cascade_step)
+
 	return sequence
 
 
@@ -74,3 +89,36 @@ func build_invalid_swap(from_cell: Vector2i, to_cell: Vector2i, reason: String =
 		.with_duration(0.12)
 		.with_payload({"reason": reason}))
 	return sequence
+
+
+func _add_gravity_and_refill_requests(sequence, fall_movements: Array, refill_cells: Array) -> void:
+	if not fall_movements.is_empty():
+		sequence.add_request(REQUEST_SCRIPT.new_request(REQUEST_SCRIPT.TYPE_GRAVITY_FALL)
+			.with_duration(GRAVITY_ANIMATION_DURATION)
+			.with_payload({"movements": (fall_movements as Array).duplicate(true)}))
+
+	if not refill_cells.is_empty():
+		sequence.add_request(REQUEST_SCRIPT.new_request(REQUEST_SCRIPT.TYPE_REFILL)
+			.with_duration(REFILL_ANIMATION_DURATION)
+			.with_payload({"refill_cells": (refill_cells as Array).duplicate(true)}))
+
+
+func _add_cascade_step_requests(sequence, cascade_step: Dictionary) -> void:
+	var matched_cells := _to_vector2i_array(cascade_step.get("matched_cells", []))
+	sequence.add_request(REQUEST_SCRIPT.new_request(REQUEST_SCRIPT.TYPE_CASCADE_STEP)
+		.with_cells(matched_cells)
+		.with_duration(CASCADE_STEP_DURATION)
+		.with_payload({
+			"cascade_index": cascade_step.get("cascade_index", 0),
+			"matched_cells": matched_cells,
+			"damage": cascade_step.get("damage", 0),
+		}))
+
+	_add_gravity_and_refill_requests(sequence, cascade_step.get("fall_movements", []), cascade_step.get("refill_cells", []))
+
+
+func _to_vector2i_array(values: Array) -> Array[Vector2i]:
+	var typed_values: Array[Vector2i] = []
+	for value in values:
+		typed_values.append(value as Vector2i)
+	return typed_values

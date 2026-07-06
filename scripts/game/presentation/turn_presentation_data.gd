@@ -20,6 +20,9 @@ var battle_status := BattleState.Status.IN_PROGRESS
 var created_special_tiles: Array[Dictionary] = []
 var activated_special_tiles: Array[Dictionary] = []
 var special_cleared_cells: Array[Vector2i] = []
+var fall_movements: Array[Dictionary] = []
+var refill_cells: Array[Dictionary] = []
+var cascade_steps: Array[Dictionary] = []
 
 
 static func from_valid_turn(from_cell: Vector2i, to_cell: Vector2i, matches: Array[MatchResult], result: BattleTurnResult, board_result: BoardResolveResult = null):
@@ -41,6 +44,11 @@ static func from_valid_turn(from_cell: Vector2i, to_cell: Vector2i, matches: Arr
 		data.created_special_tiles = board_result.created_special_tiles.duplicate()
 		data.activated_special_tiles = board_result.activated_special_tiles.duplicate()
 		data.special_cleared_cells = board_result.special_cleared_cells.duplicate()
+		var first_step: Dictionary = board_result.get_step(0)
+		data.fall_movements = data._to_dictionary_array(first_step.get("fall_movements", []))
+		data.refill_cells = data._to_dictionary_array(first_step.get("refill_cells", []))
+		if board_result.cascade_steps.size() > 1:
+			data.cascade_steps = data._to_dictionary_array(board_result.cascade_steps.slice(1))
 	return data
 
 
@@ -72,7 +80,17 @@ func to_dictionary() -> Dictionary:
 		"created_special_tiles": created_special_tiles.duplicate(),
 		"activated_special_tiles": activated_special_tiles.duplicate(),
 		"special_cleared_cells": special_cleared_cells.duplicate(),
+		"fall_movements": fall_movements.duplicate(),
+		"refill_cells": refill_cells.duplicate(),
+		"cascade_steps": cascade_steps.duplicate(),
 	}
+
+
+func _to_dictionary_array(values: Array) -> Array[Dictionary]:
+	var typed_values: Array[Dictionary] = []
+	for value in values:
+		typed_values.append(value as Dictionary)
+	return typed_values
 
 
 func _extract_matched_cells(matches: Array[MatchResult]) -> Array[Vector2i]:

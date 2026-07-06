@@ -407,19 +407,23 @@ func _on_board_tile_pressed(cell: Vector2i) -> void:
 	if _input_mode != "booster_targeting" or _selected_booster_id == "":
 		return
 
-	_input_controller.set_input_enabled(false)
+	var booster_id := _selected_booster_id
 	board_view.clear_selected_cell()
 	board_view.clear_cell_highlights()
 	_set_status("Using booster...")
-	_presenter.request_targeted_booster(_selected_booster_id, cell)
+	_defer_board_update_for_turn = true
+	_pending_board_for_animation = null
 	_set_input_mode("normal", "")
+	_presenter.request_targeted_booster(booster_id, cell)
 
 
 func _on_booster_resolved(result) -> void:
 	if result == null:
+		_apply_pending_board_for_animation()
 		return
 
 	if not result.is_valid:
+		_apply_pending_board_for_animation()
 		_play_invalid_swap()
 		_set_status(result.message)
 		_input_controller.set_input_enabled(true)
@@ -432,6 +436,7 @@ func _on_booster_resolved(result) -> void:
 
 
 func _finish_booster_resolution(result) -> void:
+	_apply_pending_board_for_animation()
 	if result.freeze_turns_added > 0:
 		_play_special_activate()
 	else:

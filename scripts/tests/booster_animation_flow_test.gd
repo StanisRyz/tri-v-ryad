@@ -23,11 +23,11 @@ func _run() -> void:
 	screen._on_board_tile_pressed(Vector2i(4, 4))
 	_expect_equal(screen._input_mode, "normal", "targeted booster exits targeting mode")
 	_expect_false(screen._input_controller._input_enabled, "input locks during booster animation flow")
-	await create_timer(0.3).timeout
+	await create_timer(1.2).timeout
 
 	_expect_false(screen._feedback_active, "booster animation flow finishes")
 	_expect_true(booster_panel.visible, "booster panel remains visible")
-	_expect_true(screen._presenter.state.get("booster_state").is_used("hammer"), "hammer booster is marked used")
+	_expect_equal(screen._presenter.state.get("booster_state").get_uses_left("hammer"), 0, "hammer booster is marked used")
 	if not screen._presenter.is_battle_finished():
 		_expect_true(screen._input_controller._input_enabled, "input unlocks after booster animation")
 

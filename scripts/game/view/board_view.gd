@@ -5,6 +5,10 @@ signal tile_pressed(cell: Vector2i)
 signal tile_drag_released(cell: Vector2i, drag_delta: Vector2)
 
 const TILE_VIEW_SCENE := preload("res://scenes/game/TileView.tscn")
+const SPECIAL_TILE_DATA_SCRIPT := preload("res://scripts/game/board/special_tile_data.gd")
+const SPECIAL_TILE_TYPE_SCRIPT := preload("res://scripts/game/board/special_tile_type.gd")
+const ASSET_KEY_RESOLVER_SCRIPT := preload("res://scripts/game/config/asset_key_resolver.gd")
+const GAME_ASSET_CATALOG := preload("res://scripts/game/config/game_asset_catalog.gd")
 const BOARD_SIZE := 9
 const LANE_WIDTH := 3
 const DEFAULT_BOARD_SIZE := 664.0
@@ -182,6 +186,41 @@ func create_tile_ghost(cell: Vector2i) -> Control:
 	return ghost
 
 
+func create_tile_ghost_from_data(tile_type: int, special_data, ghost_position: Vector2, ghost_size: Vector2) -> Control:
+	if animation_layer == null:
+		return null
+
+	var ghost := Button.new()
+	ghost.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ghost.focus_mode = Control.FOCUS_NONE
+	ghost.disabled = true
+	ghost.size = ghost_size
+	ghost.position = ghost_position
+	ghost.pivot_offset = ghost_size * 0.5
+	ghost.expand_icon = true
+	ghost.icon = GAME_ASSET_CATALOG.try_load_texture_cached(ASSET_KEY_RESOLVER_SCRIPT.get_tile_asset_key(tile_type))
+	var style := StyleBoxFlat.new()
+	style.bg_color = TileView.TILE_COLORS.get(tile_type, Color(0.20, 0.22, 0.26, 1.0))
+	style.border_width_left = 1
+	style.border_width_top = 1
+	style.border_width_right = 1
+	style.border_width_bottom = 1
+	style.border_color = Color(0.05, 0.06, 0.08, 0.8)
+	style.corner_radius_top_left = 6
+	style.corner_radius_top_right = 6
+	style.corner_radius_bottom_left = 6
+	style.corner_radius_bottom_right = 6
+	for state in ["normal", "hover", "pressed", "disabled"]:
+		ghost.add_theme_stylebox_override(state, style.duplicate())
+	ghost.add_theme_color_override("font_color", Color.WHITE)
+	ghost.add_theme_color_override("font_disabled_color", Color.WHITE)
+	ghost.add_theme_font_size_override("font_size", 22)
+	if special_data is SPECIAL_TILE_DATA_SCRIPT:
+		ghost.text = SPECIAL_TILE_TYPE_SCRIPT.get_marker_text(special_data.special_type)
+	animation_layer.add_child(ghost)
+	return ghost
+
+
 func hide_tile_visual(cell: Vector2i) -> void:
 	var tile := get_tile_view(cell)
 	if tile != null:
@@ -241,6 +280,110 @@ func play_swap_animation(from_cell: Vector2i, to_cell: Vector2i, duration: float
 		restore_hidden_tile_visuals()
 		clear_animation_layer()
 	)
+
+
+func play_gravity_fall_animation(movements: Array, duration: float) -> void:
+	if movements.is_empty() or animation_layer == null:
+		return
+
+	cancel_active_board_animation()
+	var ghosts: Array[Control] = []
+	var targets: Array[Vector2] = []
+	var durations: Array[float] = []
+	var max_distance := 1
+	for movement in movements:
+		max_distance = maxi(max_distance, int((movement as Dictionary).get("fall_distance", 1)))
+
+	for movement in movements:
+		var movement_data := movement as Dictionary
+		var from_cell: Vector2i = movement_data.get("from", Vector2i(-1, -1))
+		var to_cell: Vector2i = movement_data.get("to", Vector2i(-1, -1))
+		var from_tile := get_tile_view(from_cell)
+		var to_tile := get_tile_view(to_cell)
+		if from_tile == null or to_tile == null:
+			continue
+
+		var from_position: Vector2 = from_tile.global_position - animation_layer.global_position
+		var to_position: Vector2 = to_tile.global_position - animation_layer.global_position
+		var ghost := create_tile_ghost_from_data(movement_data.get("tile_type", BoardModel.EMPTY), movement_data.get("special_data"), from_position, from_tile.size)
+		if ghost == null:
+			continue
+
+		var distance_ratio: float = float(movement_data.get("fall_distance", 1)) / float(max_distance)
+		ghosts.append(ghost)
+		targets.append(to_position)
+		durations.append(duration * clampf(0.6 + 0.4 * distance_ratio, 0.6, 1.0))
+		hide_tile_visual(from_cell)
+		hide_tile_visual(to_cell)
+
+	if ghosts.is_empty():
+		restore_hidden_tile_visuals()
+		return
+
+	_active_board_animation_tween = create_tween()
+	_active_board_animation_tween.set_parallel(true)
+	for index in range(ghosts.size()):
+		_active_board_animation_tween.tween_property(ghosts[index], "position", targets[index], durations[index]).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	_active_board_animation_tween.finished.connect(func() -> void:
+		_active_board_animation_tween = null
+		restore_hidden_tile_visuals()
+		clear_animation_layer()
+	)
+
+
+func play_refill_animation(refill_cells: Array, duration: float) -> void:
+	if refill_cells.is_empty() or animation_layer == null:
+		return
+
+	cancel_active_board_animation()
+	var ghosts: Array[Control] = []
+	var targets: Array[Vector2] = []
+	var cell_size: float = _get_board_rect().size.x / float(BOARD_SIZE)
+
+	for refill_item in refill_cells:
+		var refill_data := refill_item as Dictionary
+		var to_cell: Vector2i = refill_data.get("to", Vector2i(-1, -1))
+		var to_tile := get_tile_view(to_cell)
+		if to_tile == null:
+			continue
+
+		var to_position: Vector2 = to_tile.global_position - animation_layer.global_position
+		var spawn_index: int = int(refill_data.get("spawn_index", 0))
+		var start_position: Vector2 = to_position - Vector2(0, cell_size * float(spawn_index + 1))
+		var ghost := create_tile_ghost_from_data(refill_data.get("tile_type", BoardModel.EMPTY), refill_data.get("special_data"), start_position, to_tile.size)
+		if ghost == null:
+			continue
+
+		ghosts.append(ghost)
+		targets.append(to_position)
+		hide_tile_visual(to_cell)
+
+	if ghosts.is_empty():
+		restore_hidden_tile_visuals()
+		return
+
+	_active_board_animation_tween = create_tween()
+	_active_board_animation_tween.set_parallel(true)
+	for index in range(ghosts.size()):
+		_active_board_animation_tween.tween_property(ghosts[index], "position", targets[index], duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	_active_board_animation_tween.finished.connect(func() -> void:
+		_active_board_animation_tween = null
+		restore_hidden_tile_visuals()
+		clear_animation_layer()
+	)
+
+
+func play_cascade_step_animation(payload: Dictionary, _duration: float) -> void:
+	var matched_cells: Array[Vector2i] = []
+	for cell in (payload.get("matched_cells", []) as Array):
+		matched_cells.append(cell as Vector2i)
+
+	if matched_cells.is_empty():
+		return
+
+	highlight_cells(matched_cells)
+	for tile in get_tile_views(matched_cells):
+		tile.play_flash()
 
 
 func play_invalid_swap_animation(from_cell: Vector2i, to_cell: Vector2i, duration: float) -> void:

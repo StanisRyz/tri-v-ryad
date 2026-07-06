@@ -429,6 +429,18 @@ Matched cells now use a visible flash/fade/scale clear effect, and special-clear
 
 Stage 42 hotfix: swap timing and visibility were corrected by increasing the default swap request duration and holding resolved board updates until the animation step completes. Invalid swap animation now uses the overlay/ghost path only, with cleanup that restores hidden tiles and clears temporary ghosts.
 
+## Stage 43: Gravity, Refill and Cascade Animation Flow v0.1
+
+Stage 43 is complete. Normal valid player swaps now use an exact `SWAP_ANIMATION_DURATION := 1.0` second swap animation, defined as a constant on `BoardAnimationSequenceBuilder`. `reduced_motion_enabled` still shortens the effective duration through `BoardAnimationController`, and `animations_enabled = false` still skips playback immediately.
+
+`GravityResolver` now returns `fall_movements` (from/to cell, tile type, special data, fall distance) and richer `refill_cells` (spawn index, target cell, tile type, special data) alongside the existing spawned-cell list. `BoardResolveResult` preserves this data per cascade step and exposes aggregated `fall_movements`, `refill_cells`, and ordered `cascade_steps` (matched cells, fall/refill data, and damage per step) instead of only the final board state. `TurnPresentationData` and `BoosterResolveResult` carry the same animation-friendly data forward from `BoardResolver` and `BoosterResolver`.
+
+`BoardAnimationSequenceBuilder` now emits `gravity_fall` and `refill` requests right after clear/special-clear requests when movement or refill data exists, followed by a `cascade_step` request plus its own `gravity_fall`/`refill` requests for every automatic cascade, in resolve order, before the placeholder `enemy_hit` request. Booster clears (Hammer, Rocket Barrage) follow the same `booster_clear` -> `gravity_fall` -> `refill` shape when the booster resolver produces movement data; Time Freeze remains status/audio only.
+
+`BoardView` plays gravity and refill through temporary `AnimationLayer` ghosts: `play_gravity_fall_animation` moves ghost tiles from their source cell to their target cell (slightly slower for a longer fall), `play_refill_animation` drops new ghost tiles from above their target column using `create_tile_ghost_from_data`, and `play_cascade_step_animation` gives cascade matches a short highlight/flash. Real `TileView` nodes inside `GridContainer` are never moved directly; original visuals are hidden only while ghosts animate and are restored afterward, with the `AnimationLayer` cleared once each step finishes. `BoardAnimationController` routes `TYPE_GRAVITY_FALL`, `TYPE_REFILL`, and `TYPE_CASCADE_STEP` requests to these methods, keeping the disabled/reduced-motion paths and the exactly-once finished callback guarantee.
+
+`GameScreen` now defers the resolved board update during the booster-targeting flow the same way it already did for swaps, so Hammer/Rocket gravity and refill animations play over the pre-clear board and the final board is only applied once the whole animation sequence finishes. Damage particles and richer enemy hit feedback remain future work. Next planned stage: Stage 44, Damage particles and enemy hit feedback v0.1.
+
 ## How To Open And Run
 
 1. Open Godot 4.x.
@@ -805,6 +817,18 @@ Run the Stage 42 swap and match clear animation tests with:
 godot --headless --script res://scripts/tests/board_swap_animation_test.gd
 godot --headless --script res://scripts/tests/board_invalid_swap_animation_test.gd
 godot --headless --script res://scripts/tests/board_match_clear_animation_test.gd
+```
+
+Run the Stage 43 gravity, refill and cascade animation flow tests with:
+
+```bash
+godot --headless --script res://scripts/tests/board_gravity_animation_data_test.gd
+godot --headless --script res://scripts/tests/board_refill_animation_data_test.gd
+godot --headless --script res://scripts/tests/board_cascade_animation_sequence_test.gd
+godot --headless --script res://scripts/tests/board_gravity_animation_test.gd
+godot --headless --script res://scripts/tests/board_refill_animation_test.gd
+godot --headless --script res://scripts/tests/game_screen_cascade_animation_flow_test.gd
+godot --headless --script res://scripts/tests/booster_gravity_refill_animation_test.gd
 ```
 
 Run the Stage 34 direct balance tests with:

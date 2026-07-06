@@ -73,7 +73,7 @@ func resolve_targeted_booster(battle_state: BattleState, booster_id: String, tar
 	var damage_info := _direct_damage_resolver.calculate_damage_for_typed_cells(cells, tile_types, round_modifier)
 	var damage: int = damage_info.get("total_damage", 0)
 	board.clear_cells(cells)
-	_gravity_resolver.apply_gravity_and_refill(board)
+	var gravity_result: Dictionary = _gravity_resolver.apply_gravity_and_refill(board)
 	var booster_state = battle_state.get("booster_state")
 	booster_state.consume_use(booster_id)
 	booster_state.clear_active_booster()
@@ -85,6 +85,8 @@ func resolve_targeted_booster(battle_state: BattleState, booster_id: String, tar
 	result.damage_to_enemy = damage
 	result.affected_tile_types = _unique_tile_types(tile_types)
 	result.message = _build_message(booster_id, cells.size(), damage, target_cell, tile_types)
+	result.fall_movements = (gravity_result.get("fall_movements", []) as Array).duplicate(true)
+	result.refill_cells = (gravity_result.get("refill_cells", []) as Array).duplicate(true)
 	return result
 
 

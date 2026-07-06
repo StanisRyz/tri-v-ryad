@@ -86,9 +86,19 @@ func _play_request(request, board_view: Control, effective_duration: float) -> v
 		REQUEST_SCRIPT.TYPE_BOOSTER_CLEAR:
 			if board_view.has_method("flash_cells"):
 				board_view.flash_cells(request.cells, effective_duration)
+		REQUEST_SCRIPT.TYPE_GRAVITY_FALL:
+			if board_view.has_method("play_gravity_fall_animation"):
+				board_view.play_gravity_fall_animation(request.payload.get("movements", []), effective_duration)
 		REQUEST_SCRIPT.TYPE_REFILL:
-			if board_view.has_method("pulse_cells"):
+			if board_view.has_method("play_refill_animation"):
+				board_view.play_refill_animation(request.payload.get("refill_cells", []), effective_duration)
+			elif board_view.has_method("pulse_cells"):
 				board_view.pulse_cells(request.cells, effective_duration)
+		REQUEST_SCRIPT.TYPE_CASCADE_STEP:
+			if board_view.has_method("play_cascade_step_animation"):
+				board_view.play_cascade_step_animation(request.payload, effective_duration)
+			elif board_view.has_method("flash_cells"):
+				board_view.flash_cells(request.cells, effective_duration)
 		_:
 			if board_view.has_method("flash_cells"):
 				board_view.flash_cells(request.cells, effective_duration)
