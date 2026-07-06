@@ -6,7 +6,7 @@ var _failures := 0
 
 
 func _initialize() -> void:
-	print("Running game screen damage effect flow test...")
+	print("Running swap no double layer test...")
 	_run()
 
 
@@ -15,25 +15,28 @@ func _run() -> void:
 	root.add_child(screen)
 	await process_frame
 
-	_expect_true(screen._battle_effect_controller != null, "game screen creates battle effect controller")
-	_expect_true(screen._damage_particle_event_builder != null, "game screen creates damage particle event builder")
-	_expect_true(screen.battle_effect_layer != null, "game screen exposes battle effect layer")
-
 	var swap := _find_valid_swap(screen._presenter.board)
 	_expect_true(not swap.is_empty(), "game screen board has valid swap")
 	if not swap.is_empty():
 		screen._on_swap_requested(swap["from"], swap["to"])
-		_expect_false(screen._input_controller._input_enabled, "input is locked while damage particles and feedback are pending")
+
+		# Exactly one visual source of truth mid-swap: the real board is hidden
+		# and only the overlay ghost layer is visible, so the pre-swap and
+		# post-swap boards can never be seen stacked on top of each other.
+		_expect_true(screen.board_view.is_animation_overlay_mode(), "board enters overlay mode for swap animation")
+		_expect_false(screen.board_view.get_tile_view(swap["from"]).visible, "real from-tile is hidden during swap overlay")
+		_expect_false(screen.board_view.get_tile_view(swap["to"]).visible, "real to-tile is hidden during swap overlay")
+		_expect_true(screen.board_view.get_animation_layer().get_child_count() > 0, "overlay ghost layer is populated during swap")
 
 		await create_timer(4.0).timeout
-		_expect_false(screen._feedback_active, "turn animation, damage particles, and feedback all finish")
-		_expect_equal(screen.battle_effect_layer.get_child_count(), 0, "battle effect layer is cleared after damage particles finish")
-		_expect_false(screen.board_view.is_animation_overlay_mode(), "board animation overlay is cleaned up before/with damage particles finishing")
-		_expect_equal(screen.board_view.get_animation_layer().get_child_count(), 0, "board AnimationLayer has no leftover ghosts once damage particles finish")
-		if not screen._presenter.is_battle_finished():
-			_expect_true(screen._input_controller._input_enabled, "input unlocks after damage particles and feedback complete")
+
+		_expect_false(screen.board_view.is_animation_overlay_mode(), "board exits overlay mode after full turn flow")
+		_expect_equal(screen.board_view.get_animation_layer().get_child_count(), 0, "no leftover ghosts remain after turn flow")
+		_expect_true(screen.board_view.get_tile_view(swap["from"]).visible, "real from-tile is restored after turn flow")
+		_expect_true(screen.board_view.get_tile_view(swap["to"]).visible, "real to-tile is restored after turn flow")
 
 	screen.queue_free()
+	await process_frame
 	await process_frame
 	_finish()
 
@@ -53,10 +56,10 @@ func _find_valid_swap(board) -> Dictionary:
 
 func _finish() -> void:
 	if _failures == 0:
-		print("Game screen damage effect flow test passed.")
+		print("Swap no double layer test passed.")
 		quit(0)
 	else:
-		push_error("Game screen damage effect flow test failed: %d" % _failures)
+		push_error("Swap no double layer test failed: %d" % _failures)
 		quit(1)
 
 

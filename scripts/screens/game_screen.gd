@@ -82,6 +82,7 @@ func _bind_static_ui_assets() -> void:
 
 func _on_menu_button_pressed() -> void:
 	_play_button_click()
+	_force_cleanup_visual_state()
 	back_pressed.emit()
 
 
@@ -170,10 +171,9 @@ func _setup_playable_battle() -> void:
 
 
 func _start_new_battle() -> void:
+	_force_cleanup_visual_state()
 	_pending_battle_status = -1
 	_feedback_active = false
-	_defer_board_update_for_turn = false
-	_pending_board_for_animation = null
 	_reward_granted_for_current_battle = false
 	_last_reward_amount = 0
 	_completion_saved_for_current_battle = false
@@ -300,6 +300,7 @@ func _on_feedback_finished() -> void:
 
 func _show_battle_result(status: int) -> void:
 	_input_controller.set_input_enabled(false)
+	_force_cleanup_visual_state()
 	if status == BattleState.Status.VICTORY:
 		_play_victory()
 		_grant_victory_reward_once()
@@ -363,8 +364,7 @@ func _on_swap_requested(from_cell: Vector2i, to_cell: Vector2i) -> void:
 	if _input_mode != "normal":
 		return
 	_input_controller.set_input_enabled(false)
-	_defer_board_update_for_turn = true
-	_pending_board_for_animation = null
+	_begin_animated_turn()
 	board_view.clear_lane_highlights()
 	board_view.clear_cell_highlights()
 	_set_status("Resolving match...")
@@ -415,6 +415,7 @@ func _on_booster_pressed(booster_id: String) -> void:
 		return
 
 	_play_special_activate()
+	_begin_animated_turn()
 	_presenter.request_booster_activation(booster_id)
 
 
@@ -426,8 +427,7 @@ func _on_board_tile_pressed(cell: Vector2i) -> void:
 	board_view.clear_selected_cell()
 	board_view.clear_cell_highlights()
 	_set_status("Using booster...")
-	_defer_board_update_for_turn = true
-	_pending_board_for_animation = null
+	_begin_animated_turn()
 	_set_input_mode("normal", "")
 	_presenter.request_targeted_booster(booster_id, cell)
 
@@ -536,6 +536,9 @@ func _apply_presentation_settings() -> void:
 	if enemy_panel != null and enemy_panel.has_method("configure_presentation"):
 		enemy_panel.configure_presentation(animations_enabled, reduced_motion_enabled)
 
+	if not animations_enabled and board_view != null and board_view.is_animation_overlay_mode():
+		_apply_pending_board_for_animation()
+
 
 func _play_board_animation_sequence(sequence, finished_callback: Callable) -> void:
 	if _board_animation_controller == null:
@@ -555,9 +558,29 @@ func _play_damage_particles(events: Array, finished_callback: Callable) -> void:
 	_battle_effect_controller.play_damage_particles(events, board_view, enemy_panel, battle_effect_layer, finished_callback)
 
 
+func _begin_animated_turn() -> void:
+	_defer_board_update_for_turn = true
+	_pending_board_for_animation = null
+	var snapshot := BoardVisualSnapshot.from_board_view(board_view)
+	board_view.enter_animation_overlay_mode(snapshot)
+
+
 func _apply_pending_board_for_animation() -> void:
+	if board_view.is_animation_overlay_mode():
+		board_view.exit_animation_overlay_mode()
 	if _pending_board_for_animation != null:
 		board_view.set_board(_pending_board_for_animation)
+	_pending_board_for_animation = null
+	_defer_board_update_for_turn = false
+
+
+func _force_cleanup_visual_state() -> void:
+	if _board_animation_controller != null:
+		_board_animation_controller.clear_queue()
+	if board_view != null:
+		board_view.force_reset_animation_state()
+	if _battle_effect_controller != null:
+		_battle_effect_controller.clear_effects(battle_effect_layer)
 	_pending_board_for_animation = null
 	_defer_board_update_for_turn = false
 

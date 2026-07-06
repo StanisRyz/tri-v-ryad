@@ -38,6 +38,17 @@ func _run() -> void:
 	if ghost != null:
 		ghost.free()
 
+	# Overlay-mode refill fades a replacement ghost into the vacated cell
+	# instead of leaving an empty-looking gap.
+	var snapshot := BoardVisualSnapshot.from_board_view(board_view)
+	board_view.enter_animation_overlay_mode(snapshot)
+	board_view.play_match_clear_animation([Vector2i(0, 0)], 0.05)
+	await create_timer(0.15).timeout
+	_expect_true(board_view.get_overlay_ghost(Vector2i(0, 0)) == null, "overlay match clear removes the ghost at the cleared cell")
+	board_view.play_refill_animation(refill_cells, 0.05)
+	_expect_true(board_view.get_overlay_ghost(Vector2i(0, 0)) != null, "overlay refill restores a ghost at the vacated cell")
+	board_view.exit_animation_overlay_mode()
+
 	board_view.free()
 	_finish()
 

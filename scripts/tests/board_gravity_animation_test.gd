@@ -35,6 +35,16 @@ func _run() -> void:
 	_expect_true(board_view.get_tile_view(Vector2i(0, 1)).visible, "gravity fall restores target tile visual")
 	_expect_equal(board_view.get_tile_view(Vector2i(0, 1)).position, to_tile_start_position, "real TileView node keeps its container-managed position")
 
+	# In overlay mode, gravity fall is a safe v0.1 fallback (no-op): it must
+	# not touch the real board or duplicate/alter the ghost overlay.
+	var snapshot := BoardVisualSnapshot.from_board_view(board_view)
+	board_view.enter_animation_overlay_mode(snapshot)
+	var ghost_count_before := board_view.get_animation_layer().get_child_count()
+	board_view.play_gravity_fall_animation(movements, 0.05)
+	_expect_equal(board_view.get_animation_layer().get_child_count(), ghost_count_before, "overlay-mode gravity fallback does not alter ghost count")
+	_expect_true(board_view.is_animation_overlay_mode(), "overlay-mode gravity fallback keeps overlay active")
+	board_view.exit_animation_overlay_mode()
+
 	board_view.free()
 	_finish()
 

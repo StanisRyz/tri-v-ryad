@@ -29,6 +29,19 @@ func _run() -> void:
 	_expect_true(board_view.get_tile_view(Vector2i(0, 0)).visible, "swap restores first original tile")
 	_expect_true(board_view.get_tile_view(Vector2i(1, 0)).visible, "swap restores second original tile")
 
+	# Overlay-mode swap: the real board stays hidden and the full-board ghost
+	# overlay is the only visible layer, so no double-board flash can occur.
+	var snapshot := BoardVisualSnapshot.from_board_view(board_view)
+	board_view.enter_animation_overlay_mode(snapshot)
+	board_view.play_swap_animation(Vector2i(2, 2), Vector2i(3, 2), 0.05)
+	_expect_true(board_view.is_animation_overlay_mode(), "overlay-mode swap keeps overlay mode active")
+	_expect_false(board_view.get_tile_view(Vector2i(2, 2)).visible, "overlay mode keeps real from-tile hidden during swap")
+	_expect_false(board_view.get_tile_view(Vector2i(3, 2)).visible, "overlay mode keeps real to-tile hidden during swap")
+	await create_timer(0.20).timeout
+	board_view.exit_animation_overlay_mode()
+	_expect_equal(board_view.get_animation_layer().get_child_count(), 0, "exiting overlay after swap cleans ghost tiles")
+	_expect_true(board_view.get_tile_view(Vector2i(2, 2)).visible, "exiting overlay restores real tile")
+
 	board_view.free()
 	_finish()
 

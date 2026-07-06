@@ -205,6 +205,10 @@ func get_special_tile_asset_key() -> String:
 	return ""
 
 
+func get_marker_text() -> String:
+	return _get_special_marker_text()
+
+
 func has_tile_texture() -> bool:
 	return icon != null
 

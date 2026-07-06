@@ -24,6 +24,9 @@ var _highlighted_cells: Array[Vector2i] = []
 var _invalid_feedback_cells: Array[Vector2i] = []
 var _hidden_animation_cells: Array[Vector2i] = []
 var _active_board_animation_tween: Tween
+var _overlay_mode := false
+var _overlay_ghosts: Dictionary = {}
+var _overlay_snapshot: BoardVisualSnapshot
 
 
 func _ready() -> void:
@@ -40,6 +43,8 @@ func _notification(what: int) -> void:
 
 
 func set_board(board: BoardModel) -> void:
+	if _overlay_mode:
+		exit_animation_overlay_mode()
 	restore_hidden_tile_visuals()
 	clear_animation_layer()
 	_board = board
@@ -140,6 +145,7 @@ func get_animation_layer() -> Control:
 
 
 func clear_animation_layer() -> void:
+	_overlay_ghosts.clear()
 	if animation_layer == null:
 		return
 
@@ -156,8 +162,89 @@ func cancel_active_board_animation() -> void:
 	if _active_board_animation_tween != null:
 		_active_board_animation_tween.kill()
 		_active_board_animation_tween = null
+	if _overlay_mode:
+		return
 	restore_hidden_tile_visuals()
 	clear_animation_layer()
+
+
+func is_animation_overlay_mode() -> bool:
+	return _overlay_mode
+
+
+func hide_real_board_tiles() -> void:
+	for cell in _tile_views.keys():
+		hide_tile_visual(cell)
+
+
+func show_real_board_tiles() -> void:
+	restore_hidden_tile_visuals()
+
+
+func enter_animation_overlay_mode(snapshot: BoardVisualSnapshot) -> void:
+	if snapshot == null or snapshot.is_empty() or animation_layer == null:
+		return
+
+	if _overlay_mode:
+		exit_animation_overlay_mode()
+
+	_overlay_mode = true
+	_overlay_snapshot = snapshot
+	hide_real_board_tiles()
+	build_full_board_ghosts(snapshot)
+
+
+func exit_animation_overlay_mode() -> void:
+	if not _overlay_mode:
+		return
+
+	_overlay_mode = false
+	_overlay_snapshot = null
+	if _active_board_animation_tween != null:
+		_active_board_animation_tween.kill()
+		_active_board_animation_tween = null
+	clear_animation_layer()
+	show_real_board_tiles()
+
+
+func build_full_board_ghosts(snapshot: BoardVisualSnapshot) -> void:
+	_overlay_ghosts.clear()
+	if animation_layer == null or snapshot == null:
+		return
+
+	for cell in snapshot.get_cells():
+		var data := snapshot.get_cell_data(cell)
+		var ghost := create_tile_ghost_from_data(
+			data.get("tile_type", BoardModel.EMPTY),
+			data.get("special_data"),
+			data.get("local_position", Vector2.ZERO),
+			data.get("size", Vector2(48, 48))
+		)
+		if ghost != null:
+			_overlay_ghosts[cell] = ghost
+
+
+func get_overlay_ghost(cell: Vector2i) -> Control:
+	return _get_valid_overlay_ghost(cell)
+
+
+func force_reset_animation_state() -> void:
+	if _active_board_animation_tween != null:
+		_active_board_animation_tween.kill()
+		_active_board_animation_tween = null
+
+	_overlay_mode = false
+	_overlay_snapshot = null
+	clear_animation_layer()
+	_hidden_animation_cells.clear()
+
+	for tile in _tile_views.values():
+		if tile == null:
+			continue
+		tile.visible = true
+		tile.scale = Vector2.ONE
+		tile.modulate = Color.WHITE
+		tile.position = Vector2.ZERO
 
 
 func create_tile_ghost(cell: Vector2i) -> Control:
@@ -250,6 +337,10 @@ func play_swap_animation(from_cell: Vector2i, to_cell: Vector2i, duration: float
 		play_swap_feedback(from_cell, to_cell)
 		return
 
+	if _overlay_mode and _get_valid_overlay_ghost(from_cell) != null and _get_valid_overlay_ghost(to_cell) != null:
+		_play_overlay_swap(from_cell, to_cell, duration)
+		return
+
 	cancel_active_board_animation()
 	var from_tile := get_tile_view(from_cell)
 	var to_tile := get_tile_view(to_cell)
@@ -282,7 +373,88 @@ func play_swap_animation(from_cell: Vector2i, to_cell: Vector2i, duration: float
 	)
 
 
+func _play_overlay_swap(from_cell: Vector2i, to_cell: Vector2i, duration: float) -> void:
+	if _active_board_animation_tween != null:
+		_active_board_animation_tween.kill()
+		_active_board_animation_tween = null
+
+	var from_ghost := _get_valid_overlay_ghost(from_cell)
+	var to_ghost := _get_valid_overlay_ghost(to_cell)
+	if from_ghost == null or to_ghost == null:
+		return
+	var from_position: Vector2 = from_ghost.position
+	var to_position: Vector2 = to_ghost.position
+
+	_active_board_animation_tween = create_tween()
+	_active_board_animation_tween.tween_property(from_ghost, "position", to_position, duration)
+	_active_board_animation_tween.parallel().tween_property(to_ghost, "position", from_position, duration)
+	_active_board_animation_tween.finished.connect(func() -> void:
+		_active_board_animation_tween = null
+		_overlay_ghosts[from_cell] = to_ghost
+		_overlay_ghosts[to_cell] = from_ghost
+	)
+
+
+func _get_valid_overlay_ghost(cell: Vector2i) -> Control:
+	var ghost = _overlay_ghosts.get(cell)
+	if ghost == null:
+		return null
+	if not is_instance_valid(ghost):
+		_overlay_ghosts.erase(cell)
+		return null
+	return ghost as Control
+
+
+func _play_overlay_fade(cells: Array[Vector2i], duration: float) -> void:
+	var step_duration := maxf(duration, 0.01)
+	for cell in cells:
+		var ghost := _get_valid_overlay_ghost(cell)
+		if ghost == null:
+			continue
+		var tween := create_tween()
+		tween.tween_property(ghost, "modulate:a", 0.0, step_duration)
+		tween.tween_callback(func() -> void:
+			if is_instance_valid(ghost) and _overlay_ghosts.get(cell) == ghost:
+				_overlay_ghosts.erase(cell)
+			if is_instance_valid(ghost):
+				ghost.free()
+		)
+
+
+func _play_overlay_refill(refill_cells: Array, duration: float) -> void:
+	var cell_size: float = _get_board_rect().size.x / float(BOARD_SIZE)
+	for refill_item in refill_cells:
+		var refill_data := refill_item as Dictionary
+		var to_cell: Vector2i = refill_data.get("to", Vector2i(-1, -1))
+		var existing := _get_valid_overlay_ghost(to_cell)
+		if existing != null:
+			existing.free()
+			_overlay_ghosts.erase(to_cell)
+
+		var reference_tile := get_tile_view(to_cell)
+		var to_size: Vector2 = reference_tile.size if reference_tile != null else Vector2(cell_size, cell_size)
+		var to_position: Vector2
+		if _overlay_snapshot != null and _overlay_snapshot.has_cell(to_cell):
+			to_position = _overlay_snapshot.get_cell_data(to_cell).get("local_position", Vector2.ZERO)
+		elif reference_tile != null and animation_layer != null:
+			to_position = reference_tile.global_position - animation_layer.global_position
+		else:
+			continue
+
+		var ghost := create_tile_ghost_from_data(refill_data.get("tile_type", BoardModel.EMPTY), refill_data.get("special_data"), to_position, to_size)
+		if ghost == null:
+			continue
+
+		ghost.modulate = Color(1.0, 1.0, 1.0, 0.0)
+		_overlay_ghosts[to_cell] = ghost
+		var tween := create_tween()
+		tween.tween_property(ghost, "modulate", Color.WHITE, maxf(duration, 0.01))
+
+
 func play_gravity_fall_animation(movements: Array, duration: float) -> void:
+	if _overlay_mode:
+		return
+
 	if movements.is_empty() or animation_layer == null:
 		return
 
@@ -332,6 +504,11 @@ func play_gravity_fall_animation(movements: Array, duration: float) -> void:
 
 
 func play_refill_animation(refill_cells: Array, duration: float) -> void:
+	if _overlay_mode:
+		if not refill_cells.is_empty():
+			_play_overlay_refill(refill_cells, duration)
+		return
+
 	if refill_cells.is_empty() or animation_layer == null:
 		return
 
@@ -373,12 +550,16 @@ func play_refill_animation(refill_cells: Array, duration: float) -> void:
 	)
 
 
-func play_cascade_step_animation(payload: Dictionary, _duration: float) -> void:
+func play_cascade_step_animation(payload: Dictionary, duration: float) -> void:
 	var matched_cells: Array[Vector2i] = []
 	for cell in (payload.get("matched_cells", []) as Array):
 		matched_cells.append(cell as Vector2i)
 
 	if matched_cells.is_empty():
+		return
+
+	if _overlay_mode:
+		_play_overlay_fade(matched_cells, maxf(duration, 0.01))
 		return
 
 	highlight_cells(matched_cells)
@@ -435,11 +616,19 @@ func play_invalid_swap_animation(from_cell: Vector2i, to_cell: Vector2i, duratio
 
 
 func play_match_clear_animation(cells: Array[Vector2i], duration: float) -> void:
+	if _overlay_mode:
+		_play_overlay_fade(cells, duration)
+		return
+
 	for tile in get_tile_views(cells):
 		tile.play_match_clear(duration)
 
 
 func play_special_clear_animation(cells: Array[Vector2i], duration: float) -> void:
+	if _overlay_mode:
+		_play_overlay_fade(cells, duration)
+		return
+
 	highlight_cells(cells)
 	for tile in get_tile_views(cells):
 		tile.play_special_clear(duration)

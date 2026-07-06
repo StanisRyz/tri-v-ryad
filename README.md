@@ -148,6 +148,13 @@ This stage includes:
 - Enemy panel hit feedback tests in `scripts/tests/enemy_panel_hit_feedback_test.gd`.
 - Game screen damage effect flow tests in `scripts/tests/game_screen_damage_effect_flow_test.gd`.
 - Booster damage effect flow tests in `scripts/tests/booster_damage_effect_flow_test.gd`.
+- Board visual snapshot tests in `scripts/tests/board_visual_snapshot_test.gd`.
+- Board overlay mode tests in `scripts/tests/board_overlay_mode_test.gd`.
+- Board animation cleanup tests in `scripts/tests/board_animation_cleanup_test.gd`.
+- Swap no-double-layer tests in `scripts/tests/swap_no_double_layer_test.gd`.
+- Cascade visual stability tests in `scripts/tests/cascade_visual_stability_test.gd`.
+- Real tile position lock tests in `scripts/tests/real_tile_position_lock_test.gd`.
+- Battle effect cleanup tests in `scripts/tests/battle_effect_cleanup_test.gd`.
 - Documentation for future implementation rules.
 
 This stage excludes:
@@ -457,6 +464,18 @@ Stage 44 is complete. Normal valid swaps now use an exact `BoardAnimationSequenc
 `EnemyPanel` gained `get_hit_target_global_position()`, `play_hit_feedback(damage)`, `show_floating_damage(damage)`, and `animate_hp_change(current_hp, max_hp)`. A new `HitEffectLayer` overlay hosts floating damage labels that rise and fade, the enemy portrait flashes/shakes briefly on hit (softened/removed under reduced motion), and the HP bar now tweens toward its new value through `configure_presentation(animations_enabled, reduced_motion_enabled)` instead of snapping instantly. All methods stay safe if their backing UI nodes are missing.
 
 `GameScreen` now plays damage particles and enemy hit feedback after each turn's or booster's board animation sequence finishes and before continuing the existing turn/booster feedback, status text, and result-overlay flow; input stays locked the entire time. Enemy-damage audio now fires alongside hit feedback instead of immediately at turn-presentation time, and victory/defeat overlays still only appear after this full feedback chain completes. No board rules, battle rules, booster rules, balance, progression, saves, Yandex SDK, cloud save, ads, payments, final art, or hero-system reactivation were added. Next planned stage: Stage 45, overall gameplay animation polish and reduced-motion support.
+
+## Stage 45: Gameplay Animation Timeline Stabilization v0.1
+
+Stage 45 is complete. It fixes double-board visuals, ghost/final-board overlap, empty-looking cells, and stretched/merged crystals during cascades/refill, rather than adding new visual effects — stability over complex visuals.
+
+`BoardVisualSnapshot` (`scripts/game/view/board_visual_snapshot.gd`) captures a read-only, per-cell copy of `BoardView`'s visible state (tile type, special data, position, size, asset key, placeholder color, marker text) via `BoardVisualSnapshot.from_board_view(board_view)`. It is safe if `board_view` is null, ignores missing cells, and never mutates `BoardView`.
+
+`BoardView` gained an animation overlay mode: `enter_animation_overlay_mode(snapshot)` hides every real `TileView` and builds one full-board ghost per cell in `AnimationLayer` from the snapshot, so there is exactly one visible board layer during animation; `exit_animation_overlay_mode()` clears the ghosts and restores the real tiles; `force_reset_animation_state()` is an emergency cleanup hook that kills active tweens, clears `AnimationLayer`, and resets every real tile's visibility/scale/modulate/position. In overlay mode, swap moves the two matching ghosts directly, match/special/cascade clears fade the matched ghosts out, and refill fades a new ghost into each vacated cell; gravity fall is a documented v0.1 safe fallback (no-op) in overlay mode. Outside overlay mode, direct/legacy callers keep the original ghost-per-animation behavior unchanged.
+
+`GameScreen` now captures a pre-turn snapshot and enters overlay mode at the start of every animated turn (swap, targeted booster, non-targeted booster) through `_begin_animated_turn()`, and a single `_apply_pending_board_for_animation()` choke point exits overlay mode and applies the deferred board exactly once before damage particles play. `_force_cleanup_visual_state()` clears the board animation queue, resets `BoardView`, and clears `BattleEffectLayer`; it runs on every new battle/restart, Menu/Back, and before the result overlay, so stray ghosts or particles can never persist across those transitions.
+
+No board rules, battle rules, booster rules, balance, progression, saves, Yandex SDK, cloud save, ads, payments, final art, or hero-system reactivation were added. Detailed per-tile gravity/refill fall animation remains a documented follow-up for a future stage.
 
 ## How To Open And Run
 
@@ -867,8 +886,20 @@ godot --headless --script res://scripts/tests/direct_level_balance_test.gd
 godot --headless --script res://scripts/tests/round_modifier_balance_test.gd
 ```
 
+Run the Stage 45 animation timeline stabilization tests with:
+
+```bash
+godot --headless --script res://scripts/tests/board_visual_snapshot_test.gd
+godot --headless --script res://scripts/tests/board_overlay_mode_test.gd
+godot --headless --script res://scripts/tests/board_animation_cleanup_test.gd
+godot --headless --script res://scripts/tests/swap_no_double_layer_test.gd
+godot --headless --script res://scripts/tests/cascade_visual_stability_test.gd
+godot --headless --script res://scripts/tests/real_tile_position_lock_test.gd
+godot --headless --script res://scripts/tests/battle_effect_cleanup_test.gd
+```
+
 ## Next Planned Stages
 
-- Stage 26-30 block is complete. Stage 31 (hero portrait buttons and ability bars) is complete. Stage 32 (hero systems freeze and direct match damage foundation) is complete. Stage 33 (round modifiers and color damage rules) is complete. Stage 34 (direct match-3 balance pass) is complete. Stage 35 (direct LevelSelect startup and simplified UX polish) is complete. Stage 36 (ImageSlot asset placeholder pipeline) is complete. Stage 37 (asset loading integration for active imageholders) is complete. Stage 38 (AudioManager foundation) is complete. Stage 39 (Complete AssetKey texture binding) is complete. Stage 40 (Booster system foundation) is complete. Stage 41 (Board animation foundation) is complete. Stage 42 (Swap and match clear animations) is complete.
-- Stage 43: Gravity, refill and cascade animation flow v0.1.
+- Stage 26-30 block is complete. Stage 31 (hero portrait buttons and ability bars) is complete. Stage 32 (hero systems freeze and direct match damage foundation) is complete. Stage 33 (round modifiers and color damage rules) is complete. Stage 34 (direct match-3 balance pass) is complete. Stage 35 (direct LevelSelect startup and simplified UX polish) is complete. Stage 36 (ImageSlot asset placeholder pipeline) is complete. Stage 37 (asset loading integration for active imageholders) is complete. Stage 38 (AudioManager foundation) is complete. Stage 39 (Complete AssetKey texture binding) is complete. Stage 40 (Booster system foundation) is complete. Stage 41 (Board animation foundation) is complete. Stage 42 (Swap and match clear animations) is complete. Stage 43 (Gravity, refill and cascade animation flow) is complete. Stage 44 (Damage particles and enemy hit feedback) is complete. Stage 45 (Gameplay animation timeline stabilization) is complete.
+- Detailed per-tile gravity/refill fall animation inside the overlay is a documented follow-up; v0.1 uses a safe fade/refill-fade fallback instead.
 - Isolated Yandex Games platform adapter under `scripts/platform/` when explicitly requested.
