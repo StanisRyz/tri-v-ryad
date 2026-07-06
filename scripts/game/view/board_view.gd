@@ -97,6 +97,18 @@ func clear_cell_highlights() -> void:
 	refresh_all_tiles()
 
 
+func clear_transient_visual_state() -> void:
+	_selected_cell = Vector2i(-1, -1)
+	_lane_activations.clear()
+	_highlighted_cells.clear()
+	_invalid_feedback_cells.clear()
+	queue_redraw()
+	for tile in _tile_views.values():
+		if tile != null and tile.has_method("clear_transient_feedback_state"):
+			tile.clear_transient_feedback_state()
+	refresh_all_tiles()
+
+
 func flash_cells(cells: Array[Vector2i], _duration: float = 0.08) -> void:
 	for cell in cells:
 		var tile := get_tile_view(cell)
@@ -219,6 +231,7 @@ func apply_board_under_overlay(board: BoardModel) -> void:
 		return
 
 	_board = board
+	clear_transient_visual_state()
 	refresh_all_tiles()
 	exit_animation_overlay_mode()
 
@@ -253,14 +266,17 @@ func force_reset_animation_state() -> void:
 	_overlay_snapshot = null
 	clear_animation_layer()
 	_hidden_animation_cells.clear()
+	_selected_cell = Vector2i(-1, -1)
+	_lane_activations.clear()
+	_highlighted_cells.clear()
+	_invalid_feedback_cells.clear()
+	queue_redraw()
 
 	for tile in _tile_views.values():
 		if tile == null:
 			continue
-		tile.visible = true
-		tile.scale = Vector2.ONE
-		tile.modulate = Color.WHITE
-		tile.position = Vector2.ZERO
+		tile.reset_visual_state()
+	refresh_all_tiles()
 
 
 func create_tile_ghost(cell: Vector2i) -> Control:
@@ -821,6 +837,15 @@ func play_special_clear_animation(cells: Array[Vector2i], duration: float) -> vo
 	# BoardView.clear_cell_highlights() once the whole turn/booster flow ends.
 	for tile in get_tile_views(cells):
 		tile.play_special_clear(duration)
+
+
+func play_booster_clear_animation(cells: Array[Vector2i], duration: float) -> void:
+	if _overlay_mode:
+		_play_overlay_fade(cells, duration)
+		return
+
+	for tile in get_tile_views(cells):
+		tile.play_flash()
 
 
 func play_special_create_animation(created_special_tiles: Array, duration: float) -> void:

@@ -37,6 +37,7 @@ func is_running() -> bool:
 func cancel() -> void:
 	_generation += 1
 	_running = false
+	_step_finished.emit()
 
 
 func start_swap_turn(board: BoardModel, presenter, from_cell: Vector2i, to_cell: Vector2i, matches: Array) -> void:

@@ -45,6 +45,21 @@ func _run() -> void:
 	_expect_false(screen.board_view.is_animation_overlay_mode(), "menu press exits board overlay mode")
 	_expect_equal(screen.battle_effect_layer.get_child_count(), 0, "menu press clears leftover battle effect particles")
 
+	# Cancelling an in-flight damage particle sequence clears particles and
+	# suppresses the old finished callback after restart/menu cleanup.
+	var callback_count := [0]
+	var events := [{"cell": Vector2i(4, 4), "tile_type": TileType.RED, "damage": 3, "multiplier": 1, "is_boosted": false}]
+	screen._battle_effect_controller.play_damage_particles(events, screen.board_view, screen.enemy_panel, screen.battle_effect_layer, func() -> void:
+		callback_count[0] += 1
+	)
+	await process_frame
+	_expect_true(screen._battle_effect_controller.is_playing(), "damage particles are playing before forced cleanup")
+	screen._force_cleanup_visual_state()
+	_expect_false(screen._battle_effect_controller.is_playing(), "forced cleanup stops damage particles")
+	_expect_equal(screen.battle_effect_layer.get_child_count(), 0, "forced cleanup removes in-flight particles")
+	await create_timer(0.5).timeout
+	_expect_equal(callback_count[0], 0, "cancelled damage particle callback does not fire after cleanup")
+
 	screen.queue_free()
 	await process_frame
 	await process_frame

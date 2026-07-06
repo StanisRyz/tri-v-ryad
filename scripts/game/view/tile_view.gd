@@ -194,6 +194,14 @@ func reset_visual_state() -> void:
 	_apply_visuals()
 
 
+func clear_transient_feedback_state() -> void:
+	_stop_active_tween()
+	modulate = Color.WHITE
+	scale = Vector2.ONE
+	_is_invalid_feedback = false
+	_apply_visuals()
+
+
 func get_tile_asset_key() -> String:
 	return ASSET_KEY_RESOLVER_SCRIPT.get_tile_asset_key(tile_type)
 

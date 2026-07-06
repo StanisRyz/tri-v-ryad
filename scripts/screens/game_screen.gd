@@ -186,8 +186,6 @@ func _start_new_battle() -> void:
 	_completion_saved_for_current_battle = false
 	_last_stars_earned = 0
 	result_overlay.hide_result()
-	board_view.clear_lane_highlights()
-	board_view.clear_cell_highlights()
 	_set_input_mode("normal", "")
 	_input_controller.set_input_enabled(true)
 	_set_status("Select a tile")
@@ -312,7 +310,7 @@ func _play_turn_feedback_after_animation(data) -> void:
 
 func _on_feedback_finished() -> void:
 	_apply_pending_board_for_animation()
-	board_view.clear_cell_highlights()
+	board_view.clear_transient_visual_state()
 	_feedback_active = false
 	if _pending_battle_status != -1:
 		_show_battle_result(_pending_battle_status)
@@ -437,6 +435,7 @@ func _on_booster_pressed(booster_id: String) -> void:
 	if config.is_targeted():
 		if _input_mode == "booster_targeting" and _selected_booster_id == booster_id:
 			_set_input_mode("normal", "")
+			board_view.clear_transient_visual_state()
 			_set_status("Select a tile")
 			return
 
@@ -510,10 +509,9 @@ func _finish_booster_resolution(result) -> void:
 		_play_special_activate()
 		if result.damage_to_enemy > 0:
 			_play_enemy_damage()
-		board_view.flash_cells(result.cleared_cells)
 
 	_set_status(result.message)
-	board_view.clear_cell_highlights()
+	board_view.clear_transient_visual_state()
 	_feedback_active = false
 	if _pending_battle_status != -1:
 		_show_battle_result(_pending_battle_status)
@@ -587,6 +585,7 @@ func _apply_presentation_settings() -> void:
 
 	if not animations_enabled and board_view != null and board_view.is_animation_overlay_mode():
 		_apply_pending_board_for_animation()
+		board_view.clear_transient_visual_state()
 
 
 func _play_board_animation_sequence(sequence, finished_callback: Callable) -> void:
@@ -616,11 +615,13 @@ func _begin_animated_turn() -> void:
 
 func _apply_pending_board_for_animation() -> void:
 	if board_view.is_animation_overlay_mode():
+		board_view.clear_transient_visual_state()
 		if _pending_board_for_animation != null:
 			board_view.apply_board_under_overlay(_pending_board_for_animation)
 		else:
 			board_view.exit_animation_overlay_mode()
 	elif _pending_board_for_animation != null:
+		board_view.clear_transient_visual_state()
 		board_view.set_board(_pending_board_for_animation)
 
 	_pending_board_for_animation = null
@@ -634,7 +635,6 @@ func _force_cleanup_visual_state() -> void:
 		_board_animation_controller.clear_queue()
 	if board_view != null:
 		board_view.force_reset_animation_state()
-		board_view.clear_cell_highlights()
 	if _battle_effect_controller != null:
 		_battle_effect_controller.clear_effects(battle_effect_layer)
 	_pending_board_for_animation = null

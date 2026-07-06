@@ -89,8 +89,7 @@ func _play_request(request, board_view: Control, effective_duration: float) -> v
 		REQUEST_SCRIPT.TYPE_SPECIAL_CREATE:
 			_play_special_create_request(request, board_view, effective_duration)
 		REQUEST_SCRIPT.TYPE_BOOSTER_CLEAR:
-			if board_view.has_method("flash_cells"):
-				board_view.flash_cells(request.cells, effective_duration)
+			_play_booster_clear_request(request, board_view, effective_duration)
 		REQUEST_SCRIPT.TYPE_GRAVITY_FALL:
 			if board_view.has_method("play_gravity_fall_animation"):
 				board_view.play_gravity_fall_animation(request.payload.get("movements", []), effective_duration)
@@ -142,6 +141,13 @@ func _play_special_create_request(request, board_view: Control, effective_durati
 		board_view.play_special_create_animation(request.payload.get("created_special_tiles", []), effective_duration)
 	elif board_view.has_method("pulse_cells"):
 		board_view.pulse_cells(request.cells, effective_duration)
+
+
+func _play_booster_clear_request(request, board_view: Control, effective_duration: float) -> void:
+	if board_view.has_method("play_booster_clear_animation"):
+		board_view.play_booster_clear_animation(request.cells, effective_duration)
+	elif board_view.has_method("flash_cells"):
+		board_view.flash_cells(request.cells, effective_duration)
 
 
 func _get_swap_cells(request) -> Array[Vector2i]:

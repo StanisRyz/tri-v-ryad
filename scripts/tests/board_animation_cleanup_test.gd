@@ -42,6 +42,24 @@ func _run() -> void:
 	_expect_false(board_view.is_animation_overlay_mode(), "repeated force reset stays safe")
 	_expect_equal(board_view.get_animation_layer().get_child_count(), 0, "repeated force reset keeps AnimationLayer empty")
 
+	# Transient selection/highlight/invalid/tint state is cleared together.
+	board_view.set_selected_cell(Vector2i(4, 4))
+	board_view.highlight_cells([Vector2i(4, 4), Vector2i(5, 4)])
+	board_view.flash_invalid_cells([Vector2i(6, 4)])
+	board_view.highlight_lanes({1: 3})
+	var transient_tile := board_view.get_tile_view(Vector2i(4, 4))
+	var transient_position := transient_tile.position
+	transient_tile.scale = Vector2(1.8, 1.8)
+	transient_tile.modulate = Color(1.0, 0.2, 0.2, 0.4)
+	board_view.clear_transient_visual_state()
+	_expect_equal(board_view._selected_cell, Vector2i(-1, -1), "cleanup clears selected cell")
+	_expect_equal(board_view._highlighted_cells.size(), 0, "cleanup clears match/cascade highlights")
+	_expect_equal(board_view._invalid_feedback_cells.size(), 0, "cleanup clears invalid highlights")
+	_expect_equal(board_view._lane_activations.size(), 0, "cleanup clears lane highlights")
+	_expect_equal(transient_tile.scale, Vector2.ONE, "cleanup restores tile scale drift")
+	_expect_equal(transient_tile.modulate, Color.WHITE, "cleanup restores tile tint drift")
+	_expect_equal(transient_tile.position, transient_position, "cleanup preserves GridContainer tile position")
+
 	board_view.free()
 	_finish()
 

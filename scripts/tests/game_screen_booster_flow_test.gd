@@ -31,9 +31,13 @@ func _run() -> void:
 	screen._on_booster_pressed("hammer")
 	await process_frame
 	_expect_equal(screen._input_mode, "booster_targeting", "hammer enters targeting mode")
+	screen.board_view.set_selected_cell(Vector2i(4, 4))
+	screen.board_view.highlight_cells([Vector2i(4, 4)])
 	screen._on_booster_pressed("hammer")
 	await process_frame
 	_expect_equal(screen._input_mode, "normal", "repeated hammer press cancels targeting")
+	_expect_equal(screen.board_view._selected_cell, Vector2i(-1, -1), "cancelled booster targeting clears selected cell")
+	_expect_equal(screen.board_view._highlighted_cells.size(), 0, "cancelled booster targeting clears target highlights")
 
 	screen.queue_free()
 	_finish()

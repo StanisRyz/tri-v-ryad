@@ -96,25 +96,25 @@ Animation, advanced feedback, sound, and gesture polish remain future work.
 
 ## Basic Turn Feedback v0.1
 
-- Valid swaps briefly flash involved cells.
-- Invalid swaps show simple feedback.
-- Initial matched cells highlight before temporary feedback is cleared.
+- Valid animated turns are owned by `AnimatedTurnFlow`: swap, current match clear, special creation, gravity/refill, cascade repeats, final board handoff, then damage particles/enemy hit/text/result feedback.
+- Invalid swaps show simple rejection feedback and then clear transient board state.
+- Initial matched cells, cascade cells, booster targets, and special creation sources may show temporary feedback, but selected/highlight/invalid/lane state must be cleared before the final board/result flow continues.
 - Activated Hero Lanes highlight temporarily after the turn.
 - Damage and enemy action are shown through short status messages.
 - Input remains locked during feedback and unlocks only after feedback completes.
 
-Full cascade animation, real tile movement, particles, sound, and deeper progression remain future work.
+High-polish special activation effects, booster targeting polish, final result UX polish, real tile movement, final particle art, real audio, and deeper progression remain future work.
 
 ## Board Animation Polish v0.1
 
-- Valid swaps receive a short visual pulse/flash on the swapped cells.
+- Valid animated turns use the Stage 46/47 stepwise pipeline through `AnimatedTurnFlow`; `TurnFeedbackPresenter` must not replay board movement, match highlights, clear effects, refill effects, or full-board refresh animations afterward.
 - Invalid swaps receive visual rejection feedback on the involved cells.
-- Matched cells highlight and fade during turn feedback.
-- Board refresh/refill receives lightweight appear feedback after matched cells fade.
+- Matched/cascade/special/booster clear visuals are transient and must clean overlay ghosts, `AnimationLayer` children, tile tint/scale drift, selected-cell state, and highlights before damage particles or result overlay display.
+- Board final handoff updates the real `TileView` state while overlay ghosts still cover the board, then removes the overlay only after the real board is ready.
 - Input remains locked during the full feedback sequence and unlocks only after `feedback_finished`.
 - Board rules, battle rules, progression, rewards, stars, unlocks, upgrades, and save format are unchanged.
 
-Wrapped bombs, special combos, full falling animation, cascade damage, cascade-step animation, particles, sound, final art, and real tile movement remain future work.
+Wrapped bombs, special combos, high-polish special activation animation, booster targeting polish, full falling polish, final particle art, real audio, final art, and real tile movement remain future work.
 
 ## Special Tiles v0.2
 
@@ -268,9 +268,11 @@ One-time rewards, level map, chapters, stars-based rewards, reset upgrades, and 
 - No hero unlocks, gacha, rarity, shards, ability upgrades, reset upgrades, equipment, portraits, or final art.
 - No cloud save.
 - No target selection or ability upgrades.
-- No full cascade animations.
+- No high-polish special activation animation pass beyond current stepwise v0.1 behavior.
+- No booster targeting/animation polish beyond current cleanup/stability behavior.
+- No result flow UX polish beyond current cleanup/result ordering.
 - No real tile movement.
-- No real/final audio assets or particles.
+- No real/final audio assets or final particle/effect art.
 
 ## Stage 16: Balance and Content Expansion v0.1
 
@@ -724,3 +726,17 @@ One-time rewards, level map, chapters, stars-based rewards, reset upgrades, and 
 - Player-created special tiles (from the first match right after a player swap) now prefer the swapped cell: `AnimatedTurnFlow.start_swap_turn()` passes `[to_cell, from_cell]` as `preferred_cells` only for the initial (`cascade_index == 0`) resolve step, so the special lands on the swapped-into cell if it's part of the match, else the swapped-from cell, else the prior deterministic center-cell choice.
 - Cascade/gravity-created specials are unaffected: no preferred cells are passed for later cascade steps, so they keep the existing center-cell placement.
 - Stepwise board resolution, the swap-and-return invalid-swap behavior, and prior gather/marker fixes are unchanged.
+
+## Stage 47: Animation QA and Board Visual Stability Pass v0.1
+
+- Stage 47 is implemented. It stabilizes the Stage 46 stepwise board animation lifecycle without adding new board rules, damage formulas, booster rules, balance changes, saves, platform SDK work, final art, or hero-system reactivation.
+- `AnimatedTurnFlow` remains the active owner of stepwise board visuals during animated turns: swap, match clear, special creation, gravity/refill, cascade, booster clear, and final board handoff.
+- `TurnFeedbackPresenter` is text/status/enemy feedback only after valid animated turns. It must not replay swap movement, match highlights, clear fades, refill effects, or whole-board refresh animation after `AnimatedTurnFlow` has already handled those visuals. Invalid swaps may still use their rejection feedback path.
+- Booster clear visuals now remove overlay ghosts through `BoardView.play_booster_clear_animation()` before gravity/refill creates replacement ghosts, so Hammer/Rocket flows do not leave duplicate board layers.
+- `BoardView.clear_transient_visual_state()` is the shared cleanup point for selected-cell state, match/cascade/special/booster highlights, invalid feedback, lane highlights, temporary tile tint/scale drift, and safe tile refresh. It must not move real `GridContainer` tile children; only emergency force reset may restore positions.
+- Cleanup runs after valid turn completion, invalid swap cleanup, booster apply/cancel, result overlay preparation, restart, return to LevelSelect, disabled-animation fallback, and reduced-motion playback.
+- Final board handoff uses `BoardView.apply_board_under_overlay(board)`: real `TileView` data is refreshed while overlay ghosts still cover the board, then ghosts are removed only after the real board is ready. Special tiles created during the stepwise flow remain visible through both the overlay animation and the final real-board state.
+- Damage particles and enemy hit feedback start only after board stepwise animation is complete, transient highlights are cleared, overlay ghosts are removed, and the final board is applied. Victory/defeat result overlay appears only after that full board + damage + feedback chain completes.
+- `BattleEffectController.clear_effects()` cancels in-flight particle playback and suppresses stale callbacks during restart/menu/result cleanup. `AnimatedTurnFlow.cancel()` releases pending step awaits during forced cleanup.
+- Normal animations, reduced motion, and disabled animations preserve the same logical order. Reduced motion shortens/softens visuals; disabled animations resolve immediately without leaving ghosts, highlights, stuck awaits, or stale effects.
+- Next roadmap stages: Stage 48 special activation animations, Stage 49 booster targeting/animation polish, Stage 50 result flow UX polish.

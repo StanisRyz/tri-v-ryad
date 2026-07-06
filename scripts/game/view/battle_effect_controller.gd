@@ -11,6 +11,7 @@ const PARTICLE_STAGGER_REDUCED := 0.01
 var _animations_enabled := true
 var _reduced_motion_enabled := false
 var _playing := false
+var _playback_generation := 0
 
 
 func configure_settings(animations_enabled: bool, reduced_motion_enabled: bool) -> void:
@@ -23,11 +24,13 @@ func is_playing() -> bool:
 
 
 func clear_effects(effect_layer: Control = null) -> void:
+	_playback_generation += 1
+	_playing = false
 	if effect_layer == null:
 		return
 
 	for child in effect_layer.get_children():
-		child.queue_free()
+		child.free()
 
 
 func cap_events(events: Array) -> Array:
@@ -48,6 +51,8 @@ func play_damage_particles(events: Array, board_view: BoardView, enemy_panel: Co
 		_call_finished(finished_callback)
 		return
 
+	_playback_generation += 1
+	var generation := _playback_generation
 	_playing = true
 	var capped_events := cap_events(events)
 	var travel_duration: float = PARTICLE_TRAVEL_DURATION_REDUCED if _reduced_motion_enabled else PARTICLE_TRAVEL_DURATION
@@ -58,6 +63,8 @@ func play_damage_particles(events: Array, board_view: BoardView, enemy_panel: Co
 
 	var total_duration: float = travel_duration + stagger * maxf(capped_events.size() - 1, 0.0)
 	await effect_layer.get_tree().create_timer(total_duration).timeout
+	if generation != _playback_generation:
+		return
 
 	clear_effects(effect_layer)
 	_playing = false

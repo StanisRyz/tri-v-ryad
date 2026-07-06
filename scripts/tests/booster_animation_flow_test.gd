@@ -23,17 +23,28 @@ func _run() -> void:
 	screen._on_board_tile_pressed(Vector2i(4, 4))
 	_expect_equal(screen._input_mode, "normal", "targeted booster exits targeting mode")
 	_expect_false(screen._input_controller._input_enabled, "input locks during booster animation flow")
-	await create_timer(2.2).timeout
+	await _wait_for_feedback_to_finish(screen, 8.0)
 
 	_expect_false(screen._feedback_active, "booster animation flow finishes")
 	_expect_true(booster_panel.visible, "booster panel remains visible")
 	_expect_equal(screen._presenter.state.get("booster_state").get_uses_left("hammer"), 0, "hammer booster is marked used")
+	_expect_false(screen.board_view.is_animation_overlay_mode(), "booster flow exits overlay mode")
+	_expect_equal(screen.board_view.get_animation_layer().get_child_count(), 0, "booster flow leaves no overlay ghosts")
+	_expect_equal(screen.board_view._highlighted_cells.size(), 0, "booster flow leaves no match highlights")
+	_expect_equal(screen.board_view._invalid_feedback_cells.size(), 0, "booster flow leaves no invalid highlights")
 	if not screen._presenter.is_battle_finished():
 		_expect_true(screen._input_controller._input_enabled, "input unlocks after booster animation")
 
 	screen.queue_free()
 	await process_frame
 	_finish()
+
+
+func _wait_for_feedback_to_finish(screen, timeout_seconds: float) -> void:
+	var elapsed := 0.0
+	while screen._feedback_active and elapsed < timeout_seconds:
+		await create_timer(0.1).timeout
+		elapsed += 0.1
 
 
 func _finish() -> void:
