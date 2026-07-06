@@ -114,9 +114,61 @@ func play_match_fade() -> void:
 	_active_tween.parallel().tween_property(self, "scale", Vector2.ONE, step_duration)
 
 
+func play_match_clear(duration: float = 0.16) -> void:
+	_stop_active_tween()
+	visible = true
+	pivot_offset = size * 0.5
+	modulate = Color.WHITE
+	scale = Vector2.ONE
+	var step_duration: float = _adjust_duration(maxf(duration / 3.0, 0.01))
+	var clear_scale := _adjust_scale(Vector2(1.14, 1.14))
+	var fade_scale := _adjust_scale(Vector2(0.72, 0.72))
+	modulate = _adjust_color(Color(1.35, 1.35, 1.35, 1.0))
+	scale = clear_scale
+	_active_tween = create_tween()
+	_active_tween.tween_property(self, "modulate", Color(1.0, 1.0, 1.0, 0.18), step_duration)
+	_active_tween.parallel().tween_property(self, "scale", fade_scale, step_duration)
+	_active_tween.tween_property(self, "modulate", Color.WHITE, step_duration)
+	_active_tween.parallel().tween_property(self, "scale", Vector2.ONE, step_duration)
+
+
 func play_special_flash() -> void:
 	set_highlighted(true)
 	_play_flash_tween(Color(1.35, 1.08, 0.45, 1.0), Vector2(1.12, 1.12))
+
+
+func play_special_clear(duration: float = 0.18) -> void:
+	set_highlighted(true)
+	_stop_active_tween()
+	visible = true
+	pivot_offset = size * 0.5
+	modulate = Color.WHITE
+	scale = Vector2.ONE
+	var step_duration: float = _adjust_duration(maxf(duration / 3.0, 0.01))
+	var burst_scale := _adjust_scale(Vector2(1.20, 1.20))
+	var fade_scale := _adjust_scale(Vector2(0.78, 0.78))
+	modulate = _adjust_color(Color(1.45, 1.18, 0.42, 1.0))
+	scale = burst_scale
+	_active_tween = create_tween()
+	_active_tween.tween_property(self, "modulate", Color(1.0, 0.92, 0.46, 0.26), step_duration)
+	_active_tween.parallel().tween_property(self, "scale", fade_scale, step_duration)
+	_active_tween.tween_property(self, "modulate", Color.WHITE, step_duration)
+	_active_tween.parallel().tween_property(self, "scale", Vector2.ONE, step_duration)
+
+
+func play_invalid_bounce(offset: Vector2, step_duration: float = 0.04) -> void:
+	set_invalid_feedback(true)
+	_stop_active_tween()
+	visible = true
+	pivot_offset = size * 0.5
+	modulate = Color.WHITE
+	position = Vector2.ZERO
+	var adjusted_offset := offset.lerp(Vector2.ZERO, 0.55) if _reduced_motion_enabled else offset
+	var adjusted_duration := _adjust_duration(step_duration)
+	_active_tween = create_tween()
+	_active_tween.tween_property(self, "position", adjusted_offset, adjusted_duration)
+	_active_tween.tween_property(self, "position", -adjusted_offset * 0.45, adjusted_duration)
+	_active_tween.tween_property(self, "position", Vector2.ZERO, adjusted_duration)
 
 
 func play_refill_appear() -> void:
@@ -136,6 +188,7 @@ func reset_visual_state() -> void:
 	visible = true
 	modulate = Color.WHITE
 	scale = Vector2.ONE
+	position = Vector2.ZERO
 	_is_invalid_feedback = false
 	_apply_visuals()
 

@@ -16,3 +16,8 @@ layout_mode = 0
 theme_override_constants/h_separation = 4
 theme_override_constants/v_separation = 4
 columns = 9
+
+[node name="AnimationLayer" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+mouse_filter = 2

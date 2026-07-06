@@ -15,6 +15,7 @@ func _initialize() -> void:
 	_expect_true(turn_sequence.size() >= 2, "valid turn builds multiple requests")
 	_expect_equal(turn_sequence.get_requests()[0].animation_type, load(REQUEST_SCRIPT).TYPE_SWAP, "valid turn starts with swap")
 	_expect_equal(turn_sequence.get_requests()[1].animation_type, load(REQUEST_SCRIPT).TYPE_MATCH_CLEAR, "valid turn includes match clear")
+	_expect_equal(turn_sequence.get_requests()[1].payload["cells_count"], 3, "match clear payload stores cell count")
 
 	var invalid_sequence = builder.build_invalid_swap(Vector2i(1, 1), Vector2i(2, 1), "no_match")
 	_expect_equal(invalid_sequence.size(), 1, "invalid swap builds one request")

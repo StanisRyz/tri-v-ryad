@@ -10,6 +10,7 @@ const LANE_WIDTH := 3
 const DEFAULT_BOARD_SIZE := 664.0
 
 @onready var tile_grid: GridContainer = %TileGrid
+@onready var animation_layer: Control = %AnimationLayer
 
 var _board: BoardModel
 var _tile_views: Dictionary = {}
@@ -126,6 +127,127 @@ func pulse_cells(cells: Array[Vector2i], _duration: float = 0.08) -> void:
 		tile.play_swap_pulse()
 
 
+func get_animation_layer() -> Control:
+	return animation_layer
+
+
+func clear_animation_layer() -> void:
+	if animation_layer == null:
+		return
+
+	for child in animation_layer.get_children():
+		child.queue_free()
+
+
+func create_tile_ghost(cell: Vector2i) -> Control:
+	var tile := get_tile_view(cell)
+	if tile == null or animation_layer == null:
+		return null
+
+	var ghost := Button.new()
+	ghost.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ghost.focus_mode = Control.FOCUS_NONE
+	ghost.disabled = true
+	ghost.size = tile.size
+	ghost.position = tile.global_position - animation_layer.global_position
+	ghost.pivot_offset = tile.size * 0.5
+	ghost.icon = tile.icon
+	ghost.text = tile.text
+	ghost.expand_icon = true
+	for state in ["normal", "hover", "pressed", "disabled"]:
+		var style = tile.get_theme_stylebox("normal")
+		if style != null:
+			ghost.add_theme_stylebox_override(state, style.duplicate())
+	ghost.add_theme_color_override("font_color", Color.WHITE)
+	ghost.add_theme_color_override("font_disabled_color", Color.WHITE)
+	ghost.add_theme_font_size_override("font_size", tile.get_theme_font_size("font_size"))
+	animation_layer.add_child(ghost)
+	return ghost
+
+
+func hide_tile_visual(cell: Vector2i) -> void:
+	var tile := get_tile_view(cell)
+	if tile != null:
+		tile.visible = false
+
+
+func show_tile_visual(cell: Vector2i) -> void:
+	var tile := get_tile_view(cell)
+	if tile != null:
+		tile.visible = true
+
+
+func show_tile_visuals(cells: Array[Vector2i]) -> void:
+	for cell in cells:
+		show_tile_visual(cell)
+
+
+func play_swap_animation(from_cell: Vector2i, to_cell: Vector2i, duration: float) -> void:
+	var cells := get_valid_cells_from_pair(from_cell, to_cell)
+	if cells.size() != 2 or animation_layer == null:
+		play_swap_feedback(from_cell, to_cell)
+		return
+
+	clear_animation_layer()
+	var from_tile := get_tile_view(from_cell)
+	var to_tile := get_tile_view(to_cell)
+	if from_tile == null or to_tile == null:
+		play_swap_feedback(from_cell, to_cell)
+		return
+
+	var from_position: Vector2 = from_tile.global_position - animation_layer.global_position
+	var to_position: Vector2 = to_tile.global_position - animation_layer.global_position
+	var from_ghost := create_tile_ghost(to_cell)
+	var to_ghost := create_tile_ghost(from_cell)
+	if from_ghost == null or to_ghost == null:
+		clear_animation_layer()
+		play_swap_feedback(from_cell, to_cell)
+		return
+
+	from_ghost.position = from_position
+	to_ghost.position = to_position
+	hide_tile_visual(from_cell)
+	hide_tile_visual(to_cell)
+	var tween := create_tween()
+	tween.tween_property(from_ghost, "position", to_position, duration)
+	tween.parallel().tween_property(to_ghost, "position", from_position, duration)
+	tween.finished.connect(func() -> void:
+		show_tile_visuals(cells)
+		clear_animation_layer()
+	)
+
+
+func play_invalid_swap_animation(from_cell: Vector2i, to_cell: Vector2i, duration: float) -> void:
+	var cells := get_valid_cells_from_pair(from_cell, to_cell)
+	if cells.is_empty():
+		return
+
+	_invalid_feedback_cells = cells
+	_highlighted_cells.clear()
+	refresh_all_tiles()
+
+	var direction := Vector2(to_cell - from_cell)
+	if direction.length() <= 0.0:
+		direction = Vector2.RIGHT
+	direction = direction.normalized()
+	var distance := minf(_get_board_rect().size.x / float(BOARD_SIZE) * 0.18, 18.0)
+	var offset := direction * distance
+	var step_duration := maxf(duration / 3.0, 0.01)
+	for tile in get_tile_views(cells):
+		tile.play_invalid_bounce(offset, step_duration)
+
+
+func play_match_clear_animation(cells: Array[Vector2i], duration: float) -> void:
+	for tile in get_tile_views(cells):
+		tile.play_match_clear(duration)
+
+
+func play_special_clear_animation(cells: Array[Vector2i], duration: float) -> void:
+	highlight_cells(cells)
+	for tile in get_tile_views(cells):
+		tile.play_special_clear(duration)
+
+
 func play_swap_feedback(from_cell: Vector2i, to_cell: Vector2i) -> void:
 	for tile in get_tile_views(get_valid_cells_from_pair(from_cell, to_cell)):
 		tile.play_swap_pulse()
@@ -234,6 +356,9 @@ func _update_grid_rect() -> void:
 	var board_rect := _get_board_rect()
 	tile_grid.position = board_rect.position
 	tile_grid.size = board_rect.size
+	if animation_layer != null:
+		animation_layer.position = board_rect.position
+		animation_layer.size = board_rect.size
 
 
 func _get_board_rect() -> Rect2:

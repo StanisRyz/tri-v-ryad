@@ -15,20 +15,28 @@ func build_from_turn_presentation(data):
 
 	sequence.add_request(REQUEST_SCRIPT.new_request(REQUEST_SCRIPT.TYPE_SWAP)
 		.with_swap(data.swapped_from, data.swapped_to)
-		.with_duration(0.06)
+		.with_duration(0.14)
 		.with_payload({"source": "turn"}))
 
 	if not data.matched_cells.is_empty():
 		sequence.add_request(REQUEST_SCRIPT.new_request(REQUEST_SCRIPT.TYPE_MATCH_CLEAR)
 			.with_cells(data.matched_cells)
-			.with_duration(0.08)
-			.with_payload({"total_tiles_cleared": data.total_tiles_cleared}))
+			.with_duration(0.16)
+			.with_payload({
+				"source": "turn",
+				"total_tiles_cleared": data.total_tiles_cleared,
+				"cells_count": data.matched_cells.size(),
+			}))
 
 	if not data.special_cleared_cells.is_empty():
 		sequence.add_request(REQUEST_SCRIPT.new_request(REQUEST_SCRIPT.TYPE_SPECIAL_CLEAR)
 			.with_cells(data.special_cleared_cells)
-			.with_duration(0.08)
-			.with_payload({"activated_special_tiles": data.activated_special_tiles.duplicate(true)}))
+			.with_duration(0.18)
+			.with_payload({
+				"source": "turn",
+				"activated_special_tiles": data.activated_special_tiles.duplicate(true),
+				"cells_count": data.special_cleared_cells.size(),
+			}))
 
 	if data.total_damage_to_enemy > 0:
 		sequence.add_request(REQUEST_SCRIPT.new_request(REQUEST_SCRIPT.TYPE_ENEMY_HIT)
@@ -63,6 +71,6 @@ func build_invalid_swap(from_cell: Vector2i, to_cell: Vector2i, reason: String =
 	var sequence := SEQUENCE_SCRIPT.new()
 	sequence.add_request(REQUEST_SCRIPT.new_request(REQUEST_SCRIPT.TYPE_INVALID_SWAP)
 		.with_swap(from_cell, to_cell)
-		.with_duration(0.06)
+		.with_duration(0.12)
 		.with_payload({"reason": reason}))
 	return sequence

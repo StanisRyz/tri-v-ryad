@@ -61,9 +61,9 @@ func _play_requests_async(requests: Array, board_view: Control, finished_callbac
 		if not request.is_valid():
 			continue
 
-		_apply_placeholder_request(request, board_view)
 		var effective_duration := _get_effective_duration(request.duration)
 		last_effective_duration = effective_duration
+		_play_request(request, board_view, effective_duration)
 		await board_view.get_tree().create_timer(effective_duration).timeout
 
 	if generation != _playback_generation:
@@ -73,33 +73,53 @@ func _play_requests_async(requests: Array, board_view: Control, finished_callbac
 	_call_finished(finished_callback)
 
 
-func _apply_placeholder_request(request, board_view: Control) -> void:
+func _play_request(request, board_view: Control, effective_duration: float) -> void:
 	match request.animation_type:
 		REQUEST_SCRIPT.TYPE_SWAP:
-			if board_view.has_method("pulse_cells"):
-				board_view.pulse_cells(_get_swap_cells(request), request.duration)
-			elif board_view.has_method("play_swap_feedback"):
-				board_view.play_swap_feedback(request.from_cell, request.to_cell)
+			_play_swap_request(request, board_view, effective_duration)
 		REQUEST_SCRIPT.TYPE_INVALID_SWAP:
-			if board_view.has_method("play_invalid_swap_feedback"):
-				board_view.play_invalid_swap_feedback(request.from_cell, request.to_cell)
-			elif board_view.has_method("flash_cells"):
-				board_view.flash_cells(_get_swap_cells(request), request.duration)
+			_play_invalid_swap_request(request, board_view, effective_duration)
 		REQUEST_SCRIPT.TYPE_MATCH_CLEAR:
-			if board_view.has_method("flash_cells"):
-				board_view.flash_cells(request.cells, request.duration)
+			_play_match_clear_request(request, board_view, effective_duration)
 		REQUEST_SCRIPT.TYPE_SPECIAL_CLEAR:
-			if board_view.has_method("pulse_cells"):
-				board_view.pulse_cells(request.cells, request.duration)
+			_play_special_clear_request(request, board_view, effective_duration)
 		REQUEST_SCRIPT.TYPE_BOOSTER_CLEAR:
 			if board_view.has_method("flash_cells"):
-				board_view.flash_cells(request.cells, request.duration)
+				board_view.flash_cells(request.cells, effective_duration)
 		REQUEST_SCRIPT.TYPE_REFILL:
 			if board_view.has_method("pulse_cells"):
-				board_view.pulse_cells(request.cells, request.duration)
+				board_view.pulse_cells(request.cells, effective_duration)
 		_:
 			if board_view.has_method("flash_cells"):
-				board_view.flash_cells(request.cells, request.duration)
+				board_view.flash_cells(request.cells, effective_duration)
+
+
+func _play_swap_request(request, board_view: Control, effective_duration: float) -> void:
+	if board_view.has_method("play_swap_animation"):
+		board_view.play_swap_animation(request.from_cell, request.to_cell, effective_duration)
+	elif board_view.has_method("pulse_cells"):
+		board_view.pulse_cells(_get_swap_cells(request), effective_duration)
+
+
+func _play_invalid_swap_request(request, board_view: Control, effective_duration: float) -> void:
+	if board_view.has_method("play_invalid_swap_animation"):
+		board_view.play_invalid_swap_animation(request.from_cell, request.to_cell, effective_duration)
+	elif board_view.has_method("play_invalid_swap_feedback"):
+		board_view.play_invalid_swap_feedback(request.from_cell, request.to_cell)
+
+
+func _play_match_clear_request(request, board_view: Control, effective_duration: float) -> void:
+	if board_view.has_method("play_match_clear_animation"):
+		board_view.play_match_clear_animation(request.cells, effective_duration)
+	elif board_view.has_method("flash_cells"):
+		board_view.flash_cells(request.cells, effective_duration)
+
+
+func _play_special_clear_request(request, board_view: Control, effective_duration: float) -> void:
+	if board_view.has_method("play_special_clear_animation"):
+		board_view.play_special_clear_animation(request.cells, effective_duration)
+	elif board_view.has_method("pulse_cells"):
+		board_view.pulse_cells(request.cells, effective_duration)
 
 
 func _get_swap_cells(request) -> Array[Vector2i]:

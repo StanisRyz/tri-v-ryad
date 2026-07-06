@@ -8,6 +8,27 @@ var _failures := 0
 var _callback_count := 0
 
 
+class RecordingBoardView:
+	extends Control
+
+	var swap_calls := 0
+	var invalid_calls := 0
+	var match_calls := 0
+	var special_calls := 0
+
+	func play_swap_animation(_from_cell: Vector2i, _to_cell: Vector2i, _duration: float) -> void:
+		swap_calls += 1
+
+	func play_invalid_swap_animation(_from_cell: Vector2i, _to_cell: Vector2i, _duration: float) -> void:
+		invalid_calls += 1
+
+	func play_match_clear_animation(_cells: Array[Vector2i], _duration: float) -> void:
+		match_calls += 1
+
+	func play_special_clear_animation(_cells: Array[Vector2i], _duration: float) -> void:
+		special_calls += 1
+
+
 func _initialize() -> void:
 	print("Running board animation controller tests...")
 	_run()
@@ -18,6 +39,7 @@ func _run() -> void:
 	_test_empty_sequence_finishes_safely()
 	_test_null_board_view_finishes_safely()
 	await _test_reduced_motion_shortens_duration_and_calls_once()
+	await _test_request_types_call_concrete_paths()
 	_finish()
 
 
@@ -25,7 +47,7 @@ func _test_disabled_finishes_immediately() -> void:
 	_callback_count = 0
 	var controller = load(CONTROLLER_SCRIPT).new()
 	controller.configure_settings(false, false)
-	controller.play_requests([_request(0.2)], Control.new(), Callable(self, "_on_callback"))
+	controller.play_requests([_request(0.2)], null, Callable(self, "_on_callback"))
 	_expect_equal(_callback_count, 1, "disabled animations call callback")
 	_expect_false(controller.is_playing(), "disabled animations do not stay playing")
 
@@ -33,7 +55,7 @@ func _test_disabled_finishes_immediately() -> void:
 func _test_empty_sequence_finishes_safely() -> void:
 	_callback_count = 0
 	var controller = load(CONTROLLER_SCRIPT).new()
-	controller.play_sequence(load(SEQUENCE_SCRIPT).new(), Control.new(), Callable(self, "_on_callback"))
+	controller.play_sequence(load(SEQUENCE_SCRIPT).new(), null, Callable(self, "_on_callback"))
 	_expect_equal(_callback_count, 1, "empty sequence calls callback")
 	_expect_false(controller.is_playing(), "empty sequence does not stay playing")
 
@@ -65,6 +87,29 @@ func _test_reduced_motion_shortens_duration_and_calls_once() -> void:
 
 func _request(duration: float):
 	return load(REQUEST_SCRIPT).new_request(load(REQUEST_SCRIPT).TYPE_MATCH_CLEAR).with_duration(duration)
+
+
+func _test_request_types_call_concrete_paths() -> void:
+	_callback_count = 0
+	var request_script = load(REQUEST_SCRIPT)
+	var board_view := RecordingBoardView.new()
+	root.add_child(board_view)
+	await process_frame
+	var controller = load(CONTROLLER_SCRIPT).new()
+	var one_cell: Array[Vector2i] = [Vector2i(0, 0)]
+	controller.play_requests([
+		request_script.new_request(request_script.TYPE_SWAP).with_swap(Vector2i(0, 0), Vector2i(1, 0)).with_duration(0.01),
+		request_script.new_request(request_script.TYPE_INVALID_SWAP).with_swap(Vector2i(0, 0), Vector2i(1, 0)).with_duration(0.01),
+		request_script.new_request(request_script.TYPE_MATCH_CLEAR).with_cells(one_cell).with_duration(0.01),
+		request_script.new_request(request_script.TYPE_SPECIAL_CLEAR).with_cells(one_cell).with_duration(0.01),
+	], board_view, Callable(self, "_on_callback"))
+	await create_timer(0.09).timeout
+	_expect_equal(board_view.swap_calls, 1, "swap request calls swap animation path")
+	_expect_equal(board_view.invalid_calls, 1, "invalid request calls invalid animation path")
+	_expect_equal(board_view.match_calls, 1, "match request calls match clear path")
+	_expect_equal(board_view.special_calls, 1, "special request calls special clear path")
+	_expect_equal(_callback_count, 1, "concrete path playback calls callback once")
+	board_view.free()
 
 
 func _on_callback() -> void:
