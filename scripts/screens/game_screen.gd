@@ -11,6 +11,8 @@ const LEVEL_LABEL_FORMATTER_SCRIPT := preload("res://scripts/game/config/level_l
 const BATTLE_MESSAGE_FORMATTER_SCRIPT := preload("res://scripts/game/presentation/battle_message_formatter.gd")
 const ASSET_KEY_RESOLVER_SCRIPT := preload("res://scripts/game/config/asset_key_resolver.gd")
 const UI_ASSET_BINDING_SCRIPT := preload("res://scripts/ui/ui_asset_binding.gd")
+const BOARD_ANIMATION_CONTROLLER_SCRIPT := preload("res://scripts/game/view/board_animation_controller.gd")
+const BOARD_ANIMATION_SEQUENCE_BUILDER_SCRIPT := preload("res://scripts/game/presentation/board_animation_sequence_builder.gd")
 const PORTRAIT_CONTENT_WIDTH := 664.0
 const PORTRAIT_BOARD_SIZE := PORTRAIT_CONTENT_WIDTH
 const LANDSCAPE_CONTENT_WIDTH := 560.0
@@ -35,6 +37,8 @@ var _presenter
 var _input_controller
 var _turn_feedback_presenter
 var _ability_feedback_presenter
+var _board_animation_controller
+var _board_animation_sequence_builder
 var _pending_battle_status := -1
 var _feedback_active := false
 var _current_level_id := "level_1"
@@ -115,6 +119,9 @@ func _setup_playable_battle() -> void:
 	_input_controller = BOARD_INPUT_CONTROLLER_SCRIPT.new()
 	_turn_feedback_presenter = TURN_FEEDBACK_PRESENTER_SCRIPT.new()
 	_ability_feedback_presenter = ABILITY_FEEDBACK_PRESENTER_SCRIPT.new()
+	_board_animation_controller = BOARD_ANIMATION_CONTROLLER_SCRIPT.new()
+	_board_animation_sequence_builder = BOARD_ANIMATION_SEQUENCE_BUILDER_SCRIPT.new()
+	_apply_presentation_settings()
 
 	board_view.tile_pressed.connect(_input_controller.handle_tile_pressed)
 	board_view.tile_pressed.connect(_on_board_tile_pressed)
@@ -237,12 +244,21 @@ func _on_battle_finished(status: int) -> void:
 func _on_turn_presentation_ready(data) -> void:
 	_play_turn_audio(data)
 	_feedback_active = true
-	_turn_feedback_presenter.play_turn_feedback(data, board_view, Callable(self, "_set_status"))
+	var sequence = _board_animation_sequence_builder.build_from_turn_presentation(data)
+	_play_board_animation_sequence(sequence, Callable(self, "_play_turn_feedback_after_animation").bind(data))
 
 
 func _on_ability_presentation_ready(data) -> void:
 	_feedback_active = true
 	_ability_feedback_presenter.play_ability_feedback(data, board_view, Callable(self, "_set_status"))
+
+
+func _play_turn_feedback_after_animation(data) -> void:
+	if _turn_feedback_presenter == null:
+		_on_feedback_finished()
+		return
+
+	_turn_feedback_presenter.play_turn_feedback(data, board_view, Callable(self, "_set_status"))
 
 
 func _on_feedback_finished() -> void:
@@ -397,6 +413,13 @@ func _on_booster_resolved(result) -> void:
 		_input_controller.set_input_enabled(true)
 		return
 
+	_feedback_active = true
+	_input_controller.set_input_enabled(false)
+	var sequence = _board_animation_sequence_builder.build_from_booster_result(result)
+	_play_board_animation_sequence(sequence, Callable(self, "_finish_booster_resolution").bind(result))
+
+
+func _finish_booster_resolution(result) -> void:
 	if result.freeze_turns_added > 0:
 		_play_special_activate()
 	else:
@@ -406,6 +429,11 @@ func _on_booster_resolved(result) -> void:
 		board_view.highlight_cells(result.cleared_cells)
 
 	_set_status(result.message)
+	_feedback_active = false
+	if _pending_battle_status != -1:
+		_show_battle_result(_pending_battle_status)
+		return
+
 	if not _presenter.is_battle_finished():
 		_input_controller.set_input_enabled(true)
 
@@ -464,6 +492,17 @@ func _apply_presentation_settings() -> void:
 		_turn_feedback_presenter.configure_settings(animations_enabled, reduced_motion_enabled, _debug_labels_enabled)
 	if _ability_feedback_presenter != null:
 		_ability_feedback_presenter.configure_settings(animations_enabled, reduced_motion_enabled, _debug_labels_enabled)
+	if _board_animation_controller != null:
+		_board_animation_controller.configure_settings(animations_enabled, reduced_motion_enabled)
+
+
+func _play_board_animation_sequence(sequence, finished_callback: Callable) -> void:
+	if _board_animation_controller == null:
+		if finished_callback.is_valid():
+			finished_callback.call()
+		return
+
+	_board_animation_controller.play_sequence(sequence, board_view, finished_callback)
 
 
 func _play_turn_audio(data) -> void:

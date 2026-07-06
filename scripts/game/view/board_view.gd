@@ -83,9 +83,9 @@ func clear_cell_highlights() -> void:
 	refresh_all_tiles()
 
 
-func flash_cells(cells: Array[Vector2i]) -> void:
+func flash_cells(cells: Array[Vector2i], _duration: float = 0.08) -> void:
 	for cell in cells:
-		var tile := _tile_views.get(cell) as TileView
+		var tile := get_tile_view(cell)
 		if tile != null:
 			tile.play_flash()
 
@@ -104,6 +104,14 @@ func get_tile_view(cell: Vector2i) -> TileView:
 	return _tile_views.get(cell) as TileView
 
 
+func get_cell_global_center(cell: Vector2i) -> Vector2:
+	var tile := get_tile_view(cell)
+	if tile == null:
+		return Vector2.ZERO
+
+	return tile.global_position + tile.size * 0.5
+
+
 func get_tile_views(cells: Array[Vector2i]) -> Array:
 	var views := []
 	for cell in cells:
@@ -111,6 +119,11 @@ func get_tile_views(cells: Array[Vector2i]) -> Array:
 		if tile != null:
 			views.append(tile)
 	return views
+
+
+func pulse_cells(cells: Array[Vector2i], _duration: float = 0.08) -> void:
+	for tile in get_tile_views(cells):
+		tile.play_swap_pulse()
 
 
 func play_swap_feedback(from_cell: Vector2i, to_cell: Vector2i) -> void:

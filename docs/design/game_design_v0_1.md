@@ -614,4 +614,18 @@ One-time rewards, level map, chapters, stars-based rewards, reset upgrades, and 
 - `GameScreen` owns only UI mode and wiring for booster selection/targeting; `BattlePresenter` coordinates booster requests and emits booster state/result updates.
 - `HeroPartyPanel` remains hidden, and hero/RPG systems remain frozen and inactive.
 - No booster inventory, persistence, economy, purchases, Yandex SDK, cloud save, ads, payments, particles, final art, new enemies, new levels, or hero-system reactivation were added.
-- Next planned stage: Stage 41, Booster UX, balance and feedback polish v0.1.
+- Next planned stage: Stage 41, Board animation foundation v0.1.
+
+## Stage 41: Board Animation Foundation v0.1
+
+- Stage 41 is implemented.
+- `BoardAnimationRequest` defines future animation event types for swap, invalid swap, match clear, special clear, gravity fall, refill, cascade step, booster clear, damage particles, and enemy hit.
+- `BoardAnimationSequence` stores ordered animation requests and exposes safe add, export, clear, empty, and size helpers.
+- `BoardAnimationController` owns settings-aware placeholder playback. It finishes immediately when animations are disabled, when the sequence is empty, or when no board view is available, and it shortens request durations when reduced motion is enabled.
+- `BoardAnimationSequenceBuilder` converts existing `TurnPresentationData` and `BoosterResolveResult` data into animation sequences without changing board, battle, booster, damage, progression, save, asset, audio, or hero-system rules.
+- `GameScreen` routes turn presentation and booster resolution through the animation foundation before continuing existing turn feedback or booster status handling, so input remains blocked until the sequence path finishes.
+- `BoardView` exposes safe helper methods for tile lookup, cell global center, cell flash, and cell pulse effects. Unknown or missing cells are ignored safely.
+- Stage 41 placeholder playback may flash or pulse cells, but high-polish swap movement, explosions, falling crystals, refill movement, cascade-step animation, damage particles, and enemy hit feedback remain future work.
+- `animations_enabled` and `reduced_motion_enabled` are respected by the board animation controller.
+- No board rules, battle rules, booster rules, balance, progression, saves, Yandex SDK, cloud save, ads, payments, final art, particles, real tile movement, or hero-system reactivation were added.
+- Next planned stage: Stage 42, Swap and match clear animations v0.1.
