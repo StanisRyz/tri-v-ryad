@@ -3,6 +3,7 @@ class_name BoardAnimationController
 
 const REQUEST_SCRIPT := preload("res://scripts/game/presentation/board_animation_request.gd")
 const SEQUENCE_SCRIPT := preload("res://scripts/game/presentation/board_animation_sequence.gd")
+const SPECIAL_TILE_TYPE_SCRIPT := preload("res://scripts/game/board/special_tile_type.gd")
 const MINIMAL_DURATION := 0.01
 const REDUCED_MOTION_SCALE := 0.35
 
@@ -86,6 +87,8 @@ func _play_request(request, board_view: Control, effective_duration: float) -> v
 			_play_match_clear_request(request, board_view, effective_duration)
 		REQUEST_SCRIPT.TYPE_SPECIAL_CLEAR:
 			_play_special_clear_request(request, board_view, effective_duration)
+		REQUEST_SCRIPT.TYPE_SPECIAL_ACTIVATION:
+			_play_special_activation_request(request, board_view, effective_duration)
 		REQUEST_SCRIPT.TYPE_SPECIAL_CREATE:
 			_play_special_create_request(request, board_view, effective_duration)
 		REQUEST_SCRIPT.TYPE_BOOSTER_CLEAR:
@@ -136,6 +139,33 @@ func _play_special_clear_request(request, board_view: Control, effective_duratio
 		board_view.pulse_cells(request.cells, effective_duration)
 
 
+func _play_special_activation_request(request, board_view: Control, effective_duration: float) -> void:
+	var cell: Vector2i = request.payload.get("cell", Vector2i(-1, -1))
+	var special_type: int = int(request.payload.get("special_type", SPECIAL_TILE_TYPE_SCRIPT.NONE))
+	var affected_cells: Array[Vector2i] = _to_vector2i_array(request.payload.get("affected_cells", request.cells))
+	if affected_cells.is_empty():
+		affected_cells = request.cells.duplicate()
+
+	match special_type:
+		SPECIAL_TILE_TYPE_SCRIPT.LINE_HORIZONTAL:
+			if board_view.has_method("play_horizontal_line_special_activation"):
+				board_view.play_horizontal_line_special_activation(cell, affected_cells, effective_duration)
+			else:
+				_play_special_clear_request(request, board_view, effective_duration)
+		SPECIAL_TILE_TYPE_SCRIPT.LINE_VERTICAL:
+			if board_view.has_method("play_vertical_line_special_activation"):
+				board_view.play_vertical_line_special_activation(cell, affected_cells, effective_duration)
+			else:
+				_play_special_clear_request(request, board_view, effective_duration)
+		SPECIAL_TILE_TYPE_SCRIPT.COLOR_BOMB:
+			if board_view.has_method("play_color_bomb_special_activation"):
+				board_view.play_color_bomb_special_activation(cell, affected_cells, int(request.payload.get("base_tile_type", BoardModel.EMPTY)), effective_duration)
+			else:
+				_play_special_clear_request(request, board_view, effective_duration)
+		_:
+			_play_special_clear_request(request, board_view, effective_duration)
+
+
 func _play_special_create_request(request, board_view: Control, effective_duration: float) -> void:
 	if board_view.has_method("play_special_create_animation"):
 		board_view.play_special_create_animation(request.payload.get("created_special_tiles", []), effective_duration)
@@ -163,6 +193,14 @@ func _get_effective_duration(duration: float) -> float:
 	if _reduced_motion_enabled:
 		return maxf(safe_duration * REDUCED_MOTION_SCALE, MINIMAL_DURATION)
 	return safe_duration
+
+
+func _to_vector2i_array(values: Array) -> Array[Vector2i]:
+	var typed_values: Array[Vector2i] = []
+	for value in values:
+		if value is Vector2i:
+			typed_values.append(value as Vector2i)
+	return typed_values
 
 
 func _finish_immediately(finished_callback: Callable) -> void:

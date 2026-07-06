@@ -67,16 +67,25 @@ func build_clear_step(board: BoardModel, matches: Array[MatchResult], cascade_in
 			"special_type": special_data.special_type,
 		})
 		var special_cells: Array[Vector2i] = []
+		var base_tile_type := BoardModel.EMPTY
 		if special_data.is_color_bomb():
+			base_tile_type = board.get_tile(activation_cell)
 			special_cells = _special_tile_resolver.get_color_bomb_clear_cells(board, activation_cell, special_data)
 		else:
 			special_cells = _special_tile_resolver.get_line_clear_cells(board, activation_cell, special_data)
 
+		var affected_cells: Array[Vector2i] = []
+
 		for special_cell in special_cells:
 			if protected_special_cells.has(special_cell):
 				continue
+			affected_cells.append(special_cell)
 			_add_unique_cell(step.cleared_cells, clear_seen, special_cell)
 			_add_unique_cell(step.special_cleared_cells, special_cleared_seen, special_cell)
+
+		var activation_data: Dictionary = step.activated_special_tiles[step.activated_special_tiles.size() - 1]
+		activation_data["affected_cells"] = affected_cells.duplicate()
+		activation_data["base_tile_type"] = base_tile_type
 
 	return step
 

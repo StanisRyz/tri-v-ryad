@@ -24,6 +24,7 @@ var _highlighted_cells: Array[Vector2i] = []
 var _invalid_feedback_cells: Array[Vector2i] = []
 var _hidden_animation_cells: Array[Vector2i] = []
 var _active_board_animation_tween: Tween
+var _special_activation_tweens: Array[Tween] = []
 var _overlay_mode := false
 var _overlay_ghosts: Dictionary = {}
 var _overlay_snapshot: BoardVisualSnapshot
@@ -158,6 +159,7 @@ func get_animation_layer() -> Control:
 
 func clear_animation_layer() -> void:
 	_overlay_ghosts.clear()
+	_clear_special_activation_tweens()
 	if animation_layer == null:
 		return
 
@@ -174,6 +176,7 @@ func cancel_active_board_animation() -> void:
 	if _active_board_animation_tween != null:
 		_active_board_animation_tween.kill()
 		_active_board_animation_tween = null
+	_clear_special_activation_tweens()
 	if _overlay_mode:
 		return
 	restore_hidden_tile_visuals()
@@ -261,6 +264,7 @@ func force_reset_animation_state() -> void:
 	if _active_board_animation_tween != null:
 		_active_board_animation_tween.kill()
 		_active_board_animation_tween = null
+	_clear_special_activation_tweens()
 
 	_overlay_mode = false
 	_overlay_snapshot = null
@@ -826,6 +830,29 @@ func play_match_clear_animation(cells: Array[Vector2i], duration: float) -> void
 		tile.play_match_clear(duration)
 
 
+func play_horizontal_line_special_activation(activation_cell: Vector2i, affected_cells: Array[Vector2i], duration: float) -> void:
+	_clear_special_activation_tweens()
+	_play_line_special_activation(activation_cell, affected_cells, duration, true)
+
+
+func play_vertical_line_special_activation(activation_cell: Vector2i, affected_cells: Array[Vector2i], duration: float) -> void:
+	_clear_special_activation_tweens()
+	_play_line_special_activation(activation_cell, affected_cells, duration, false)
+
+
+func play_color_bomb_special_activation(activation_cell: Vector2i, affected_cells: Array[Vector2i], base_tile_type: int, duration: float) -> void:
+	_clear_special_activation_tweens()
+	var safe_duration := maxf(duration, 0.01)
+	var sorted_cells := affected_cells.duplicate()
+	sorted_cells.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
+		return a.y < b.y if a.y != b.y else a.x < b.x
+	)
+
+	_play_activation_cell_pulse(activation_cell, safe_duration, Color(1.45, 1.20, 0.50, 1.0))
+	var highlight_color: Color = TileView.TILE_COLORS.get(base_tile_type, Color(1.0, 0.90, 0.35, 1.0))
+	_play_affected_cell_highlights(sorted_cells, safe_duration, highlight_color.lightened(0.22), 0.62)
+
+
 func play_special_clear_animation(cells: Array[Vector2i], duration: float) -> void:
 	if _overlay_mode:
 		_play_overlay_fade(cells, duration)
@@ -962,6 +989,158 @@ func _spawn_fallback_special_ghost(cell: Vector2i) -> Control:
 
 	var tile_type: int = _board.get_tile(cell) if _board != null else BoardModel.EMPTY
 	return create_tile_ghost_from_data(tile_type, null, ghost_position, ghost_size)
+
+
+func _play_line_special_activation(activation_cell: Vector2i, affected_cells: Array[Vector2i], duration: float, horizontal: bool) -> void:
+	var safe_duration := maxf(duration, 0.01)
+	var sorted_cells := affected_cells.duplicate()
+	if horizontal:
+		sorted_cells.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
+			return a.x < b.x
+		)
+	else:
+		sorted_cells.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
+			return a.y < b.y
+		)
+
+	_play_activation_cell_pulse(activation_cell, safe_duration, Color(1.45, 1.20, 0.50, 1.0))
+	_play_line_sweep(sorted_cells, safe_duration, horizontal)
+
+
+func _play_activation_cell_pulse(cell: Vector2i, duration: float, color: Color) -> void:
+	var target := _get_animation_control_for_cell(cell)
+	if target == null:
+		return
+
+	var base_scale: Vector2 = target.scale if target.scale != Vector2.ZERO else Vector2.ONE
+	var pulse_scale := base_scale * 1.16
+	var half_duration := maxf(duration * 0.28, 0.01)
+	var tween := create_tween()
+	_register_special_activation_tween(tween)
+	tween.tween_property(target, "modulate", color, half_duration)
+	tween.parallel().tween_property(target, "scale", pulse_scale, half_duration)
+	tween.chain().tween_property(target, "modulate", Color.WHITE, half_duration)
+	tween.parallel().tween_property(target, "scale", base_scale, half_duration)
+
+
+func _play_line_sweep(cells: Array[Vector2i], duration: float, horizontal: bool) -> void:
+	if cells.is_empty():
+		return
+
+	var sweep_color := Color(1.0, 0.86, 0.22, 0.0)
+	var total_duration := maxf(duration, 0.01)
+	var cell_duration := maxf(total_duration * 0.46, 0.04)
+	var step_delay := maxf((total_duration - cell_duration) / maxf(float(cells.size()), 1.0), 0.0)
+
+	for index in range(cells.size()):
+		var cell := cells[index]
+		var highlight := _create_cell_highlight(cell, horizontal, sweep_color)
+		if highlight == null:
+			continue
+
+		var delay := step_delay * float(index)
+		var tween := create_tween()
+		_register_special_activation_tween(tween)
+		if delay > 0.0:
+			tween.tween_interval(delay)
+		tween.tween_property(highlight, "modulate:a", 0.72, cell_duration * 0.35)
+		tween.tween_property(highlight, "modulate:a", 0.0, cell_duration * 0.65)
+		tween.tween_callback(func() -> void:
+			if is_instance_valid(highlight):
+				highlight.free()
+		)
+
+
+func _play_affected_cell_highlights(cells: Array[Vector2i], duration: float, color: Color, alpha: float) -> void:
+	if cells.is_empty():
+		return
+
+	var total_duration := maxf(duration, 0.01)
+	var cell_duration := maxf(total_duration * 0.55, 0.04)
+	var step_delay := maxf((total_duration - cell_duration) / maxf(float(cells.size()), 1.0), 0.0)
+
+	for index in range(cells.size()):
+		var cell := cells[index]
+		var highlight := _create_cell_highlight(cell, false, Color(color.r, color.g, color.b, 0.0))
+		var target := _get_animation_control_for_cell(cell)
+		if target != null:
+			var base_scale: Vector2 = target.scale if target.scale != Vector2.ZERO else Vector2.ONE
+			var pulse_tween := create_tween()
+			_register_special_activation_tween(pulse_tween)
+			pulse_tween.tween_interval(step_delay * float(index))
+			pulse_tween.tween_property(target, "modulate", color, cell_duration * 0.35)
+			pulse_tween.parallel().tween_property(target, "scale", base_scale * 1.06, cell_duration * 0.35)
+			pulse_tween.chain().tween_property(target, "modulate", Color.WHITE, cell_duration * 0.65)
+			pulse_tween.parallel().tween_property(target, "scale", base_scale, cell_duration * 0.65)
+
+		if highlight == null:
+			continue
+
+		var tween := create_tween()
+		_register_special_activation_tween(tween)
+		tween.tween_interval(step_delay * float(index))
+		tween.tween_property(highlight, "modulate:a", alpha, cell_duration * 0.35)
+		tween.tween_property(highlight, "modulate:a", 0.0, cell_duration * 0.65)
+		tween.tween_callback(func() -> void:
+			if is_instance_valid(highlight):
+				highlight.free()
+		)
+
+
+func _create_cell_highlight(cell: Vector2i, horizontal: bool, color: Color) -> ColorRect:
+	if animation_layer == null:
+		return null
+
+	var rect := _get_animation_cell_rect(cell)
+	if rect.size == Vector2.ZERO:
+		return null
+
+	var highlight := ColorRect.new()
+	highlight.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	highlight.color = Color(color.r, color.g, color.b, 1.0)
+	highlight.modulate = Color(1.0, 1.0, 1.0, color.a)
+	if horizontal:
+		highlight.position = rect.position + Vector2(0.0, rect.size.y * 0.36)
+		highlight.size = Vector2(rect.size.x, maxf(rect.size.y * 0.28, 4.0))
+	else:
+		highlight.position = rect.position + Vector2(rect.size.x * 0.36, 0.0)
+		highlight.size = Vector2(maxf(rect.size.x * 0.28, 4.0), rect.size.y)
+	animation_layer.add_child(highlight)
+	highlight.move_to_front()
+	return highlight
+
+
+func _get_animation_cell_rect(cell: Vector2i) -> Rect2:
+	var control := _get_animation_control_for_cell(cell)
+	if control != null:
+		return Rect2(control.position, control.size)
+
+	var tile := get_tile_view(cell)
+	if tile == null or animation_layer == null:
+		return Rect2()
+
+	return Rect2(tile.global_position - animation_layer.global_position, tile.size)
+
+
+func _get_animation_control_for_cell(cell: Vector2i) -> Control:
+	if _overlay_mode:
+		var ghost := _get_valid_overlay_ghost(cell)
+		if ghost != null:
+			return ghost
+
+	return get_tile_view(cell)
+
+
+func _register_special_activation_tween(tween: Tween) -> void:
+	if tween != null:
+		_special_activation_tweens.append(tween)
+
+
+func _clear_special_activation_tweens() -> void:
+	for tween in _special_activation_tweens:
+		if tween != null and tween.is_valid():
+			tween.kill()
+	_special_activation_tweens.clear()
 
 
 func play_swap_feedback(from_cell: Vector2i, to_cell: Vector2i) -> void:

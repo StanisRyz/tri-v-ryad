@@ -103,18 +103,18 @@ Animation, advanced feedback, sound, and gesture polish remain future work.
 - Damage and enemy action are shown through short status messages.
 - Input remains locked during feedback and unlocks only after feedback completes.
 
-High-polish special activation effects, booster targeting polish, final result UX polish, real tile movement, final particle art, real audio, and deeper progression remain future work.
+Booster targeting polish, final result UX polish, real tile movement, final particle art, real audio, and deeper progression remain future work.
 
 ## Board Animation Polish v0.1
 
-- Valid animated turns use the Stage 46/47 stepwise pipeline through `AnimatedTurnFlow`; `TurnFeedbackPresenter` must not replay board movement, match highlights, clear effects, refill effects, or full-board refresh animations afterward.
+- Valid animated turns use the Stage 46-48 stepwise pipeline through `AnimatedTurnFlow`; `TurnFeedbackPresenter` must not replay board movement, match highlights, clear effects, special activation visuals, refill effects, or full-board refresh animations afterward.
 - Invalid swaps receive visual rejection feedback on the involved cells.
 - Matched/cascade/special/booster clear visuals are transient and must clean overlay ghosts, `AnimationLayer` children, tile tint/scale drift, selected-cell state, and highlights before damage particles or result overlay display.
 - Board final handoff updates the real `TileView` state while overlay ghosts still cover the board, then removes the overlay only after the real board is ready.
 - Input remains locked during the full feedback sequence and unlocks only after `feedback_finished`.
 - Board rules, battle rules, progression, rewards, stars, unlocks, upgrades, and save format are unchanged.
 
-Wrapped bombs, special combos, high-polish special activation animation, booster targeting polish, full falling polish, final particle art, real audio, final art, and real tile movement remain future work.
+Wrapped bombs, special combos, booster targeting polish, full falling polish, final particle art, real audio, final art, and real tile movement remain future work.
 
 ## Special Tiles v0.2
 
@@ -268,7 +268,7 @@ One-time rewards, level map, chapters, stars-based rewards, reset upgrades, and 
 - No hero unlocks, gacha, rarity, shards, ability upgrades, reset upgrades, equipment, portraits, or final art.
 - No cloud save.
 - No target selection or ability upgrades.
-- No high-polish special activation animation pass beyond current stepwise v0.1 behavior.
+- No high-polish special activation animation pass beyond current Stage 48 v0.1 H/V/B activation behavior.
 - No booster targeting/animation polish beyond current cleanup/stability behavior.
 - No result flow UX polish beyond current cleanup/result ordering.
 - No real tile movement.
@@ -739,4 +739,15 @@ One-time rewards, level map, chapters, stars-based rewards, reset upgrades, and 
 - Damage particles and enemy hit feedback start only after board stepwise animation is complete, transient highlights are cleared, overlay ghosts are removed, and the final board is applied. Victory/defeat result overlay appears only after that full board + damage + feedback chain completes.
 - `BattleEffectController.clear_effects()` cancels in-flight particle playback and suppresses stale callbacks during restart/menu/result cleanup. `AnimatedTurnFlow.cancel()` releases pending step awaits during forced cleanup.
 - Normal animations, reduced motion, and disabled animations preserve the same logical order. Reduced motion shortens/softens visuals; disabled animations resolve immediately without leaving ghosts, highlights, stuck awaits, or stale effects.
-- Next roadmap stages: Stage 48 special activation animations, Stage 49 booster targeting/animation polish, Stage 50 result flow UX polish.
+- Next roadmap stages: Stage 49 booster targeting/animation polish and Stage 50 result flow UX polish.
+
+## Stage 48: Special Tile Activation Animations v0.1
+
+- Stage 48 is implemented. It adds lightweight, presentation-only special activation visuals to the existing `AnimatedTurnFlow` stepwise board sequence without changing board rules, damage rules, progression, saves, battle state, or hero-system behavior.
+- Special activation data now includes the activated special cell, special type, affected/cleared cells, and a color-bomb `base_tile_type` when available. The disabled-animation resolver path preserves the same data shape even though animation playback finishes immediately.
+- `BoardAnimationSequenceBuilder` emits `TYPE_SPECIAL_ACTIVATION` before the existing `TYPE_SPECIAL_CLEAR` fade and before gravity/refill for that step, so H/V/B activation is readable without duplicating normal match-clear animation.
+- H specials pulse the activation cell and show a horizontal sweep across affected row cells. V specials pulse and show a vertical sweep down affected column cells. B/color bombs pulse the bomb cell and briefly highlight affected cells of the selected/base color before the existing fade/clear.
+- In overlay mode, `BoardView` animates overlay ghosts and temporary `AnimationLayer` highlights only; real board tiles remain hidden until final board handoff. Outside overlay mode, fallback visuals pulse/highlight existing controls without manually moving real `TileView` nodes inside the `GridContainer`.
+- Cleanup continues through the Stage 47 transient-state and final-handoff path: no row/column/color highlights, ghost nodes, tint, scale, or selected-cell state should remain after the visual chain completes. Reduced motion shortens/softens the same order; disabled animations resolve immediately and safely.
+- `TurnFeedbackPresenter` remains text/status/enemy feedback only after a valid animated turn. It may show the special activation status text, but it must not replay H/V/B board visuals, special clears, match highlights, refill effects, or full-board refresh animation.
+- Next roadmap stages: Stage 49 booster targeting/animation polish and Stage 50 result flow UX polish.

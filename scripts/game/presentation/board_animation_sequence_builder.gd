@@ -9,6 +9,7 @@ const GRAVITY_ANIMATION_DURATION := 0.35
 const REFILL_ANIMATION_DURATION := 0.30
 const CASCADE_STEP_DURATION := 0.20
 const INVALID_SWAP_ANIMATION_DURATION := 0.24
+const SPECIAL_ACTIVATION_ANIMATION_DURATION := 0.22
 ## Covers the matched-crystal gather-into-creation-cell phase plus the
 ## creation-cell pulse/flash phase; see BoardView._play_overlay_special_create().
 const SPECIAL_CREATE_ANIMATION_DURATION := 0.36
@@ -38,6 +39,7 @@ func build_from_turn_presentation(data):
 			}))
 
 	if not data.special_cleared_cells.is_empty():
+		_add_special_activation_requests(sequence, data.activated_special_tiles, data.special_cleared_cells, "turn", 0)
 		sequence.add_request(REQUEST_SCRIPT.new_request(REQUEST_SCRIPT.TYPE_SPECIAL_CLEAR)
 			.with_cells(data.special_cleared_cells)
 			.with_duration(0.18)
@@ -109,9 +111,12 @@ func build_clear_sequence(step):
 	# Cells that instead gather into a creation cell (see below) are excluded
 	# here too, so they animate as a gather-in rather than a plain fade-out.
 	var gather_source_cells := _special_gather_source_cells(step.created_special_tiles)
+	var special_clear_cells := _cell_lookup(step.special_cleared_cells)
 	var direct_clear_cells: Array[Vector2i] = []
 	for cell in step.cleared_cells:
 		if not gather_source_cells.has(cell):
+			if special_clear_cells.has(cell):
+				continue
 			direct_clear_cells.append(cell)
 
 	if not direct_clear_cells.is_empty():
@@ -135,6 +140,7 @@ func build_clear_sequence(step):
 			}))
 
 	if not step.special_cleared_cells.is_empty():
+		_add_special_activation_requests(sequence, step.activated_special_tiles, step.special_cleared_cells, source, step.cascade_index)
 		sequence.add_request(REQUEST_SCRIPT.new_request(REQUEST_SCRIPT.TYPE_SPECIAL_CLEAR)
 			.with_cells(step.special_cleared_cells)
 			.with_duration(0.18)
@@ -207,6 +213,28 @@ func _add_cascade_step_requests(sequence, cascade_step: Dictionary) -> void:
 	_add_gravity_and_refill_requests(sequence, cascade_step.get("fall_movements", []), cascade_step.get("refill_cells", []))
 
 
+func _add_special_activation_requests(sequence, activated_special_tiles: Array, fallback_cells: Array[Vector2i], source: String, cascade_index: int) -> void:
+	for item in activated_special_tiles:
+		var data := item as Dictionary
+		var cell = data.get("cell", Vector2i(-1, -1))
+		if not (cell is Vector2i):
+			continue
+		var affected_cells := _to_vector2i_array(data.get("affected_cells", fallback_cells))
+		if affected_cells.is_empty():
+			affected_cells = fallback_cells.duplicate()
+		sequence.add_request(REQUEST_SCRIPT.new_request(REQUEST_SCRIPT.TYPE_SPECIAL_ACTIVATION)
+			.with_cells(affected_cells)
+			.with_duration(SPECIAL_ACTIVATION_ANIMATION_DURATION)
+			.with_payload({
+				"source": source,
+				"cascade_index": cascade_index,
+				"cell": cell,
+				"special_type": int(data.get("special_type", -1)),
+				"affected_cells": affected_cells,
+				"base_tile_type": int(data.get("base_tile_type", BoardModel.EMPTY)),
+			}))
+
+
 func _to_vector2i_array(values: Array) -> Array[Vector2i]:
 	var typed_values: Array[Vector2i] = []
 	for value in values:
@@ -234,3 +262,10 @@ func _special_gather_source_cells(created_special_tiles: Array) -> Dictionary:
 			if source_cell != creation_cell:
 				cells[source_cell] = true
 	return cells
+
+
+func _cell_lookup(cells: Array[Vector2i]) -> Dictionary:
+	var lookup := {}
+	for cell in cells:
+		lookup[cell] = true
+	return lookup
