@@ -814,14 +814,22 @@ func _apply_pending_board_for_animation() -> void:
 	_defer_board_update_for_turn = false
 
 
-## Stage 59 v0.1: runs once the board is fully settled — after the cascade/
-## gravity/refill sequence (AnimatedTurnFlow), after a booster resolve
-## sequence, and after the overlay->real BoardView handoff already applied by
-## _apply_pending_board_for_animation() above — and always right before input
-## is re-enabled for the next turn, never mid-animation. Only mutates the
-## board (via BoardShuffleResolver, active cells only) when
-## AvailableMoveFinder reports no valid swap exists; otherwise this is a
-## single cheap read-only scan and nothing else happens.
+## Stage 59 v0.1, wired into the real turn flow in Stage 59.1: runs once the
+## board is fully settled — after the cascade/gravity/refill sequence
+## (AnimatedTurnFlow) for a swap turn, after a booster resolve sequence for a
+## targeted/direct booster turn, and after the overlay->real BoardView
+## handoff already applied by _apply_pending_board_for_animation() above —
+## and always right before input is re-enabled for the next turn, never
+## mid-animation or mid-cascade. Callers only reach this once
+## _presenter.is_battle_finished() is already known false (see
+## _on_feedback_finished()/_finish_booster_resolution()), so a
+## turn that ends the battle never triggers a shuffle or delays the result
+## overlay; the is_battle_finished() re-check below is a defensive no-op for
+## any future caller. Only mutates the board (via BoardShuffleResolver,
+## active cells only) when AvailableMoveFinder reports no valid swap exists;
+## otherwise this is a single cheap read-only scan and nothing else happens.
+## Input stays disabled by the caller for this whole (possibly awaited)
+## call, so booster targeting/swap selection can't start mid-check/shuffle.
 func _maybe_resolve_no_move_shuffle() -> void:
 	if _presenter == null or _presenter.board == null or _presenter.is_battle_finished():
 		return
@@ -831,16 +839,20 @@ func _maybe_resolve_no_move_shuffle() -> void:
 		return
 
 	var active_cells := board.get_active_cells()
-	board_view.play_shuffle_fade_out(active_cells)
-	if get_tree() != null:
-		await get_tree().create_timer(0.16).timeout
+	var fade_duration := _shuffle_fade_duration()
+
+	if fade_duration > 0.0:
+		board_view.play_shuffle_fade_out(active_cells, fade_duration)
+		if get_tree() != null:
+			await get_tree().create_timer(fade_duration).timeout
 
 	var shuffle_info := _board_shuffle_resolver.shuffle(board, _shuffle_rng)
 	board_view.refresh_all_tiles()
 
-	board_view.play_shuffle_fade_in(active_cells)
-	if get_tree() != null:
-		await get_tree().create_timer(0.16).timeout
+	if fade_duration > 0.0:
+		board_view.play_shuffle_fade_in(active_cells, fade_duration)
+		if get_tree() != null:
+			await get_tree().create_timer(fade_duration).timeout
 
 	_shuffle_count += 1
 	_last_shuffle_debug_info = {
@@ -849,12 +861,29 @@ func _maybe_resolve_no_move_shuffle() -> void:
 		"shuffle_attempts_used": int(shuffle_info.get("attempts_used", 0)),
 		"shuffle_fallback_used": bool(shuffle_info.get("fallback_used", false)),
 		"available_move_after_shuffle": bool(shuffle_info.get("has_available_move", false)),
+		"immediate_match_after_shuffle": bool(shuffle_info.get("has_immediate_match", false)),
 	}
 
 	if _debug_labels_enabled:
 		_set_status("Board shuffled (no moves available)  |  count=%d attempts=%d fallback=%s" % [
 			_shuffle_count, _last_shuffle_debug_info["shuffle_attempts_used"], _last_shuffle_debug_info["shuffle_fallback_used"],
 		])
+
+
+## Stage 59.1 v0.1: mirrors TileView._adjust_duration()'s "disabled animations
+## collapse to (near-)instant" rule so the no-move shuffle never makes the
+## player wait on a tween that presentation settings say shouldn't play.
+## Returns 0.0 (skip fade entirely, apply the shuffle immediately) when
+## animations are disabled; otherwise the base fade duration, scaled by
+## BoardAnimationController.REDUCED_MOTION_SCALE under reduced motion.
+func _shuffle_fade_duration() -> float:
+	if not _animations_enabled:
+		return 0.0
+
+	var base_duration := 0.16
+	if _reduced_motion_enabled:
+		return base_duration * BoardAnimationController.REDUCED_MOTION_SCALE
+	return base_duration
 
 
 func _force_cleanup_visual_state() -> void:

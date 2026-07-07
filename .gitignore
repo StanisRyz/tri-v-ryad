@@ -1,3 +1,8 @@
 # Godot 4+ specific ignores
 .godot/
 /android/
+
+# Stage 59 deterministic layout QA report — a locally regenerated artifact
+# (tools/generate_deterministic_levels.gd / tools/validate_deterministic_levels.gd),
+# not required in the repository. See README.md/AGENTS.md Stage 59.1 QA report policy.
+/data/levels/deterministic_level_layout_report.json
