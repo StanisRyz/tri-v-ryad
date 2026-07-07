@@ -6,7 +6,7 @@ const GAME_SCREEN := preload("res://scenes/screens/GameScreen.tscn")
 const UPGRADE_SCREEN := preload("res://scenes/screens/UpgradeScreen.tscn")
 const TEAM_SELECT_SCREEN := preload("res://scenes/screens/TeamSelectScreen.tscn")
 const SETTINGS_SCREEN := preload("res://scenes/screens/SettingsScreen.tscn")
-const SHOP_PLACEHOLDER_SCREEN := preload("res://scenes/screens/ShopPlaceholderScreen.tscn")
+const SHOP_SCREEN := preload("res://scenes/screens/ShopScreen.tscn")
 const PROGRESS_MANAGER_SCRIPT := preload("res://scripts/game/progression/progress_manager.gd")
 const SETTINGS_MANAGER_SCRIPT := preload("res://scripts/game/settings/settings_manager.gd")
 const LEVEL_CATALOG_SCRIPT := preload("res://scripts/game/config/level_catalog.gd")
@@ -56,9 +56,13 @@ func _show_level_select() -> void:
 	screen.settings_pressed.connect(_on_level_select_settings_pressed)
 
 
-func _show_shop_placeholder() -> void:
-	var screen := _router.change_screen(SHOP_PLACEHOLDER_SCREEN)
-	screen.back_pressed.connect(_on_shop_placeholder_back_pressed)
+func _show_shop_screen() -> void:
+	var screen := _router.change_screen(SHOP_SCREEN)
+	if screen.has_method("set_progress_manager"):
+		screen.set_progress_manager(_progress_manager)
+	if screen.has_method("refresh_progress_state"):
+		screen.refresh_progress_state()
+	screen.back_pressed.connect(_on_shop_back_pressed)
 
 
 func _show_game_screen(level_id: String) -> void:
@@ -111,7 +115,7 @@ func _on_main_menu_level_select_pressed() -> void:
 
 
 func _on_main_menu_shop_pressed() -> void:
-	_show_shop_placeholder()
+	_show_shop_screen()
 
 
 func _on_main_menu_settings_pressed() -> void:
@@ -142,7 +146,7 @@ func _on_level_select_back_pressed() -> void:
 	_show_main_menu()
 
 
-func _on_shop_placeholder_back_pressed() -> void:
+func _on_shop_back_pressed() -> void:
 	_show_main_menu()
 
 

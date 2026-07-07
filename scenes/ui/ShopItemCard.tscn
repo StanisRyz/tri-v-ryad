@@ -1,0 +1,44 @@
+[gd_scene load_steps=2 format=3 uid="uid://btaf7mjapxd8u"]
+
+[ext_resource type="Script" path="res://scripts/ui/shop_item_card.gd" id="1_c4rd1"]
+
+[node name="ShopItemCard" type="PanelContainer"]
+custom_minimum_size = Vector2(320, 160)
+layout_mode = 2
+script = ExtResource("1_c4rd1")
+
+[node name="Content" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TitleLabel" type="Label" parent="Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Item"
+
+[node name="DescriptionLabel" type="Label" parent="Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+autowrap_mode = 3
+text = "Description"
+
+[node name="RewardsLabel" type="Label" parent="Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+autowrap_mode = 3
+text = "Gives:"
+
+[node name="PriceLabel" type="Label" parent="Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Price:"
+
+[node name="BuyButton" type="Button" parent="Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 2
+text = "Купить"

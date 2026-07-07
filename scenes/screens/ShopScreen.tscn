@@ -1,0 +1,114 @@
+[gd_scene load_steps=2 format=3 uid="uid://bsjj7davox3yf"]
+
+[ext_resource type="Script" path="res://scripts/screens/shop_screen.gd" id="1_shop1"]
+
+[node name="ShopScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_shop1")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.08, 0.1, 0.15, 1)
+
+[node name="SafeMargin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 32
+
+[node name="Root" type="VBoxContainer" parent="SafeMargin"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="TopBar" type="HBoxContainer" parent="SafeMargin/Root"]
+layout_mode = 2
+
+[node name="BackButton" type="Button" parent="SafeMargin/Root/TopBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(110, 54)
+layout_mode = 2
+text = "Назад"
+
+[node name="TitleLabel" type="Label" parent="SafeMargin/Root/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 34
+text = "Магазин"
+horizontal_alignment = 1
+
+[node name="WalletRow" type="HBoxContainer" parent="SafeMargin/Root"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="GoldLabel" type="Label" parent="SafeMargin/Root/WalletRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Gold: 0"
+
+[node name="GemsLabel" type="Label" parent="SafeMargin/Root/WalletRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Gems: 0"
+
+[node name="TabRow" type="HBoxContainer" parent="SafeMargin/Root"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="BoostersTabButton" type="Button" parent="SafeMargin/Root/TabRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Бустеры"
+
+[node name="GemsTabButton" type="Button" parent="SafeMargin/Root/TabRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Гемы"
+
+[node name="BundlesTabButton" type="Button" parent="SafeMargin/Root/TabRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Пакеты"
+
+[node name="ItemScroll" type="ScrollContainer" parent="SafeMargin/Root"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="ItemGrid" type="GridContainer" parent="SafeMargin/Root/ItemScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 16
+columns = 2
+
+[node name="FeedbackLabel" type="Label" parent="SafeMargin/Root"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = ""
+horizontal_alignment = 1
