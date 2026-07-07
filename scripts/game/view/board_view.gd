@@ -718,6 +718,7 @@ func _play_overlay_fade(cells: Array[Vector2i], duration: float) -> void:
 		if ghost == null:
 			continue
 		var tween := create_tween()
+		_register_special_activation_tween(tween)
 		tween.tween_property(ghost, "modulate:a", 0.0, step_duration)
 		tween.tween_callback(func() -> void:
 			if is_instance_valid(ghost) and _overlay_ghosts.get(cell) == ghost:
@@ -767,6 +768,7 @@ func _play_overlay_refill(refill_cells: Array, duration: float) -> void:
 		_overlay_ghosts[to_cell] = ghost
 		_keep_obstacle_ghost_on_top(to_cell)
 		var tween := create_tween()
+		_register_special_activation_tween(tween)
 		tween.set_parallel(true)
 		tween.tween_property(ghost, "position", to_position, safe_duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 		tween.tween_property(ghost, "modulate", Color.WHITE, minf(safe_duration, 0.12))
@@ -783,6 +785,7 @@ func _play_overlay_gravity_fall(movements: Array, duration: float) -> void:
 		max_distance = maxi(max_distance, int((movement as Dictionary).get("fall_distance", 1)))
 
 	var tween := create_tween()
+	_register_special_activation_tween(tween)
 	tween.set_parallel(true)
 	var main_tween_used := false
 
@@ -1373,6 +1376,7 @@ func _play_overlay_special_create(created_special_tiles: Array, duration: float)
 
 		if not gather_ghosts.is_empty():
 			var gather_tween := create_tween()
+			_register_special_activation_tween(gather_tween)
 			gather_tween.set_parallel(true)
 			for gather_ghost in gather_ghosts:
 				gather_tween.tween_property(gather_ghost, "position", creation_position, gather_duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
@@ -1392,6 +1396,7 @@ func _play_overlay_special_create(created_special_tiles: Array, duration: float)
 		var flash_color := Color(1.35, 1.18, 0.55, 1.0)
 
 		var pulse_tween := create_tween()
+		_register_special_activation_tween(pulse_tween)
 		if not gather_ghosts.is_empty():
 			pulse_tween.tween_interval(gather_duration)
 		pulse_tween.tween_property(ghost, "modulate", flash_color, half_pulse_duration)
@@ -1556,6 +1561,7 @@ func _create_booster_preview_cell(cell: Vector2i, color: Color) -> ColorRect:
 	preview.move_to_front()
 
 	var tween := create_tween()
+	_register_special_activation_tween(tween)
 	tween.tween_property(preview, "modulate:a", 1.0, 0.05)
 	return preview
 

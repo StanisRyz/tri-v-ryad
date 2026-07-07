@@ -1,6 +1,11 @@
 extends SceneTree
 
 const GAME_SCREEN := preload("res://scenes/screens/GameScreen.tscn")
+const PROGRESS_MANAGER_SCRIPT := preload("res://scripts/game/progression/progress_manager.gd")
+const SAVE_MANAGER_SCRIPT := preload("res://scripts/game/save/save_manager.gd")
+
+const TEST_SAVE_PATH := "user://test_booster_animation_flow_save_v1.json"
+const TEST_TEMP_SAVE_PATH := "user://test_booster_animation_flow_save_v1.tmp"
 
 var _failures := 0
 
@@ -11,8 +16,15 @@ func _initialize() -> void:
 
 
 func _run() -> void:
+	_cleanup()
 	var screen = GAME_SCREEN.instantiate()
 	root.add_child(screen)
+	await process_frame
+
+	# Stage 62.2 v0.1: booster activation now needs a global inventory count.
+	var progress_manager = _make_progress_manager()
+	progress_manager.add_booster("hammer", 3)
+	screen.set_progress_manager(progress_manager)
 	await process_frame
 
 	var booster_panel = screen.get_node("%BoosterPanel")
@@ -35,8 +47,11 @@ func _run() -> void:
 	if not screen._presenter.is_battle_finished():
 		_expect_true(screen._input_controller._input_enabled, "input unlocks after booster animation")
 
+	_expect_equal(progress_manager.get_booster_count("hammer"), 2, "successful hammer use spends 1 global booster")
+
 	screen.queue_free()
 	await process_frame
+	_cleanup()
 	_finish()
 
 
@@ -45,6 +60,20 @@ func _wait_for_feedback_to_finish(screen, timeout_seconds: float) -> void:
 	while screen._feedback_active and elapsed < timeout_seconds:
 		await create_timer(0.1).timeout
 		elapsed += 0.1
+
+
+func _make_progress_manager():
+	var save_manager = SAVE_MANAGER_SCRIPT.new(TEST_SAVE_PATH, TEST_TEMP_SAVE_PATH)
+	var progress_manager = PROGRESS_MANAGER_SCRIPT.new(save_manager)
+	progress_manager.load()
+	return progress_manager
+
+
+func _cleanup() -> void:
+	if FileAccess.file_exists(TEST_SAVE_PATH):
+		DirAccess.remove_absolute(TEST_SAVE_PATH)
+	if FileAccess.file_exists(TEST_TEMP_SAVE_PATH):
+		DirAccess.remove_absolute(TEST_TEMP_SAVE_PATH)
 
 
 func _finish() -> void:

@@ -1,24 +1,37 @@
 extends SceneTree
 
 const GAME_SCREEN := preload("res://scenes/screens/GameScreen.tscn")
+const PROGRESS_MANAGER_SCRIPT := preload("res://scripts/game/progression/progress_manager.gd")
+const SAVE_MANAGER_SCRIPT := preload("res://scripts/game/save/save_manager.gd")
+
+const TEST_SAVE_PATH := "user://test_booster_damage_effect_flow_save_v1.json"
+const TEST_TEMP_SAVE_PATH := "user://test_booster_damage_effect_flow_save_v1.tmp"
 
 var _failures := 0
 
 
 func _initialize() -> void:
 	print("Running booster damage effect flow test...")
+	_cleanup()
 	_run()
 
 
 func _run() -> void:
 	await _test_hammer_triggers_damage_particles()
 	await _test_time_freeze_triggers_no_particles()
+	_cleanup()
 	_finish()
 
 
 func _test_hammer_triggers_damage_particles() -> void:
 	var screen = GAME_SCREEN.instantiate()
 	root.add_child(screen)
+	await process_frame
+
+	# Stage 62.2 v0.1: booster activation now needs a global inventory count.
+	var progress_manager = _make_progress_manager()
+	progress_manager.add_booster("hammer", 3)
+	screen.set_progress_manager(progress_manager)
 	await process_frame
 
 	var starting_hp: int = screen._presenter.state.enemy.current_hp
@@ -44,6 +57,12 @@ func _test_time_freeze_triggers_no_particles() -> void:
 	root.add_child(screen)
 	await process_frame
 
+	# Stage 62.2 v0.1: booster activation now needs a global inventory count.
+	var progress_manager = _make_progress_manager()
+	progress_manager.add_booster("freeze_time", 3)
+	screen.set_progress_manager(progress_manager)
+	await process_frame
+
 	var starting_hp: int = screen._presenter.state.enemy.current_hp
 	screen._on_booster_pressed("freeze_time")
 	await process_frame
@@ -55,6 +74,20 @@ func _test_time_freeze_triggers_no_particles() -> void:
 
 	screen.queue_free()
 	await process_frame
+
+
+func _make_progress_manager():
+	var save_manager = SAVE_MANAGER_SCRIPT.new(TEST_SAVE_PATH, TEST_TEMP_SAVE_PATH)
+	var progress_manager = PROGRESS_MANAGER_SCRIPT.new(save_manager)
+	progress_manager.load()
+	return progress_manager
+
+
+func _cleanup() -> void:
+	if FileAccess.file_exists(TEST_SAVE_PATH):
+		DirAccess.remove_absolute(TEST_SAVE_PATH)
+	if FileAccess.file_exists(TEST_TEMP_SAVE_PATH):
+		DirAccess.remove_absolute(TEST_TEMP_SAVE_PATH)
 
 
 func _finish() -> void:

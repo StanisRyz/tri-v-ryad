@@ -13,6 +13,7 @@ var _catalog
 var _booster_state
 var _selected_booster_id := ""
 var _buttons: Dictionary = {}
+var _inventory_counts: Dictionary = {}
 
 
 func _ready() -> void:
@@ -36,6 +37,15 @@ func set_selected_booster(booster_id: String) -> void:
 	refresh()
 
 
+## Stage 62.2 v0.1: counts is the global cross-battle booster_inventory read
+## from ProgressManager (e.g. {"hammer": 3, "freeze_time": 1, "rocket_barrage": 0}),
+## not the battle-local BoosterState.uses_left. Missing/unavailable data is
+## treated as an empty Dictionary, which refresh() reads back as 0 per booster.
+func set_booster_counts(counts: Dictionary) -> void:
+	_inventory_counts = counts.duplicate()
+	refresh()
+
+
 func play_booster_feedback(booster_id: String, animations_enabled: bool = true, reduced_motion_enabled: bool = false) -> void:
 	var button: BoosterButton = _buttons.get(booster_id)
 	if button != null and button.has_method("play_feedback"):
@@ -48,12 +58,13 @@ func refresh() -> void:
 
 	for booster_id in _buttons.keys():
 		var button: BoosterButton = _buttons[booster_id]
-		var uses_left := 0
+		var battle_uses_left := 0
 		if _booster_state != null:
-			uses_left = _booster_state.get_uses_left(booster_id)
-		button.set_uses_left(uses_left)
+			battle_uses_left = _booster_state.get_uses_left(booster_id)
+		var inventory_count: int = int(_inventory_counts.get(booster_id, 0))
+		button.set_uses_left(inventory_count)
 		button.set_selected(booster_id == _selected_booster_id)
-		button.set_disabled_state(uses_left <= 0)
+		button.set_disabled_state(battle_uses_left <= 0 or inventory_count <= 0)
 
 	if freeze_label != null:
 		var freeze_turns := 0

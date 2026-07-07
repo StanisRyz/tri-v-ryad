@@ -5,12 +5,18 @@ const BOOSTER_RESOLVER_SCRIPT := preload("res://scripts/game/battle/booster_reso
 const BUILDER_SCRIPT := preload("res://scripts/game/presentation/board_animation_sequence_builder.gd")
 const REQUEST_SCRIPT := preload("res://scripts/game/presentation/board_animation_request.gd")
 const GAME_SCREEN := preload("res://scenes/screens/GameScreen.tscn")
+const PROGRESS_MANAGER_SCRIPT := preload("res://scripts/game/progression/progress_manager.gd")
+const SAVE_MANAGER_SCRIPT := preload("res://scripts/game/save/save_manager.gd")
+
+const TEST_SAVE_PATH := "user://test_booster_gravity_refill_save_v1.json"
+const TEST_TEMP_SAVE_PATH := "user://test_booster_gravity_refill_save_v1.tmp"
 
 var _failures := 0
 
 
 func _initialize() -> void:
 	print("Running booster gravity/refill animation test...")
+	_cleanup()
 	_run()
 
 
@@ -54,6 +60,12 @@ func _test_game_screen_defers_board_during_booster_animation() -> void:
 	root.add_child(screen)
 	await process_frame
 
+	# Stage 62.2 v0.1: booster activation now needs a global inventory count.
+	var progress_manager = _make_progress_manager()
+	progress_manager.add_booster("hammer", 3)
+	screen.set_progress_manager(progress_manager)
+	await process_frame
+
 	screen._on_booster_pressed("hammer")
 	await process_frame
 	_expect_equal(screen._input_mode, "booster_targeting", "hammer enters targeting mode")
@@ -71,7 +83,22 @@ func _test_game_screen_defers_board_during_booster_animation() -> void:
 	await process_frame
 
 
+func _make_progress_manager():
+	var save_manager = SAVE_MANAGER_SCRIPT.new(TEST_SAVE_PATH, TEST_TEMP_SAVE_PATH)
+	var progress_manager = PROGRESS_MANAGER_SCRIPT.new(save_manager)
+	progress_manager.load()
+	return progress_manager
+
+
+func _cleanup() -> void:
+	if FileAccess.file_exists(TEST_SAVE_PATH):
+		DirAccess.remove_absolute(TEST_SAVE_PATH)
+	if FileAccess.file_exists(TEST_TEMP_SAVE_PATH):
+		DirAccess.remove_absolute(TEST_TEMP_SAVE_PATH)
+
+
 func _finish() -> void:
+	_cleanup()
 	if _failures == 0:
 		print("Booster gravity/refill animation test passed.")
 		quit(0)

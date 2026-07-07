@@ -81,6 +81,7 @@ var _board_shuffle_resolver := BOARD_SHUFFLE_RESOLVER_SCRIPT.new()
 var _shuffle_rng := RandomNumberGenerator.new()
 var _shuffle_count := 0
 var _last_shuffle_debug_info: Dictionary = {}
+var _last_booster_spend_failed := false
 
 func _ready() -> void:
 	if not menu_button.pressed.is_connected(_on_menu_button_pressed):
@@ -173,6 +174,7 @@ func _setup_playable_battle() -> void:
 		booster_panel.visible = true
 		booster_panel.setup_boosters(_presenter.get_booster_catalog())
 		booster_panel.booster_pressed.connect(_on_booster_pressed)
+		_refresh_booster_inventory_ui()
 
 	_presenter.board_changed.connect(_on_board_changed)
 	_presenter.battle_state_changed.connect(_on_battle_state_changed)
@@ -556,6 +558,12 @@ func _on_booster_pressed(booster_id: String) -> void:
 		_set_status("Booster already used.")
 		return
 
+	if not _has_global_booster(booster_id):
+		_play_invalid_swap()
+		_play_booster_button_feedback(booster_id)
+		_set_status("No boosters left.")
+		return
+
 	if config.is_targeted():
 		if _input_mode == "booster_targeting" and _selected_booster_id == booster_id:
 			_cancel_booster_targeting("Select a tile")
@@ -616,6 +624,14 @@ func _on_booster_resolved(result) -> void:
 		_input_controller.set_input_enabled(true)
 		return
 
+	# Stage 62.2 v0.1: exactly one global booster is spent here, the single
+	# point every valid booster result (Time Freeze via request_booster_activation,
+	# Hammer/Rocket via finalize_booster_turn) funnels through, so a booster is
+	# never spent twice for one successful use and never spent for an invalid/
+	# cancelled/failed attempt (handled by the early return above).
+	_last_booster_spend_failed = not _spend_global_booster(result.booster_id)
+	_refresh_booster_inventory_ui()
+
 	_feedback_active = true
 	_input_controller.set_input_enabled(false)
 	# The board animation (if any) already played live through AnimatedTurnFlow
@@ -639,7 +655,10 @@ func _finish_booster_resolution(result) -> void:
 		if result.damage_to_enemy > 0:
 			_play_enemy_damage()
 
-	_set_status(result.message)
+	var status_message: String = result.message
+	if _last_booster_spend_failed:
+		status_message += " (booster spend failed)"
+	_set_status(status_message)
 	board_view.clear_transient_visual_state()
 	_feedback_active = false
 	if _pending_battle_status != -1:
@@ -752,6 +771,37 @@ func _play_booster_button_feedback(booster_id: String) -> void:
 		booster_panel.play_booster_feedback(booster_id, _animations_enabled, _reduced_motion_enabled)
 
 
+## Stage 62.2 v0.1: global cross-battle booster inventory, read through
+## ProgressManager (never battle-local BoosterState). Missing progress data
+## (no ProgressManager yet, or an empty/unloaded catalog) fails safely to an
+## all-zero Dictionary rather than crashing.
+func _get_booster_inventory_counts() -> Dictionary:
+	var counts := {}
+	if _presenter == null:
+		return counts
+	var catalog = _presenter.get_booster_catalog()
+	if catalog == null:
+		return counts
+	for booster_id in catalog.get_default_booster_ids():
+		counts[booster_id] = _progress_manager.get_booster_count(booster_id) if _progress_manager != null else 0
+	return counts
+
+
+func _has_global_booster(booster_id: String) -> bool:
+	return _progress_manager != null and _progress_manager.has_booster(booster_id)
+
+
+func _spend_global_booster(booster_id: String) -> bool:
+	if _progress_manager == null:
+		return false
+	return _progress_manager.spend_booster(booster_id, 1)
+
+
+func _refresh_booster_inventory_ui() -> void:
+	if booster_panel != null and booster_panel.has_method("set_booster_counts"):
+		booster_panel.set_booster_counts(_get_booster_inventory_counts())
+
+
 func set_level_id(level_id: String) -> void:
 	_current_level_id = level_id if level_id != "" else "level_1"
 	if _presenter != null:
@@ -763,6 +813,7 @@ func set_progress_manager(progress_manager) -> void:
 	if _presenter != null and _progress_manager != null:
 		_presenter.set_progress(_progress_manager.get_progress())
 		_presenter.set_hero_catalog(_progress_manager.get_hero_catalog())
+	_refresh_booster_inventory_ui()
 
 
 func set_settings_manager(settings_manager) -> void:

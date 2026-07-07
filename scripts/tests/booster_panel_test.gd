@@ -21,6 +21,10 @@ func _run() -> void:
 	state.setup_from_catalog(BOOSTER_CATALOG_SCRIPT.new())
 	panel.setup_boosters(BOOSTER_CATALOG_SCRIPT.new())
 	panel.set_booster_state(state)
+	# Stage 62.2 v0.1: buttons are now also gated on the global inventory
+	# count, so a non-zero count must be supplied for a fresh/unused booster
+	# to read as enabled.
+	panel.set_booster_counts({"hammer": 3, "freeze_time": 3, "rocket_barrage": 3})
 	await process_frame
 
 	_expect_equal(panel.get_button_count(), 3, "booster panel shows 3 buttons")
