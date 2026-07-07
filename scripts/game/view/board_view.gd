@@ -455,8 +455,22 @@ func create_tile_ghost_from_data(tile_type: int, special_data, ghost_position: V
 		ice_overlay.name = "IceOverlay"
 		ice_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		ice_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
-		ice_overlay.color = TileView.ICE_OVERLAY_COLOR_DOUBLE if obstacle_layers >= 2 else TileView.ICE_OVERLAY_COLOR
+		ice_overlay.color = TileView.resolve_ice_overlay_color(obstacle_layers)
 		ghost.add_child(ice_overlay)
+		## Stage 57.3 v0.1: overlay-mode ghosts now also get the inner
+		## double-ice indicator TileView already shows on the real board, so
+		## strong ice reads identically whether or not overlay mode is active.
+		if obstacle_layers >= 2:
+			var ice_overlay_inner := ColorRect.new()
+			ice_overlay_inner.name = "IceOverlayInner"
+			ice_overlay_inner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			ice_overlay_inner.set_anchors_preset(Control.PRESET_FULL_RECT)
+			ice_overlay_inner.offset_left = TileView.ICE_OVERLAY_INSET
+			ice_overlay_inner.offset_top = TileView.ICE_OVERLAY_INSET
+			ice_overlay_inner.offset_right = -TileView.ICE_OVERLAY_INSET
+			ice_overlay_inner.offset_bottom = -TileView.ICE_OVERLAY_INSET
+			ice_overlay_inner.color = TileView.resolve_ice_overlay_inner_color()
+			ghost.add_child(ice_overlay_inner)
 	animation_layer.add_child(ghost)
 	return ghost
 
@@ -1066,9 +1080,10 @@ func _play_overlay_ice_damage(cells: Array[Vector2i]) -> void:
 		tween.tween_property(overlay, "modulate", Color.WHITE, 0.12)
 
 
-## Overlay-mode ice break: frees the ghost's IceOverlay child once faded so
-## no stale overlay lingers on a ghost that keeps getting reused/moved by
-## later gravity/refill animations in the same overlay session.
+## Overlay-mode ice break: frees the ghost's IceOverlay (and IceOverlayInner,
+## if present for double ice) child once faded so no stale overlay lingers on
+## a ghost that keeps getting reused/moved by later gravity/refill animations
+## in the same overlay session.
 func _play_overlay_ice_break(cells: Array[Vector2i]) -> void:
 	for cell in cells:
 		var ghost := _get_valid_overlay_ghost(cell)
@@ -1085,6 +1100,16 @@ func _play_overlay_ice_break(cells: Array[Vector2i]) -> void:
 			if is_instance_valid(overlay):
 				overlay.free()
 		)
+
+		var inner_overlay := ghost.get_node_or_null("IceOverlayInner")
+		if inner_overlay != null:
+			var inner_tween := create_tween()
+			_register_special_activation_tween(inner_tween)
+			inner_tween.tween_property(inner_overlay, "modulate:a", 0.0, 0.16)
+			inner_tween.tween_callback(func() -> void:
+				if is_instance_valid(inner_overlay):
+					inner_overlay.free()
+			)
 
 
 func play_horizontal_line_special_activation(activation_cell: Vector2i, affected_cells: Array[Vector2i], duration: float) -> void:

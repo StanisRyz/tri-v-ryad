@@ -30,6 +30,21 @@ const ICE_OVERLAY_COLOR_DOUBLE := Color(0.20, 0.55, 0.95, 0.72)
 const ICE_OVERLAY_INNER_COLOR := Color(0.10, 0.40, 0.85, 0.55)
 const ICE_OVERLAY_INSET := 5.0
 
+## Stage 57.3 v0.1: temporary, strong manual-testing visibility filter for
+## procedural ice generation (Stage 57.2 targets 32-40 frozen cells per ice
+## level, but the Stage 57.1 frost tint above was still too subtle to
+## confirm density at a glance). While enabled, every iced cell — weak or
+## strong — gets a strong white overlay as bold as the booster target
+## preview (BoardView.BOOSTER_TARGET_PREVIEW_COLOR); strong (double) ice
+## additionally keeps a strong blue inner layer so it still reads as
+## distinct from weak ice. This is a placeholder debug aid, not final art —
+## flip this back to false (or delete the debug branch in
+## resolve_ice_overlay_color()/resolve_ice_overlay_inner_color()) once real
+## ice art ships.
+const ICE_DEBUG_VISIBILITY_ENABLED := true
+const ICE_DEBUG_OVERLAY_COLOR := Color(1.0, 1.0, 1.0, 0.78)
+const ICE_DEBUG_OVERLAY_COLOR_DOUBLE_INNER := Color(0.10, 0.35, 1.0, 0.85)
+
 ## Stage 55 v0.1: inactive cells (holes) render as a mostly-transparent dark
 ## inset with no border, no icon, and no marker text, so they read as "not
 ## playable" rather than "empty but playable".
@@ -507,6 +522,20 @@ func _apply_inactive_visuals() -> void:
 		_ice_overlay_inner.visible = false
 
 
+## Stage 57.3 v0.1: single source of truth for the ice overlay color at a
+## given layer count, so both this class and BoardView's overlay-mode ghosts
+## (create_tile_ghost_from_data()) automatically pick up the same debug/final
+## visual with no duplicated branching.
+static func resolve_ice_overlay_color(layers: int) -> Color:
+	if ICE_DEBUG_VISIBILITY_ENABLED:
+		return ICE_DEBUG_OVERLAY_COLOR
+	return ICE_OVERLAY_COLOR_DOUBLE if layers >= 2 else ICE_OVERLAY_COLOR
+
+
+static func resolve_ice_overlay_inner_color() -> Color:
+	return ICE_DEBUG_OVERLAY_COLOR_DOUBLE_INNER if ICE_DEBUG_VISIBILITY_ENABLED else ICE_OVERLAY_INNER_COLOR
+
+
 ## Stage 56 v0.1: shows/hides the ice overlay(s) to match current obstacle
 ## state. Called from _apply_visuals() (active cells) and after an ice
 ## damage/break tween settles, so the overlay always ends up matching
@@ -522,9 +551,10 @@ func _apply_ice_overlay() -> void:
 		return
 
 	_ice_overlay.visible = true
-	_ice_overlay.color = ICE_OVERLAY_COLOR_DOUBLE if _obstacle_layers >= 2 else ICE_OVERLAY_COLOR
+	_ice_overlay.color = resolve_ice_overlay_color(_obstacle_layers)
 	if _ice_overlay_inner != null:
 		_ice_overlay_inner.visible = _obstacle_layers >= 2
+		_ice_overlay_inner.color = resolve_ice_overlay_inner_color()
 
 
 func _get_special_marker_text() -> String:
