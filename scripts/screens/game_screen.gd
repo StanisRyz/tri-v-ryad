@@ -9,6 +9,7 @@ const TURN_FEEDBACK_PRESENTER_SCRIPT := preload("res://scripts/game/presentation
 const ABILITY_FEEDBACK_PRESENTER_SCRIPT := preload("res://scripts/game/presentation/ability_feedback_presenter.gd")
 const LEVEL_LABEL_FORMATTER_SCRIPT := preload("res://scripts/game/config/level_label_formatter.gd")
 const DIRECT_BATTLE_BALANCE_SCRIPT := preload("res://scripts/game/config/direct_battle_balance.gd")
+const LEVEL_BOOST_FORMATTER_SCRIPT := preload("res://scripts/game/presentation/level_boost_formatter.gd")
 const LEVEL_CATALOG_SCRIPT := preload("res://scripts/game/config/level_catalog.gd")
 const LEVEL_ZONE_HELPER_SCRIPT := preload("res://scripts/game/config/level_zone_helper.gd")
 const LEVEL_COMPLETION_RESOLVER_SCRIPT := preload("res://scripts/game/progression/level_completion_resolver.gd")
@@ -69,6 +70,7 @@ var _last_stars_earned := 0
 var _last_victory_result_data: Dictionary = {}
 var _debug_labels_enabled := false
 var _current_generated_challenge
+var _current_level_boost
 var _input_mode := "normal"
 var _selected_booster_id := ""
 var _booster_preview_target_cell := Vector2i(-1, -1)
@@ -182,6 +184,7 @@ func _setup_playable_battle() -> void:
 	_presenter.battle_finished.connect(_on_battle_finished)
 	_presenter.battle_background_changed.connect(_on_battle_background_changed)
 	_presenter.round_modifier_changed.connect(_on_round_modifier_changed)
+	_presenter.level_boost_changed.connect(_on_level_boost_changed)
 	_presenter.generated_challenge_changed.connect(_on_generated_challenge_changed)
 	_presenter.booster_state_changed.connect(_on_booster_state_changed)
 	_presenter.booster_resolved.connect(_on_booster_resolved)
@@ -252,6 +255,9 @@ func _on_battle_background_changed(background_config) -> void:
 	background_slot.set_asset_key(asset_key)
 
 
+## Stage 60.2 v0.1: this panel is now cosmetic/legacy only - the random
+## round modifier it displays no longer affects direct-mode damage
+## (current_level_boost does that; see _on_level_boost_changed).
 func _on_round_modifier_changed(modifier) -> void:
 	if modifier == null:
 		round_modifier_panel.visible = false
@@ -260,6 +266,10 @@ func _on_round_modifier_changed(modifier) -> void:
 	round_modifier_panel.visible = true
 	modifier_name_label.text = modifier.display_name
 	modifier_description_label.text = modifier.description
+
+
+func _on_level_boost_changed(boost) -> void:
+	_current_level_boost = boost
 
 
 func _on_level_changed(level_config) -> void:
@@ -274,9 +284,10 @@ func _on_generated_challenge_changed(challenge) -> void:
 	_current_generated_challenge = challenge
 	if _debug_labels_enabled and challenge != null:
 		var level_number := LEVEL_LABEL_FORMATTER_SCRIPT.extract_level_number(_current_level_id)
-		_set_status("Select a tile  |  %s  |  %s" % [
+		_set_status("Select a tile  |  %s  |  %s  |  %s" % [
 			challenge.get_debug_label(),
 			DIRECT_BATTLE_BALANCE_SCRIPT.get_debug_label(level_number),
+			LEVEL_BOOST_FORMATTER_SCRIPT.format_debug_label(_current_level_boost),
 		])
 
 

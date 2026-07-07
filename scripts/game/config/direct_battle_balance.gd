@@ -7,8 +7,11 @@ class_name DirectBattleBalance
 ## DirectBalanceConfig's per-level HP/moves formulas as the active balance
 ## source for direct-mode battles; DirectBalanceConfig's damage-related
 ## helpers are unaffected. Level boosts (color x2, match-size x2/x3, +3
-## moves) are planned for Stage 60.2/60.3 and are intentionally not part of
-## this baseline.
+## moves) are intentionally not part of this baseline - BattlePresenter
+## applies LevelBoostResolver.apply_moves_bonus() on top of
+## get_moves_for_level() at battle start (Stage 60.2), and every level
+## resolves to the "none" boost until Stage 60.3 adds the deterministic
+## 500-level boost database.
 
 const FIXED_ENEMY_HP := 130
 const STARTING_MOVES := 30

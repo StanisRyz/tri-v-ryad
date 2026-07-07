@@ -7,10 +7,18 @@ var _ability_charge_resolver := AbilityChargeResolver.new()
 var _enemy_action_resolver := EnemyActionResolver.new()
 var _direct_damage_resolver := DirectMatchDamageResolver.new()
 var _round_modifier = null
+var _level_boost = null
 
 
 func set_round_modifier(round_modifier) -> void:
 	_round_modifier = round_modifier
+
+
+## Stage 60.2 v0.1: current_level_boost drives active direct-mode damage.
+## round_modifier is still supported (see DirectMatchDamageResolver) for
+## legacy/manual callers but is no longer fed by BattlePresenter.
+func set_level_boost(level_boost) -> void:
+	_level_boost = level_boost
 
 
 func resolve_player_matches(state: BattleState, matches: Array[MatchResult], board_result: BoardResolveResult = null) -> BattleTurnResult:
@@ -23,7 +31,7 @@ func resolve_player_matches(state: BattleState, matches: Array[MatchResult], boa
 	if FeatureFlags.HERO_SYSTEMS_ENABLED:
 		_resolve_hero_path(state, matches, turn_result)
 	else:
-		_resolve_direct_damage_path(state, matches, board_result, _round_modifier, turn_result)
+		_resolve_direct_damage_path(state, matches, board_result, _round_modifier, _level_boost, turn_result)
 
 	var booster_state = state.get("booster_state")
 	if booster_state != null and booster_state.consume_freeze_turn():
@@ -52,8 +60,8 @@ func _resolve_hero_path(state: BattleState, matches: Array[MatchResult], turn_re
 	turn_result.ability_charge_events = _ability_charge_resolver.apply_ability_charge(state, turn_result.lane_activations)
 
 
-func _resolve_direct_damage_path(state: BattleState, matches: Array[MatchResult], board_result: BoardResolveResult, round_modifier, turn_result: BattleTurnResult) -> void:
-	var damage_info := _calculate_direct_damage(matches, board_result, round_modifier)
+func _resolve_direct_damage_path(state: BattleState, matches: Array[MatchResult], board_result: BoardResolveResult, round_modifier, level_boost, turn_result: BattleTurnResult) -> void:
+	var damage_info := _calculate_direct_damage(matches, board_result, round_modifier, level_boost)
 	var damage: int = damage_info.get("damage", 0)
 	var tile_count: int = damage_info.get("tile_count", 0)
 
@@ -71,13 +79,13 @@ func _resolve_direct_damage_path(state: BattleState, matches: Array[MatchResult]
 		state.enemy.take_damage(damage)
 
 
-func _calculate_direct_damage(matches: Array[MatchResult], board_result: BoardResolveResult, round_modifier) -> Dictionary:
+func _calculate_direct_damage(matches: Array[MatchResult], board_result: BoardResolveResult, round_modifier, level_boost) -> Dictionary:
 	if board_result != null:
-		var damage: int = _direct_damage_resolver.calculate_damage_for_board_result(board_result, round_modifier)
-		var breakdown: Array = _direct_damage_resolver.build_damage_breakdown(matches, board_result, round_modifier)
+		var damage: int = _direct_damage_resolver.calculate_damage_for_board_result(board_result, round_modifier, level_boost)
+		var breakdown: Array = _direct_damage_resolver.build_damage_breakdown(matches, board_result, round_modifier, level_boost)
 		return {"damage": damage, "tile_count": board_result.total_cleared, "breakdown": breakdown}
 
-	var result: Dictionary = _direct_damage_resolver.calculate_damage_for_matches(matches, round_modifier)
+	var result: Dictionary = _direct_damage_resolver.calculate_damage_for_matches(matches, round_modifier, level_boost)
 	return {
 		"damage": result.get("total_damage", 0),
 		"tile_count": result.get("tile_count", 0),

@@ -37,7 +37,7 @@ func activate_booster(battle_state: BattleState, booster_id: String):
 	return result
 
 
-func resolve_targeted_booster(battle_state: BattleState, booster_id: String, target_cell: Vector2i, round_modifier = null):
+func resolve_targeted_booster(battle_state: BattleState, booster_id: String, target_cell: Vector2i, round_modifier = null, level_boost = null):
 	var result = _new_result(booster_id)
 	if battle_state == null or battle_state.enemy == null:
 		result.message = "Booster unavailable."
@@ -72,7 +72,7 @@ func resolve_targeted_booster(battle_state: BattleState, booster_id: String, tar
 		return result
 
 	var tile_types := _read_tile_types(board, cells)
-	var damage_info := _direct_damage_resolver.calculate_damage_for_typed_cells(cells, tile_types, round_modifier)
+	var damage_info := _direct_damage_resolver.calculate_damage_for_typed_cells(cells, tile_types, round_modifier, level_boost)
 	var damage: int = damage_info.get("total_damage", 0)
 	board.clear_cells(cells)
 	var ice_events := _ice_damage_resolver.apply_ice_damage(board, cells)

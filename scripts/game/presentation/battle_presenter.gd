@@ -14,6 +14,7 @@ const BATTLE_BACKGROUND_CATALOG_SCRIPT := preload("res://scripts/game/config/bat
 const BATTLE_BACKGROUND_SELECTION_RESOLVER_SCRIPT := preload("res://scripts/game/config/battle_background_selection_resolver.gd")
 const ROUND_MODIFIER_CATALOG_SCRIPT := preload("res://scripts/game/config/round_modifier_catalog.gd")
 const ROUND_MODIFIER_SELECTION_RESOLVER_SCRIPT := preload("res://scripts/game/config/round_modifier_selection_resolver.gd")
+const LEVEL_BOOST_RESOLVER_SCRIPT := preload("res://scripts/game/config/level_boost_resolver.gd")
 const BOOSTER_CATALOG_SCRIPT := preload("res://scripts/game/config/booster_catalog.gd")
 const BOOSTER_RESOLVER_SCRIPT := preload("res://scripts/game/battle/booster_resolver.gd")
 const LEVEL_LABEL_FORMATTER_SCRIPT := preload("res://scripts/game/config/level_label_formatter.gd")
@@ -31,6 +32,7 @@ signal invalid_swap(reason: String)
 signal battle_finished(status: int)
 signal battle_background_changed(background_config)
 signal round_modifier_changed(modifier)
+signal level_boost_changed(boost)
 signal booster_state_changed(booster_state)
 signal booster_resolved(result)
 signal swap_accepted(from_cell: Vector2i, to_cell: Vector2i, matches: Array)
@@ -63,9 +65,11 @@ var _background_rng := RandomNumberGenerator.new()
 var _round_modifier_catalog = ROUND_MODIFIER_CATALOG_SCRIPT.new()
 var _round_modifier_selection_resolver = ROUND_MODIFIER_SELECTION_RESOLVER_SCRIPT.new()
 var _round_modifier_rng := RandomNumberGenerator.new()
+var _level_boost_resolver = LEVEL_BOOST_RESOLVER_SCRIPT.new()
 var _booster_catalog = BOOSTER_CATALOG_SCRIPT.new()
 var _booster_resolver = BOOSTER_RESOLVER_SCRIPT.new()
 var current_round_modifier
+var current_level_boost
 var _challenge_archetype_resolver = CHALLENGE_ARCHETYPE_RESOLVER_SCRIPT.new()
 var _difficulty_budget_resolver = DIFFICULTY_BUDGET_RESOLVER_SCRIPT.new()
 var _board_challenge_generator = BOARD_CHALLENGE_GENERATOR_SCRIPT.new()
@@ -94,9 +98,16 @@ func start_level(level_id: String) -> void:
 	var selected_enemy = _enemy_selection_resolver.select_enemy_for_level(current_level_config, _enemy_catalog, _enemy_rng)
 	var scaled_enemy = _enemy_scaling_resolver.scale_enemy_for_level(selected_enemy, current_level_config)
 	current_background = _background_selection_resolver.select_background(_background_catalog, _background_rng)
+	## Stage 60.2 v0.1: current_round_modifier is still selected/emitted for
+	## legacy display and existing round-modifier tests, but it no longer
+	## drives active direct-mode damage - current_level_boost does that now.
 	current_round_modifier = _round_modifier_selection_resolver.select_modifier(_round_modifier_catalog, _round_modifier_rng)
+	var level_number := LEVEL_LABEL_FORMATTER_SCRIPT.extract_level_number(current_level_id)
+	var safe_level_number: int = max(1, level_number)
+	current_level_boost = _level_boost_resolver.get_boost_for_level(safe_level_number)
 	state = _battle_factory.create_state(current_level_config, progress, hero_catalog, scaled_enemy)
 	state.board = board
+	state.moves_left = _level_boost_resolver.apply_moves_bonus(current_level_config.moves, current_level_boost)
 	state.get("booster_state").setup_from_catalog(_booster_catalog)
 	level_changed.emit(current_level_config)
 	board_changed.emit(board)
@@ -104,6 +115,7 @@ func start_level(level_id: String) -> void:
 	booster_state_changed.emit(state.get("booster_state"))
 	battle_background_changed.emit(current_background)
 	round_modifier_changed.emit(current_round_modifier)
+	level_boost_changed.emit(current_level_boost)
 	generated_challenge_changed.emit(current_generated_challenge)
 
 
@@ -162,6 +174,10 @@ func get_current_round_modifier():
 	return current_round_modifier
 
 
+func get_current_level_boost():
+	return current_level_boost
+
+
 func set_challenge_rng_seed(rng_seed: int) -> void:
 	_challenge_rng.seed = rng_seed
 
@@ -198,7 +214,7 @@ func request_targeted_booster(booster_id: String, target_cell: Vector2i, defer_r
 	if board == null or state == null or is_battle_finished():
 		return
 
-	var result = _booster_resolver.resolve_targeted_booster(state, booster_id, target_cell, current_round_modifier)
+	var result = _booster_resolver.resolve_targeted_booster(state, booster_id, target_cell, null, current_level_boost)
 	if not result.is_valid:
 		booster_resolved.emit(result)
 		return
@@ -252,8 +268,8 @@ func finalize_swap_turn(from_cell: Vector2i, to_cell: Vector2i, matches: Array, 
 
 
 func _finalize_swap(from_cell: Vector2i, to_cell: Vector2i, matches: Array, board_result: BoardResolveResult) -> void:
-	if _battle_resolver.has_method("set_round_modifier"):
-		_battle_resolver.set_round_modifier(current_round_modifier)
+	if _battle_resolver.has_method("set_level_boost"):
+		_battle_resolver.set_level_boost(current_level_boost)
 	var battle_result := _battle_resolver.resolve_player_matches(state, matches, board_result)
 	var presentation_data = TURN_PRESENTATION_DATA_SCRIPT.from_valid_turn(from_cell, to_cell, matches, battle_result, board_result)
 

@@ -2,6 +2,9 @@ extends RefCounted
 class_name RoundModifierCatalog
 
 ## Stage 33 v0.1: a small pool of positive per-battle color damage modifiers.
+## Stage 60.2 v0.1: kept as legacy/future code. BattlePresenter still selects a
+## random modifier each battle for display purposes only - active direct-mode
+## damage now comes from current_level_boost (LevelBoostResolver) instead.
 
 const ROUND_MODIFIER_CONFIG_SCRIPT := preload("res://scripts/game/config/round_modifier_config.gd")
 

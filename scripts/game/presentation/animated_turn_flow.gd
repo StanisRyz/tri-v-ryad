@@ -141,7 +141,7 @@ func start_booster_clear(board: BoardModel, presenter, result) -> void:
 
 
 func _apply_cascade_damage(presenter, result, extra_cleared: Array[Vector2i], extra_fall_movements: Array[Dictionary], extra_refill_cells: Array[Dictionary], extra_cascade_steps: Array[Dictionary], merged_tile_types: Dictionary) -> void:
-	var damage_info := _direct_damage_resolver.calculate_damage_for_typed_cells(extra_cleared, merged_tile_types, presenter.get_current_round_modifier())
+	var damage_info := _direct_damage_resolver.calculate_damage_for_typed_cells(extra_cleared, merged_tile_types, null, presenter.get_current_level_boost())
 	var extra_damage := int(damage_info.get("total_damage", 0))
 
 	if extra_damage > 0 and presenter.state != null and presenter.state.enemy != null:
