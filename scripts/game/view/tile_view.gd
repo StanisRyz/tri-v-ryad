@@ -381,6 +381,29 @@ func play_refill_appear() -> void:
 	_active_tween.parallel().tween_property(self, "scale", Vector2.ONE, duration)
 
 
+## Stage 59 v0.1: safe v0.1 no-move shuffle visual — fade the crystal out
+## (GameScreen mutates the underlying BoardModel and calls refresh_all_tiles()
+## while every active tile is faded down, per this half), then play_shuffle_fade_in()
+## restores it once the shuffled tile content is already showing.
+func play_shuffle_fade_out(duration: float = 0.16) -> void:
+	if not _is_active:
+		return
+	_stop_active_tween()
+	modulate = Color.WHITE
+	var step_duration := _adjust_duration(duration)
+	_active_tween = create_tween()
+	_active_tween.tween_property(self, "modulate:a", 0.12, step_duration)
+
+
+func play_shuffle_fade_in(duration: float = 0.16) -> void:
+	if not _is_active:
+		return
+	_stop_active_tween()
+	var step_duration := _adjust_duration(duration)
+	_active_tween = create_tween()
+	_active_tween.tween_property(self, "modulate", Color.WHITE, step_duration)
+
+
 func reset_visual_state() -> void:
 	_stop_active_tween()
 	visible = true

@@ -29,6 +29,7 @@ const LEVEL_LAYOUT_VALIDATOR_SCRIPT := preload("res://scripts/game/config/level_
 const TOTAL_LEVELS := 500
 const GENERATOR_VERSION := "0.1"
 const OUTPUT_PATH := "res://data/levels/deterministic_level_layouts.json"
+const REPORT_OUTPUT_PATH := "res://data/levels/deterministic_level_layout_report.json"
 ## Deterministic per-level seed base. Only needs to be stable/reproducible
 ## per level_number, not globally unique in any cryptographic sense.
 const BASE_SEED := 9_000_000
@@ -75,21 +76,45 @@ func _initialize() -> void:
 	quit()
 
 
+## Stage 59 v0.1: also writes the QA report (LevelLayoutValidator.build_report())
+## to REPORT_OUTPUT_PATH, the same report tools/validate_deterministic_levels.gd
+## produces standalone, so a fresh generation run always leaves an up-to-date
+## report next to the database it just wrote.
 func _validate_and_report() -> void:
 	var database := LEVEL_LAYOUT_DATABASE_SCRIPT.new(OUTPUT_PATH)
 	var validator := LEVEL_LAYOUT_VALIDATOR_SCRIPT.new()
-	var result := validator.validate_database(database)
+	var result := validator.build_report(database)
 
-	print("Validation: valid=%s total_levels=%d errors=%d warnings=%d" % [
-		result["valid"], result["total_levels"], (result["errors"] as Array).size(), (result["warnings"] as Array).size(),
+	_write_report(result)
+	_print_summary(result)
+
+
+func _write_report(result: Dictionary) -> void:
+	var file := FileAccess.open(REPORT_OUTPUT_PATH, FileAccess.WRITE)
+	if file == null:
+		push_error("Failed to open %s for writing (error %d)" % [REPORT_OUTPUT_PATH, FileAccess.get_open_error()])
+		return
+	file.store_string(JSON.stringify(result, "\t"))
+	file.close()
+	print("Wrote QA report -> %s" % REPORT_OUTPUT_PATH)
+
+
+func _print_summary(result: Dictionary) -> void:
+	print("Validation: valid=%s total_levels=%d errors=%d warnings=%d review_candidates=%d" % [
+		result["valid"], result["total_levels"], (result["errors"] as Array).size(), (result["warnings"] as Array).size(), (result["review_candidates"] as Array).size(),
 	])
 	print("Counts by archetype: %s" % [result["counts_by_archetype"]])
 	print("Counts by variant: %s" % [result["counts_by_variant"]])
+	print("Hole count stats: %s" % [result["hole_count_stats"]])
+	print("Ice count stats: %s" % [result["ice_count_stats"]])
+	print("Fallback layouts stored: %d" % int(result["fallback_layout_count"]))
 
 	for error_text in result["errors"]:
 		printerr("  error: %s" % error_text)
 	for warning_text in result["warnings"]:
 		print("  warning: %s" % warning_text)
+	for review_text in result["review_candidates"]:
+		print("  review: %s" % review_text)
 
 
 func _generate_level(level_number: int) -> LevelLayout:

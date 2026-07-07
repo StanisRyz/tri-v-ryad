@@ -19,6 +19,8 @@ const BOARD_ANIMATION_SEQUENCE_BUILDER_SCRIPT := preload("res://scripts/game/pre
 const ANIMATED_TURN_FLOW_SCRIPT := preload("res://scripts/game/presentation/animated_turn_flow.gd")
 const BATTLE_EFFECT_CONTROLLER_SCRIPT := preload("res://scripts/game/view/battle_effect_controller.gd")
 const DAMAGE_PARTICLE_EVENT_BUILDER_SCRIPT := preload("res://scripts/game/presentation/damage_particle_event_builder.gd")
+const AVAILABLE_MOVE_FINDER_SCRIPT := preload("res://scripts/game/board/available_move_finder.gd")
+const BOARD_SHUFFLE_RESOLVER_SCRIPT := preload("res://scripts/game/board/board_shuffle_resolver.gd")
 const PORTRAIT_CONTENT_WIDTH := 664.0
 const PORTRAIT_BOARD_SIZE := PORTRAIT_CONTENT_WIDTH
 const LANDSCAPE_CONTENT_WIDTH := 560.0
@@ -71,6 +73,11 @@ var _selected_booster_id := ""
 var _booster_preview_target_cell := Vector2i(-1, -1)
 var _defer_board_update_for_turn := false
 var _pending_board_for_animation: BoardModel
+var _available_move_finder := AVAILABLE_MOVE_FINDER_SCRIPT.new()
+var _board_shuffle_resolver := BOARD_SHUFFLE_RESOLVER_SCRIPT.new()
+var _shuffle_rng := RandomNumberGenerator.new()
+var _shuffle_count := 0
+var _last_shuffle_debug_info: Dictionary = {}
 
 func _ready() -> void:
 	if not menu_button.pressed.is_connected(_on_menu_button_pressed):
@@ -143,6 +150,7 @@ func _setup_playable_battle() -> void:
 	_board_animation_sequence_builder = BOARD_ANIMATION_SEQUENCE_BUILDER_SCRIPT.new()
 	_animated_turn_flow = ANIMATED_TURN_FLOW_SCRIPT.new()
 	_animated_turn_flow.configure(board_view, _board_animation_controller, _board_animation_sequence_builder)
+	_shuffle_rng.randomize()
 	_battle_effect_controller = BATTLE_EFFECT_CONTROLLER_SCRIPT.new()
 	_damage_particle_event_builder = DAMAGE_PARTICLE_EVENT_BUILDER_SCRIPT.new()
 	_apply_presentation_settings()
@@ -197,6 +205,8 @@ func _start_new_battle() -> void:
 	_completion_saved_for_current_battle = false
 	_last_stars_earned = 0
 	_last_victory_result_data = {}
+	_shuffle_count = 0
+	_last_shuffle_debug_info = {}
 	result_overlay.hide_result()
 	_set_input_mode("normal", "")
 	_input_controller.set_input_enabled(true)
@@ -337,6 +347,7 @@ func _on_feedback_finished() -> void:
 		return
 
 	if not _presenter.is_battle_finished():
+		await _maybe_resolve_no_move_shuffle()
 		_input_controller.set_input_enabled(true)
 		if _input_mode == "booster_targeting":
 			_input_controller.set_input_enabled(false)
@@ -610,6 +621,7 @@ func _finish_booster_resolution(result) -> void:
 		return
 
 	if not _presenter.is_battle_finished():
+		await _maybe_resolve_no_move_shuffle()
 		_input_controller.set_input_enabled(true)
 
 
@@ -800,6 +812,49 @@ func _apply_pending_board_for_animation() -> void:
 
 	_pending_board_for_animation = null
 	_defer_board_update_for_turn = false
+
+
+## Stage 59 v0.1: runs once the board is fully settled — after the cascade/
+## gravity/refill sequence (AnimatedTurnFlow), after a booster resolve
+## sequence, and after the overlay->real BoardView handoff already applied by
+## _apply_pending_board_for_animation() above — and always right before input
+## is re-enabled for the next turn, never mid-animation. Only mutates the
+## board (via BoardShuffleResolver, active cells only) when
+## AvailableMoveFinder reports no valid swap exists; otherwise this is a
+## single cheap read-only scan and nothing else happens.
+func _maybe_resolve_no_move_shuffle() -> void:
+	if _presenter == null or _presenter.board == null or _presenter.is_battle_finished():
+		return
+
+	var board: BoardModel = _presenter.board
+	if _available_move_finder.has_available_move(board):
+		return
+
+	var active_cells := board.get_active_cells()
+	board_view.play_shuffle_fade_out(active_cells)
+	if get_tree() != null:
+		await get_tree().create_timer(0.16).timeout
+
+	var shuffle_info := _board_shuffle_resolver.shuffle(board, _shuffle_rng)
+	board_view.refresh_all_tiles()
+
+	board_view.play_shuffle_fade_in(active_cells)
+	if get_tree() != null:
+		await get_tree().create_timer(0.16).timeout
+
+	_shuffle_count += 1
+	_last_shuffle_debug_info = {
+		"no_move_detected": true,
+		"shuffle_count": _shuffle_count,
+		"shuffle_attempts_used": int(shuffle_info.get("attempts_used", 0)),
+		"shuffle_fallback_used": bool(shuffle_info.get("fallback_used", false)),
+		"available_move_after_shuffle": bool(shuffle_info.get("has_available_move", false)),
+	}
+
+	if _debug_labels_enabled:
+		_set_status("Board shuffled (no moves available)  |  count=%d attempts=%d fallback=%s" % [
+			_shuffle_count, _last_shuffle_debug_info["shuffle_attempts_used"], _last_shuffle_debug_info["shuffle_fallback_used"],
+		])
 
 
 func _force_cleanup_visual_state() -> void:

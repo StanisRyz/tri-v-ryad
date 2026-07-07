@@ -177,6 +177,22 @@ func pulse_cells(cells: Array[Vector2i], _duration: float = 0.08) -> void:
 		tile.play_swap_pulse()
 
 
+## Stage 59 v0.1: no-move shuffle presentation, always played against the real
+## (non-overlay) board — holes/inactive cells are skipped entirely by
+## get_tile_views() and ice overlays are TileView-owned per-cell state that
+## this never touches, so both stay visually fixed while crystals fade.
+func play_shuffle_fade_out(cells: Array[Vector2i], duration: float = 0.16) -> void:
+	for tile in get_tile_views(cells):
+		if tile.has_method("play_shuffle_fade_out"):
+			tile.play_shuffle_fade_out(duration)
+
+
+func play_shuffle_fade_in(cells: Array[Vector2i], duration: float = 0.16) -> void:
+	for tile in get_tile_views(cells):
+		if tile.has_method("play_shuffle_fade_in"):
+			tile.play_shuffle_fade_in(duration)
+
+
 func get_visible_tile_type(cell: Vector2i) -> int:
 	var tile := get_tile_view(cell)
 	if tile != null:

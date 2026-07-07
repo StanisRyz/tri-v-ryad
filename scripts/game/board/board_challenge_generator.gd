@@ -18,6 +18,16 @@ class_name BoardChallengeGenerator
 ## once instead of re-rolled every playthrough. Procedural generation (below)
 ## remains the fallback for any level without a saved layout, and stays
 ## fully intact for tools/future modes.
+##
+## Stage 59 v0.1: generate() no longer trusts a database hit blindly — the
+## single matched layout is run through LevelLayoutValidator.validate_layout()
+## (a cheap single-layout check, not the full 500-level database sweep) before
+## it is used. An invalid layout, or a database that failed to load at all,
+## falls back to the same procedural generation path used for levels outside
+## the database, with metadata explaining why (layout_source =
+## "procedural_fallback_invalid_layout"/"procedural_fallback_database_error",
+## deterministic_layout_used = false, plus deterministic_layout_error /
+## invalid_layout_reasons / database_load_error for debugging).
 
 const GENERATED_BOARD_CHALLENGE_SCRIPT := preload("res://scripts/game/board/generated_board_challenge.gd")
 const BOARD_MASK_GENERATOR_SCRIPT := preload("res://scripts/game/board/board_mask_generator.gd")
@@ -27,15 +37,35 @@ const ICE_PATTERN_GENERATOR_SCRIPT := preload("res://scripts/game/board/ice_patt
 const ICE_VARIANT_RESOLVER_SCRIPT := preload("res://scripts/game/config/ice_variant_resolver.gd")
 const CHALLENGE_ARCHETYPE_SCRIPT := preload("res://scripts/game/config/challenge_archetype.gd")
 const LEVEL_LAYOUT_DATABASE_SCRIPT := preload("res://scripts/game/config/level_layout_database.gd")
+const LEVEL_LAYOUT_VALIDATOR_SCRIPT := preload("res://scripts/game/config/level_layout_validator.gd")
 
 var _board_mask_generator := BOARD_MASK_GENERATOR_SCRIPT.new()
 var _ice_pattern_generator := ICE_PATTERN_GENERATOR_SCRIPT.new()
 var _level_layout_database := LEVEL_LAYOUT_DATABASE_SCRIPT.new()
+var _level_layout_validator := LEVEL_LAYOUT_VALIDATOR_SCRIPT.new()
 
 
 func generate(level_id: String, level_number: int, archetype: String, difficulty_budget, generation_seed: int) -> GeneratedBoardChallenge:
-	if _level_layout_database.has_layout(level_number):
-		return _generate_from_layout(_level_layout_database.get_layout(level_number), level_id, level_number, difficulty_budget, generation_seed)
+	var fallback_metadata_overrides: Dictionary = {}
+
+	if not _level_layout_database.is_loaded():
+		fallback_metadata_overrides = {
+			"layout_source": "procedural_fallback_database_error",
+			"deterministic_layout_used": false,
+			"database_load_error": _level_layout_database.get_load_error(),
+		}
+	elif _level_layout_database.has_layout(level_number):
+		var layout := _level_layout_database.get_layout(level_number)
+		var layout_errors := _level_layout_validator.validate_layout(layout)
+		if layout_errors.is_empty():
+			return _generate_from_layout(layout, level_id, level_number, difficulty_budget, generation_seed)
+
+		fallback_metadata_overrides = {
+			"layout_source": "procedural_fallback_invalid_layout",
+			"deterministic_layout_used": false,
+			"deterministic_layout_error": "invalid_layout",
+			"invalid_layout_reasons": layout_errors,
+		}
 
 	var board_mask: Array
 	var metadata: Dictionary
@@ -83,6 +113,9 @@ func generate(level_id: String, level_number: int, archetype: String, difficulty
 			"generator_version": "0.1",
 			"layout_source": "placeholder_full_board",
 		}
+
+	if not fallback_metadata_overrides.is_empty():
+		metadata.merge(fallback_metadata_overrides, true)
 
 	var difficulty_score: float = difficulty_budget.difficulty_score if difficulty_budget != null else 0.0
 	var difficulty_tier: String = difficulty_budget.difficulty_tier if difficulty_budget != null else DifficultyBudget.TIER_EARLY
