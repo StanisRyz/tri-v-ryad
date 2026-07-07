@@ -69,7 +69,7 @@ func calculate_damage_for_matches(matches: Array, round_modifier = null, level_b
 	for match_result in matches:
 		if match_result == null:
 			continue
-		var match_size := match_result.length()
+		var match_size: int = match_result.length()
 		for cell in match_result.cells:
 			if seen.has(cell):
 				continue
@@ -194,7 +194,7 @@ func _match_context_for_step(step: Dictionary) -> Dictionary:
 	var context := {}
 	var step_matches: Array = step.get("matches", [])
 	for match_result in step_matches:
-		var match_size := match_result.length()
+		var match_size: int = match_result.length()
 		for cell in match_result.cells:
 			context[cell] = {"tile_type": match_result.tile_type, "match_size": match_size}
 	return context

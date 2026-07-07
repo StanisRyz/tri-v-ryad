@@ -255,21 +255,30 @@ func _on_battle_background_changed(background_config) -> void:
 	background_slot.set_asset_key(asset_key)
 
 
-## Stage 60.2 v0.1: this panel is now cosmetic/legacy only - the random
-## round modifier it displays no longer affects direct-mode damage
-## (current_level_boost does that; see _on_level_boost_changed).
-func _on_round_modifier_changed(modifier) -> void:
-	if modifier == null:
+## Stage 60.2 v0.1: the random round modifier no longer affects direct-mode
+## damage. Stage 60.3 v0.1: this handler is now a no-op - the panel it used
+## to drive is repurposed as the LevelBoostPanel, driven entirely by
+## _on_level_boost_changed() below. round_modifier_changed is still emitted
+## by BattlePresenter (kept for round_modifier_presenter_test.gd and any
+## other legacy caller) but GameScreen no longer reacts to it.
+func _on_round_modifier_changed(_modifier) -> void:
+	pass
+
+
+## Stage 60.3 v0.1: RoundModifierPanel/ModifierNameLabel/ModifierDescriptionLabel
+## (scene node names unchanged) now display the active current_level_boost
+## instead of the legacy random round modifier. A none/fallback boost hides
+## the panel, matching the old null-modifier behavior.
+func _on_level_boost_changed(boost) -> void:
+	_current_level_boost = boost
+
+	if boost == null or boost.is_none():
 		round_modifier_panel.visible = false
 		return
 
 	round_modifier_panel.visible = true
-	modifier_name_label.text = modifier.display_name
-	modifier_description_label.text = modifier.description
-
-
-func _on_level_boost_changed(boost) -> void:
-	_current_level_boost = boost
+	modifier_name_label.text = LEVEL_BOOST_FORMATTER_SCRIPT.format_label(boost)
+	modifier_description_label.text = boost.description
 
 
 func _on_level_changed(level_config) -> void:
@@ -287,7 +296,7 @@ func _on_generated_challenge_changed(challenge) -> void:
 		_set_status("Select a tile  |  %s  |  %s  |  %s" % [
 			challenge.get_debug_label(),
 			DIRECT_BATTLE_BALANCE_SCRIPT.get_debug_label(level_number),
-			LEVEL_BOOST_FORMATTER_SCRIPT.format_debug_label(_current_level_boost),
+			LEVEL_BOOST_FORMATTER_SCRIPT.format_debug_info_label(_presenter.get_current_level_boost_debug_info()),
 		])
 
 

@@ -28,6 +28,29 @@ static func format_debug_label(boost) -> String:
 	return "boost_id: %s, boost_type: %s, label: %s" % [boost.boost_id, LevelBoostType.get_type_name(boost.boost_type), format_label(boost)]
 
 
+## Stage 60.3 v0.1: formats the raw debug_info Dictionary BattlePresenter's
+## get_current_level_boost_debug_info() builds (boost_source, boost_id,
+## boost_type, boost_label, boost_database_loaded, boost_fallback_used,
+## boost_load_error) into a single compact status-line string. Makes it easy
+## to confirm which boost a given level actually resolved to (database vs.
+## fallback) straight from the Debug Labels status line.
+static func format_debug_info_label(debug_info: Dictionary) -> String:
+	var label := "boost_source: %s, boost_id: %s, boost_type: %s, label: %s, db_loaded: %s, fallback: %s" % [
+		String(debug_info.get("boost_source", "")),
+		String(debug_info.get("boost_id", "")),
+		LevelBoostType.get_type_name(int(debug_info.get("boost_type", LevelBoostType.NONE))),
+		String(debug_info.get("boost_label", "")),
+		bool(debug_info.get("boost_database_loaded", false)),
+		bool(debug_info.get("boost_fallback_used", false)),
+	]
+
+	var load_error := String(debug_info.get("boost_load_error", ""))
+	if load_error != "":
+		label += ", load_error: %s" % load_error
+
+	return label
+
+
 static func _format_multiplier(multiplier: float) -> String:
 	if is_equal_approx(multiplier, roundf(multiplier)):
 		return str(int(round(multiplier)))

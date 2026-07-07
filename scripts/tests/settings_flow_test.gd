@@ -1,6 +1,7 @@
 extends SceneTree
 
 const APP_SCENE := preload("res://scenes/app/App.tscn")
+const MAIN_MENU_PATH := "res://scenes/screens/MainMenuScreen.tscn"
 const LEVEL_SELECT_PATH := "res://scenes/screens/LevelSelectScreen.tscn"
 const SETTINGS_PATH := "res://scenes/screens/SettingsScreen.tscn"
 
@@ -28,7 +29,10 @@ func _test_settings_from_level_select_returns_to_level_select() -> void:
 	root.add_child(app)
 	await process_frame
 
-	_expect_equal(_current_screen_path(app), LEVEL_SELECT_PATH, "app starts at LevelSelect")
+	_expect_equal(_current_screen_path(app), MAIN_MENU_PATH, "app starts at MainMenu")
+	app._router._current_screen.get_node("%LevelSelectButton").pressed.emit()
+	await process_frame
+	_expect_equal(_current_screen_path(app), LEVEL_SELECT_PATH, "MainMenu level select button opens LevelSelect")
 	app._router._current_screen.get_node("%SettingsButton").pressed.emit()
 	await process_frame
 	_expect_equal(_current_screen_path(app), SETTINGS_PATH, "LevelSelect Settings opens SettingsScreen")

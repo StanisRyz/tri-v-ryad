@@ -1,0 +1,5341 @@
+{
+	"version": "1.0",
+	"generator_version": "0.1",
+	"level_count": 500,
+	"levels": [
+		{
+			"level_number": 1,
+			"boost": {
+				"boost_id": "color_damage_red",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "red",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 2,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 3,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 4,
+			"boost": {
+				"boost_id": "color_damage_blue",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "blue",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 5,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 6,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 7,
+			"boost": {
+				"boost_id": "color_damage_green",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "green",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 8,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 9,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 10,
+			"boost": {
+				"boost_id": "color_damage_yellow",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "yellow",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 11,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 12,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 13,
+			"boost": {
+				"boost_id": "color_damage_purple",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "purple",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 14,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 15,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 16,
+			"boost": {
+				"boost_id": "color_damage_red",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "red",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 17,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 18,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 19,
+			"boost": {
+				"boost_id": "color_damage_blue",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "blue",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 20,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 21,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 22,
+			"boost": {
+				"boost_id": "color_damage_green",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "green",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 23,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 24,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 25,
+			"boost": {
+				"boost_id": "color_damage_yellow",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "yellow",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 26,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 27,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 28,
+			"boost": {
+				"boost_id": "color_damage_purple",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "purple",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 29,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 30,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 31,
+			"boost": {
+				"boost_id": "color_damage_red",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "red",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 32,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 33,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 34,
+			"boost": {
+				"boost_id": "color_damage_blue",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "blue",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 35,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 36,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 37,
+			"boost": {
+				"boost_id": "color_damage_green",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "green",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 38,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 39,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 40,
+			"boost": {
+				"boost_id": "color_damage_yellow",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "yellow",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 41,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 42,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 43,
+			"boost": {
+				"boost_id": "color_damage_purple",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "purple",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 44,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 45,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 46,
+			"boost": {
+				"boost_id": "color_damage_red",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "red",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 47,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 48,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 49,
+			"boost": {
+				"boost_id": "color_damage_blue",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "blue",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 50,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 51,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 52,
+			"boost": {
+				"boost_id": "color_damage_green",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "green",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 53,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 54,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 55,
+			"boost": {
+				"boost_id": "color_damage_yellow",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "yellow",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 56,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 57,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 58,
+			"boost": {
+				"boost_id": "color_damage_purple",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "purple",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 59,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 60,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 61,
+			"boost": {
+				"boost_id": "color_damage_red",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "red",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 62,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 63,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 64,
+			"boost": {
+				"boost_id": "color_damage_blue",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "blue",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 65,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 66,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 67,
+			"boost": {
+				"boost_id": "color_damage_green",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "green",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 68,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 69,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 70,
+			"boost": {
+				"boost_id": "color_damage_yellow",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "yellow",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 71,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 72,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 73,
+			"boost": {
+				"boost_id": "color_damage_purple",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "purple",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 74,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 75,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 76,
+			"boost": {
+				"boost_id": "color_damage_red",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "red",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 77,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 78,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 79,
+			"boost": {
+				"boost_id": "color_damage_blue",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "blue",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 80,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 81,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 82,
+			"boost": {
+				"boost_id": "color_damage_green",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "green",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 83,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 84,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 85,
+			"boost": {
+				"boost_id": "color_damage_yellow",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "yellow",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 86,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 87,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 88,
+			"boost": {
+				"boost_id": "color_damage_purple",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "purple",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 89,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 90,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 91,
+			"boost": {
+				"boost_id": "color_damage_red",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "red",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 92,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 93,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 94,
+			"boost": {
+				"boost_id": "color_damage_blue",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "blue",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 95,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 96,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 97,
+			"boost": {
+				"boost_id": "color_damage_green",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "green",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 98,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 99,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 100,
+			"boost": {
+				"boost_id": "color_damage_yellow",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "yellow",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 101,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 102,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 103,
+			"boost": {
+				"boost_id": "color_damage_purple",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "purple",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 104,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 105,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 106,
+			"boost": {
+				"boost_id": "color_damage_red",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "red",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 107,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 108,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 109,
+			"boost": {
+				"boost_id": "color_damage_blue",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "blue",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 110,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 111,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 112,
+			"boost": {
+				"boost_id": "color_damage_green",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "green",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 113,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 114,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 115,
+			"boost": {
+				"boost_id": "color_damage_yellow",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "yellow",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 116,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 117,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 118,
+			"boost": {
+				"boost_id": "color_damage_purple",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "purple",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 119,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 120,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 121,
+			"boost": {
+				"boost_id": "color_damage_red",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "red",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 122,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 123,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 124,
+			"boost": {
+				"boost_id": "color_damage_blue",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "blue",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 125,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 126,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 127,
+			"boost": {
+				"boost_id": "color_damage_green",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "green",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 128,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 129,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 130,
+			"boost": {
+				"boost_id": "color_damage_yellow",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "yellow",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 131,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 132,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 133,
+			"boost": {
+				"boost_id": "color_damage_purple",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "purple",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 134,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 135,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 136,
+			"boost": {
+				"boost_id": "color_damage_red",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "red",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 137,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 138,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 139,
+			"boost": {
+				"boost_id": "color_damage_blue",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "blue",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 140,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 141,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 142,
+			"boost": {
+				"boost_id": "color_damage_green",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "green",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 143,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 144,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 145,
+			"boost": {
+				"boost_id": "color_damage_yellow",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "yellow",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 146,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 147,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 148,
+			"boost": {
+				"boost_id": "color_damage_purple",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "purple",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 149,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 150,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 151,
+			"boost": {
+				"boost_id": "color_damage_red",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "red",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 152,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 153,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 154,
+			"boost": {
+				"boost_id": "color_damage_blue",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "blue",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 155,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 156,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 157,
+			"boost": {
+				"boost_id": "color_damage_green",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "green",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 158,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 159,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 160,
+			"boost": {
+				"boost_id": "color_damage_yellow",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "yellow",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 161,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 162,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 163,
+			"boost": {
+				"boost_id": "color_damage_purple",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "purple",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 164,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 165,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 166,
+			"boost": {
+				"boost_id": "color_damage_red",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "red",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 167,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 168,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 169,
+			"boost": {
+				"boost_id": "color_damage_blue",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "blue",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 170,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 171,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 172,
+			"boost": {
+				"boost_id": "color_damage_green",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "green",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 173,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 174,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 175,
+			"boost": {
+				"boost_id": "color_damage_yellow",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "yellow",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 176,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 177,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 178,
+			"boost": {
+				"boost_id": "color_damage_purple",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "purple",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 179,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 180,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 181,
+			"boost": {
+				"boost_id": "color_damage_red",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "red",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 182,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 183,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 184,
+			"boost": {
+				"boost_id": "color_damage_blue",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "blue",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 185,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 186,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 187,
+			"boost": {
+				"boost_id": "color_damage_green",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "green",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 188,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 189,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 190,
+			"boost": {
+				"boost_id": "color_damage_yellow",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "yellow",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 191,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 192,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 193,
+			"boost": {
+				"boost_id": "color_damage_purple",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "purple",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 194,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 195,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 196,
+			"boost": {
+				"boost_id": "color_damage_red",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "red",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 197,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 198,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 199,
+			"boost": {
+				"boost_id": "color_damage_blue",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "blue",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 200,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 201,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 202,
+			"boost": {
+				"boost_id": "color_damage_green",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "green",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 203,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 204,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 205,
+			"boost": {
+				"boost_id": "color_damage_yellow",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "yellow",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 206,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 207,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 208,
+			"boost": {
+				"boost_id": "color_damage_purple",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "purple",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 209,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 210,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 211,
+			"boost": {
+				"boost_id": "color_damage_red",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "red",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 212,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 213,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 214,
+			"boost": {
+				"boost_id": "color_damage_blue",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "blue",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 215,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 216,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 217,
+			"boost": {
+				"boost_id": "color_damage_green",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "green",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 218,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 219,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 220,
+			"boost": {
+				"boost_id": "color_damage_yellow",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "yellow",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 221,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 222,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 223,
+			"boost": {
+				"boost_id": "color_damage_purple",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "purple",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 224,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 225,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 226,
+			"boost": {
+				"boost_id": "color_damage_red",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "red",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 227,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 228,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 229,
+			"boost": {
+				"boost_id": "color_damage_blue",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "blue",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 230,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 231,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 232,
+			"boost": {
+				"boost_id": "color_damage_green",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "green",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 233,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 234,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 235,
+			"boost": {
+				"boost_id": "color_damage_yellow",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "yellow",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 236,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 237,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 238,
+			"boost": {
+				"boost_id": "color_damage_purple",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "purple",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 239,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 240,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 241,
+			"boost": {
+				"boost_id": "color_damage_red",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "red",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 242,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 243,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 244,
+			"boost": {
+				"boost_id": "color_damage_blue",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "blue",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 245,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 246,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 247,
+			"boost": {
+				"boost_id": "color_damage_green",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "green",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 248,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 249,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 250,
+			"boost": {
+				"boost_id": "color_damage_yellow",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "yellow",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 251,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 252,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 253,
+			"boost": {
+				"boost_id": "color_damage_purple",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "purple",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 254,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 255,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 256,
+			"boost": {
+				"boost_id": "color_damage_red",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "red",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 257,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 258,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 259,
+			"boost": {
+				"boost_id": "color_damage_blue",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "blue",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 260,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 261,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 262,
+			"boost": {
+				"boost_id": "color_damage_green",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "green",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 263,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 264,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 265,
+			"boost": {
+				"boost_id": "color_damage_yellow",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "yellow",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 266,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 267,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 268,
+			"boost": {
+				"boost_id": "color_damage_purple",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "purple",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 269,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 270,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 271,
+			"boost": {
+				"boost_id": "color_damage_red",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "red",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 272,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 273,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 274,
+			"boost": {
+				"boost_id": "color_damage_blue",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "blue",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 275,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 276,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 277,
+			"boost": {
+				"boost_id": "color_damage_green",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "green",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 278,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 279,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 280,
+			"boost": {
+				"boost_id": "color_damage_yellow",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "yellow",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 281,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 282,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 283,
+			"boost": {
+				"boost_id": "color_damage_purple",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "purple",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 284,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 285,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 286,
+			"boost": {
+				"boost_id": "color_damage_red",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "red",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 287,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 288,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 289,
+			"boost": {
+				"boost_id": "color_damage_blue",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "blue",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 290,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 291,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 292,
+			"boost": {
+				"boost_id": "color_damage_green",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "green",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 293,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 294,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 295,
+			"boost": {
+				"boost_id": "color_damage_yellow",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "yellow",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 296,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 297,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 298,
+			"boost": {
+				"boost_id": "color_damage_purple",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "purple",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 299,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 300,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 301,
+			"boost": {
+				"boost_id": "color_damage_red",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "red",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 302,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 303,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 304,
+			"boost": {
+				"boost_id": "color_damage_blue",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "blue",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 305,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 306,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 307,
+			"boost": {
+				"boost_id": "color_damage_green",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "green",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 308,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 309,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 310,
+			"boost": {
+				"boost_id": "color_damage_yellow",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "yellow",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 311,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 312,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 313,
+			"boost": {
+				"boost_id": "color_damage_purple",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "purple",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 314,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 315,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 316,
+			"boost": {
+				"boost_id": "color_damage_red",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "red",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 317,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 318,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 319,
+			"boost": {
+				"boost_id": "color_damage_blue",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "blue",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 320,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 321,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 322,
+			"boost": {
+				"boost_id": "color_damage_green",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "green",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 323,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 324,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 325,
+			"boost": {
+				"boost_id": "color_damage_yellow",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "yellow",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 326,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 327,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 328,
+			"boost": {
+				"boost_id": "color_damage_purple",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "purple",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 329,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 330,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 331,
+			"boost": {
+				"boost_id": "color_damage_red",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "red",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 332,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 333,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 334,
+			"boost": {
+				"boost_id": "color_damage_blue",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "blue",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 335,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 336,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 337,
+			"boost": {
+				"boost_id": "color_damage_green",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "green",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 338,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 339,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 340,
+			"boost": {
+				"boost_id": "color_damage_yellow",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "yellow",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 341,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 342,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 343,
+			"boost": {
+				"boost_id": "color_damage_purple",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "purple",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 344,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 345,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 346,
+			"boost": {
+				"boost_id": "color_damage_red",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "red",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 347,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 348,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 349,
+			"boost": {
+				"boost_id": "color_damage_blue",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "blue",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 350,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 351,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 352,
+			"boost": {
+				"boost_id": "color_damage_green",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "green",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 353,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 354,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 355,
+			"boost": {
+				"boost_id": "color_damage_yellow",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "yellow",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 356,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 357,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 358,
+			"boost": {
+				"boost_id": "color_damage_purple",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "purple",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 359,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 360,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 361,
+			"boost": {
+				"boost_id": "color_damage_red",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "red",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 362,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 363,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 364,
+			"boost": {
+				"boost_id": "color_damage_blue",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "blue",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 365,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 366,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 367,
+			"boost": {
+				"boost_id": "color_damage_green",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "green",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 368,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 369,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 370,
+			"boost": {
+				"boost_id": "color_damage_yellow",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "yellow",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 371,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 372,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 373,
+			"boost": {
+				"boost_id": "color_damage_purple",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "purple",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 374,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 375,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 376,
+			"boost": {
+				"boost_id": "color_damage_red",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "red",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 377,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 378,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 379,
+			"boost": {
+				"boost_id": "color_damage_blue",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "blue",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 380,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 381,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 382,
+			"boost": {
+				"boost_id": "color_damage_green",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "green",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 383,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 384,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 385,
+			"boost": {
+				"boost_id": "color_damage_yellow",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "yellow",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 386,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 387,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 388,
+			"boost": {
+				"boost_id": "color_damage_purple",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "purple",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 389,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 390,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 391,
+			"boost": {
+				"boost_id": "color_damage_red",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "red",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 392,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 393,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 394,
+			"boost": {
+				"boost_id": "color_damage_blue",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "blue",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 395,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 396,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 397,
+			"boost": {
+				"boost_id": "color_damage_green",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "green",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 398,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 399,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 400,
+			"boost": {
+				"boost_id": "color_damage_yellow",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "yellow",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 401,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 402,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 403,
+			"boost": {
+				"boost_id": "color_damage_purple",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "purple",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 404,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 405,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 406,
+			"boost": {
+				"boost_id": "color_damage_red",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "red",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 407,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 408,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 409,
+			"boost": {
+				"boost_id": "color_damage_blue",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "blue",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 410,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 411,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 412,
+			"boost": {
+				"boost_id": "color_damage_green",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "green",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 413,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 414,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 415,
+			"boost": {
+				"boost_id": "color_damage_yellow",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "yellow",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 416,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 417,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 418,
+			"boost": {
+				"boost_id": "color_damage_purple",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "purple",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 419,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 420,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 421,
+			"boost": {
+				"boost_id": "color_damage_red",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "red",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 422,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 423,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 424,
+			"boost": {
+				"boost_id": "color_damage_blue",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "blue",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 425,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 426,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 427,
+			"boost": {
+				"boost_id": "color_damage_green",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "green",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 428,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 429,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 430,
+			"boost": {
+				"boost_id": "color_damage_yellow",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "yellow",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 431,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 432,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 433,
+			"boost": {
+				"boost_id": "color_damage_purple",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "purple",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 434,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 435,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 436,
+			"boost": {
+				"boost_id": "color_damage_red",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "red",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 437,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 438,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 439,
+			"boost": {
+				"boost_id": "color_damage_blue",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "blue",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 440,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 441,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 442,
+			"boost": {
+				"boost_id": "color_damage_green",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "green",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 443,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 444,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 445,
+			"boost": {
+				"boost_id": "color_damage_yellow",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "yellow",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 446,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 447,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 448,
+			"boost": {
+				"boost_id": "color_damage_purple",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "purple",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 449,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 450,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 451,
+			"boost": {
+				"boost_id": "color_damage_red",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "red",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 452,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 453,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 454,
+			"boost": {
+				"boost_id": "color_damage_blue",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "blue",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 455,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 456,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 457,
+			"boost": {
+				"boost_id": "color_damage_green",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "green",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 458,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 459,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 460,
+			"boost": {
+				"boost_id": "color_damage_yellow",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "yellow",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 461,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 462,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 463,
+			"boost": {
+				"boost_id": "color_damage_purple",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "purple",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 464,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 465,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 466,
+			"boost": {
+				"boost_id": "color_damage_red",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "red",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 467,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 468,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 469,
+			"boost": {
+				"boost_id": "color_damage_blue",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "blue",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 470,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 471,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 472,
+			"boost": {
+				"boost_id": "color_damage_green",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "green",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 473,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 474,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 475,
+			"boost": {
+				"boost_id": "color_damage_yellow",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "yellow",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 476,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 477,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 478,
+			"boost": {
+				"boost_id": "color_damage_purple",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "purple",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 479,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 480,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 481,
+			"boost": {
+				"boost_id": "color_damage_red",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "red",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 482,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 483,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 484,
+			"boost": {
+				"boost_id": "color_damage_blue",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "blue",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 485,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 486,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 487,
+			"boost": {
+				"boost_id": "color_damage_green",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "green",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 488,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 489,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 490,
+			"boost": {
+				"boost_id": "color_damage_yellow",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "yellow",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 491,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 492,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 493,
+			"boost": {
+				"boost_id": "color_damage_purple",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "purple",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 494,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 495,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 496,
+			"boost": {
+				"boost_id": "color_damage_red",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "red",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 497,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		},
+		{
+			"level_number": 498,
+			"boost": {
+				"boost_id": "extra_moves",
+				"boost_type": "extra_moves",
+				"display_name": "Extra Moves Boost",
+				"description": "Grants additional moves for this level.",
+				"extra_moves": 3
+			}
+		},
+		{
+			"level_number": 499,
+			"boost": {
+				"boost_id": "color_damage_blue",
+				"boost_type": "color_damage_multiplier",
+				"display_name": "Color Boost",
+				"description": "Selected tile color deals bonus damage.",
+				"tile_type": "blue",
+				"color_multiplier": 2.0
+			}
+		},
+		{
+			"level_number": 500,
+			"boost": {
+				"boost_id": "large_match",
+				"boost_type": "large_match_multiplier",
+				"display_name": "Large Match Boost",
+				"description": "Match 4 deals bonus damage; match 5+ deals even more.",
+				"match_4_multiplier": 2.0,
+				"match_5_multiplier": 3.0
+			}
+		}
+	]
+}

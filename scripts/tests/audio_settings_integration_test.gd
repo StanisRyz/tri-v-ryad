@@ -94,6 +94,8 @@ func _test_settings_back_returns_to_level_select() -> void:
 	root.add_child(app)
 	await process_frame
 
+	app._router._current_screen.get_node("%LevelSelectButton").pressed.emit()
+	await process_frame
 	app._router._current_screen.get_node("%SettingsButton").pressed.emit()
 	await process_frame
 	app._router._current_screen.get_node("%BackButton").pressed.emit()

@@ -15,6 +15,7 @@ const BATTLE_BACKGROUND_SELECTION_RESOLVER_SCRIPT := preload("res://scripts/game
 const ROUND_MODIFIER_CATALOG_SCRIPT := preload("res://scripts/game/config/round_modifier_catalog.gd")
 const ROUND_MODIFIER_SELECTION_RESOLVER_SCRIPT := preload("res://scripts/game/config/round_modifier_selection_resolver.gd")
 const LEVEL_BOOST_RESOLVER_SCRIPT := preload("res://scripts/game/config/level_boost_resolver.gd")
+const LEVEL_BOOST_FORMATTER_SCRIPT := preload("res://scripts/game/presentation/level_boost_formatter.gd")
 const BOOSTER_CATALOG_SCRIPT := preload("res://scripts/game/config/booster_catalog.gd")
 const BOOSTER_RESOLVER_SCRIPT := preload("res://scripts/game/battle/booster_resolver.gd")
 const LEVEL_LABEL_FORMATTER_SCRIPT := preload("res://scripts/game/config/level_label_formatter.gd")
@@ -176,6 +177,25 @@ func get_current_round_modifier():
 
 func get_current_level_boost():
 	return current_level_boost
+
+
+## Stage 60.3 v0.1: raw debug/status fields for the currently active level
+## boost, meant for GameScreen's Debug Labels status line (see
+## LevelBoostFormatter.format_debug_info_label()) or any future debug UI.
+func get_current_level_boost_debug_info() -> Dictionary:
+	var level_number := LEVEL_LABEL_FORMATTER_SCRIPT.extract_level_number(current_level_id)
+	var safe_level_number: int = max(1, level_number)
+	var fallback_used := _level_boost_resolver.was_fallback_used(safe_level_number)
+
+	return {
+		"boost_source": "fallback_none" if fallback_used else "database",
+		"boost_id": current_level_boost.boost_id if current_level_boost != null else "",
+		"boost_type": current_level_boost.boost_type if current_level_boost != null else LevelBoostType.NONE,
+		"boost_label": LEVEL_BOOST_FORMATTER_SCRIPT.format_label(current_level_boost),
+		"boost_database_loaded": _level_boost_resolver.is_database_loaded(),
+		"boost_fallback_used": fallback_used,
+		"boost_load_error": _level_boost_resolver.get_database_load_error(),
+	}
 
 
 func set_challenge_rng_seed(rng_seed: int) -> void:

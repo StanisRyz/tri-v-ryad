@@ -6,3 +6,9 @@
 # (tools/generate_deterministic_levels.gd / tools/validate_deterministic_levels.gd),
 # not required in the repository. See README.md/AGENTS.md Stage 59.1 QA report policy.
 /data/levels/deterministic_level_layout_report.json
+
+# Stage 60.3 deterministic level boost QA report — a locally regenerated artifact
+# (tools/generate_deterministic_level_boosts.gd / tools/validate_deterministic_level_boosts.gd),
+# not required in the repository. deterministic_level_boosts.json itself IS committed
+# (it's the boost database, loaded at runtime by LevelBoostDatabase).
+/data/levels/deterministic_level_boost_report.json

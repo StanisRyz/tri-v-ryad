@@ -49,7 +49,21 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(280, 72)
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
-text = "Play"
+text = "Играть"
+
+[node name="LevelSelectButton" type="Button" parent="Content/MenuPanel"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(280, 72)
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "Выбрать уровень"
+
+[node name="ShopButton" type="Button" parent="Content/MenuPanel"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(280, 72)
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "Магазин"
 
 [node name="HeroesButton" type="Button" parent="Content/MenuPanel"]
 unique_name_in_owner = true
@@ -63,4 +77,4 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(280, 72)
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
-text = "Settings"
+text = "Настройки"

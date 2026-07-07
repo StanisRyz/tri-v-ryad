@@ -8,7 +8,9 @@ const UI_ASSET_BINDING_SCRIPT := preload("res://scripts/ui/ui_asset_binding.gd")
 
 signal level_selected(level_id: String)
 signal settings_pressed
+signal back_pressed
 
+@onready var back_button: Button = %BackButton
 @onready var settings_button: Button = %SettingsButton
 @onready var points_label: Label = %PointsLabel
 @onready var zone_selector: OptionButton = %ZoneSelector
@@ -25,6 +27,7 @@ var _has_manual_zone_selection := false
 
 func _ready() -> void:
 	_bind_static_ui_assets()
+	back_button.pressed.connect(_on_back_button_pressed)
 	settings_button.pressed.connect(_on_settings_button_pressed)
 	zone_selector.item_selected.connect(_on_zone_selected)
 	_refresh()
@@ -135,6 +138,11 @@ func _on_level_button_pressed(level_id: String) -> void:
 func _on_settings_button_pressed() -> void:
 	_play_button_click()
 	settings_pressed.emit()
+
+
+func _on_back_button_pressed() -> void:
+	_play_button_click()
+	back_pressed.emit()
 
 
 func _refresh_points() -> void:

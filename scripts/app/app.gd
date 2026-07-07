@@ -6,14 +6,20 @@ const GAME_SCREEN := preload("res://scenes/screens/GameScreen.tscn")
 const UPGRADE_SCREEN := preload("res://scenes/screens/UpgradeScreen.tscn")
 const TEAM_SELECT_SCREEN := preload("res://scenes/screens/TeamSelectScreen.tscn")
 const SETTINGS_SCREEN := preload("res://scenes/screens/SettingsScreen.tscn")
+const SHOP_PLACEHOLDER_SCREEN := preload("res://scenes/screens/ShopPlaceholderScreen.tscn")
 const PROGRESS_MANAGER_SCRIPT := preload("res://scripts/game/progression/progress_manager.gd")
 const SETTINGS_MANAGER_SCRIPT := preload("res://scripts/game/settings/settings_manager.gd")
+const LEVEL_CATALOG_SCRIPT := preload("res://scripts/game/config/level_catalog.gd")
+const PLAY_LEVEL_RESOLVER_SCRIPT := preload("res://scripts/game/progression/play_level_resolver.gd")
 
 @onready var screen_host: Control = %ScreenHost
 
 var _router: ScreenRouter
 var _progress_manager
 var _settings_manager
+var _level_catalog
+var _play_level_resolver
+var _settings_return_screen := "main_menu"
 
 
 func _ready() -> void:
@@ -22,15 +28,19 @@ func _ready() -> void:
 	_progress_manager.load()
 	_settings_manager = SETTINGS_MANAGER_SCRIPT.new()
 	_settings_manager.load()
+	_level_catalog = LEVEL_CATALOG_SCRIPT.new()
+	_play_level_resolver = PLAY_LEVEL_RESOLVER_SCRIPT.new()
 	_apply_audio_settings()
-	_show_level_select()
+	_show_main_menu()
 
 
 func _show_main_menu() -> void:
 	var screen := _router.change_screen(MAIN_MENU_SCREEN)
 	screen.play_pressed.connect(_on_main_menu_play_pressed)
+	screen.level_select_pressed.connect(_on_main_menu_level_select_pressed)
+	screen.shop_pressed.connect(_on_main_menu_shop_pressed)
 	screen.heroes_pressed.connect(_on_upgrades_pressed)
-	screen.settings_pressed.connect(_on_settings_pressed)
+	screen.settings_pressed.connect(_on_main_menu_settings_pressed)
 
 
 func _show_level_select() -> void:
@@ -42,7 +52,13 @@ func _show_level_select() -> void:
 	if screen.has_method("refresh_progress_state"):
 		screen.refresh_progress_state()
 	screen.level_selected.connect(_on_level_selected)
-	screen.settings_pressed.connect(_on_settings_pressed)
+	screen.back_pressed.connect(_on_level_select_back_pressed)
+	screen.settings_pressed.connect(_on_level_select_settings_pressed)
+
+
+func _show_shop_placeholder() -> void:
+	var screen := _router.change_screen(SHOP_PLACEHOLDER_SCREEN)
+	screen.back_pressed.connect(_on_shop_placeholder_back_pressed)
 
 
 func _show_game_screen(level_id: String) -> void:
@@ -86,7 +102,26 @@ func _show_settings_screen() -> void:
 
 
 func _on_main_menu_play_pressed() -> void:
+	var level_id: String = _play_level_resolver.resolve_play_level_id(_progress_manager, _level_catalog)
+	_show_game_screen(level_id)
+
+
+func _on_main_menu_level_select_pressed() -> void:
 	_show_level_select()
+
+
+func _on_main_menu_shop_pressed() -> void:
+	_show_shop_placeholder()
+
+
+func _on_main_menu_settings_pressed() -> void:
+	_settings_return_screen = "main_menu"
+	_show_settings_screen()
+
+
+func _on_level_select_settings_pressed() -> void:
+	_settings_return_screen = "level_select"
+	_show_settings_screen()
 
 
 func _on_level_selected(level_id: String) -> void:
@@ -104,7 +139,11 @@ func _on_upgrades_pressed() -> void:
 
 
 func _on_level_select_back_pressed() -> void:
-	_show_level_select()
+	_show_main_menu()
+
+
+func _on_shop_placeholder_back_pressed() -> void:
+	_show_main_menu()
 
 
 func _on_game_back_pressed() -> void:
@@ -119,12 +158,11 @@ func _on_team_select_back_pressed() -> void:
 	_show_level_select()
 
 
-func _on_settings_pressed() -> void:
-	_show_settings_screen()
-
-
 func _on_settings_back_pressed() -> void:
-	_show_level_select()
+	if _settings_return_screen == "level_select":
+		_show_level_select()
+	else:
+		_show_main_menu()
 
 
 func _apply_audio_settings() -> void:

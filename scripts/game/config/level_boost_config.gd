@@ -3,7 +3,10 @@ class_name LevelBoostConfig
 
 ## Stage 60.2 v0.1: a single deterministic level boost. Pure data - all boost
 ## rule logic lives in LevelBoostResolver so this stays a plain, JSON-friendly
-## record (Stage 60.3 will load 500 of these from a level boost database).
+## record.
+## Stage 60.3 v0.1: from_dict()/to_dict() (plus the boost_type/tile_type
+## string helpers) are the JSON <-> LevelBoostConfig bridge used by
+## LevelBoostDatabase to load data/levels/deterministic_level_boosts.json.
 
 const SCRIPT_PATH := "res://scripts/game/config/level_boost_config.gd"
 
@@ -66,9 +69,9 @@ static func none() -> LevelBoostConfig:
 
 
 static func color_damage(tile_type_value: int, multiplier: float = 2.0) -> LevelBoostConfig:
-	var boost_id := "color_damage_%d" % tile_type_value
+	var generated_boost_id := "color_damage_%d" % tile_type_value
 	return load(SCRIPT_PATH).new(
-		boost_id,
+		generated_boost_id,
 		LevelBoostType.COLOR_DAMAGE_MULTIPLIER,
 		"Color Boost",
 		"Selected tile color deals bonus damage.",
@@ -102,3 +105,104 @@ static func extra_moves_boost(bonus_moves: int = 3) -> LevelBoostConfig:
 		1.0,
 		bonus_moves
 	)
+
+
+## Parses a JSON-friendly Dictionary (data/levels/deterministic_level_boosts.json
+## entry's "boost" object) into a LevelBoostConfig. Unknown/missing fields fall
+## back to safe "none" defaults; callers should still check is_valid() before
+## trusting the result (LevelBoostDatabase does this).
+static func from_dict(data: Dictionary) -> LevelBoostConfig:
+	var parsed_boost_type := boost_type_from_string(String(data.get("boost_type", "none")))
+	var parsed_tile_type := tile_type_from_string(String(data.get("tile_type", "")))
+
+	return load(SCRIPT_PATH).new(
+		String(data.get("boost_id", "none")),
+		parsed_boost_type,
+		String(data.get("display_name", "No Boost")),
+		String(data.get("description", "No level boost is active.")),
+		parsed_tile_type,
+		float(data.get("color_multiplier", 1.0)),
+		float(data.get("match_4_multiplier", 1.0)),
+		float(data.get("match_5_multiplier", 1.0)),
+		int(data.get("extra_moves", 0))
+	)
+
+
+## Compact serialization - only writes the fields relevant to boost_type, so
+## the database stays readable (a large_match entry never carries an unused
+## tile_type/color_multiplier, etc).
+func to_dict() -> Dictionary:
+	var data := {
+		"boost_id": boost_id,
+		"boost_type": boost_type_to_string(boost_type),
+		"display_name": display_name,
+		"description": description,
+	}
+
+	match boost_type:
+		LevelBoostType.COLOR_DAMAGE_MULTIPLIER:
+			data["tile_type"] = tile_type_to_string(tile_type)
+			data["color_multiplier"] = color_multiplier
+		LevelBoostType.LARGE_MATCH_MULTIPLIER:
+			data["match_4_multiplier"] = match_4_multiplier
+			data["match_5_multiplier"] = match_5_multiplier
+		LevelBoostType.EXTRA_MOVES:
+			data["extra_moves"] = extra_moves
+
+	return data
+
+
+static func boost_type_from_string(value: String) -> int:
+	match value:
+		"color_damage_multiplier":
+			return LevelBoostType.COLOR_DAMAGE_MULTIPLIER
+		"large_match_multiplier":
+			return LevelBoostType.LARGE_MATCH_MULTIPLIER
+		"extra_moves":
+			return LevelBoostType.EXTRA_MOVES
+		_:
+			return LevelBoostType.NONE
+
+
+static func boost_type_to_string(value: int) -> String:
+	match value:
+		LevelBoostType.COLOR_DAMAGE_MULTIPLIER:
+			return "color_damage_multiplier"
+		LevelBoostType.LARGE_MATCH_MULTIPLIER:
+			return "large_match_multiplier"
+		LevelBoostType.EXTRA_MOVES:
+			return "extra_moves"
+		_:
+			return "none"
+
+
+static func tile_type_from_string(value: String) -> int:
+	match value:
+		"red":
+			return TileType.RED
+		"blue":
+			return TileType.BLUE
+		"green":
+			return TileType.GREEN
+		"yellow":
+			return TileType.YELLOW
+		"purple":
+			return TileType.PURPLE
+		_:
+			return -1
+
+
+static func tile_type_to_string(value: int) -> String:
+	match value:
+		TileType.RED:
+			return "red"
+		TileType.BLUE:
+			return "blue"
+		TileType.GREEN:
+			return "green"
+		TileType.YELLOW:
+			return "yellow"
+		TileType.PURPLE:
+			return "purple"
+		_:
+			return ""
