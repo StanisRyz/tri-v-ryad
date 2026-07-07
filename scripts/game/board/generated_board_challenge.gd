@@ -5,8 +5,11 @@ class_name GeneratedBoardChallenge
 ## challenge. Extend this object rather than bolting new fields onto
 ## BattleState when adding masks, blockers, or per-zone tuning.
 ## Stage 54 gave `holes` archetype levels a real board_mask; Stage 57 gives
-## `ice` archetype levels real frozen_cells (still a full active board_mask).
-## `normal` still returns a full active board_mask and empty frozen_cells.
+## `ice` archetype levels real frozen_cells (still a full active board_mask),
+## and Stage 57.2 makes every `ice` level target a dense 32-40 cell layout
+## split into weak (1-layer-only) or strong (2-layer-only) cycle variants by
+## level_number. `normal` still returns a full active board_mask and empty
+## frozen_cells.
 
 const CHALLENGE_ARCHETYPE_SCRIPT := preload("res://scripts/game/config/challenge_archetype.gd")
 const DIFFICULTY_BUDGET_SCRIPT := preload("res://scripts/game/config/difficulty_budget.gd")
@@ -48,8 +51,10 @@ func _init(
 ## and flags when generation fell back to a full board (see
 ## BoardMaskGenerator/BoardChallengeGenerator metadata["fallback_used"]).
 ## Stage 57 v0.1: also appends ice/double-ice counts (and an ice fallback
-## flag) for an `ice` archetype challenge, e.g.
-## "Challenge: ice, seed: 12345, active: 81/81, holes: 0, ice: 12, double: 2".
+## flag) for an `ice` archetype challenge.
+## Stage 57.2 v0.1: appends the resolved ice_variant plus a weak/strong
+## count split instead of a single double-ice count, e.g.
+## "Challenge: ice, seed: 12345, active: 81/81, holes: 0, ice_variant: weak, ice: 36, weak: 36, strong: 0".
 func get_debug_label() -> String:
 	var active_count := _count_active_cells()
 	var total_count := _count_total_cells()
@@ -60,7 +65,12 @@ func get_debug_label() -> String:
 		label += ", fallback: true"
 
 	if archetype == CHALLENGE_ARCHETYPE_SCRIPT.ICE:
-		label += ", ice: %d, double: %d" % [int(metadata.get("ice_cell_count", 0)), int(metadata.get("double_ice_cell_count", 0))]
+		label += ", ice_variant: %s, ice: %d, weak: %d, strong: %d" % [
+			String(metadata.get("ice_variant", "none")),
+			int(metadata.get("ice_cell_count", 0)),
+			int(metadata.get("weak_ice_cell_count", 0)),
+			int(metadata.get("strong_ice_cell_count", 0)),
+		]
 		if bool(metadata.get("ice_fallback_used", false)):
 			label += ", ice_fallback: true"
 

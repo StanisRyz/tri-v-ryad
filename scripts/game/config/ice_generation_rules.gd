@@ -6,17 +6,27 @@ class_name IceGenerationRules
 ## IcePatternGenerator/BoardChallengeGenerator build against rather than
 ## hardcoding per-tier numbers themselves.
 ##
-## Stage 57.1 v0.1: adds symmetric/center-shape generation fields
+## Stage 57.1 v0.1: added symmetric/center-shape generation fields
 ## (center_ice_chance, allowed_center_shape_types, allowed_symmetric_shape_types,
-## prefer_symmetry, max_center_ice_cells) so ice generation can read closer to
-## HoleGenerationRules/BoardMaskGenerator's shape-based, symmetrical approach
-## instead of only scattered readable patterns. IceShapePreset (board layer)
-## owns the shape geometry itself; this config-layer rules object only stores
-## which shape-type strings each tier is allowed to draw from — the same
-## narrow config->board dependency asset_key_resolver.gd already has on
-## TileType/SpecialTileType.
+## prefer_symmetry, max_center_ice_cells).
+##
+## Stage 57.2 v0.1: every ice level, regardless of difficulty tier, now
+## targets the same dense 32-40 frozen-cell range (min_ice_cells/max_ice_cells
+## are no longer tier-scaled — MIN_ICE_CELLS/MAX_ICE_CELLS below are the only
+## values used by for_tier()), superseding Stage 57/57.1's tier-scaled "gentle
+## early / denser later" counts. allowed_center_shape_types/
+## allowed_symmetric_shape_types are likewise the full preset lists for every
+## tier now, since even the largest single shape is well under the new
+## per-level target and needs topping up regardless of tier. Also adds
+## ice_variant (IceVariant.WEAK/STRONG/NONE), set on the returned rules object
+## by for_tier() rather than threaded through the constructor, so
+## IcePatternGenerator can force every generated cell to 1-layer (weak) or
+## 2-layer (strong) ice deterministically instead of the old probability-based
+## double_ice_chance/max_double_ice_cells (kept only for IceVariant.NONE
+## backward compatibility).
 
 const ICE_SHAPE_PRESET_SCRIPT := preload("res://scripts/game/board/ice_shape_preset.gd")
+const ICE_VARIANT_SCRIPT := preload("res://scripts/game/config/ice_variant.gd")
 
 const PATTERN_SMALL_CLUSTER := "small_cluster"
 const PATTERN_EDGE_PATCH := "edge_patch"
@@ -24,9 +34,13 @@ const PATTERN_CENTER_PATCH := "center_patch"
 const PATTERN_DIAGONAL_BAND := "diagonal_band"
 
 const DEFAULT_VALIDATION_ATTEMPTS := 20
+## Stage 57.2: every ice level targets this same dense range regardless of
+## difficulty tier. 40 stays safely under half of an 81-cell 9x9 board.
+const MIN_ICE_CELLS := 32
+const MAX_ICE_CELLS := 40
 
-var min_ice_cells := 3
-var max_ice_cells := 6
+var min_ice_cells := MIN_ICE_CELLS
+var max_ice_cells := MAX_ICE_CELLS
 var max_double_ice_cells := 0
 var double_ice_chance := 0.0
 var cluster_size_min := 2
@@ -39,11 +53,14 @@ var allowed_center_shape_types: Array[String] = []
 var allowed_symmetric_shape_types: Array[String] = []
 var prefer_symmetry := true
 var max_center_ice_cells := 0
+## Stage 57.2 field: which cycle variant (see IceVariant) this rules object
+## was resolved for. Set directly by for_tier(), not via the constructor.
+var ice_variant: String = ICE_VARIANT_SCRIPT.NONE
 
 
 func _init(
-	config_min_ice_cells: int = 3,
-	config_max_ice_cells: int = 6,
+	config_min_ice_cells: int = MIN_ICE_CELLS,
+	config_max_ice_cells: int = MAX_ICE_CELLS,
 	config_max_double_ice_cells: int = 0,
 	config_double_ice_chance: float = 0.0,
 	config_cluster_size_min: int = 2,
@@ -75,64 +92,51 @@ static func default_rules() -> IceGenerationRules:
 	return IceGenerationRules.new()
 
 
-## Tier-scoped ice caps: early stays small and single-hit only; medium adds
-## more cells and a rare double-ice cell; hard grows both further with a
-## real double-ice budget; very_hard is densest but still capped well below
-## board saturation. Rules are the single source of truth here — callers
-## (IcePatternGenerator, BoardChallengeGenerator) should call this instead of
-## hardcoding per-tier numbers themselves.
-##
-## Stage 57.1: center_ice_chance is ~0.5 from medium upward (early is a bit
-## gentler at 0.35) so roughly every second ice battle includes a center
-## shape; allowed_center_shape_types/allowed_symmetric_shape_types only ever
-## include shapes whose fixed cell count fits under that tier's max_ice_cells,
-## so a shape choice can never be structurally doomed to fail validation.
-static func for_tier(tier: String) -> IceGenerationRules:
+## Stage 57.2: min_ice_cells/max_ice_cells and the center/symmetric shape
+## pools are now the same dense, full set for every tier — only
+## center_ice_chance, validation_attempts, and the scattered-pattern
+## top-up pool/cluster sizes still vary by tier. variant (IceVariant.WEAK/
+## STRONG/NONE) is resolved by the caller (BoardChallengeGenerator, via
+## IceVariantResolver) and stored directly on the returned rules object so
+## IcePatternGenerator can force every generated cell's layer count
+## deterministically instead of rolling double_ice_chance per cell.
+static func for_tier(tier: String, variant: String = ICE_VARIANT_SCRIPT.NONE) -> IceGenerationRules:
+	var tier_validation_attempts := DEFAULT_VALIDATION_ATTEMPTS
+	var tier_center_ice_chance := 0.5
+	var tier_cluster_min := 2
+	var tier_cluster_max := 3
+	var tier_pattern_pool: Array[String] = [PATTERN_SMALL_CLUSTER, PATTERN_EDGE_PATCH, PATTERN_CENTER_PATCH]
+
 	match tier:
 		DifficultyBudget.TIER_MEDIUM:
-			return IceGenerationRules.new(
-				5, 9, 1, 0.15, 2, 4,
-				[PATTERN_SMALL_CLUSTER, PATTERN_EDGE_PATCH],
-				25,
-				0.5,
-				[ICE_SHAPE_PRESET_SCRIPT.CENTER_SQUARE_LIGHT, ICE_SHAPE_PRESET_SCRIPT.CENTER_DIAMOND_LIGHT],
-				[ICE_SHAPE_PRESET_SCRIPT.MIRRORED_BLOCK_2X2],
-				true,
-				9
-			)
+			tier_validation_attempts = 25
+			tier_cluster_min = 2
+			tier_cluster_max = 4
 		DifficultyBudget.TIER_HARD:
-			return IceGenerationRules.new(
-				7, 12, 3, 0.30, 3, 5,
-				[PATTERN_SMALL_CLUSTER, PATTERN_EDGE_PATCH, PATTERN_CENTER_PATCH],
-				30,
-				0.5,
-				[ICE_SHAPE_PRESET_SCRIPT.CENTER_SQUARE_LIGHT, ICE_SHAPE_PRESET_SCRIPT.CENTER_DIAMOND_LIGHT, ICE_SHAPE_PRESET_SCRIPT.CENTER_DIAMOND_HEAVY],
-				[ICE_SHAPE_PRESET_SCRIPT.MIRRORED_BLOCK_2X2, ICE_SHAPE_PRESET_SCRIPT.MIRRORED_BLOCK_2X3, ICE_SHAPE_PRESET_SCRIPT.MIRRORED_BLOCK_3X2],
-				true,
-				12
-			)
+			tier_validation_attempts = 30
+			tier_cluster_min = 3
+			tier_cluster_max = 5
+			tier_pattern_pool.append(PATTERN_DIAGONAL_BAND)
 		DifficultyBudget.TIER_VERY_HARD:
-			return IceGenerationRules.new(
-				9, 16, 5, 0.45, 3, 6,
-				[PATTERN_SMALL_CLUSTER, PATTERN_EDGE_PATCH, PATTERN_CENTER_PATCH, PATTERN_DIAGONAL_BAND],
-				35,
-				0.5,
-				[
-					ICE_SHAPE_PRESET_SCRIPT.CENTER_SQUARE_LIGHT, ICE_SHAPE_PRESET_SCRIPT.CENTER_DIAMOND_LIGHT,
-					ICE_SHAPE_PRESET_SCRIPT.CENTER_SQUARE_HEAVY, ICE_SHAPE_PRESET_SCRIPT.CENTER_DIAMOND_HEAVY,
-				],
-				[ICE_SHAPE_PRESET_SCRIPT.MIRRORED_BLOCK_2X2, ICE_SHAPE_PRESET_SCRIPT.MIRRORED_BLOCK_2X3, ICE_SHAPE_PRESET_SCRIPT.MIRRORED_BLOCK_3X2],
-				true,
-				16
-			)
+			tier_validation_attempts = 35
+			tier_cluster_min = 3
+			tier_cluster_max = 6
+			tier_pattern_pool.append(PATTERN_DIAGONAL_BAND)
 		_:
-			return IceGenerationRules.new(
-				3, 6, 0, 0.0, 2, 3,
-				[PATTERN_SMALL_CLUSTER],
-				20,
-				0.35,
-				[ICE_SHAPE_PRESET_SCRIPT.CENTER_DIAMOND_LIGHT],
-				[],
-				true,
-				6
-			)
+			tier_validation_attempts = 20
+			tier_center_ice_chance = 0.35
+			tier_cluster_min = 2
+			tier_cluster_max = 3
+
+	var rules := IceGenerationRules.new(
+		MIN_ICE_CELLS, MAX_ICE_CELLS, 0, 0.0, tier_cluster_min, tier_cluster_max,
+		tier_pattern_pool,
+		tier_validation_attempts,
+		tier_center_ice_chance,
+		ICE_SHAPE_PRESET_SCRIPT.get_center_shape_types(),
+		ICE_SHAPE_PRESET_SCRIPT.get_mirrored_block_shape_types(),
+		true,
+		MAX_ICE_CELLS
+	)
+	rules.ice_variant = variant if ICE_VARIANT_SCRIPT.is_valid(variant) else ICE_VARIANT_SCRIPT.NONE
+	return rules

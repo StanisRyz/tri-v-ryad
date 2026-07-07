@@ -15,6 +15,7 @@ const BOARD_MASK_GENERATOR_SCRIPT := preload("res://scripts/game/board/board_mas
 const HOLE_GENERATION_RULES_SCRIPT := preload("res://scripts/game/config/hole_generation_rules.gd")
 const ICE_GENERATION_RULES_SCRIPT := preload("res://scripts/game/config/ice_generation_rules.gd")
 const ICE_PATTERN_GENERATOR_SCRIPT := preload("res://scripts/game/board/ice_pattern_generator.gd")
+const ICE_VARIANT_RESOLVER_SCRIPT := preload("res://scripts/game/config/ice_variant_resolver.gd")
 const CHALLENGE_ARCHETYPE_SCRIPT := preload("res://scripts/game/config/challenge_archetype.gd")
 
 var _board_mask_generator := BOARD_MASK_GENERATOR_SCRIPT.new()
@@ -51,7 +52,14 @@ func generate(level_id: String, level_number: int, archetype: String, difficulty
 		var ice_rng := RandomNumberGenerator.new()
 		ice_rng.seed = generation_seed
 		var ice_tier: String = difficulty_budget.difficulty_tier if difficulty_budget != null else DifficultyBudget.TIER_EARLY
-		var ice_rules := ICE_GENERATION_RULES_SCRIPT.for_tier(ice_tier)
+		## Stage 57.2 v0.1: level_number resolves a weak/strong ice cycle
+		## variant (level_number % 5 == 2 -> weak, == 4 -> strong) — `ice`
+		## only ever lands on those two cycle positions, so every ice level
+		## always resolves to exactly one of them. The variant is stored
+		## directly on the rules object so IcePatternGenerator can force
+		## every generated cell's layer count deterministically.
+		var ice_variant := ICE_VARIANT_RESOLVER_SCRIPT.resolve_for_level(level_number)
+		var ice_rules := ICE_GENERATION_RULES_SCRIPT.for_tier(ice_tier, ice_variant)
 		var ice_result := _ice_pattern_generator.generate_frozen_cells(ice_rng, board_mask, difficulty_budget, ice_rules)
 		frozen_cells = ice_result.get("frozen_cells", [])
 		metadata = ice_result.get("metadata", {})
