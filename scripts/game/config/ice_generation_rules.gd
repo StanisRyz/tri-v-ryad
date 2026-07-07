@@ -24,6 +24,18 @@ class_name IceGenerationRules
 ## 2-layer (strong) ice deterministically instead of the old probability-based
 ## double_ice_chance/max_double_ice_cells (kept only for IceVariant.NONE
 ## backward compatibility).
+##
+## Stage 57.4 v0.1: adds absolute_rectangular_max_ice_cells (48) — a higher
+## cap IcePatternGenerator may use only when the non-center portion of a
+## candidate is a single, complete, 4-way-symmetric mirrored rectangle (see
+## IcePatternGenerator._analyze_quadrant_rectangles()); a candidate that
+## isn't a clean rectangle stays bound by the normal max_ice_cells (40).
+## allowed_symmetric_shape_types now also includes the larger 2x4/4x2/3x3/
+## 4x3/3x4 mirrored-block presets (IceShapePreset), and mirrored shapes are
+## always placed as one atomic, complete unit — a shape that would only
+## partially fit under the applicable cap is skipped entirely rather than
+## truncated, preventing the "stair-step"/partial-rectangle layouts Stage
+## 57.2/57.3 could still produce.
 
 const ICE_SHAPE_PRESET_SCRIPT := preload("res://scripts/game/board/ice_shape_preset.gd")
 const ICE_VARIANT_SCRIPT := preload("res://scripts/game/config/ice_variant.gd")
@@ -38,9 +50,16 @@ const DEFAULT_VALIDATION_ATTEMPTS := 20
 ## difficulty tier. 40 stays safely under half of an 81-cell 9x9 board.
 const MIN_ICE_CELLS := 32
 const MAX_ICE_CELLS := 40
+## Stage 57.4: the enlarged cap allowed only for a clean, fully symmetric
+## non-center rectangular layout (a single mirrored-block shape per quadrant
+## with no gaps) — a mirrored 4x3/3x4 shape (IceShapePreset's largest) is
+## exactly 48 cells (12/quadrant x 4). A candidate that needs this cap but
+## isn't a clean rectangle is rejected rather than silently allowed through.
+const ABSOLUTE_RECTANGULAR_MAX_ICE_CELLS := 48
 
 var min_ice_cells := MIN_ICE_CELLS
 var max_ice_cells := MAX_ICE_CELLS
+var absolute_rectangular_max_ice_cells := ABSOLUTE_RECTANGULAR_MAX_ICE_CELLS
 var max_double_ice_cells := 0
 var double_ice_chance := 0.0
 var cluster_size_min := 2

@@ -6,11 +6,15 @@ class_name IceShapePreset
 ## the exact board center cell and are already self-symmetric about that one
 ## cell by construction, so — unlike HoleShapePreset's center offsets — they
 ## don't need a separate BoardMaskSymmetry mirroring pass. Mirrored-block
-## presets are plain rectangle sizes; IcePatternGenerator places one copy and
-## mirrors it across a single random axis (horizontal or vertical) rather than
-## the full 4-way quadrant mirror BoardMaskSymmetry provides, since ice's much
-## tighter per-tier cell caps (IceGenerationRules.for_tier()) can't afford a
-## full 4-copy mirrored block the way holes' larger hole budget can.
+## presets are plain rectangle sizes.
+##
+## Stage 57.4 v0.1: mirrored-block presets grew from 3 sizes (2x2/2x3/3x2) to
+## 8 (adding 2x4/4x2/3x3/4x3/3x4), and IcePatternGenerator now mirrors every
+## one of them across all four quadrants via BoardMaskSymmetry (matching
+## HoleBlockPlacer's approach) rather than Stage 57.1's single-axis 2-copy
+## mirror, since Stage 57.2's 32-40 cell density target needs the larger
+## 4-copy footprint. 4x3/3x4 (12 cells/quadrant, 48 mirrored) is the largest
+## allowed size — IceGenerationRules.ABSOLUTE_RECTANGULAR_MAX_ICE_CELLS.
 
 const CENTER_SQUARE_LIGHT := "center_square_light"
 const CENTER_DIAMOND_LIGHT := "center_diamond_light"
@@ -19,6 +23,11 @@ const CENTER_DIAMOND_HEAVY := "center_diamond_heavy"
 const MIRRORED_BLOCK_2X2 := "mirrored_block_2x2"
 const MIRRORED_BLOCK_2X3 := "mirrored_block_2x3"
 const MIRRORED_BLOCK_3X2 := "mirrored_block_3x2"
+const MIRRORED_BLOCK_2X4 := "mirrored_block_2x4"
+const MIRRORED_BLOCK_4X2 := "mirrored_block_4x2"
+const MIRRORED_BLOCK_3X3 := "mirrored_block_3x3"
+const MIRRORED_BLOCK_4X3 := "mirrored_block_4x3"
+const MIRRORED_BLOCK_3X4 := "mirrored_block_3x4"
 
 
 static func get_center_shape_types() -> Array[String]:
@@ -26,7 +35,11 @@ static func get_center_shape_types() -> Array[String]:
 
 
 static func get_mirrored_block_shape_types() -> Array[String]:
-	return [MIRRORED_BLOCK_2X2, MIRRORED_BLOCK_2X3, MIRRORED_BLOCK_3X2]
+	return [
+		MIRRORED_BLOCK_2X2, MIRRORED_BLOCK_2X3, MIRRORED_BLOCK_3X2,
+		MIRRORED_BLOCK_2X4, MIRRORED_BLOCK_4X2, MIRRORED_BLOCK_3X3,
+		MIRRORED_BLOCK_4X3, MIRRORED_BLOCK_3X4,
+	]
 
 
 static func is_center_shape(shape_type: String) -> bool:
@@ -43,6 +56,16 @@ static func get_block_size(shape_type: String) -> Vector2i:
 			return Vector2i(2, 3)
 		MIRRORED_BLOCK_3X2:
 			return Vector2i(3, 2)
+		MIRRORED_BLOCK_2X4:
+			return Vector2i(2, 4)
+		MIRRORED_BLOCK_4X2:
+			return Vector2i(4, 2)
+		MIRRORED_BLOCK_3X3:
+			return Vector2i(3, 3)
+		MIRRORED_BLOCK_4X3:
+			return Vector2i(4, 3)
+		MIRRORED_BLOCK_3X4:
+			return Vector2i(3, 4)
 		_:
 			return Vector2i(2, 2)
 
