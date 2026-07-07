@@ -108,6 +108,8 @@ func _play_request(request, board_view: Control, effective_duration: float) -> v
 				board_view.play_cascade_step_animation(request.payload, effective_duration)
 			elif board_view.has_method("flash_cells"):
 				board_view.flash_cells(request.cells, effective_duration)
+		REQUEST_SCRIPT.TYPE_ICE_EVENT:
+			_play_ice_event_request(request, board_view, effective_duration)
 		_:
 			if board_view.has_method("flash_cells"):
 				board_view.flash_cells(request.cells, effective_duration)
@@ -180,6 +182,28 @@ func _play_booster_clear_request(request, board_view: Control, effective_duratio
 		board_view.play_booster_clear_animation(request.cells, effective_duration)
 	elif board_view.has_method("flash_cells"):
 		board_view.flash_cells(request.cells, effective_duration)
+
+
+## Splits the request's ice_events by outcome: cells that are merely damaged
+## (still icy) play the crack/flash feedback, cells whose ice fully broke
+## play the break/fade feedback instead.
+func _play_ice_event_request(request, board_view: Control, _effective_duration: float) -> void:
+	var damaged_cells: Array[Vector2i] = []
+	var broken_cells: Array[Vector2i] = []
+	for event in request.payload.get("ice_events", []):
+		var data := event as Dictionary
+		var cell = data.get("cell")
+		if not (cell is Vector2i):
+			continue
+		if bool(data.get("broken", false)):
+			broken_cells.append(cell)
+		else:
+			damaged_cells.append(cell)
+
+	if not damaged_cells.is_empty() and board_view.has_method("play_ice_damage_animation"):
+		board_view.play_ice_damage_animation(damaged_cells)
+	if not broken_cells.is_empty() and board_view.has_method("play_ice_break_animation"):
+		board_view.play_ice_break_animation(broken_cells)
 
 
 func _play_booster_activation_request(request, board_view: Control, effective_duration: float) -> void:

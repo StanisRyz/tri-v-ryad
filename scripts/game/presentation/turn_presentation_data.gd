@@ -23,6 +23,7 @@ var special_cleared_cells: Array[Vector2i] = []
 var fall_movements: Array[Dictionary] = []
 var refill_cells: Array[Dictionary] = []
 var cascade_steps: Array[Dictionary] = []
+var ice_events: Array[Dictionary] = []
 
 
 static func from_valid_turn(from_cell: Vector2i, to_cell: Vector2i, matches: Array[MatchResult], result: BattleTurnResult, board_result: BoardResolveResult = null):
@@ -47,6 +48,7 @@ static func from_valid_turn(from_cell: Vector2i, to_cell: Vector2i, matches: Arr
 		var first_step: Dictionary = board_result.get_step(0)
 		data.fall_movements = data._to_dictionary_array(first_step.get("fall_movements", []))
 		data.refill_cells = data._to_dictionary_array(first_step.get("refill_cells", []))
+		data.ice_events = data._to_dictionary_array(first_step.get("ice_events", []))
 		if board_result.cascade_steps.size() > 1:
 			data.cascade_steps = data._to_dictionary_array(board_result.cascade_steps.slice(1))
 	return data
@@ -83,6 +85,7 @@ func to_dictionary() -> Dictionary:
 		"fall_movements": fall_movements.duplicate(),
 		"refill_cells": refill_cells.duplicate(),
 		"cascade_steps": cascade_steps.duplicate(),
+		"ice_events": ice_events.duplicate(),
 	}
 
 

@@ -1,6 +1,8 @@
 extends RefCounted
 class_name BoardResolveStep
 
+const ICE_DAMAGE_RESOLVER_SCRIPT := preload("res://scripts/game/board/ice_damage_resolver.gd")
+
 ## One visual/logical board phase produced by StepwiseBoardResolver: a single
 ## clear + gravity/refill pass, used to drive animation and later be folded
 ## into a BoardResolveResult once the board is stable.
@@ -18,6 +20,11 @@ var cleared_cells: Array[Vector2i] = []
 var fall_movements: Array[Dictionary] = []
 var refill_cells: Array[Dictionary] = []
 var damage_tile_types: Dictionary = {}
+## Each entry: {"cell", "obstacle_type", "previous_layers", "new_layers", "broken"}.
+## Populated by StepwiseBoardResolver.build_clear_step() as a pre-mutation
+## preview of IceDamageResolver.apply_ice_damage(), so presentation can play
+## ice feedback before the tile clear fade.
+var ice_events: Array[Dictionary] = []
 var is_stable := false
 var message := ""
 
@@ -27,6 +34,14 @@ static func stable_step(at_cascade_index: int) -> BoardResolveStep:
 	step.cascade_index = at_cascade_index
 	step.is_stable = true
 	return step
+
+
+func get_ice_damaged_cells() -> Array[Vector2i]:
+	return ICE_DAMAGE_RESOLVER_SCRIPT.extract_damaged_cells(ice_events)
+
+
+func get_ice_broken_cells() -> Array[Vector2i]:
+	return ICE_DAMAGE_RESOLVER_SCRIPT.extract_broken_cells(ice_events)
 
 
 func to_dictionary() -> Dictionary:
@@ -41,6 +56,9 @@ func to_dictionary() -> Dictionary:
 		"fall_movements": fall_movements.duplicate(true),
 		"refill_cells": refill_cells.duplicate(true),
 		"damage_tile_types": damage_tile_types.duplicate(),
+		"ice_events": ice_events.duplicate(true),
+		"ice_damaged_cells": get_ice_damaged_cells(),
+		"ice_broken_cells": get_ice_broken_cells(),
 		"is_stable": is_stable,
 		"message": message,
 	}

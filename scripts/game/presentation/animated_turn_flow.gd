@@ -73,7 +73,8 @@ func start_swap_turn(board: BoardModel, presenter, from_cell: Vector2i, to_cell:
 			{"fall_movements": step.fall_movements, "refill_cells": step.refill_cells},
 			step.created_special_tiles,
 			step.activated_special_tiles,
-			step.special_cleared_cells
+			step.special_cleared_cells,
+			step.ice_events
 		)
 
 		cascade_index += 1
@@ -87,7 +88,7 @@ func start_swap_turn(board: BoardModel, presenter, from_cell: Vector2i, to_cell:
 func start_booster_clear(board: BoardModel, presenter, result) -> void:
 	var generation := _begin()
 
-	await _play_sequence(_sequence_builder.build_booster_activation_and_clear_sequence(result.cleared_cells, result.booster_id, result.target_cell, result.damage_to_enemy, result.affected_tile_types))
+	await _play_sequence(_sequence_builder.build_booster_activation_and_clear_sequence(result.cleared_cells, result.booster_id, result.target_cell, result.damage_to_enemy, result.affected_tile_types, result.ice_events))
 	if not _is_current(generation):
 		return
 
@@ -125,6 +126,7 @@ func start_booster_clear(board: BoardModel, presenter, result) -> void:
 			"special_cleared_cells": step.special_cleared_cells.duplicate(),
 			"fall_movements": step.fall_movements.duplicate(true),
 			"refill_cells": step.refill_cells.duplicate(true),
+			"ice_events": step.ice_events.duplicate(true),
 			"damage": 0,
 		})
 

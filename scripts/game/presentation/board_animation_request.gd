@@ -14,6 +14,7 @@ const TYPE_BOOSTER_ACTIVATION := "booster_activation"
 const TYPE_BOOSTER_CLEAR := "booster_clear"
 const TYPE_DAMAGE_PARTICLES := "damage_particles"
 const TYPE_ENEMY_HIT := "enemy_hit"
+const TYPE_ICE_EVENT := "ice_event"
 const SCRIPT_PATH := "res://scripts/game/presentation/board_animation_request.gd"
 
 var animation_type := ""

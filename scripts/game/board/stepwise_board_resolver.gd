@@ -9,10 +9,12 @@ const SPECIAL_TILE_DATA_SCRIPT := preload("res://scripts/game/board/special_tile
 const SPECIAL_TILE_RESOLVER_SCRIPT := preload("res://scripts/game/board/special_tile_resolver.gd")
 const SPECIAL_TILE_TYPE_SCRIPT := preload("res://scripts/game/board/special_tile_type.gd")
 const BOARD_RESOLVE_STEP_SCRIPT := preload("res://scripts/game/board/board_resolve_step.gd")
+const ICE_DAMAGE_RESOLVER_SCRIPT := preload("res://scripts/game/board/ice_damage_resolver.gd")
 
 var _match_finder := MatchFinder.new()
 var _gravity_resolver: GravityResolver
 var _special_tile_resolver := SPECIAL_TILE_RESOLVER_SCRIPT.new()
+var _ice_damage_resolver := ICE_DAMAGE_RESOLVER_SCRIPT.new()
 
 
 func _init(gravity_resolver: GravityResolver = null) -> void:
@@ -87,11 +89,17 @@ func build_clear_step(board: BoardModel, matches: Array[MatchResult], cascade_in
 		activation_data["affected_cells"] = affected_cells.duplicate()
 		activation_data["base_tile_type"] = base_tile_type
 
+	## Preview only: the board hasn't been mutated by this step yet, so this
+	## reads pre-clear obstacle state to predict what apply_clear_step() will
+	## do, letting presentation play ice feedback before the tile clear fade.
+	step.ice_events = _ice_damage_resolver.preview_ice_damage(board, step.cleared_cells)
+
 	return step
 
 
 func apply_clear_step(board: BoardModel, step: BoardResolveStep) -> void:
 	board.clear_cells(step.cleared_cells)
+	_ice_damage_resolver.apply_ice_damage(board, step.cleared_cells)
 
 
 func apply_gravity_step(board: BoardModel, step: BoardResolveStep) -> void:

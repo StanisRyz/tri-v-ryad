@@ -6,6 +6,7 @@ signal tile_drag_released(cell: Vector2i, drag_delta: Vector2)
 
 const SPECIAL_TILE_DATA_SCRIPT := preload("res://scripts/game/board/special_tile_data.gd")
 const SPECIAL_TILE_TYPE_SCRIPT := preload("res://scripts/game/board/special_tile_type.gd")
+const CELL_OBSTACLE_TYPE_SCRIPT := preload("res://scripts/game/board/cell_obstacle_type.gd")
 const ASSET_KEY_RESOLVER_SCRIPT := preload("res://scripts/game/config/asset_key_resolver.gd")
 const GAME_ASSET_CATALOG := preload("res://scripts/game/config/game_asset_catalog.gd")
 
@@ -16,6 +17,14 @@ const TILE_COLORS := {
 	TileType.YELLOW: Color(0.92, 0.76, 0.20, 1.0),
 	TileType.PURPLE: Color(0.56, 0.28, 0.82, 1.0),
 }
+
+## Stage 56 v0.1: placeholder ice overlay colors. Normal (1-layer) ice reads
+## as a light, thin frost tint; double (2-layer) ice is a stronger tint plus
+## a second inset overlay so it reads as visually "thicker".
+const ICE_OVERLAY_COLOR := Color(0.75, 0.90, 1.0, 0.36)
+const ICE_OVERLAY_COLOR_DOUBLE := Color(0.72, 0.90, 1.0, 0.60)
+const ICE_OVERLAY_INNER_COLOR := Color(0.90, 0.97, 1.0, 0.55)
+const ICE_OVERLAY_INSET := 5.0
 
 ## Stage 55 v0.1: inactive cells (holes) render as a mostly-transparent dark
 ## inset with no border, no icon, and no marker text, so they read as "not
@@ -28,6 +37,11 @@ static var _reduced_motion_enabled := false
 var board_cell := Vector2i.ZERO
 var tile_type := BoardModel.EMPTY
 var special_tile_data
+var _obstacle_type := CELL_OBSTACLE_TYPE_SCRIPT.NONE
+var _obstacle_layers := 0
+var _ice_overlay: ColorRect
+var _ice_overlay_inner: ColorRect
+var _ice_tween: Tween
 var _is_selected := false
 var _is_highlighted := false
 var _is_invalid_feedback := false
@@ -55,7 +69,34 @@ func _ready() -> void:
 	gui_input.connect(_on_gui_input)
 	if not pressed.is_connected(_on_pressed):
 		pressed.connect(_on_pressed)
+	_create_ice_overlays()
 	_apply_visuals()
+
+
+## Stage 56 v0.1: two plain ColorRect children drawn on top of the Button's
+## own icon/text/stylebox rendering (children of a CanvasItem paint after
+## their parent), so they read as a frost layer over the tile without
+## touching tile_type/special_tile_data. The inner rect is only shown for
+## double (2-layer) ice, giving it a visually "thicker" look.
+func _create_ice_overlays() -> void:
+	_ice_overlay = ColorRect.new()
+	_ice_overlay.name = "IceOverlay"
+	_ice_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_ice_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_ice_overlay.visible = false
+	add_child(_ice_overlay)
+
+	_ice_overlay_inner = ColorRect.new()
+	_ice_overlay_inner.name = "IceOverlayInner"
+	_ice_overlay_inner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_ice_overlay_inner.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_ice_overlay_inner.offset_left = ICE_OVERLAY_INSET
+	_ice_overlay_inner.offset_top = ICE_OVERLAY_INSET
+	_ice_overlay_inner.offset_right = -ICE_OVERLAY_INSET
+	_ice_overlay_inner.offset_bottom = -ICE_OVERLAY_INSET
+	_ice_overlay_inner.color = ICE_OVERLAY_INNER_COLOR
+	_ice_overlay_inner.visible = false
+	add_child(_ice_overlay_inner)
 
 
 ## Stage 55 v0.1: switches this tile between normal playable rendering and
@@ -100,6 +141,26 @@ func set_special_tile(special_data) -> void:
 	else:
 		special_tile_data = null
 	_apply_visuals()
+
+
+## Stage 56 v0.1: syncs this tile's ice overlay from BoardModel's obstacle
+## layer. layers <= 0 or a non-ice obstacle_type both mean "no ice".
+func set_cell_obstacle(obstacle_type: int, layers: int = 0) -> void:
+	_obstacle_type = obstacle_type
+	_obstacle_layers = layers
+	_apply_visuals()
+
+
+func get_obstacle_type() -> int:
+	return _obstacle_type
+
+
+func get_obstacle_layers() -> int:
+	return _obstacle_layers
+
+
+func is_iced() -> bool:
+	return CELL_OBSTACLE_TYPE_SCRIPT.is_ice(_obstacle_type) and _obstacle_layers > 0
 
 
 func set_selected(selected: bool) -> void:
@@ -232,6 +293,44 @@ func play_invalid_bounce(_offset: Vector2, step_duration: float = 0.04) -> void:
 	_active_tween.parallel().tween_property(self, "scale", invalid_scale, adjusted_duration)
 	_active_tween.tween_property(self, "modulate", Color.WHITE, adjusted_duration)
 	_active_tween.parallel().tween_property(self, "scale", Vector2.ONE, adjusted_duration)
+
+
+## Stage 56 v0.1: a brief cold-white flash on the ice overlay for a hit that
+## damaged but did not break the ice. Callers are expected to call this (or
+## play_ice_break()) before the obstacle state is synced via
+## set_cell_obstacle(), since _apply_ice_overlay() re-applies the current
+## (pre-animation) overlay once the flash settles.
+func play_ice_damage() -> void:
+	if not _is_active or _ice_overlay == null or not is_iced():
+		return
+
+	_stop_ice_tween()
+	_ice_overlay.visible = true
+	var flash_color := Color(1.30, 1.45, 1.60, 1.0)
+	_ice_tween = create_tween()
+	_ice_tween.tween_property(_ice_overlay, "modulate", flash_color, _adjust_duration(0.06))
+	_ice_tween.tween_property(_ice_overlay, "modulate", Color.WHITE, _adjust_duration(0.12))
+	_ice_tween.tween_callback(_apply_ice_overlay)
+
+
+## Stage 56 v0.1: fades the ice overlay(s) out for a hit that fully breaks
+## the ice. See play_ice_damage() for call-order expectations.
+func play_ice_break() -> void:
+	if not _is_active or _ice_overlay == null or not is_iced():
+		return
+
+	_stop_ice_tween()
+	var duration := _adjust_duration(0.16)
+	_ice_tween = create_tween()
+	_ice_tween.tween_property(_ice_overlay, "modulate:a", 0.0, duration)
+	if _ice_overlay_inner != null:
+		_ice_tween.parallel().tween_property(_ice_overlay_inner, "modulate:a", 0.0, duration)
+	_ice_tween.tween_callback(func() -> void:
+		_ice_overlay.modulate = Color.WHITE
+		if _ice_overlay_inner != null:
+			_ice_overlay_inner.modulate = Color.WHITE
+		_apply_ice_overlay()
+	)
 
 
 func play_refill_appear() -> void:
@@ -371,12 +470,15 @@ func _apply_visuals() -> void:
 	add_theme_color_override("font_hover_color", Color.WHITE)
 	add_theme_color_override("font_pressed_color", Color.WHITE)
 	add_theme_font_size_override("font_size", 24 if _get_special_marker_text() == "B" else 22)
+	_apply_ice_overlay()
 
 
 ## Stage 55 v0.1: inactive cells never show a tile texture/color, a special
 ## marker, or any selected/highlight/invalid border — just a low, mostly
 ## transparent inset so the 9x9 GridContainer layout stays stable while the
 ## cell clearly reads as "not playable" rather than an empty playable cell.
+## Stage 56 v0.1: inactive cells never show an ice overlay either, matching
+## the BoardModel rule that an inactive cell can never carry an obstacle.
 func _apply_inactive_visuals() -> void:
 	var style := StyleBoxFlat.new()
 	style.bg_color = INACTIVE_CELL_BACKGROUND_COLOR
@@ -395,6 +497,30 @@ func _apply_inactive_visuals() -> void:
 	icon = null
 	text = ""
 	disabled = true
+	if _ice_overlay != null:
+		_ice_overlay.visible = false
+	if _ice_overlay_inner != null:
+		_ice_overlay_inner.visible = false
+
+
+## Stage 56 v0.1: shows/hides the ice overlay(s) to match current obstacle
+## state. Called from _apply_visuals() (active cells) and after an ice
+## damage/break tween settles, so the overlay always ends up matching
+## set_cell_obstacle()'s last value once any transient animation finishes.
+func _apply_ice_overlay() -> void:
+	if _ice_overlay == null:
+		return
+
+	if not is_iced():
+		_ice_overlay.visible = false
+		if _ice_overlay_inner != null:
+			_ice_overlay_inner.visible = false
+		return
+
+	_ice_overlay.visible = true
+	_ice_overlay.color = ICE_OVERLAY_COLOR_DOUBLE if _obstacle_layers >= 2 else ICE_OVERLAY_COLOR
+	if _ice_overlay_inner != null:
+		_ice_overlay_inner.visible = _obstacle_layers >= 2
 
 
 func _get_special_marker_text() -> String:
@@ -437,3 +563,9 @@ func _stop_active_tween() -> void:
 	if _active_tween != null:
 		_active_tween.kill()
 		_active_tween = null
+
+
+func _stop_ice_tween() -> void:
+	if _ice_tween != null:
+		_ice_tween.kill()
+		_ice_tween = null

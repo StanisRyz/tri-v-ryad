@@ -7,6 +7,7 @@ signal tile_drag_released(cell: Vector2i, drag_delta: Vector2)
 const TILE_VIEW_SCENE := preload("res://scenes/game/TileView.tscn")
 const SPECIAL_TILE_DATA_SCRIPT := preload("res://scripts/game/board/special_tile_data.gd")
 const SPECIAL_TILE_TYPE_SCRIPT := preload("res://scripts/game/board/special_tile_type.gd")
+const CELL_OBSTACLE_TYPE_SCRIPT := preload("res://scripts/game/board/cell_obstacle_type.gd")
 const ASSET_KEY_RESOLVER_SCRIPT := preload("res://scripts/game/config/asset_key_resolver.gd")
 const GAME_ASSET_CATALOG := preload("res://scripts/game/config/game_asset_catalog.gd")
 const BOARD_SIZE := 9
@@ -72,6 +73,7 @@ func refresh_all_tiles() -> void:
 			tile.set_cell_active(_board.is_cell_active(cell))
 			tile.set_tile(cell, _board.get_tile(cell))
 			tile.set_special_tile(_board.get_special_tile(cell))
+			tile.set_cell_obstacle(_board.get_cell_obstacle(cell), _board.get_cell_obstacle_layers(cell))
 			tile.set_selected(cell == _selected_cell)
 			tile.set_highlighted(cell in _highlighted_cells)
 			tile.set_invalid_feedback(cell in _invalid_feedback_cells)
@@ -352,7 +354,9 @@ func build_full_board_ghosts(snapshot: BoardVisualSnapshot) -> void:
 				data.get("tile_type", BoardModel.EMPTY),
 				data.get("special_data"),
 				local_position,
-				cell_size
+				cell_size,
+				int(data.get("obstacle_type", CELL_OBSTACLE_TYPE_SCRIPT.NONE)),
+				int(data.get("obstacle_layers", 0))
 			)
 		else:
 			ghost = create_inactive_hole_ghost(local_position, cell_size)
@@ -415,7 +419,7 @@ func create_tile_ghost(cell: Vector2i) -> Control:
 	return ghost
 
 
-func create_tile_ghost_from_data(tile_type: int, special_data, ghost_position: Vector2, ghost_size: Vector2) -> Control:
+func create_tile_ghost_from_data(tile_type: int, special_data, ghost_position: Vector2, ghost_size: Vector2, obstacle_type: int = CELL_OBSTACLE_TYPE_SCRIPT.NONE, obstacle_layers: int = 0) -> Control:
 	if animation_layer == null:
 		return null
 
@@ -446,6 +450,13 @@ func create_tile_ghost_from_data(tile_type: int, special_data, ghost_position: V
 	ghost.add_theme_font_size_override("font_size", 22)
 	if special_data is SPECIAL_TILE_DATA_SCRIPT:
 		ghost.text = SPECIAL_TILE_TYPE_SCRIPT.get_marker_text(special_data.special_type)
+	if CELL_OBSTACLE_TYPE_SCRIPT.is_ice(obstacle_type) and obstacle_layers > 0:
+		var ice_overlay := ColorRect.new()
+		ice_overlay.name = "IceOverlay"
+		ice_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		ice_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+		ice_overlay.color = TileView.ICE_OVERLAY_COLOR_DOUBLE if obstacle_layers >= 2 else TileView.ICE_OVERLAY_COLOR
+		ghost.add_child(ice_overlay)
 	animation_layer.add_child(ghost)
 	return ghost
 
@@ -1011,6 +1022,69 @@ func play_match_clear_animation(cells: Array[Vector2i], duration: float) -> void
 
 	for tile in get_tile_views(cells):
 		tile.play_match_clear(duration)
+
+
+## Stage 56 v0.1: cells whose ice took damage but did not break — still icy,
+## just flashes/cracks. Callers pass this before syncing the new obstacle
+## state (see IceDamageResolver/BoardResolveStep.ice_events), matching
+## TileView.play_ice_damage()'s call-order expectations.
+func play_ice_damage_animation(cells: Array[Vector2i]) -> void:
+	if _overlay_mode:
+		_play_overlay_ice_damage(cells)
+		return
+
+	for tile in get_tile_views(cells):
+		if tile.has_method("play_ice_damage"):
+			tile.play_ice_damage()
+
+
+## Stage 56 v0.1: cells whose ice fully broke this event — fades the overlay
+## out. The real per-cell obstacle state is expected to already be (or soon
+## be) cleared by the caller; this only plays the visual.
+func play_ice_break_animation(cells: Array[Vector2i]) -> void:
+	if _overlay_mode:
+		_play_overlay_ice_break(cells)
+		return
+
+	for tile in get_tile_views(cells):
+		if tile.has_method("play_ice_break"):
+			tile.play_ice_break()
+
+
+func _play_overlay_ice_damage(cells: Array[Vector2i]) -> void:
+	for cell in cells:
+		var ghost := _get_valid_overlay_ghost(cell)
+		if ghost == null:
+			continue
+		var overlay := ghost.get_node_or_null("IceOverlay")
+		if overlay == null:
+			continue
+
+		var tween := create_tween()
+		_register_special_activation_tween(tween)
+		tween.tween_property(overlay, "modulate", Color(1.30, 1.45, 1.60, 1.0), 0.06)
+		tween.tween_property(overlay, "modulate", Color.WHITE, 0.12)
+
+
+## Overlay-mode ice break: frees the ghost's IceOverlay child once faded so
+## no stale overlay lingers on a ghost that keeps getting reused/moved by
+## later gravity/refill animations in the same overlay session.
+func _play_overlay_ice_break(cells: Array[Vector2i]) -> void:
+	for cell in cells:
+		var ghost := _get_valid_overlay_ghost(cell)
+		if ghost == null:
+			continue
+		var overlay := ghost.get_node_or_null("IceOverlay")
+		if overlay == null:
+			continue
+
+		var tween := create_tween()
+		_register_special_activation_tween(tween)
+		tween.tween_property(overlay, "modulate:a", 0.0, 0.16)
+		tween.tween_callback(func() -> void:
+			if is_instance_valid(overlay):
+				overlay.free()
+		)
 
 
 func play_horizontal_line_special_activation(activation_cell: Vector2i, affected_cells: Array[Vector2i], duration: float) -> void:

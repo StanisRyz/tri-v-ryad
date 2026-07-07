@@ -14,6 +14,7 @@ const BOOSTER_ACTIVATION_ANIMATION_DURATION := 0.18
 ## Covers the matched-crystal gather-into-creation-cell phase plus the
 ## creation-cell pulse/flash phase; see BoardView._play_overlay_special_create().
 const SPECIAL_CREATE_ANIMATION_DURATION := 0.36
+const ICE_EVENT_ANIMATION_DURATION := 0.14
 
 
 func build_from_turn_presentation(data):
@@ -28,6 +29,8 @@ func build_from_turn_presentation(data):
 		.with_swap(data.swapped_from, data.swapped_to)
 		.with_duration(SWAP_ANIMATION_DURATION)
 		.with_payload({"source": "turn"}))
+
+	_add_ice_event_request(sequence, data.ice_events, "turn", 0)
 
 	if not data.matched_cells.is_empty():
 		sequence.add_request(REQUEST_SCRIPT.new_request(REQUEST_SCRIPT.TYPE_MATCH_CLEAR)
@@ -73,6 +76,7 @@ func build_from_booster_result(result):
 		return sequence
 
 	_add_booster_activation_request(sequence, result.cleared_cells, result.booster_id, result.target_cell, result.affected_tile_types)
+	_add_ice_event_request(sequence, result.ice_events, "booster", 0)
 	sequence.add_request(REQUEST_SCRIPT.new_request(REQUEST_SCRIPT.TYPE_BOOSTER_CLEAR)
 		.with_cells(result.cleared_cells)
 		.with_duration(0.08)
@@ -120,6 +124,8 @@ func build_clear_sequence(step):
 			if special_clear_cells.has(cell):
 				continue
 			direct_clear_cells.append(cell)
+
+	_add_ice_event_request(sequence, step.ice_events, source, step.cascade_index)
 
 	if not direct_clear_cells.is_empty():
 		sequence.add_request(REQUEST_SCRIPT.new_request(REQUEST_SCRIPT.TYPE_MATCH_CLEAR)
@@ -181,12 +187,13 @@ func build_booster_clear_sequence(cleared_cells: Array[Vector2i], booster_id: St
 	return sequence
 
 
-func build_booster_activation_and_clear_sequence(cleared_cells: Array[Vector2i], booster_id: String, target_cell: Vector2i, damage_to_enemy: int, affected_tile_types: Array):
+func build_booster_activation_and_clear_sequence(cleared_cells: Array[Vector2i], booster_id: String, target_cell: Vector2i, damage_to_enemy: int, affected_tile_types: Array, ice_events: Array = []):
 	var sequence := SEQUENCE_SCRIPT.new()
 	if cleared_cells.is_empty():
 		return sequence
 
 	_add_booster_activation_request(sequence, cleared_cells, booster_id, target_cell, affected_tile_types)
+	_add_ice_event_request(sequence, ice_events, "booster", 0)
 	sequence.add_request(REQUEST_SCRIPT.new_request(REQUEST_SCRIPT.TYPE_BOOSTER_CLEAR)
 		.with_cells(cleared_cells)
 		.with_duration(0.08)
@@ -235,17 +242,43 @@ func _add_booster_activation_request(sequence, cleared_cells: Array[Vector2i], b
 
 
 func _add_cascade_step_requests(sequence, cascade_step: Dictionary) -> void:
+	var cascade_index: int = cascade_step.get("cascade_index", 0)
+	_add_ice_event_request(sequence, cascade_step.get("ice_events", []), "cascade", cascade_index)
+
 	var matched_cells := _to_vector2i_array(cascade_step.get("matched_cells", []))
 	sequence.add_request(REQUEST_SCRIPT.new_request(REQUEST_SCRIPT.TYPE_CASCADE_STEP)
 		.with_cells(matched_cells)
 		.with_duration(CASCADE_STEP_DURATION)
 		.with_payload({
-			"cascade_index": cascade_step.get("cascade_index", 0),
+			"cascade_index": cascade_index,
 			"matched_cells": matched_cells,
 			"damage": cascade_step.get("damage", 0),
 		}))
 
 	_add_gravity_and_refill_requests(sequence, cascade_step.get("fall_movements", []), cascade_step.get("refill_cells", []))
+
+
+## Stage 56 v0.1: ice damage/break feedback is queued before the tile clear
+## fade it accompanies, per the expected visual order (ice feedback, then
+## tile clear, then gravity/refill).
+func _add_ice_event_request(sequence, ice_events: Array, source: String, cascade_index: int) -> void:
+	if ice_events.is_empty():
+		return
+
+	var cells: Array[Vector2i] = []
+	for event in ice_events:
+		var cell = (event as Dictionary).get("cell")
+		if cell is Vector2i:
+			cells.append(cell)
+
+	sequence.add_request(REQUEST_SCRIPT.new_request(REQUEST_SCRIPT.TYPE_ICE_EVENT)
+		.with_cells(cells)
+		.with_duration(ICE_EVENT_ANIMATION_DURATION)
+		.with_payload({
+			"source": source,
+			"cascade_index": cascade_index,
+			"ice_events": (ice_events as Array).duplicate(true),
+		}))
 
 
 func _add_special_activation_requests(sequence, activated_special_tiles: Array, fallback_cells: Array[Vector2i], source: String, cascade_index: int) -> void:

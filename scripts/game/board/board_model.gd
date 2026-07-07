@@ -3,6 +3,7 @@ class_name BoardModel
 
 const SPECIAL_TILE_DATA_SCRIPT := preload("res://scripts/game/board/special_tile_data.gd")
 const SPECIAL_TILE_TYPE_SCRIPT := preload("res://scripts/game/board/special_tile_type.gd")
+const CELL_OBSTACLE_TYPE_SCRIPT := preload("res://scripts/game/board/cell_obstacle_type.gd")
 
 const DEFAULT_WIDTH := 9
 const DEFAULT_HEIGHT := 9
@@ -13,6 +14,11 @@ var height: int
 var _tiles: Array[int] = []
 var _special_tiles: Dictionary = {}
 var _active: Array[bool] = []
+## Stage 56 v0.1: the ice/blocker obstacle layer, kept separate from tile
+## type, special tile metadata, and the active/inactive mask. Sparse, like
+## _special_tiles: a cell without an entry has no obstacle.
+var _obstacle_types: Dictionary = {}
+var _obstacle_layers: Dictionary = {}
 
 
 func _init(board_width: int = DEFAULT_WIDTH, board_height: int = DEFAULT_HEIGHT) -> void:
@@ -55,6 +61,7 @@ func set_cell_active(cell: Vector2i, active: bool) -> void:
 	if not active:
 		_tiles[_to_index(cell)] = EMPTY
 		clear_special_tile(cell)
+		clear_cell_obstacle(cell)
 
 
 ## Accepts the Stage 51 GeneratedBoardChallenge.board_mask shape: an Array of
@@ -158,6 +165,117 @@ func get_special_cells() -> Array[Vector2i]:
 	return cells
 
 
+## Stage 56 v0.1: the ice/blocker obstacle layer. Obstacles live on the cell
+## itself, separate from tile type and special tile metadata, and never move
+## with a tile via swap_tiles()/gravity/refill — only clear_cell_obstacle()
+## or damage_cell_obstacle() breaking it to 0 removes one.
+func get_cell_obstacle(cell: Vector2i) -> int:
+	if not is_inside(cell):
+		return CELL_OBSTACLE_TYPE_SCRIPT.NONE
+
+	return _obstacle_types.get(cell, CELL_OBSTACLE_TYPE_SCRIPT.NONE)
+
+
+func has_cell_obstacle(cell: Vector2i) -> bool:
+	return is_inside(cell) and _obstacle_types.has(cell)
+
+
+func is_cell_iced(cell: Vector2i) -> bool:
+	return CELL_OBSTACLE_TYPE_SCRIPT.is_ice(get_cell_obstacle(cell))
+
+
+func get_cell_obstacle_layers(cell: Vector2i) -> int:
+	return _obstacle_layers.get(cell, 0)
+
+
+## Inactive cells can never carry an obstacle (mirrors set_tile()/
+## set_special_tile()'s inactive-cell handling); an invalid obstacle type or
+## non-positive layer count clears any existing obstacle instead of setting
+## a nonsensical one.
+func set_cell_obstacle(cell: Vector2i, obstacle_type: int, layers: int = 1) -> void:
+	if not is_inside(cell):
+		push_error("Cannot set obstacle outside board: %s" % [cell])
+		return
+
+	if not is_cell_active(cell):
+		clear_cell_obstacle(cell)
+		return
+
+	if not CELL_OBSTACLE_TYPE_SCRIPT.is_valid(obstacle_type) or obstacle_type == CELL_OBSTACLE_TYPE_SCRIPT.NONE or layers <= 0:
+		clear_cell_obstacle(cell)
+		return
+
+	_obstacle_types[cell] = obstacle_type
+	_obstacle_layers[cell] = layers
+
+
+func clear_cell_obstacle(cell: Vector2i) -> void:
+	_obstacle_types.erase(cell)
+	_obstacle_layers.erase(cell)
+
+
+## Reduces the obstacle's layer count by amount, removing it once it reaches
+## 0. Returns {} if the cell has no obstacle, otherwise {"cell",
+## "obstacle_type", "previous_layers", "new_layers", "broken"}.
+func damage_cell_obstacle(cell: Vector2i, amount: int = 1) -> Dictionary:
+	if not has_cell_obstacle(cell):
+		return {}
+
+	var obstacle_type: int = _obstacle_types[cell]
+	var previous_layers: int = _obstacle_layers.get(cell, 0)
+	var new_layers: int = maxi(previous_layers - amount, 0)
+	var broken := new_layers <= 0
+
+	if broken:
+		clear_cell_obstacle(cell)
+	else:
+		_obstacle_layers[cell] = new_layers
+
+	return {
+		"cell": cell,
+		"obstacle_type": obstacle_type,
+		"previous_layers": previous_layers,
+		"new_layers": new_layers,
+		"broken": broken,
+	}
+
+
+func get_ice_cells() -> Array[Vector2i]:
+	var cells: Array[Vector2i] = []
+	for cell in _obstacle_types.keys():
+		if CELL_OBSTACLE_TYPE_SCRIPT.is_ice(_obstacle_types[cell]):
+			cells.append(cell)
+	return cells
+
+
+## Stage 56 v0.1: applies GeneratedBoardChallenge.frozen_cells at battle
+## setup. Each entry may be a bare Vector2i cell (1-layer ice) or a
+## Dictionary {"cell": Vector2i, "layers": int} for richer future data.
+## Invalid entries and inactive/out-of-bounds cells are silently ignored, so
+## an empty frozen_cells array (today's placeholder) leaves the board
+## unchanged.
+func apply_frozen_cells(frozen_cells: Array) -> void:
+	for entry in frozen_cells:
+		var cell: Vector2i
+		var layers := 1
+
+		if entry is Vector2i:
+			cell = entry
+		elif entry is Dictionary:
+			var cell_value = entry.get("cell")
+			if not (cell_value is Vector2i):
+				continue
+			cell = cell_value
+			layers = int(entry.get("layers", 1))
+		else:
+			continue
+
+		if not is_playable_cell(cell) or layers <= 0:
+			continue
+
+		set_cell_obstacle(cell, CELL_OBSTACLE_TYPE_SCRIPT.ICE, layers)
+
+
 func swap_tiles(a: Vector2i, b: Vector2i) -> void:
 	if not is_inside(a) or not is_inside(b):
 		push_error("Cannot swap tiles outside board: %s <-> %s" % [a, b])
@@ -211,6 +329,8 @@ func duplicate_board() -> BoardModel:
 	copy._active = _active.duplicate()
 	for cell in _special_tiles.keys():
 		copy.set_special_tile(cell, _special_tiles[cell])
+	copy._obstacle_types = _obstacle_types.duplicate()
+	copy._obstacle_layers = _obstacle_layers.duplicate()
 	return copy
 
 
@@ -230,6 +350,8 @@ func to_debug_string() -> String:
 			var value := str(get_tile(cell))
 			if has_special_tile(cell):
 				value += SPECIAL_TILE_TYPE_SCRIPT.get_marker_text(_special_tiles[cell].special_type)
+			if is_cell_iced(cell):
+				value += "*%d" % get_cell_obstacle_layers(cell)
 			values.append(value)
 		lines.append(" ".join(values))
 	return "\n".join(lines)

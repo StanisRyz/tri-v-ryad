@@ -1,6 +1,8 @@
 extends RefCounted
 class_name BoosterResolveResult
 
+const ICE_DAMAGE_RESOLVER_SCRIPT := preload("res://scripts/game/board/ice_damage_resolver.gd")
+
 var is_valid := false
 var booster_id := ""
 var target_cell := Vector2i(-1, -1)
@@ -13,6 +15,7 @@ var message := ""
 var fall_movements: Array[Dictionary] = []
 var refill_cells: Array[Dictionary] = []
 var cascade_steps: Array[Dictionary] = []
+var ice_events: Array[Dictionary] = []
 
 
 func to_dictionary() -> Dictionary:
@@ -29,4 +32,7 @@ func to_dictionary() -> Dictionary:
 		"fall_movements": fall_movements.duplicate(),
 		"refill_cells": refill_cells.duplicate(),
 		"cascade_steps": cascade_steps.duplicate(),
+		"ice_events": ice_events.duplicate(true),
+		"ice_damaged_cells": ICE_DAMAGE_RESOLVER_SCRIPT.extract_damaged_cells(ice_events),
+		"ice_broken_cells": ICE_DAMAGE_RESOLVER_SCRIPT.extract_broken_cells(ice_events),
 	}

@@ -4,12 +4,14 @@ class_name BoardResolver
 const SPECIAL_TILE_DATA_SCRIPT := preload("res://scripts/game/board/special_tile_data.gd")
 const SPECIAL_TILE_RESOLVER_SCRIPT := preload("res://scripts/game/board/special_tile_resolver.gd")
 const SPECIAL_TILE_TYPE_SCRIPT := preload("res://scripts/game/board/special_tile_type.gd")
+const ICE_DAMAGE_RESOLVER_SCRIPT := preload("res://scripts/game/board/ice_damage_resolver.gd")
 
 const MAX_CASCADE_STEPS := 50
 
 var _match_finder := MatchFinder.new()
 var _gravity_resolver: GravityResolver
 var _special_tile_resolver := SPECIAL_TILE_RESOLVER_SCRIPT.new()
+var _ice_damage_resolver := ICE_DAMAGE_RESOLVER_SCRIPT.new()
 
 
 func _init(gravity_resolver: GravityResolver = null) -> void:
@@ -27,6 +29,7 @@ func resolve_board(board: BoardModel) -> BoardResolveResult:
 		var step_data := _build_clear_step_data(board, matches)
 		var cleared_cells := _to_vector2i_array(step_data.get("cleared_cells", []))
 		board.clear_cells(cleared_cells)
+		var ice_events := _ice_damage_resolver.apply_ice_damage(board, cleared_cells)
 		var gravity_result := _gravity_resolver.apply_gravity_and_refill(board)
 		result.add_step(
 			matches,
@@ -34,7 +37,8 @@ func resolve_board(board: BoardModel) -> BoardResolveResult:
 			gravity_result,
 			_to_dictionary_array(step_data.get("created_special_tiles", [])),
 			_to_dictionary_array(step_data.get("activated_special_tiles", [])),
-			_to_vector2i_array(step_data.get("special_cleared_cells", []))
+			_to_vector2i_array(step_data.get("special_cleared_cells", [])),
+			ice_events
 		)
 
 	if board.has_empty_cells():

@@ -3,11 +3,13 @@ class_name BoosterResolver
 
 const BOOSTER_CATALOG_SCRIPT := preload("res://scripts/game/config/booster_catalog.gd")
 const BOOSTER_RESULT_SCRIPT := preload("res://scripts/game/battle/booster_resolve_result.gd")
+const ICE_DAMAGE_RESOLVER_SCRIPT := preload("res://scripts/game/board/ice_damage_resolver.gd")
 
 const FREEZE_TURNS := 3
 
 var _gravity_resolver := GravityResolver.new()
 var _direct_damage_resolver := DirectMatchDamageResolver.new()
+var _ice_damage_resolver := ICE_DAMAGE_RESOLVER_SCRIPT.new()
 
 
 func can_use_booster(battle_state: BattleState, booster_id: String) -> bool:
@@ -73,6 +75,7 @@ func resolve_targeted_booster(battle_state: BattleState, booster_id: String, tar
 	var damage_info := _direct_damage_resolver.calculate_damage_for_typed_cells(cells, tile_types, round_modifier)
 	var damage: int = damage_info.get("total_damage", 0)
 	board.clear_cells(cells)
+	var ice_events := _ice_damage_resolver.apply_ice_damage(board, cells)
 	var gravity_result: Dictionary = _gravity_resolver.apply_gravity_and_refill(board)
 	var booster_state = battle_state.get("booster_state")
 	booster_state.consume_use(booster_id)
@@ -83,6 +86,7 @@ func resolve_targeted_booster(battle_state: BattleState, booster_id: String, tar
 	result.is_valid = true
 	result.target_cell = target_cell
 	result.cleared_cells = cells.duplicate()
+	result.ice_events = ice_events
 	result.damage_to_enemy = damage
 	result.affected_tile_types = _unique_tile_types(tile_types)
 	result.cleared_cell_tile_types = tile_types.duplicate()
