@@ -292,12 +292,11 @@ func is_battle_finished() -> bool:
 
 
 ## Stage 51 v0.1: builds the procedural challenge foundation for a battle
-## start. board_mask/frozen_cells are still placeholders for now (full 9x9
-## active board, no frozen cells); the resolved archetype/difficulty/seed
-## already flow through so a later stage can generate real ice archetype
-## layouts without touching this wiring. Stage 56 wires whatever
-## frozen_cells does contain into board.apply_frozen_cells() in
-## start_level(), so richer data drops in with no further changes here.
+## start. `normal` still returns a full active board_mask and empty
+## frozen_cells; Stage 54 gave `holes` a real board_mask; Stage 57 gives
+## `ice` real frozen_cells (still a full active board_mask). Stage 56 wires
+## whatever frozen_cells contains into board.apply_frozen_cells() in
+## start_level(), so Stage 57's real ice data needed no further changes here.
 func _generate_board_challenge(level_id: String) -> GeneratedBoardChallenge:
 	var level_number := LEVEL_LABEL_FORMATTER_SCRIPT.extract_level_number(level_id)
 	var safe_level_number: int = max(1, level_number)

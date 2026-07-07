@@ -13,14 +13,18 @@ class_name BoardChallengeGenerator
 const GENERATED_BOARD_CHALLENGE_SCRIPT := preload("res://scripts/game/board/generated_board_challenge.gd")
 const BOARD_MASK_GENERATOR_SCRIPT := preload("res://scripts/game/board/board_mask_generator.gd")
 const HOLE_GENERATION_RULES_SCRIPT := preload("res://scripts/game/config/hole_generation_rules.gd")
+const ICE_GENERATION_RULES_SCRIPT := preload("res://scripts/game/config/ice_generation_rules.gd")
+const ICE_PATTERN_GENERATOR_SCRIPT := preload("res://scripts/game/board/ice_pattern_generator.gd")
 const CHALLENGE_ARCHETYPE_SCRIPT := preload("res://scripts/game/config/challenge_archetype.gd")
 
 var _board_mask_generator := BOARD_MASK_GENERATOR_SCRIPT.new()
+var _ice_pattern_generator := ICE_PATTERN_GENERATOR_SCRIPT.new()
 
 
 func generate(level_id: String, level_number: int, archetype: String, difficulty_budget, generation_seed: int) -> GeneratedBoardChallenge:
 	var board_mask: Array
 	var metadata: Dictionary
+	var frozen_cells: Array = []
 
 	if archetype == CHALLENGE_ARCHETYPE_SCRIPT.HOLES:
 		## Seeding from generation_seed keeps hole layout reproducible for a
@@ -36,14 +40,27 @@ func generate(level_id: String, level_number: int, archetype: String, difficulty
 		var generation_result := _board_mask_generator.generate_holes_mask_with_metadata(mask_rng, difficulty_budget, rules)
 		board_mask = generation_result.get("mask", _board_mask_generator.build_full_active_mask())
 		metadata = generation_result.get("metadata", {})
+		## Stage 57: holes and ice are not mixed in this stage, so a holes
+		## challenge still gets no frozen cells.
+	elif archetype == CHALLENGE_ARCHETYPE_SCRIPT.ICE:
+		## Stage 57 v0.1: `ice` still uses a full active 9x9 mask (no holes);
+		## the board_mask is only passed to IcePatternGenerator so frozen
+		## cells are never placed on an inactive cell, in case a future stage
+		## combines archetypes.
+		board_mask = _board_mask_generator.build_full_active_mask()
+		var ice_rng := RandomNumberGenerator.new()
+		ice_rng.seed = generation_seed
+		var ice_tier: String = difficulty_budget.difficulty_tier if difficulty_budget != null else DifficultyBudget.TIER_EARLY
+		var ice_rules := ICE_GENERATION_RULES_SCRIPT.for_tier(ice_tier)
+		var ice_result := _ice_pattern_generator.generate_frozen_cells(ice_rng, board_mask, difficulty_budget, ice_rules)
+		frozen_cells = ice_result.get("frozen_cells", [])
+		metadata = ice_result.get("metadata", {})
 	else:
 		board_mask = _board_mask_generator.build_full_active_mask()
 		metadata = {
 			"generator_version": "0.1",
 			"layout_source": "placeholder_full_board",
 		}
-
-	var frozen_cells: Array = []
 
 	var difficulty_score: float = difficulty_budget.difficulty_score if difficulty_budget != null else 0.0
 	var difficulty_tier: String = difficulty_budget.difficulty_tier if difficulty_budget != null else DifficultyBudget.TIER_EARLY

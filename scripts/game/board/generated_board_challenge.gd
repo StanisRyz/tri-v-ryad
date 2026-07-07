@@ -2,10 +2,11 @@ extends RefCounted
 class_name GeneratedBoardChallenge
 
 ## Stage 51 v0.1: data object describing a procedurally generated level
-## challenge. board_mask/frozen_cells are placeholders for this stage (full
-## 9x9 active board, no frozen cells) and will carry real hole/ice/blocker
-## data in later stages. Extend this object rather than bolting new fields
-## onto BattleState when adding masks, blockers, or per-zone tuning.
+## challenge. Extend this object rather than bolting new fields onto
+## BattleState when adding masks, blockers, or per-zone tuning.
+## Stage 54 gave `holes` archetype levels a real board_mask; Stage 57 gives
+## `ice` archetype levels real frozen_cells (still a full active board_mask).
+## `normal` still returns a full active board_mask and empty frozen_cells.
 
 const CHALLENGE_ARCHETYPE_SCRIPT := preload("res://scripts/game/config/challenge_archetype.gd")
 const DIFFICULTY_BUDGET_SCRIPT := preload("res://scripts/game/config/difficulty_budget.gd")
@@ -46,6 +47,9 @@ func _init(
 ## Stage 54 v0.1: reports active/hole counts out of total board_mask cells,
 ## and flags when generation fell back to a full board (see
 ## BoardMaskGenerator/BoardChallengeGenerator metadata["fallback_used"]).
+## Stage 57 v0.1: also appends ice/double-ice counts (and an ice fallback
+## flag) for an `ice` archetype challenge, e.g.
+## "Challenge: ice, seed: 12345, active: 81/81, holes: 0, ice: 12, double: 2".
 func get_debug_label() -> String:
 	var active_count := _count_active_cells()
 	var total_count := _count_total_cells()
@@ -54,6 +58,11 @@ func get_debug_label() -> String:
 
 	if bool(metadata.get("fallback_used", false)):
 		label += ", fallback: true"
+
+	if archetype == CHALLENGE_ARCHETYPE_SCRIPT.ICE:
+		label += ", ice: %d, double: %d" % [int(metadata.get("ice_cell_count", 0)), int(metadata.get("double_ice_cell_count", 0))]
+		if bool(metadata.get("ice_fallback_used", false)):
+			label += ", ice_fallback: true"
 
 	return label
 
