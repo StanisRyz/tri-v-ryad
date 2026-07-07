@@ -15,6 +15,9 @@ func _initialize() -> void:
 	_test_valid_adjacent_swap_accepted()
 	_test_diagonal_swap_rejected()
 	_test_no_match_swap_rejected_and_rolled_back()
+	_test_swap_from_iced_cell_rejected()
+	_test_swap_to_iced_cell_rejected()
+	_test_inactive_cell_rejected_before_iced_cell()
 	_test_clear_cells_creates_empty_cells()
 	_test_gravity_refill_removes_empty_cells()
 	_test_board_resolve_ends_full_and_stable()
@@ -120,6 +123,50 @@ func _test_no_match_swap_rejected_and_rolled_back() -> void:
 	_expect_equal(board.to_debug_string(), before, "no-match swap rolled back")
 
 	print("ok - adjacent no-match swap rejected and rolled back")
+
+
+func _test_swap_from_iced_cell_rejected() -> void:
+	var board := _create_stable_pattern_board()
+	board.set_tile(Vector2i(0, 0), TileType.RED)
+	board.set_tile(Vector2i(1, 0), TileType.BLUE)
+	board.set_tile(Vector2i(2, 0), TileType.RED)
+	board.set_tile(Vector2i(1, 1), TileType.RED)
+	board.set_cell_obstacle(Vector2i(1, 0), CellObstacleType.ICE)
+
+	var result := SwapResolver.new().try_swap(board, Vector2i(1, 0), Vector2i(1, 1))
+	_expect_false(result.accepted, "swap from iced cell rejected")
+	_expect_equal(result.reason, "iced_cell", "swap from iced cell reason")
+	_expect_equal(board.get_tile(Vector2i(1, 0)), TileType.BLUE, "iced from-cell swap left unapplied")
+
+	print("ok - swap from iced cell rejected")
+
+
+func _test_swap_to_iced_cell_rejected() -> void:
+	var board := _create_stable_pattern_board()
+	board.set_tile(Vector2i(0, 0), TileType.RED)
+	board.set_tile(Vector2i(1, 0), TileType.BLUE)
+	board.set_tile(Vector2i(2, 0), TileType.RED)
+	board.set_tile(Vector2i(1, 1), TileType.RED)
+	board.set_cell_obstacle(Vector2i(1, 1), CellObstacleType.ICE)
+
+	var result := SwapResolver.new().try_swap(board, Vector2i(1, 0), Vector2i(1, 1))
+	_expect_false(result.accepted, "swap to iced cell rejected")
+	_expect_equal(result.reason, "iced_cell", "swap to iced cell reason")
+	_expect_equal(board.get_tile(Vector2i(1, 1)), TileType.RED, "iced to-cell swap left unapplied")
+
+	print("ok - swap to iced cell rejected")
+
+
+func _test_inactive_cell_rejected_before_iced_cell() -> void:
+	var board := _create_stable_pattern_board()
+	board.set_cell_active(Vector2i(1, 1), false)
+	board.set_cell_obstacle(Vector2i(1, 0), CellObstacleType.ICE)
+
+	var result := SwapResolver.new().try_swap(board, Vector2i(1, 0), Vector2i(1, 1))
+	_expect_false(result.accepted, "inactive cell swap rejected")
+	_expect_equal(result.reason, "inactive_cell", "inactive cell takes priority over iced_cell")
+
+	print("ok - inactive cell rejected before iced cell")
 
 
 func _test_clear_cells_creates_empty_cells() -> void:

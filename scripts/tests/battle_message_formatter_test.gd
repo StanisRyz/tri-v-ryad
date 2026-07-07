@@ -79,6 +79,7 @@ func _test_invalid_swap_messages() -> void:
 	_expect_equal(_formatter.format_invalid_swap_message("no_match"), "Swap must create a match", "no_match message")
 	_expect_equal(_formatter.format_invalid_swap_message("not_adjacent"), "Choose a neighboring tile", "not_adjacent message")
 	_expect_equal(_formatter.format_invalid_swap_message("invalid_swap"), "Choose a neighboring tile", "invalid_swap message")
+	_expect_equal(_formatter.format_invalid_swap_message("iced_cell"), "Frozen cells cannot be swapped.", "iced_cell message")
 	print("ok - invalid swap messages")
 
 

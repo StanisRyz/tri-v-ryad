@@ -12,6 +12,10 @@ class_name AvailableMoveFinder
 ##
 ## Only active/playable cells are scanned; inactive (hole) cells are never a
 ## swap endpoint (SwapResolver already rejects them via is_cell_active()).
+## Stage 62.1.1 hotfix: iced cells are likewise never a valid swap endpoint —
+## SwapResolver rejects them (via is_cell_iced()) before adjacency/match
+## checks, so a candidate swap that would move a crystal into or out of an
+## iced cell is never reported as an available move.
 ## Every trial swap runs against a duplicated BoardModel
 ## (BoardModel.duplicate_board()), so the board passed in is never mutated.
 

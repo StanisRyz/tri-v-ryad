@@ -128,6 +128,8 @@ static func format_invalid_swap_message(reason: String) -> String:
 			return "Swap must create a match"
 		"not_adjacent", "invalid_swap":
 			return "Choose a neighboring tile"
+		"iced_cell":
+			return "Frozen cells cannot be swapped."
 		_:
 			return "That swap doesn't work"
 
