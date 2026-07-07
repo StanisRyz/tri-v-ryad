@@ -1,0 +1,63 @@
+extends RefCounted
+class_name ShopItemConfig
+
+const SHOP_ITEM_CATEGORY_SCRIPT := preload("res://scripts/game/shop/shop_item_category.gd")
+const SHOP_PURCHASE_KIND_SCRIPT := preload("res://scripts/game/shop/shop_purchase_kind.gd")
+const SHOP_REWARD_TYPE_SCRIPT := preload("res://scripts/game/shop/shop_reward_type.gd")
+const CURRENCY_TYPE_SCRIPT := preload("res://scripts/game/economy/currency_type.gd")
+
+var item_id := ""
+var category := ""
+var display_name := ""
+var description := ""
+var purchase_kind := ""
+var price_currency_id := ""
+var price_amount := 0
+var rewards: Array[Dictionary] = []
+var is_available := true
+
+
+func _init(
+	config_item_id: String = "",
+	config_category: String = "",
+	config_display_name: String = "",
+	config_description: String = "",
+	config_purchase_kind: String = "",
+	config_price_currency_id: String = "",
+	config_price_amount: int = 0,
+	config_rewards: Array[Dictionary] = [],
+	config_is_available: bool = true
+) -> void:
+	item_id = config_item_id
+	category = config_category
+	display_name = config_display_name
+	description = config_description
+	purchase_kind = config_purchase_kind
+	price_currency_id = config_price_currency_id
+	price_amount = config_price_amount
+	rewards = config_rewards
+	is_available = config_is_available
+
+
+func is_valid() -> bool:
+	if item_id == "":
+		return false
+	if not SHOP_ITEM_CATEGORY_SCRIPT.is_valid(category):
+		return false
+	if display_name == "":
+		return false
+	if not SHOP_PURCHASE_KIND_SCRIPT.is_valid(purchase_kind):
+		return false
+	if rewards.is_empty():
+		return false
+	for reward in rewards:
+		if not SHOP_REWARD_TYPE_SCRIPT.is_valid(reward):
+			return false
+
+	if purchase_kind == SHOP_PURCHASE_KIND_SCRIPT.CURRENCY:
+		if not CURRENCY_TYPE_SCRIPT.is_valid(price_currency_id):
+			return false
+		if price_amount <= 0:
+			return false
+
+	return true
