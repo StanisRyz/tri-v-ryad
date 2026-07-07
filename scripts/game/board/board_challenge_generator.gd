@@ -9,6 +9,15 @@ class_name BoardChallengeGenerator
 ## HoleGenerationRules.for_tier() for varied block sizes and center-aware
 ## shapes), falling back to a full board when no safe candidate is found
 ## within the attempt budget.
+##
+## Stage 58 v0.1: generate() now checks LevelLayoutDatabase first. When a
+## deterministic layout exists for level_number, its board_mask/ice_mask are
+## decoded and used directly (metadata["layout_source"] =
+## "deterministic_database") instead of re-running procedural generation —
+## the same 5-level archetype/variant cycle still applies, it's just captured
+## once instead of re-rolled every playthrough. Procedural generation (below)
+## remains the fallback for any level without a saved layout, and stays
+## fully intact for tools/future modes.
 
 const GENERATED_BOARD_CHALLENGE_SCRIPT := preload("res://scripts/game/board/generated_board_challenge.gd")
 const BOARD_MASK_GENERATOR_SCRIPT := preload("res://scripts/game/board/board_mask_generator.gd")
@@ -17,12 +26,17 @@ const ICE_GENERATION_RULES_SCRIPT := preload("res://scripts/game/config/ice_gene
 const ICE_PATTERN_GENERATOR_SCRIPT := preload("res://scripts/game/board/ice_pattern_generator.gd")
 const ICE_VARIANT_RESOLVER_SCRIPT := preload("res://scripts/game/config/ice_variant_resolver.gd")
 const CHALLENGE_ARCHETYPE_SCRIPT := preload("res://scripts/game/config/challenge_archetype.gd")
+const LEVEL_LAYOUT_DATABASE_SCRIPT := preload("res://scripts/game/config/level_layout_database.gd")
 
 var _board_mask_generator := BOARD_MASK_GENERATOR_SCRIPT.new()
 var _ice_pattern_generator := ICE_PATTERN_GENERATOR_SCRIPT.new()
+var _level_layout_database := LEVEL_LAYOUT_DATABASE_SCRIPT.new()
 
 
 func generate(level_id: String, level_number: int, archetype: String, difficulty_budget, generation_seed: int) -> GeneratedBoardChallenge:
+	if _level_layout_database.has_layout(level_number):
+		return _generate_from_layout(_level_layout_database.get_layout(level_number), level_id, level_number, difficulty_budget, generation_seed)
+
 	var board_mask: Array
 	var metadata: Dictionary
 	var frozen_cells: Array = []
@@ -80,6 +94,37 @@ func generate(level_id: String, level_number: int, archetype: String, difficulty
 		difficulty_score,
 		difficulty_tier,
 		generation_seed,
+		board_mask,
+		frozen_cells,
+		metadata
+	)
+
+
+## Stage 58 v0.1: builds a GeneratedBoardChallenge straight from a stored
+## LevelLayout — no RNG, no BoardMaskGenerator/IcePatternGenerator involved.
+## The layout's own generation_seed is preserved on the returned challenge
+## (rather than the battle-time generation_seed argument) so debug output
+## always reflects the seed the saved layout was actually built from.
+func _generate_from_layout(layout: LevelLayout, level_id: String, level_number: int, difficulty_budget, generation_seed: int) -> GeneratedBoardChallenge:
+	var board_mask := layout.get_board_mask_array()
+	var frozen_cells := layout.get_frozen_cells()
+
+	var metadata: Dictionary = layout.metadata.duplicate(true)
+	metadata["layout_source"] = "deterministic_database"
+	metadata["deterministic_layout_used"] = true
+	if layout.archetype == CHALLENGE_ARCHETYPE_SCRIPT.ICE:
+		metadata["ice_variant"] = layout.variant
+
+	var difficulty_score: float = difficulty_budget.difficulty_score if difficulty_budget != null else 0.0
+	var difficulty_tier: String = difficulty_budget.difficulty_tier if difficulty_budget != null else DifficultyBudget.TIER_EARLY
+
+	return GENERATED_BOARD_CHALLENGE_SCRIPT.new(
+		layout.archetype,
+		level_id,
+		level_number,
+		difficulty_score,
+		difficulty_tier,
+		layout.generation_seed if layout.generation_seed != 0 else generation_seed,
 		board_mask,
 		frozen_cells,
 		metadata

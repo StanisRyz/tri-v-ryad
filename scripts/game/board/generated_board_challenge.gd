@@ -55,11 +55,23 @@ func _init(
 ## Stage 57.2 v0.1: appends the resolved ice_variant plus a weak/strong
 ## count split instead of a single double-ice count, e.g.
 ## "Challenge: ice, seed: 12345, active: 81/81, holes: 0, ice_variant: weak, ice: 36, weak: 36, strong: 0".
+## Stage 58 v0.1: also names the level_number and whether the layout came
+## from the deterministic database (metadata["layout_source"] ==
+## "deterministic_database") or procedural fallback generation, e.g.
+## "Challenge: normal deterministic, level: 1, seed: 9000001, active: 81/81, holes: 0".
 func get_debug_label() -> String:
 	var active_count := _count_active_cells()
 	var total_count := _count_total_cells()
 	var hole_count := total_count - active_count
-	var label := "Challenge: %s, seed: %d, active: %d/%d, holes: %d" % [archetype, generation_seed, active_count, total_count, hole_count]
+	var variant := String(metadata.get("variant", ""))
+	var archetype_label := archetype
+	if archetype == CHALLENGE_ARCHETYPE_SCRIPT.ICE and variant != "" and variant != "none":
+		archetype_label += " %s" % variant
+	var source := "deterministic" if metadata.get("layout_source", "") == "deterministic_database" else "procedural"
+
+	var label := "Challenge: %s %s, level: %d, seed: %d, active: %d/%d, holes: %d" % [
+		archetype_label, source, level_number, generation_seed, active_count, total_count, hole_count,
+	]
 
 	if bool(metadata.get("fallback_used", false)):
 		label += ", fallback: true"
