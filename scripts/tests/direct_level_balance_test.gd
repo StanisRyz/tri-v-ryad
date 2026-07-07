@@ -1,6 +1,7 @@
 extends SceneTree
 
 const LEVEL_CATALOG_SCRIPT := "res://scripts/game/config/level_catalog.gd"
+const DIRECT_BATTLE_BALANCE_SCRIPT := "res://scripts/game/config/direct_battle_balance.gd"
 const DIRECT_BALANCE_CONFIG_SCRIPT := "res://scripts/game/config/direct_balance_config.gd"
 const ENEMY_SCALING_RESOLVER_SCRIPT := "res://scripts/game/config/enemy_scaling_resolver.gd"
 const ENEMY_CATALOG_SCRIPT := "res://scripts/game/config/enemy_catalog.gd"
@@ -12,7 +13,7 @@ func _initialize() -> void:
 	print("Running direct level balance tests...")
 
 	var catalog = load(LEVEL_CATALOG_SCRIPT).new()
-	_test_moves_delegate_to_direct_balance_config(catalog)
+	_test_moves_delegate_to_direct_battle_balance(catalog)
 	_test_level_count_and_ids_unchanged(catalog)
 	_test_checkpoint_levels_are_safe(catalog)
 	_test_early_levels_forgiving(catalog)
@@ -26,12 +27,19 @@ func _initialize() -> void:
 		quit(1)
 
 
-func _test_moves_delegate_to_direct_balance_config(catalog) -> void:
+## Stage 60.1 v0.1: LevelCatalog moves now delegate to DirectBattleBalance's
+## fixed linear curve (30 at level 1, down to a floor of 20) instead of
+## DirectBalanceConfig's old stepwise curve.
+func _test_moves_delegate_to_direct_battle_balance(catalog) -> void:
 	for level_number in [1, 10, 50, 100]:
 		var level_config = catalog.get_level("level_%d" % level_number)
-		var expected_moves: int = load(DIRECT_BALANCE_CONFIG_SCRIPT).get_moves_for_level(level_number)
-		_expect_equal(level_config.moves, expected_moves, "level_%d moves match DirectBalanceConfig" % level_number)
-	print("ok - LevelCatalog moves delegate to DirectBalanceConfig")
+		var expected_moves: int = load(DIRECT_BATTLE_BALANCE_SCRIPT).get_moves_for_level(level_number)
+		_expect_equal(level_config.moves, expected_moves, "level_%d moves match DirectBattleBalance" % level_number)
+	_expect_equal(catalog.get_level("level_1").moves, 30, "level_1 starts at 30 moves")
+	_expect_equal(catalog.get_level("level_2").moves, 29, "level_2 has 29 moves")
+	_expect_equal(catalog.get_level("level_3").moves, 28, "level_3 has 28 moves")
+	_expect_equal(catalog.get_level("level_100").moves, 20, "level_100 is floored at 20 moves")
+	print("ok - LevelCatalog moves delegate to DirectBattleBalance")
 
 
 func _test_level_count_and_ids_unchanged(catalog) -> void:

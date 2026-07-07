@@ -4,7 +4,7 @@ class_name EnemyScalingResolver
 const ENEMY_CONFIG_SCRIPT := preload("res://scripts/game/config/enemy_config.gd")
 const ENEMY_CATALOG_SCRIPT := preload("res://scripts/game/config/enemy_catalog.gd")
 const LEVEL_LABEL_FORMATTER_SCRIPT := preload("res://scripts/game/config/level_label_formatter.gd")
-const DIRECT_BALANCE_CONFIG_SCRIPT := preload("res://scripts/game/config/direct_balance_config.gd")
+const DIRECT_BATTLE_BALANCE_SCRIPT := preload("res://scripts/game/config/direct_battle_balance.gd")
 
 const HP_STEP_PER_LEVEL := 0.014
 const ATTACK_STEP_PER_LEVEL := 0.010
@@ -29,12 +29,16 @@ func scale_enemy(enemy_config, level_number: int):
 	return _scale_enemy_hero(base_enemy, safe_level_number)
 
 
-## Stage 34 v0.1: HP is tuned against DirectBalanceConfig's per-level required
-## damage curve. Attack is left untouched since enemy actions are neutralized
-## in direct mode (BattleResolver skips enemy actions when hero systems are
+## Stage 60.1 v0.1: every enemy enters a direct-mode battle with the same
+## fixed HP (DirectBattleBalance.FIXED_ENEMY_HP), regardless of level or base
+## catalog HP. This replaces the old per-level HP curve from DirectBalanceConfig
+## for the active flow. base_enemy.max_hp (EnemyCatalog source data) is not
+## mutated -- a new EnemyConfig is returned with the fixed HP as battle-time
+## data only. Attack is left untouched since enemy actions are neutralized in
+## direct mode (BattleResolver skips enemy actions when hero systems are
 ## frozen), so it must not factor into direct-mode difficulty.
-func _scale_enemy_direct(base_enemy, level_number: int):
-	var scaled_hp: int = DIRECT_BALANCE_CONFIG_SCRIPT.get_enemy_hp_for_level(base_enemy.max_hp, level_number)
+func _scale_enemy_direct(base_enemy, _level_number: int):
+	var scaled_hp: int = DIRECT_BATTLE_BALANCE_SCRIPT.FIXED_ENEMY_HP
 
 	return ENEMY_CONFIG_SCRIPT.new(
 		base_enemy.enemy_id,

@@ -8,6 +8,7 @@ const BOARD_INPUT_CONTROLLER_SCRIPT := preload("res://scripts/game/input/board_i
 const TURN_FEEDBACK_PRESENTER_SCRIPT := preload("res://scripts/game/presentation/turn_feedback_presenter.gd")
 const ABILITY_FEEDBACK_PRESENTER_SCRIPT := preload("res://scripts/game/presentation/ability_feedback_presenter.gd")
 const LEVEL_LABEL_FORMATTER_SCRIPT := preload("res://scripts/game/config/level_label_formatter.gd")
+const DIRECT_BATTLE_BALANCE_SCRIPT := preload("res://scripts/game/config/direct_battle_balance.gd")
 const LEVEL_CATALOG_SCRIPT := preload("res://scripts/game/config/level_catalog.gd")
 const LEVEL_ZONE_HELPER_SCRIPT := preload("res://scripts/game/config/level_zone_helper.gd")
 const LEVEL_COMPLETION_RESOLVER_SCRIPT := preload("res://scripts/game/progression/level_completion_resolver.gd")
@@ -268,10 +269,15 @@ func _on_level_changed(level_config) -> void:
 
 ## Stage 51 v0.1: minimal, unobtrusive debug visibility into the generated
 ## challenge archetype/seed. Only surfaces when debug labels are enabled.
+## Stage 60.1 v0.1: also appends the fixed HP/moves baseline for the level.
 func _on_generated_challenge_changed(challenge) -> void:
 	_current_generated_challenge = challenge
 	if _debug_labels_enabled and challenge != null:
-		_set_status("Select a tile  |  %s" % challenge.get_debug_label())
+		var level_number := LEVEL_LABEL_FORMATTER_SCRIPT.extract_level_number(_current_level_id)
+		_set_status("Select a tile  |  %s  |  %s" % [
+			challenge.get_debug_label(),
+			DIRECT_BATTLE_BALANCE_SCRIPT.get_debug_label(level_number),
+		])
 
 
 func _on_turn_resolved(_result: BattleTurnResult) -> void:

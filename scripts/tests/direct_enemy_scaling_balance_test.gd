@@ -2,7 +2,7 @@ extends SceneTree
 
 const ENEMY_CATALOG_SCRIPT := "res://scripts/game/config/enemy_catalog.gd"
 const ENEMY_SCALING_RESOLVER_SCRIPT := "res://scripts/game/config/enemy_scaling_resolver.gd"
-const DIRECT_BALANCE_CONFIG_SCRIPT := "res://scripts/game/config/direct_balance_config.gd"
+const DIRECT_BATTLE_BALANCE_SCRIPT := "res://scripts/game/config/direct_battle_balance.gd"
 const LEVEL_CATALOG_SCRIPT := "res://scripts/game/config/level_catalog.gd"
 
 var _failures := 0
@@ -12,11 +12,11 @@ func _initialize() -> void:
 	print("Running direct enemy scaling balance tests...")
 
 	_test_hero_systems_frozen()
-	_test_scaled_hp_matches_direct_balance_config()
+	_test_scaled_hp_is_fixed_baseline()
 	_test_scaled_hp_positive_for_all_roster_enemies()
 	_test_enemy_roster_unchanged()
 	_test_enemy_catalog_base_stats_not_mutated()
-	_test_checkpoint_hp_is_safe()
+	_test_checkpoint_hp_is_fixed()
 
 	if _failures == 0:
 		print("Direct enemy scaling balance tests passed.")
@@ -31,16 +31,19 @@ func _test_hero_systems_frozen() -> void:
 	print("ok - hero systems remain frozen for direct enemy scaling")
 
 
-func _test_scaled_hp_matches_direct_balance_config() -> void:
+## Stage 60.1 v0.1: every enemy enters a direct-mode battle with the same
+## fixed HP (DirectBattleBalance.FIXED_ENEMY_HP = 130), regardless of level
+## or base catalog hp.
+func _test_scaled_hp_is_fixed_baseline() -> void:
 	var resolver = load(ENEMY_SCALING_RESOLVER_SCRIPT).new()
 	var catalog = load(ENEMY_CATALOG_SCRIPT).new()
 	var base_enemy = catalog.get_enemy("gatekeeper")
+	var fixed_hp: int = load(DIRECT_BATTLE_BALANCE_SCRIPT).FIXED_ENEMY_HP
 
 	for level_number in [1, 10, 50, 100]:
 		var scaled = resolver.scale_enemy(base_enemy, level_number)
-		var expected_hp: int = load(DIRECT_BALANCE_CONFIG_SCRIPT).get_enemy_hp_for_level(base_enemy.max_hp, level_number)
-		_expect_equal(scaled.max_hp, expected_hp, "level %d scaled hp matches DirectBalanceConfig" % level_number)
-	print("ok - EnemyScalingResolver delegates direct-mode hp to DirectBalanceConfig")
+		_expect_equal(scaled.max_hp, fixed_hp, "level %d scaled hp is the fixed baseline" % level_number)
+	print("ok - EnemyScalingResolver applies the fixed DirectBattleBalance hp")
 
 
 func _test_scaled_hp_positive_for_all_roster_enemies() -> void:
@@ -80,20 +83,24 @@ func _test_enemy_catalog_base_stats_not_mutated() -> void:
 	print("ok - EnemyCatalog base stats stay untouched after scaling")
 
 
-func _test_checkpoint_hp_is_safe() -> void:
+## Stage 60.1 v0.1: DirectBalanceConfig's old required-damage-vs-expected-damage
+## safety check no longer applies -- HP is fixed at 130 regardless of moves,
+## so difficulty at low move counts is intentionally left to the level boosts
+## planned for Stage 60.2/60.3. This checkpoint test now only asserts the
+## fixed baseline holds everywhere.
+func _test_checkpoint_hp_is_fixed() -> void:
 	var resolver = load(ENEMY_SCALING_RESOLVER_SCRIPT).new()
 	var level_catalog = load(LEVEL_CATALOG_SCRIPT).new()
 	var enemy_catalog = load(ENEMY_CATALOG_SCRIPT).new()
-	var checkpoints: Array[int] = load(DIRECT_BALANCE_CONFIG_SCRIPT).get_balance_checkpoint_levels()
+	var fixed_hp: int = load(DIRECT_BATTLE_BALANCE_SCRIPT).FIXED_ENEMY_HP
+	var checkpoints := [1, 5, 10, 20, 30, 50, 75, 100]
 
 	for level_number in checkpoints:
 		var level_config = level_catalog.get_level("level_%d" % level_number)
 		var base_enemy = enemy_catalog.get_default_enemy()
 		var scaled = resolver.scale_enemy_for_level(base_enemy, level_config)
-		var required: float = load(DIRECT_BALANCE_CONFIG_SCRIPT).get_required_damage_per_move(scaled.max_hp, level_config.moves)
-		var expected_damage: float = load(DIRECT_BALANCE_CONFIG_SCRIPT).get_expected_damage_per_move(level_number)
-		_expect_true(required <= expected_damage, "checkpoint level %d required damage stays at or below expected damage" % level_number)
-	print("ok - checkpoint levels stay within safe required-damage range")
+		_expect_equal(scaled.max_hp, fixed_hp, "checkpoint level %d scaled enemy hp is the fixed baseline" % level_number)
+	print("ok - checkpoint levels use the fixed enemy hp baseline")
 
 
 func _expect_true(value: bool, message: String) -> void:

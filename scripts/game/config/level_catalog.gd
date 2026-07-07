@@ -6,7 +6,7 @@ const ENEMY_CONFIG_SCRIPT := preload("res://scripts/game/config/enemy_config.gd"
 const ENEMY_CATALOG_SCRIPT := preload("res://scripts/game/config/enemy_catalog.gd")
 const LEVEL_CONFIG_SCRIPT := preload("res://scripts/game/config/level_config.gd")
 const UPGRADE_ECONOMY_CONFIG := preload("res://scripts/game/progression/upgrade_economy_config.gd")
-const DIRECT_BALANCE_CONFIG_SCRIPT := preload("res://scripts/game/config/direct_balance_config.gd")
+const DIRECT_BATTLE_BALANCE_SCRIPT := preload("res://scripts/game/config/direct_battle_balance.gd")
 
 const CAMPAIGN_LEVEL_COUNT := 100
 
@@ -67,7 +67,7 @@ func _get_display_name(level_number: int) -> String:
 
 
 func _get_moves_for_level(level_number: int) -> int:
-	return DIRECT_BALANCE_CONFIG_SCRIPT.get_moves_for_level(level_number)
+	return DIRECT_BATTLE_BALANCE_SCRIPT.get_moves_for_level(level_number)
 
 
 func _get_reward_for_level(level_number: int) -> int:
