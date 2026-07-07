@@ -5,16 +5,20 @@ const SAVE_MANAGER_SCRIPT := preload("res://scripts/game/save/save_manager.gd")
 const PLAYER_PROGRESS_SCRIPT := preload("res://scripts/game/progression/player_progress.gd")
 const UPGRADE_RESOLVER_SCRIPT := preload("res://scripts/game/progression/upgrade_resolver.gd")
 const LEVEL_COMPLETION_RESOLVER_SCRIPT := preload("res://scripts/game/progression/level_completion_resolver.gd")
+const LEVEL_STAR_REWARD_RESOLVER_SCRIPT := preload("res://scripts/game/progression/level_star_reward_resolver.gd")
 const HERO_CATALOG_SCRIPT := preload("res://scripts/game/config/hero_catalog.gd")
 const TEAM_SELECTION_RESOLVER_SCRIPT := preload("res://scripts/game/progression/team_selection_resolver.gd")
 const TEAM_SELECTION_STATE_SCRIPT := preload("res://scripts/game/progression/team_selection_state.gd")
+const LEVEL_LABEL_FORMATTER_SCRIPT := preload("res://scripts/game/config/level_label_formatter.gd")
 
 var save_manager
 var progress
 var upgrade_resolver
 var level_completion_resolver
+var level_star_reward_resolver
 var hero_catalog
 var team_selection_resolver
+var _milestone_reward_rng := RandomNumberGenerator.new()
 
 
 func _init(manager_save_manager = null) -> void:
@@ -22,8 +26,10 @@ func _init(manager_save_manager = null) -> void:
 	progress = PLAYER_PROGRESS_SCRIPT.create_default()
 	upgrade_resolver = UPGRADE_RESOLVER_SCRIPT.new()
 	level_completion_resolver = LEVEL_COMPLETION_RESOLVER_SCRIPT.new()
+	level_star_reward_resolver = LEVEL_STAR_REWARD_RESOLVER_SCRIPT.new()
 	hero_catalog = HERO_CATALOG_SCRIPT.new()
 	team_selection_resolver = TEAM_SELECTION_RESOLVER_SCRIPT.new()
+	_milestone_reward_rng.randomize()
 
 
 func load() -> void:
@@ -100,6 +106,78 @@ func complete_level(level_config, moves_left: int):
 	var state = level_completion_resolver.apply_victory_result(progress, level_config, moves_left)
 	save()
 	return state
+
+
+## Stage 62.3 v0.1: reward-aware level completion. Reads previous_stars before
+## applying the victory result, resolves any newly earned star-milestone
+## rewards (1-star unlock / 2-star gold / 3-star random booster) via
+## LevelStarRewardResolver, applies them directly against `progress`, and
+## saves once at the end - the existing complete_level()/add_currency()/
+## add_booster() wrapper methods are intentionally bypassed here so a single
+## victory only triggers a single save() instead of stacking one per reward.
+func complete_level_with_rewards(level_config, moves_left: int, level_catalog) -> Dictionary:
+	var result := {
+		"level_progress_state": null,
+		"previous_stars": 0,
+		"new_stars": 0,
+		"rewards": [],
+		"unlocked_next_level": false,
+		"gold_awarded": 0,
+		"booster_awarded": "",
+	}
+
+	if progress == null or level_config == null:
+		return result
+
+	var level_id: String = level_config.level_id
+	var previous_stars: int = get_level_stars(level_id)
+	var state = level_completion_resolver.apply_victory_result(progress, level_config, moves_left)
+	if state == null:
+		return result
+
+	var new_stars: int = int(state.stars)
+	var next_level_id := _find_next_level_id(level_catalog, level_id)
+	var rewards: Array[Dictionary] = level_star_reward_resolver.resolve_milestone_rewards(previous_stars, new_stars, next_level_id, _milestone_reward_rng)
+
+	var unlocked_next_level := false
+	var gold_awarded := 0
+	var booster_awarded := ""
+
+	for reward in rewards:
+		match str(reward.get("type", "")):
+			LEVEL_STAR_REWARD_RESOLVER_SCRIPT.REWARD_TYPE_UNLOCK_LEVEL:
+				unlocked_next_level = true
+			LEVEL_STAR_REWARD_RESOLVER_SCRIPT.REWARD_TYPE_CURRENCY:
+				var amount: int = int(reward.get("amount", 0))
+				progress.add_currency(str(reward.get("currency_id", "")), amount)
+				gold_awarded += amount
+			LEVEL_STAR_REWARD_RESOLVER_SCRIPT.REWARD_TYPE_BOOSTER:
+				var booster_id := str(reward.get("booster_id", ""))
+				progress.add_booster(booster_id, int(reward.get("amount", 0)))
+				booster_awarded = booster_id
+
+	save()
+
+	result["level_progress_state"] = state
+	result["previous_stars"] = previous_stars
+	result["new_stars"] = new_stars
+	result["rewards"] = rewards
+	result["unlocked_next_level"] = unlocked_next_level
+	result["gold_awarded"] = gold_awarded
+	result["booster_awarded"] = booster_awarded
+	return result
+
+
+func _find_next_level_id(level_catalog, level_id: String) -> String:
+	if level_catalog == null:
+		return ""
+
+	var level_number := LEVEL_LABEL_FORMATTER_SCRIPT.extract_level_number(level_id)
+	if level_number <= 0:
+		return ""
+
+	var next_level_id := "level_%d" % (level_number + 1)
+	return next_level_id if level_catalog.has_level(next_level_id) else ""
 
 
 func get_level_progress(level_id: String):

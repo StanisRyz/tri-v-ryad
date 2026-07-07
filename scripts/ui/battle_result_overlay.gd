@@ -7,12 +7,14 @@ signal upgrades_pressed
 signal next_level_pressed
 
 const UI_ASSET_BINDING_SCRIPT := preload("res://scripts/ui/ui_asset_binding.gd")
+const LEVEL_REWARD_FORMATTER_SCRIPT := preload("res://scripts/game/presentation/level_reward_formatter.gd")
 
 @onready var result_label: Label = %ResultLabel
 @onready var reward_label: Label = %RewardLabel
 @onready var stars_label: Label = %StarsLabel
 @onready var moves_label: Label = %MovesLabel
 @onready var unlock_label: Label = %UnlockLabel
+@onready var milestone_reward_label: Label = %MilestoneRewardLabel
 @onready var next_level_button: Button = %NextLevelButton
 @onready var restart_button: Button = %RestartButton
 @onready var upgrades_button: Button = %UpgradesButton
@@ -37,6 +39,7 @@ func show_victory(_reward_points: int = 0, stars: int = 0) -> void:
 		"next_level_id": "",
 		"next_level_unlocked": false,
 		"new_zone_unlocked": false,
+		"milestone_rewards": [],
 	})
 
 
@@ -48,6 +51,7 @@ func show_victory_result(data: Dictionary) -> void:
 	var next_level_id := str(data.get("next_level_id", ""))
 	var next_level_unlocked := bool(data.get("next_level_unlocked", false))
 	var new_zone_unlocked := bool(data.get("new_zone_unlocked", false))
+	var milestone_rewards: Array = data.get("milestone_rewards", [])
 
 	result_label.text = "Victory"
 	reward_label.text = "%s complete" % level_label
@@ -57,6 +61,8 @@ func show_victory_result(data: Dictionary) -> void:
 	moves_label.visible = true
 	unlock_label.text = _format_unlock_text(next_level_unlocked, new_zone_unlocked)
 	unlock_label.visible = unlock_label.text != ""
+	milestone_reward_label.text = LEVEL_REWARD_FORMATTER_SCRIPT.format_rewards_text(milestone_rewards)
+	milestone_reward_label.visible = true
 	next_level_button.visible = next_level_id != ""
 	next_level_button.disabled = next_level_id == ""
 	upgrades_button.visible = FeatureFlags.HERO_SYSTEMS_ENABLED
@@ -85,6 +91,8 @@ func show_defeat_result(data: Dictionary) -> void:
 	moves_label.visible = moves_left > 0
 	unlock_label.text = message
 	unlock_label.visible = true
+	milestone_reward_label.text = ""
+	milestone_reward_label.visible = false
 	next_level_button.visible = false
 	next_level_button.disabled = true
 	upgrades_button.visible = false

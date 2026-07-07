@@ -387,6 +387,7 @@ func _show_battle_result(status: int) -> void:
 		_play_victory()
 		_grant_victory_reward_once()
 		_save_victory_completion_once()
+		_refresh_booster_inventory_ui()
 		_set_status(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_victory_message(_last_reward_amount, _last_stars_earned))
 		_force_cleanup_visual_state()
 		result_overlay.show_victory_result(_last_victory_result_data)
@@ -424,18 +425,19 @@ func _save_victory_completion_once() -> void:
 	var was_next_unlocked: bool = next_level_id != "" and _progress_manager.is_level_unlocked(_level_catalog, next_level_id)
 	var was_next_zone_unlocked: bool = next_level_id != "" and _is_zone_unlocked_for_level(next_level_id)
 	_last_stars_earned = _level_completion_resolver.calculate_stars(_presenter.current_level_config, _presenter.state.moves_left)
-	var state = _progress_manager.complete_level(_presenter.current_level_config, _presenter.state.moves_left)
+	var completion_result: Dictionary = _progress_manager.complete_level_with_rewards(_presenter.current_level_config, _presenter.state.moves_left, _level_catalog)
+	var state = completion_result.get("level_progress_state")
 	if state != null:
 		var is_next_unlocked: bool = next_level_id != "" and _progress_manager.is_level_unlocked(_level_catalog, next_level_id)
 		var is_next_zone_unlocked: bool = next_level_id != "" and _is_zone_unlocked_for_level(next_level_id)
 		var next_level_newly_unlocked: bool = not was_current_completed and not was_next_unlocked and is_next_unlocked
 		var zone_newly_unlocked: bool = not was_current_completed and not was_next_zone_unlocked and is_next_zone_unlocked
-		_last_victory_result_data = _build_victory_result_data(state, next_level_newly_unlocked, zone_newly_unlocked)
+		_last_victory_result_data = _build_victory_result_data(state, next_level_newly_unlocked, zone_newly_unlocked, completion_result.get("rewards", []))
 	else:
-		_last_victory_result_data = _build_victory_result_data(null, false, false)
+		_last_victory_result_data = _build_victory_result_data(null, false, false, [])
 
 
-func _build_victory_result_data(level_progress_state, next_level_newly_unlocked: bool, zone_newly_unlocked: bool) -> Dictionary:
+func _build_victory_result_data(level_progress_state, next_level_newly_unlocked: bool, zone_newly_unlocked: bool, milestone_rewards: Array = []) -> Dictionary:
 	var level_config = _presenter.current_level_config if _presenter != null else null
 	var level_id: String = level_config.level_id if level_config != null else _current_level_id
 	var level_label := LEVEL_LABEL_FORMATTER_SCRIPT.format_level_label(level_id, _current_level_name)
@@ -454,6 +456,7 @@ func _build_victory_result_data(level_progress_state, next_level_newly_unlocked:
 		"next_level_id": next_level_id,
 		"next_level_unlocked": next_level_newly_unlocked,
 		"new_zone_unlocked": zone_newly_unlocked,
+		"milestone_rewards": milestone_rewards,
 	}
 
 
