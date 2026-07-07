@@ -18,12 +18,16 @@ const TILE_COLORS := {
 	TileType.PURPLE: Color(0.56, 0.28, 0.82, 1.0),
 }
 
-## Stage 56 v0.1: placeholder ice overlay colors. Normal (1-layer) ice reads
-## as a light, thin frost tint; double (2-layer) ice is a stronger tint plus
-## a second inset overlay so it reads as visually "thicker".
-const ICE_OVERLAY_COLOR := Color(0.75, 0.90, 1.0, 0.36)
-const ICE_OVERLAY_COLOR_DOUBLE := Color(0.72, 0.90, 1.0, 0.60)
-const ICE_OVERLAY_INNER_COLOR := Color(0.90, 0.97, 1.0, 0.55)
+## Stage 56 v0.1: placeholder ice overlay colors, separate from tile color
+## and special marker.
+## Stage 57.1 v0.1: strengthened for readability — normal (1-layer) ice is
+## now a strong near-white frost so it reads clearly on every tile color;
+## double (2-layer) ice is a strong, clearly blue frost (distinct hue, not
+## just more opacity) plus a second inset overlay so it also reads as
+## visually "thicker" than normal ice.
+const ICE_OVERLAY_COLOR := Color(0.96, 0.98, 1.0, 0.58)
+const ICE_OVERLAY_COLOR_DOUBLE := Color(0.20, 0.55, 0.95, 0.72)
+const ICE_OVERLAY_INNER_COLOR := Color(0.10, 0.40, 0.85, 0.55)
 const ICE_OVERLAY_INSET := 5.0
 
 ## Stage 55 v0.1: inactive cells (holes) render as a mostly-transparent dark
