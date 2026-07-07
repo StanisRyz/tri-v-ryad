@@ -315,11 +315,15 @@ func play_invalid_bounce(_offset: Vector2, step_duration: float = 0.04) -> void:
 
 
 ## Stage 56 v0.1: a brief cold-white flash on the ice overlay for a hit that
-## damaged but did not break the ice. Callers are expected to call this (or
-## play_ice_break()) before the obstacle state is synced via
-## set_cell_obstacle(), since _apply_ice_overlay() re-applies the current
-## (pre-animation) overlay once the flash settles.
-func play_ice_damage() -> void:
+## damaged but did not break the ice.
+## Stage 57.5 v0.1: new_obstacle_layers (when >= 0) is applied to
+## _obstacle_layers inside the tween's completion callback, right before
+## _apply_ice_overlay() re-renders — so the flash plays first, then the
+## overlay settles directly into the new (reduced) layer state, instead of
+## requiring a separate later set_cell_obstacle() call (previously only
+## refresh_all_tiles() at the very end of the whole turn synced this,
+## leaving ice visually unchanged through the rest of the cascade).
+func play_ice_damage(new_obstacle_layers: int = -1) -> void:
 	if not _is_active or _ice_overlay == null or not is_iced():
 		return
 
@@ -329,11 +333,20 @@ func play_ice_damage() -> void:
 	_ice_tween = create_tween()
 	_ice_tween.tween_property(_ice_overlay, "modulate", flash_color, _adjust_duration(0.06))
 	_ice_tween.tween_property(_ice_overlay, "modulate", Color.WHITE, _adjust_duration(0.12))
-	_ice_tween.tween_callback(_apply_ice_overlay)
+	_ice_tween.tween_callback(func() -> void:
+		if new_obstacle_layers >= 0:
+			_obstacle_layers = new_obstacle_layers
+		_apply_ice_overlay()
+	)
 
 
 ## Stage 56 v0.1: fades the ice overlay(s) out for a hit that fully breaks
-## the ice. See play_ice_damage() for call-order expectations.
+## the ice.
+## Stage 57.5 v0.1: the completion callback now also clears _obstacle_type/
+## _obstacle_layers directly (not just re-rendering), so is_iced() correctly
+## reports false immediately once the fade finishes — no longer dependent on
+## a later set_cell_obstacle() call from refresh_all_tiles() to actually
+## register the break.
 func play_ice_break() -> void:
 	if not _is_active or _ice_overlay == null or not is_iced():
 		return
@@ -345,6 +358,8 @@ func play_ice_break() -> void:
 	if _ice_overlay_inner != null:
 		_ice_tween.parallel().tween_property(_ice_overlay_inner, "modulate:a", 0.0, duration)
 	_ice_tween.tween_callback(func() -> void:
+		_obstacle_type = CELL_OBSTACLE_TYPE_SCRIPT.NONE
+		_obstacle_layers = 0
 		_ice_overlay.modulate = Color.WHITE
 		if _ice_overlay_inner != null:
 			_ice_overlay_inner.modulate = Color.WHITE

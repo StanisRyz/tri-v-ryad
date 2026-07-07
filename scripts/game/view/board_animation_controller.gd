@@ -186,9 +186,13 @@ func _play_booster_clear_request(request, board_view: Control, effective_duratio
 
 ## Splits the request's ice_events by outcome: cells that are merely damaged
 ## (still icy) play the crack/flash feedback, cells whose ice fully broke
-## play the break/fade feedback instead.
+## play the break/fade feedback instead. Stage 57.5: damaged cells also carry
+## their new_layers so BoardView can settle the flash directly into the
+## post-damage state (strong -> weak) once it finishes, instead of only
+## catching up at the end of the whole animation sequence.
 func _play_ice_event_request(request, board_view: Control, _effective_duration: float) -> void:
 	var damaged_cells: Array[Vector2i] = []
+	var new_layers_by_cell := {}
 	var broken_cells: Array[Vector2i] = []
 	for event in request.payload.get("ice_events", []):
 		var data := event as Dictionary
@@ -199,9 +203,10 @@ func _play_ice_event_request(request, board_view: Control, _effective_duration: 
 			broken_cells.append(cell)
 		else:
 			damaged_cells.append(cell)
+			new_layers_by_cell[cell] = int(data.get("new_layers", 1))
 
 	if not damaged_cells.is_empty() and board_view.has_method("play_ice_damage_animation"):
-		board_view.play_ice_damage_animation(damaged_cells)
+		board_view.play_ice_damage_animation(damaged_cells, new_layers_by_cell)
 	if not broken_cells.is_empty() and board_view.has_method("play_ice_break_animation"):
 		board_view.play_ice_break_animation(broken_cells)
 

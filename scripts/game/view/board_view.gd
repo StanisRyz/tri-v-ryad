@@ -30,6 +30,12 @@ var _active_board_animation_tween: Tween
 var _special_activation_tweens: Array[Tween] = []
 var _overlay_mode := false
 var _overlay_ghosts: Dictionary = {}
+## Stage 57.5 v0.1: cell-anchored ice overlay ghosts, keyed by board cell —
+## deliberately a separate dictionary/node set from _overlay_ghosts (the
+## moving tile ghosts), since ice is a cell obstacle and must stay in place
+## while a tile ghost falls/slides through gravity, refill, or a swap. See
+## _create_obstacle_overlay_ghost()/update_overlay_obstacle_ghost().
+var _overlay_obstacle_ghosts: Dictionary = {}
 var _overlay_snapshot: BoardVisualSnapshot
 var _booster_preview_nodes: Array[Control] = []
 
@@ -234,6 +240,7 @@ func get_animation_layer() -> Control:
 
 func clear_animation_layer() -> void:
 	_overlay_ghosts.clear()
+	_overlay_obstacle_ghosts.clear()
 	_booster_preview_nodes.clear()
 	_clear_special_activation_tweens()
 	if animation_layer == null:
@@ -339,8 +346,14 @@ func apply_board_under_overlay(board: BoardModel) -> void:
 ## Since gravity/refill never target an inactive cell (Stage 54.2), nothing
 ## ever animates this placeholder — it just sits there, static, for the
 ## whole overlay session.
+## Stage 57.5 v0.1: an iced active cell also gets a separate, cell-anchored
+## obstacle overlay ghost (_create_obstacle_overlay_ghost()), stored in
+## _overlay_obstacle_ghosts rather than as a child of the tile ghost — ice
+## must stay at its board cell even while the tile ghost occupying that cell
+## moves during gravity/refill/swap.
 func build_full_board_ghosts(snapshot: BoardVisualSnapshot) -> void:
 	_overlay_ghosts.clear()
+	_overlay_obstacle_ghosts.clear()
 	if animation_layer == null or snapshot == null:
 		return
 
@@ -354,10 +367,16 @@ func build_full_board_ghosts(snapshot: BoardVisualSnapshot) -> void:
 				data.get("tile_type", BoardModel.EMPTY),
 				data.get("special_data"),
 				local_position,
+				cell_size
+			)
+			var obstacle_ghost := _create_obstacle_overlay_ghost(
+				local_position,
 				cell_size,
 				int(data.get("obstacle_type", CELL_OBSTACLE_TYPE_SCRIPT.NONE)),
 				int(data.get("obstacle_layers", 0))
 			)
+			if obstacle_ghost != null:
+				_overlay_obstacle_ghosts[cell] = obstacle_ghost
 		else:
 			ghost = create_inactive_hole_ghost(local_position, cell_size)
 
@@ -419,7 +438,12 @@ func create_tile_ghost(cell: Vector2i) -> Control:
 	return ghost
 
 
-func create_tile_ghost_from_data(tile_type: int, special_data, ghost_position: Vector2, ghost_size: Vector2, obstacle_type: int = CELL_OBSTACLE_TYPE_SCRIPT.NONE, obstacle_layers: int = 0) -> Control:
+## Stage 57.5 v0.1: builds a moving tile ghost — tile color/icon and special
+## marker only. Ice is never attached here: it is a cell obstacle, not part
+## of the tile, and must stay anchored to its board cell while this ghost
+## moves during gravity/refill/swap. See _create_obstacle_overlay_ghost() for
+## the separate, cell-anchored ice visual.
+func create_tile_ghost_from_data(tile_type: int, special_data, ghost_position: Vector2, ghost_size: Vector2) -> Control:
 	if animation_layer == null:
 		return null
 
@@ -450,29 +474,43 @@ func create_tile_ghost_from_data(tile_type: int, special_data, ghost_position: V
 	ghost.add_theme_font_size_override("font_size", 22)
 	if special_data is SPECIAL_TILE_DATA_SCRIPT:
 		ghost.text = SPECIAL_TILE_TYPE_SCRIPT.get_marker_text(special_data.special_type)
-	if CELL_OBSTACLE_TYPE_SCRIPT.is_ice(obstacle_type) and obstacle_layers > 0:
-		var ice_overlay := ColorRect.new()
-		ice_overlay.name = "IceOverlay"
-		ice_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		ice_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
-		ice_overlay.color = TileView.resolve_ice_overlay_color(obstacle_layers)
-		ghost.add_child(ice_overlay)
-		## Stage 57.3 v0.1: overlay-mode ghosts now also get the inner
-		## double-ice indicator TileView already shows on the real board, so
-		## strong ice reads identically whether or not overlay mode is active.
-		if obstacle_layers >= 2:
-			var ice_overlay_inner := ColorRect.new()
-			ice_overlay_inner.name = "IceOverlayInner"
-			ice_overlay_inner.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			ice_overlay_inner.set_anchors_preset(Control.PRESET_FULL_RECT)
-			ice_overlay_inner.offset_left = TileView.ICE_OVERLAY_INSET
-			ice_overlay_inner.offset_top = TileView.ICE_OVERLAY_INSET
-			ice_overlay_inner.offset_right = -TileView.ICE_OVERLAY_INSET
-			ice_overlay_inner.offset_bottom = -TileView.ICE_OVERLAY_INSET
-			ice_overlay_inner.color = TileView.resolve_ice_overlay_inner_color()
-			ghost.add_child(ice_overlay_inner)
 	animation_layer.add_child(ghost)
 	return ghost
+
+
+## Stage 57.5 v0.1: a standalone, cell-anchored ice visual — a plain
+## ColorRect (plus an inset ColorRect child for double/strong ice) added
+## directly to animation_layer at a fixed board-cell position, entirely
+## independent of whatever tile ghost currently occupies that cell. Returns
+## null (and creates nothing) for a non-ice obstacle or zero layers, so a
+## cell with no ice never gets an overlay node at all.
+func _create_obstacle_overlay_ghost(ghost_position: Vector2, ghost_size: Vector2, obstacle_type: int, obstacle_layers: int) -> Control:
+	if animation_layer == null or not CELL_OBSTACLE_TYPE_SCRIPT.is_ice(obstacle_type) or obstacle_layers <= 0:
+		return null
+
+	var overlay := ColorRect.new()
+	overlay.name = "IceOverlay"
+	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	overlay.position = ghost_position
+	overlay.size = ghost_size
+	overlay.color = TileView.resolve_ice_overlay_color(obstacle_layers)
+	animation_layer.add_child(overlay)
+
+	if obstacle_layers >= 2:
+		var inner := _build_obstacle_overlay_inner_rect(ghost_size)
+		inner.color = TileView.resolve_ice_overlay_inner_color()
+		overlay.add_child(inner)
+
+	return overlay
+
+
+func _build_obstacle_overlay_inner_rect(outer_size: Vector2) -> ColorRect:
+	var inner := ColorRect.new()
+	inner.name = "IceOverlayInner"
+	inner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	inner.position = Vector2(TileView.ICE_OVERLAY_INSET, TileView.ICE_OVERLAY_INSET)
+	inner.size = outer_size - Vector2(TileView.ICE_OVERLAY_INSET, TileView.ICE_OVERLAY_INSET) * 2.0
+	return inner
 
 
 ## Stage 55.1 v0.1: the stable placeholder build_full_board_ghosts() uses for
@@ -711,6 +749,7 @@ func _play_overlay_refill(refill_cells: Array, duration: float) -> void:
 
 		ghost.modulate = Color(1.0, 1.0, 1.0, 0.0)
 		_overlay_ghosts[to_cell] = ghost
+		_keep_obstacle_ghost_on_top(to_cell)
 		var tween := create_tween()
 		tween.set_parallel(true)
 		tween.tween_property(ghost, "position", to_position, safe_duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
@@ -751,10 +790,22 @@ func _play_overlay_gravity_fall(movements: Array, duration: float) -> void:
 
 		_overlay_ghosts.erase(from_cell)
 		_overlay_ghosts[to_cell] = ghost
+		_keep_obstacle_ghost_on_top(to_cell)
 		animated = true
 
 	if not animated:
 		tween.kill()
+
+
+## Stage 57.5 v0.1: a newly created/moved tile ghost is appended as the last
+## animation_layer child, which would otherwise render on top of an
+## already-existing cell-anchored ice overlay ghost at its destination cell.
+## Ice must stay visually above the crystal occupying its cell, so re-raise
+## the obstacle ghost (if any) to the front whenever a tile ghost lands.
+func _keep_obstacle_ghost_on_top(cell: Vector2i) -> void:
+	var obstacle_ghost := _get_valid_overlay_obstacle_ghost(cell)
+	if obstacle_ghost != null:
+		obstacle_ghost.move_to_front()
 
 
 ## Safe v0.1 pass-through visual: fade the ghost out near the source, jump
@@ -1039,22 +1090,26 @@ func play_match_clear_animation(cells: Array[Vector2i], duration: float) -> void
 
 
 ## Stage 56 v0.1: cells whose ice took damage but did not break — still icy,
-## just flashes/cracks. Callers pass this before syncing the new obstacle
-## state (see IceDamageResolver/BoardResolveStep.ice_events), matching
-## TileView.play_ice_damage()'s call-order expectations.
-func play_ice_damage_animation(cells: Array[Vector2i]) -> void:
+## just flashes/cracks.
+## Stage 57.5 v0.1: new_layers_by_cell (cell -> resulting layer count) lets
+## the flash settle directly into the post-damage state — TileView.play_ice_damage()/
+## _play_overlay_ice_damage() below apply it inside the flash tween's
+## completion callback, so the visual updates per ice event instead of only
+## catching up once the whole animation sequence finishes and
+## refresh_all_tiles()/apply_board_under_overlay() run.
+func play_ice_damage_animation(cells: Array[Vector2i], new_layers_by_cell: Dictionary = {}) -> void:
 	if _overlay_mode:
-		_play_overlay_ice_damage(cells)
+		_play_overlay_ice_damage(cells, new_layers_by_cell)
 		return
 
 	for tile in get_tile_views(cells):
 		if tile.has_method("play_ice_damage"):
-			tile.play_ice_damage()
+			tile.play_ice_damage(int(new_layers_by_cell.get(tile.board_cell, -1)))
 
 
 ## Stage 56 v0.1: cells whose ice fully broke this event — fades the overlay
-## out. The real per-cell obstacle state is expected to already be (or soon
-## be) cleared by the caller; this only plays the visual.
+## out, then (Stage 57.5) clears the obstacle state so is_iced()/overlay
+## visibility is correct immediately, not just after the whole sequence ends.
 func play_ice_break_animation(cells: Array[Vector2i]) -> void:
 	if _overlay_mode:
 		_play_overlay_ice_break(cells)
@@ -1065,31 +1120,29 @@ func play_ice_break_animation(cells: Array[Vector2i]) -> void:
 			tile.play_ice_break()
 
 
-func _play_overlay_ice_damage(cells: Array[Vector2i]) -> void:
+func _play_overlay_ice_damage(cells: Array[Vector2i], new_layers_by_cell: Dictionary) -> void:
 	for cell in cells:
-		var ghost := _get_valid_overlay_ghost(cell)
-		if ghost == null:
-			continue
-		var overlay := ghost.get_node_or_null("IceOverlay")
+		var overlay := _get_valid_overlay_obstacle_ghost(cell)
 		if overlay == null:
 			continue
 
+		var new_layers: int = int(new_layers_by_cell.get(cell, 1))
 		var tween := create_tween()
 		_register_special_activation_tween(tween)
 		tween.tween_property(overlay, "modulate", Color(1.30, 1.45, 1.60, 1.0), 0.06)
 		tween.tween_property(overlay, "modulate", Color.WHITE, 0.12)
+		tween.tween_callback(func() -> void:
+			update_overlay_obstacle_ghost(cell, CELL_OBSTACLE_TYPE_SCRIPT.ICE, new_layers)
+		)
 
 
-## Overlay-mode ice break: frees the ghost's IceOverlay (and IceOverlayInner,
-## if present for double ice) child once faded so no stale overlay lingers on
-## a ghost that keeps getting reused/moved by later gravity/refill animations
-## in the same overlay session.
+## Overlay-mode ice break: fades the cell-anchored obstacle ghost, then
+## removes it (remove_overlay_obstacle_ghost()) so no stale overlay lingers —
+## the obstacle ghost is independent of whatever tile ghost occupies the
+## cell, so freeing it here never affects the tile ghost itself.
 func _play_overlay_ice_break(cells: Array[Vector2i]) -> void:
 	for cell in cells:
-		var ghost := _get_valid_overlay_ghost(cell)
-		if ghost == null:
-			continue
-		var overlay := ghost.get_node_or_null("IceOverlay")
+		var overlay := _get_valid_overlay_obstacle_ghost(cell)
 		if overlay == null:
 			continue
 
@@ -1097,19 +1150,95 @@ func _play_overlay_ice_break(cells: Array[Vector2i]) -> void:
 		_register_special_activation_tween(tween)
 		tween.tween_property(overlay, "modulate:a", 0.0, 0.16)
 		tween.tween_callback(func() -> void:
-			if is_instance_valid(overlay):
-				overlay.free()
+			remove_overlay_obstacle_ghost(cell)
 		)
 
-		var inner_overlay := ghost.get_node_or_null("IceOverlayInner")
-		if inner_overlay != null:
-			var inner_tween := create_tween()
-			_register_special_activation_tween(inner_tween)
-			inner_tween.tween_property(inner_overlay, "modulate:a", 0.0, 0.16)
-			inner_tween.tween_callback(func() -> void:
-				if is_instance_valid(inner_overlay):
-					inner_overlay.free()
-			)
+
+## Stage 57.5 v0.1: convenience wrapper around update_cell_obstacle_visual()
+## for a raw IceDamageResolver/BoardResolveStep ice event dictionary
+## ({"cell", "obstacle_type", "previous_layers", "new_layers", "broken"}).
+func sync_overlay_ice_event(event: Dictionary) -> void:
+	var cell: Vector2i = event.get("cell", Vector2i(-1, -1))
+	if bool(event.get("broken", false)) or int(event.get("new_layers", 0)) <= 0:
+		update_cell_obstacle_visual(cell, CELL_OBSTACLE_TYPE_SCRIPT.NONE, 0)
+	else:
+		update_cell_obstacle_visual(cell, int(event.get("obstacle_type", CELL_OBSTACLE_TYPE_SCRIPT.ICE)), int(event.get("new_layers", 1)))
+
+
+## Stage 57.5 v0.1: immediately syncs one cell's obstacle visual to
+## obstacle_type/layers — the real TileView when not in overlay mode, or the
+## cell-anchored overlay ghost when in overlay mode. Safe to call outside of
+## any animation (e.g. a direct, non-animated obstacle change).
+func update_cell_obstacle_visual(cell: Vector2i, obstacle_type: int, layers: int) -> void:
+	if _overlay_mode:
+		if CELL_OBSTACLE_TYPE_SCRIPT.is_ice(obstacle_type) and layers > 0:
+			update_overlay_obstacle_ghost(cell, obstacle_type, layers)
+		else:
+			remove_overlay_obstacle_ghost(cell)
+		return
+
+	var tile := get_tile_view(cell)
+	if tile != null:
+		tile.set_cell_obstacle(obstacle_type, layers)
+
+
+## Stage 57.5 v0.1: updates (or lazily creates) the cell-anchored obstacle
+## overlay ghost for cell to match obstacle_type/layers — recoloring the
+## outer overlay and showing/hiding/recoloring the inner double-ice layer,
+## reusing TileView.resolve_ice_overlay_color()/resolve_ice_overlay_inner_color()
+## so overlay-mode ice always matches the real board's (and the Stage 57.3
+## debug filter's) colors with no duplicated color logic.
+func update_overlay_obstacle_ghost(cell: Vector2i, obstacle_type: int, layers: int) -> void:
+	if not CELL_OBSTACLE_TYPE_SCRIPT.is_ice(obstacle_type) or layers <= 0:
+		remove_overlay_obstacle_ghost(cell)
+		return
+
+	var existing := _get_valid_overlay_obstacle_ghost(cell)
+	if existing == null:
+		var tile := get_tile_view(cell)
+		if tile == null or animation_layer == null:
+			return
+		var ghost_position: Vector2 = tile.global_position - animation_layer.global_position
+		var created := _create_obstacle_overlay_ghost(ghost_position, tile.size, obstacle_type, layers)
+		if created != null:
+			_overlay_obstacle_ghosts[cell] = created
+		return
+
+	var overlay := existing as ColorRect
+	if overlay == null:
+		return
+
+	overlay.modulate = Color.WHITE
+	overlay.color = TileView.resolve_ice_overlay_color(layers)
+	var inner := overlay.get_node_or_null("IceOverlayInner") as ColorRect
+	if layers >= 2:
+		if inner == null:
+			inner = _build_obstacle_overlay_inner_rect(overlay.size)
+			overlay.add_child(inner)
+		inner.modulate = Color.WHITE
+		inner.color = TileView.resolve_ice_overlay_inner_color()
+		inner.visible = true
+	elif inner != null:
+		inner.visible = false
+
+
+## Stage 57.5 v0.1: frees and un-registers the cell-anchored obstacle overlay
+## ghost for cell, if any. Safe to call for a cell with no obstacle ghost.
+func remove_overlay_obstacle_ghost(cell: Vector2i) -> void:
+	var ghost := _get_valid_overlay_obstacle_ghost(cell)
+	_overlay_obstacle_ghosts.erase(cell)
+	if ghost != null:
+		ghost.free()
+
+
+func _get_valid_overlay_obstacle_ghost(cell: Vector2i) -> Control:
+	var ghost = _overlay_obstacle_ghosts.get(cell)
+	if ghost == null:
+		return null
+	if not is_instance_valid(ghost):
+		_overlay_obstacle_ghosts.erase(cell)
+		return null
+	return ghost as Control
 
 
 func play_horizontal_line_special_activation(activation_cell: Vector2i, affected_cells: Array[Vector2i], duration: float) -> void:
@@ -1211,6 +1340,7 @@ func _play_overlay_special_create(created_special_tiles: Array, duration: float)
 			if ghost == null:
 				continue
 			_overlay_ghosts[cell] = ghost
+			_keep_obstacle_ghost_on_top(cell)
 
 		var creation_position: Vector2 = ghost.position
 
