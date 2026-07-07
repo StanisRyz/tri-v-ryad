@@ -784,7 +784,7 @@ func _play_overlay_gravity_fall(movements: Array, duration: float) -> void:
 
 	var tween := create_tween()
 	tween.set_parallel(true)
-	var animated := false
+	var main_tween_used := false
 
 	for movement in movements:
 		var movement_data := movement as Dictionary
@@ -803,13 +803,13 @@ func _play_overlay_gravity_fall(movements: Array, duration: float) -> void:
 			_animate_overlay_pass_through_fall(ghost, to_position, movement_duration)
 		else:
 			tween.tween_property(ghost, "position", to_position, movement_duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+			main_tween_used = true
 
 		_overlay_ghosts.erase(from_cell)
 		_overlay_ghosts[to_cell] = ghost
 		_keep_obstacle_ghost_on_top(to_cell)
-		animated = true
 
-	if not animated:
+	if not main_tween_used:
 		tween.kill()
 
 

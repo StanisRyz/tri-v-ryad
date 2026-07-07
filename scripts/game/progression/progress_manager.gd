@@ -157,6 +157,58 @@ func upgrade(hero_id: String, stat: String) -> bool:
 	return bool(upgrade_with_result(hero_id, stat).get("accepted", false))
 
 
+func get_currency(currency_id: String) -> int:
+	return progress.get_currency(currency_id) if progress != null else 0
+
+
+func add_currency(currency_id: String, amount: int) -> void:
+	if progress == null:
+		return
+	progress.add_currency(currency_id, amount)
+	save()
+
+
+func can_spend_currency(currency_id: String, amount: int) -> bool:
+	return progress.can_spend_currency(currency_id, amount) if progress != null else false
+
+
+func spend_currency(currency_id: String, amount: int) -> bool:
+	if progress == null:
+		return false
+	var spent: bool = progress.spend_currency(currency_id, amount)
+	if spent:
+		save()
+	return spent
+
+
+func get_booster_count(booster_id: String) -> int:
+	return progress.get_booster_count(booster_id) if progress != null else 0
+
+
+func add_booster(booster_id: String, amount: int) -> void:
+	if progress == null:
+		return
+	progress.add_booster(booster_id, amount)
+	save()
+
+
+func has_booster(booster_id: String, amount: int = 1) -> bool:
+	return progress.has_booster(booster_id, amount) if progress != null else false
+
+
+func spend_booster(booster_id: String, amount: int = 1) -> bool:
+	if progress == null:
+		return false
+	var spent: bool = progress.spend_booster(booster_id, amount)
+	if spent:
+		save()
+	return spent
+
+
+func get_economy_debug_summary() -> String:
+	return progress.get_economy_debug_summary() if progress != null else ""
+
+
 func reset_progress() -> void:
 	progress = save_manager.reset_progress()
 	_normalize_loaded_team_selection()

@@ -6,6 +6,8 @@ const SCRIPT_PATH := "res://scripts/game/progression/player_progress.gd"
 const HERO_UPGRADE_STATE_SCRIPT := preload("res://scripts/game/progression/hero_upgrade_state.gd")
 const LEVEL_PROGRESS_STATE_SCRIPT := preload("res://scripts/game/progression/level_progress_state.gd")
 const TEAM_SELECTION_STATE_SCRIPT := preload("res://scripts/game/progression/team_selection_state.gd")
+const BOOSTER_CATALOG_SCRIPT := preload("res://scripts/game/config/booster_catalog.gd")
+const CURRENCY_TYPE_SCRIPT := preload("res://scripts/game/economy/currency_type.gd")
 const DEFAULT_HERO_IDS := ["hero_1", "hero_2", "hero_3"]
 
 var save_version := SAVE_VERSION
@@ -14,6 +16,9 @@ var hero_upgrades: Dictionary = {}
 var completed_levels: Dictionary = {}
 var level_progress: Dictionary = {}
 var team_selection: TeamSelectionState
+var gold := 0
+var gems := 0
+var booster_inventory: Dictionary = {}
 
 
 static func create_default() -> PlayerProgress:
@@ -23,6 +28,10 @@ static func create_default() -> PlayerProgress:
 	progress.team_selection = TEAM_SELECTION_STATE_SCRIPT.create_default(DEFAULT_HERO_IDS)
 	for hero_id in DEFAULT_HERO_IDS:
 		progress.ensure_hero(hero_id)
+	progress.gold = 0
+	progress.gems = 0
+	progress.booster_inventory = {}
+	progress.ensure_booster_inventory()
 	return progress
 
 
@@ -98,6 +107,85 @@ func get_level_stars(level_id: String) -> int:
 	return 1 if bool(completed_levels.get(level_id, false)) else 0
 
 
+func get_currency(currency_id: String) -> int:
+	match currency_id:
+		CURRENCY_TYPE_SCRIPT.GOLD:
+			return gold
+		CURRENCY_TYPE_SCRIPT.GEMS:
+			return gems
+		_:
+			return 0
+
+
+func add_currency(currency_id: String, amount: int) -> void:
+	if amount <= 0 or not CURRENCY_TYPE_SCRIPT.is_valid(currency_id):
+		return
+	match currency_id:
+		CURRENCY_TYPE_SCRIPT.GOLD:
+			gold = max(0, gold + amount)
+		CURRENCY_TYPE_SCRIPT.GEMS:
+			gems = max(0, gems + amount)
+
+
+func can_spend_currency(currency_id: String, amount: int) -> bool:
+	if amount <= 0 or not CURRENCY_TYPE_SCRIPT.is_valid(currency_id):
+		return false
+	return get_currency(currency_id) >= amount
+
+
+func spend_currency(currency_id: String, amount: int) -> bool:
+	if not can_spend_currency(currency_id, amount):
+		return false
+	match currency_id:
+		CURRENCY_TYPE_SCRIPT.GOLD:
+			gold = max(0, gold - amount)
+		CURRENCY_TYPE_SCRIPT.GEMS:
+			gems = max(0, gems - amount)
+	return true
+
+
+func get_default_booster_ids() -> Array[String]:
+	return BOOSTER_CATALOG_SCRIPT.new().get_default_booster_ids()
+
+
+func ensure_booster_inventory() -> void:
+	for booster_id in get_default_booster_ids():
+		if not booster_inventory.has(booster_id):
+			booster_inventory[booster_id] = 0
+
+
+func get_booster_count(booster_id: String) -> int:
+	return int(max(0, int(booster_inventory.get(booster_id, 0))))
+
+
+func add_booster(booster_id: String, amount: int) -> void:
+	if amount <= 0 or booster_id == "":
+		return
+	booster_inventory[booster_id] = get_booster_count(booster_id) + amount
+
+
+func has_booster(booster_id: String, amount: int = 1) -> bool:
+	if amount <= 0:
+		return false
+	return get_booster_count(booster_id) >= amount
+
+
+func spend_booster(booster_id: String, amount: int = 1) -> bool:
+	if not has_booster(booster_id, amount):
+		return false
+	booster_inventory[booster_id] = get_booster_count(booster_id) - amount
+	return true
+
+
+func get_economy_debug_summary() -> String:
+	var parts: Array[String] = []
+	parts.append("gold=%d" % gold)
+	parts.append("gems=%d" % gems)
+	for booster_id in get_default_booster_ids():
+		parts.append("%s=%d" % [booster_id, get_booster_count(booster_id)])
+	return ", ".join(parts)
+
+
 func to_dictionary() -> Dictionary:
 	var upgrade_data := {}
 	for hero_id in hero_upgrades.keys():
@@ -111,6 +199,8 @@ func to_dictionary() -> Dictionary:
 		if state != null and state.has_method("to_dictionary"):
 			level_progress_data[level_id] = state.to_dictionary()
 
+	ensure_booster_inventory()
+
 	return {
 		"save_version": save_version,
 		"upgrade_points": upgrade_points,
@@ -118,6 +208,11 @@ func to_dictionary() -> Dictionary:
 		"completed_levels": completed_levels.duplicate(),
 		"level_progress": level_progress_data,
 		"team_selection": get_team_selection().to_dictionary(),
+		"currencies": {
+			"gold": gold,
+			"gems": gems,
+		},
+		"booster_inventory": booster_inventory.duplicate(),
 	}
 
 
@@ -160,4 +255,21 @@ static func from_dictionary(data: Dictionary) -> PlayerProgress:
 	else:
 		progress.team_selection = TEAM_SELECTION_STATE_SCRIPT.create_default(DEFAULT_HERO_IDS)
 
+	var raw_currencies = data.get("currencies", {})
+	progress.gold = _sanitize_non_negative_int(raw_currencies.get("gold", 0) if raw_currencies is Dictionary else 0)
+	progress.gems = _sanitize_non_negative_int(raw_currencies.get("gems", 0) if raw_currencies is Dictionary else 0)
+
+	progress.booster_inventory = {}
+	var raw_booster_inventory = data.get("booster_inventory", {})
+	if raw_booster_inventory is Dictionary:
+		for booster_id in raw_booster_inventory.keys():
+			progress.booster_inventory[str(booster_id)] = _sanitize_non_negative_int(raw_booster_inventory[booster_id])
+	progress.ensure_booster_inventory()
+
 	return progress
+
+
+static func _sanitize_non_negative_int(value) -> int:
+	if value is int or value is float:
+		return int(max(0, int(value)))
+	return 0
