@@ -1,6 +1,8 @@
-[gd_scene load_steps=2 format=3 uid="uid://cfysu0cnngfq2"]
+[gd_scene load_steps=4 format=3 uid="uid://cfysu0cnngfq2"]
 
 [ext_resource type="Script" path="res://scripts/screens/main_menu_screen.gd" id="1_qnlxi"]
+[ext_resource type="Script" path="res://scripts/ui/image_slot.gd" id="2_bg"]
+[ext_resource type="Script" path="res://scripts/ui/pressable_texture_button.gd" id="3_btn"]
 
 [node name="MainMenuScreen" type="Control"]
 layout_mode = 3
@@ -12,69 +14,93 @@ grow_vertical = 2
 script = ExtResource("1_qnlxi")
 
 [node name="Background" type="ColorRect" parent="."]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.08, 0.1, 0.15, 1)
+mouse_filter = 2
+color = Color(0.07, 0.09, 0.13, 1)
+script = ExtResource("2_bg")
+placeholder_color = Color(0.07, 0.09, 0.13, 1)
+stretch_mode = 6
 
-[node name="Content" type="CenterContainer" parent="."]
+[node name="GoldLabel" type="Label" parent="."]
+unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="MenuPanel" type="VBoxContainer" parent="Content"]
-layout_mode = 2
-theme_override_constants/separation = 28
-
-[node name="TitleLabel" type="Label" parent="Content/MenuPanel"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 44
-text = "Match-3 Battle"
-horizontal_alignment = 1
-
-[node name="SubtitleLabel" type="Label" parent="Content/MenuPanel"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "Playable prototype"
-horizontal_alignment = 1
-
-[node name="PlayButton" type="Button" parent="Content/MenuPanel"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(280, 72)
-layout_mode = 2
+anchors_preset = 0
+offset_left = 32.0
+offset_top = 48.0
+offset_right = 320.0
+offset_bottom = 96.0
 theme_override_font_sizes/font_size = 28
-text = "Играть"
+text = "Gold: 0"
 
-[node name="LevelSelectButton" type="Button" parent="Content/MenuPanel"]
+[node name="GemsLabel" type="Label" parent="."]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(280, 72)
-layout_mode = 2
+layout_mode = 1
+anchors_preset = 0
+offset_left = 400.0
+offset_top = 48.0
+offset_right = 688.0
+offset_bottom = 96.0
+horizontal_alignment = 2
 theme_override_font_sizes/font_size = 28
-text = "Выбрать уровень"
+text = "Gems: 0"
 
-[node name="ShopButton" type="Button" parent="Content/MenuPanel"]
+[node name="PlayButton" type="Button" parent="."]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(280, 72)
-layout_mode = 2
-theme_override_font_sizes/font_size = 28
-text = "Магазин"
+layout_mode = 1
+anchors_preset = 0
+offset_left = 145.0
+offset_top = 600.0
+offset_right = 575.0
+offset_bottom = 764.0
+script = ExtResource("3_btn")
+button_text = "Играть"
 
-[node name="HeroesButton" type="Button" parent="Content/MenuPanel"]
+[node name="LevelSelectButton" type="Button" parent="."]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(280, 72)
-layout_mode = 2
-theme_override_font_sizes/font_size = 28
+layout_mode = 1
+anchors_preset = 0
+offset_left = 145.0
+offset_top = 768.0
+offset_right = 575.0
+offset_bottom = 932.0
+script = ExtResource("3_btn")
+button_text = "Выбрать уровень"
+
+[node name="ShopButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 0
+offset_left = 145.0
+offset_top = 936.0
+offset_right = 575.0
+offset_bottom = 1100.0
+script = ExtResource("3_btn")
+button_text = "Магазин"
+
+[node name="SettingsButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 0
+offset_left = 145.0
+offset_top = 1104.0
+offset_right = 575.0
+offset_bottom = 1268.0
+script = ExtResource("3_btn")
+button_text = "Настройки"
+
+[node name="HeroesButton" type="Button" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 0
+offset_left = 145.0
+offset_top = 1104.0
+offset_right = 575.0
+offset_bottom = 1160.0
 text = "Heroes"
-
-[node name="SettingsButton" type="Button" parent="Content/MenuPanel"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(280, 72)
-layout_mode = 2
-theme_override_font_sizes/font_size = 28
-text = "Настройки"

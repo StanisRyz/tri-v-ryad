@@ -71,6 +71,15 @@ const LEVEL_BUTTON_ASSET_KEYS := {
 	"completed": "ui_level_button_completed",
 }
 
+const MAIN_MENU_BACKGROUND_ASSET_KEY := "main_menu_background"
+
+const MAIN_MENU_BUTTON_ASSET_KEYS := {
+	"play": {"default": "main_menu_button_play_default", "pressed": "main_menu_button_play_pressed"},
+	"level_select": {"default": "main_menu_button_level_select_default", "pressed": "main_menu_button_level_select_pressed"},
+	"shop": {"default": "main_menu_button_shop_default", "pressed": "main_menu_button_shop_pressed"},
+	"settings": {"default": "main_menu_button_settings_default", "pressed": "main_menu_button_settings_pressed"},
+}
+
 
 static func get_background_asset_key(background_id: String) -> String:
 	return BACKGROUND_ASSET_KEYS.get(background_id, "")
@@ -102,3 +111,12 @@ static func get_level_button_asset_key(state: String) -> String:
 
 static func get_star_asset_key(filled: bool) -> String:
 	return "ui_star_filled" if filled else "ui_star_empty"
+
+
+static func get_main_menu_background_asset_key() -> String:
+	return MAIN_MENU_BACKGROUND_ASSET_KEY
+
+
+static func get_main_menu_button_asset_key(button_id: String, state: String) -> String:
+	var entry: Dictionary = MAIN_MENU_BUTTON_ASSET_KEYS.get(button_id, {})
+	return entry.get(state, "")

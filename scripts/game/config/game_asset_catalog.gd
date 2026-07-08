@@ -55,6 +55,15 @@ const ASSET_MAP := {
 	"hero_3_portrait": "res://assets/images/heroes/hero_3_portrait.png",
 	"hero_4_portrait": "res://assets/images/heroes/hero_4_portrait.png",
 	"hero_5_portrait": "res://assets/images/heroes/hero_5_portrait.png",
+	"main_menu_background": "res://assets/images/ui/main_menu/background.png",
+	"main_menu_button_play_default": "res://assets/images/ui/main_menu/buttons/play_default.png",
+	"main_menu_button_play_pressed": "res://assets/images/ui/main_menu/buttons/play_pressed.png",
+	"main_menu_button_level_select_default": "res://assets/images/ui/main_menu/buttons/level_select_default.png",
+	"main_menu_button_level_select_pressed": "res://assets/images/ui/main_menu/buttons/level_select_pressed.png",
+	"main_menu_button_shop_default": "res://assets/images/ui/main_menu/buttons/shop_default.png",
+	"main_menu_button_shop_pressed": "res://assets/images/ui/main_menu/buttons/shop_pressed.png",
+	"main_menu_button_settings_default": "res://assets/images/ui/main_menu/buttons/settings_default.png",
+	"main_menu_button_settings_pressed": "res://assets/images/ui/main_menu/buttons/settings_pressed.png",
 }
 
 static var _texture_cache: Dictionary = {}

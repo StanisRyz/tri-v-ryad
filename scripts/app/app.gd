@@ -36,6 +36,10 @@ func _ready() -> void:
 
 func _show_main_menu() -> void:
 	var screen := _router.change_screen(MAIN_MENU_SCREEN)
+	if screen.has_method("set_progress_manager"):
+		screen.set_progress_manager(_progress_manager)
+	if screen.has_method("refresh_progress_state"):
+		screen.refresh_progress_state()
 	screen.play_pressed.connect(_on_main_menu_play_pressed)
 	screen.level_select_pressed.connect(_on_main_menu_level_select_pressed)
 	screen.shop_pressed.connect(_on_main_menu_shop_pressed)
