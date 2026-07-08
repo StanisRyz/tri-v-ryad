@@ -1,0 +1,36 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/shop/shop_product_tile.gd" id="1_tile"]
+[ext_resource type="Script" path="res://scripts/ui/fallback_image_slot.gd" id="2_slot"]
+
+[node name="ShopProductTile" type="PanelContainer"]
+custom_minimum_size = Vector2(260, 200)
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("1_tile")
+
+[node name="Content" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="IconArea" type="Control" parent="Content"]
+custom_minimum_size = Vector2(130, 130)
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="IconSlot" type="Control" parent="Content/IconArea"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2_slot")
+placeholder_color = Color(0.24, 0.4, 0.42, 1)
+
+[node name="BuyButton" type="Button" parent="Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+text = "Купить"

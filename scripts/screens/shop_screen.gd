@@ -7,18 +7,36 @@ const SHOP_ITEM_CATEGORY_SCRIPT := preload("res://scripts/game/shop/shop_item_ca
 const SHOP_PURCHASE_RESOLVER_SCRIPT := preload("res://scripts/game/shop/shop_purchase_resolver.gd")
 const SHOP_PURCHASE_FORMATTER_SCRIPT := preload("res://scripts/game/shop/shop_purchase_formatter.gd")
 const CURRENCY_TYPE_SCRIPT := preload("res://scripts/game/economy/currency_type.gd")
-const SHOP_ITEM_CARD_SCENE := preload("res://scenes/ui/ShopItemCard.tscn")
+const BOOSTER_CATALOG_SCRIPT := preload("res://scripts/game/config/booster_catalog.gd")
+const ASSET_KEY_RESOLVER_SCRIPT := preload("res://scripts/game/config/asset_key_resolver.gd")
+const GAME_ASSET_CATALOG := preload("res://scripts/game/config/game_asset_catalog.gd")
+const SHOP_BOOSTER_TILE_SCENE := preload("res://scenes/ui/shop/ShopBoosterTile.tscn")
+const SHOP_PRODUCT_TILE_SCENE := preload("res://scenes/ui/shop/ShopProductTile.tscn")
 
 const TAB_MODULATE_SELECTED := Color(1, 1, 1, 1)
 const TAB_MODULATE_UNSELECTED := Color(0.55, 0.55, 0.55, 1)
 
-@onready var back_button: Button = %BackButton
-@onready var gold_label: Label = %GoldLabel
-@onready var gems_label: Label = %GemsLabel
+const BOOSTER_IDS := [
+	BOOSTER_CATALOG_SCRIPT.HAMMER,
+	BOOSTER_CATALOG_SCRIPT.FREEZE_TIME,
+	BOOSTER_CATALOG_SCRIPT.ROCKET_BARRAGE,
+]
+
+const GEM_PRODUCT_IDS := ["gems_50", "gems_150", "gems_250", "gems_500"]
+const BUNDLE_IDS := ["bundle_small", "bundle_medium", "bundle_large", "bundle_mega"]
+
+@onready var background_rect: FallbackImageSlot = %Background
+@onready var shop_window_rect: FallbackImageSlot = %ShopWindow
+@onready var back_button: PressableTextureButton = %BackButton
 @onready var boosters_tab_button: Button = %BoostersTabButton
 @onready var gems_tab_button: Button = %GemsTabButton
 @onready var bundles_tab_button: Button = %BundlesTabButton
-@onready var item_grid: GridContainer = %ItemGrid
+@onready var offers_tab_button: Button = %OffersTabButton
+@onready var wallet_label: Label = %WalletLabel
+@onready var boosters_content: Control = %BoostersContent
+@onready var gems_content: Control = %GemsContent
+@onready var bundles_content: Control = %BundlesContent
+@onready var offers_content: Control = %OffersContent
 @onready var feedback_label: Label = %FeedbackLabel
 
 var _progress_manager
@@ -28,11 +46,16 @@ var _selected_category := SHOP_ITEM_CATEGORY_SCRIPT.BOOSTERS
 
 
 func _ready() -> void:
-	back_button.pressed.connect(_on_back_button_pressed)
+	_bind_static_ui_assets()
+	back_button.delayed_pressed.connect(_on_back_button_delayed_pressed)
 	boosters_tab_button.pressed.connect(_on_boosters_tab_pressed)
 	gems_tab_button.pressed.connect(_on_gems_tab_pressed)
 	bundles_tab_button.pressed.connect(_on_bundles_tab_pressed)
+	offers_tab_button.pressed.connect(_on_offers_tab_pressed)
 	feedback_label.text = ""
+	_build_boosters_content()
+	_build_gems_content()
+	_build_bundles_content()
 	_refresh_wallet()
 	_show_category(_selected_category)
 
@@ -41,17 +64,44 @@ func set_progress_manager(progress_manager) -> void:
 	_progress_manager = progress_manager
 	if is_inside_tree():
 		_refresh_wallet()
-		_refresh_items()
 
 
 func refresh_progress_state() -> void:
 	if is_inside_tree():
 		_refresh_wallet()
-		_refresh_items()
+
+
+func _bind_static_ui_assets() -> void:
+	_bind_texture_slot(background_rect, "shared_background")
+	_bind_texture_slot(shop_window_rect, "shop_window")
+	_bind_back_button_textures()
+
+
+func _bind_texture_slot(slot: FallbackImageSlot, ui_id: String) -> void:
+	if slot == null or slot.texture != null:
+		return
+	var texture := GAME_ASSET_CATALOG.try_load_texture_cached(ASSET_KEY_RESOLVER_SCRIPT.get_ui_asset_key(ui_id))
+	if texture != null:
+		slot.texture = texture
+
+
+func _bind_back_button_textures() -> void:
+	if back_button == null:
+		return
+
+	if back_button.normal_texture == null:
+		var normal_texture := GAME_ASSET_CATALOG.try_load_texture_cached(ASSET_KEY_RESOLVER_SCRIPT.get_ui_asset_key("shared_back_button_default"))
+		if normal_texture != null:
+			back_button.set_normal_texture(normal_texture)
+
+	if back_button.pressed_texture == null:
+		var pressed_texture := GAME_ASSET_CATALOG.try_load_texture_cached(ASSET_KEY_RESOLVER_SCRIPT.get_ui_asset_key("shared_back_button_pressed"))
+		if pressed_texture != null:
+			back_button.set_pressed_texture(pressed_texture)
 
 
 func _refresh_wallet() -> void:
-	if gold_label == null or gems_label == null:
+	if wallet_label == null:
 		return
 
 	var gold := 0
@@ -60,35 +110,92 @@ func _refresh_wallet() -> void:
 		gold = _progress_manager.get_currency(CURRENCY_TYPE_SCRIPT.GOLD)
 		gems = _progress_manager.get_currency(CURRENCY_TYPE_SCRIPT.GEMS)
 
-	gold_label.text = "Gold: %d" % gold
-	gems_label.text = "Gems: %d" % gems
+	wallet_label.text = "Gold: %d   Gems: %d" % [gold, gems]
 
 
 func _show_category(category: String) -> void:
 	_selected_category = category
 	_update_tab_visuals()
-	_refresh_items()
-
-
-func _refresh_items() -> void:
-	if item_grid == null:
-		return
-
-	for child in item_grid.get_children():
-		child.queue_free()
-
-	var items: Array = _shop_catalog.get_items_by_category(_selected_category)
-	for item in items:
-		var card: ShopItemCard = SHOP_ITEM_CARD_SCENE.instantiate()
-		item_grid.add_child(card)
-		card.set_item(item)
-		card.purchase_pressed.connect(_on_item_purchase_pressed)
+	boosters_content.visible = category == SHOP_ITEM_CATEGORY_SCRIPT.BOOSTERS
+	gems_content.visible = category == SHOP_ITEM_CATEGORY_SCRIPT.GEMS
+	bundles_content.visible = category == SHOP_ITEM_CATEGORY_SCRIPT.BUNDLES
+	offers_content.visible = category == SHOP_ITEM_CATEGORY_SCRIPT.OFFERS
 
 
 func _update_tab_visuals() -> void:
 	boosters_tab_button.modulate = TAB_MODULATE_SELECTED if _selected_category == SHOP_ITEM_CATEGORY_SCRIPT.BOOSTERS else TAB_MODULATE_UNSELECTED
 	gems_tab_button.modulate = TAB_MODULATE_SELECTED if _selected_category == SHOP_ITEM_CATEGORY_SCRIPT.GEMS else TAB_MODULATE_UNSELECTED
 	bundles_tab_button.modulate = TAB_MODULATE_SELECTED if _selected_category == SHOP_ITEM_CATEGORY_SCRIPT.BUNDLES else TAB_MODULATE_UNSELECTED
+	offers_tab_button.modulate = TAB_MODULATE_SELECTED if _selected_category == SHOP_ITEM_CATEGORY_SCRIPT.OFFERS else TAB_MODULATE_UNSELECTED
+
+
+func _build_boosters_content() -> void:
+	if boosters_content == null:
+		return
+
+	var top_row := boosters_content.get_node_or_null("TopRow")
+	var bottom_row := boosters_content.get_node_or_null("BottomRow")
+	if top_row == null or bottom_row == null:
+		return
+
+	for booster_id in BOOSTER_IDS:
+		_add_booster_tile(top_row, "booster_%s_gold" % booster_id, booster_id)
+	for booster_id in BOOSTER_IDS:
+		_add_booster_tile(bottom_row, "booster_%s_gems" % booster_id, booster_id)
+
+
+func _add_booster_tile(row: Node, item_id: String, booster_id: String) -> void:
+	var item = _shop_catalog.get_item(item_id)
+	if item == null:
+		return
+
+	var tile: ShopBoosterTile = SHOP_BOOSTER_TILE_SCENE.instantiate()
+	row.add_child(tile)
+	var icon := GAME_ASSET_CATALOG.try_load_texture_cached(ASSET_KEY_RESOLVER_SCRIPT.get_shop_booster_icon_asset_key(booster_id))
+	tile.set_item(item, icon)
+	tile.buy_pressed.connect(_on_booster_buy_pressed)
+
+
+func _build_gems_content() -> void:
+	if gems_content == null:
+		return
+
+	var row1 := gems_content.get_node_or_null("Row1")
+	var row2 := gems_content.get_node_or_null("Row2")
+	if row1 == null or row2 == null:
+		return
+
+	_add_product_tile(row1, GEM_PRODUCT_IDS[0], ASSET_KEY_RESOLVER_SCRIPT.get_shop_gem_product_icon_asset_key(GEM_PRODUCT_IDS[0]))
+	_add_product_tile(row1, GEM_PRODUCT_IDS[1], ASSET_KEY_RESOLVER_SCRIPT.get_shop_gem_product_icon_asset_key(GEM_PRODUCT_IDS[1]))
+	_add_product_tile(row2, GEM_PRODUCT_IDS[2], ASSET_KEY_RESOLVER_SCRIPT.get_shop_gem_product_icon_asset_key(GEM_PRODUCT_IDS[2]))
+	_add_product_tile(row2, GEM_PRODUCT_IDS[3], ASSET_KEY_RESOLVER_SCRIPT.get_shop_gem_product_icon_asset_key(GEM_PRODUCT_IDS[3]))
+
+
+func _build_bundles_content() -> void:
+	if bundles_content == null:
+		return
+
+	var row1 := bundles_content.get_node_or_null("Row1")
+	var row2 := bundles_content.get_node_or_null("Row2")
+	if row1 == null or row2 == null:
+		return
+
+	_add_product_tile(row1, BUNDLE_IDS[0], ASSET_KEY_RESOLVER_SCRIPT.get_shop_bundle_icon_asset_key(BUNDLE_IDS[0]))
+	_add_product_tile(row1, BUNDLE_IDS[1], ASSET_KEY_RESOLVER_SCRIPT.get_shop_bundle_icon_asset_key(BUNDLE_IDS[1]))
+	_add_product_tile(row2, BUNDLE_IDS[2], ASSET_KEY_RESOLVER_SCRIPT.get_shop_bundle_icon_asset_key(BUNDLE_IDS[2]))
+	_add_product_tile(row2, BUNDLE_IDS[3], ASSET_KEY_RESOLVER_SCRIPT.get_shop_bundle_icon_asset_key(BUNDLE_IDS[3]))
+
+
+func _add_product_tile(row: Node, item_id: String, icon_asset_key: String) -> void:
+	var item = _shop_catalog.get_item(item_id)
+	if item == null:
+		return
+
+	var tile: ShopProductTile = SHOP_PRODUCT_TILE_SCENE.instantiate()
+	row.add_child(tile)
+	var icon := GAME_ASSET_CATALOG.try_load_texture_cached(icon_asset_key)
+	tile.set_item(item, icon)
+	tile.buy_pressed.connect(_on_product_buy_pressed)
 
 
 func _on_boosters_tab_pressed() -> void:
@@ -106,16 +213,28 @@ func _on_bundles_tab_pressed() -> void:
 	_show_category(SHOP_ITEM_CATEGORY_SCRIPT.BUNDLES)
 
 
-func _on_item_purchase_pressed(item_id: String) -> void:
+func _on_offers_tab_pressed() -> void:
 	_play_button_click()
-	var result: Dictionary = _purchase_resolver.purchase(item_id, _progress_manager, _shop_catalog)
+	_show_category(SHOP_ITEM_CATEGORY_SCRIPT.OFFERS)
+
+
+func _on_booster_buy_pressed(item_id: String, quantity: int) -> void:
+	_play_button_click()
+	_resolve_purchase(item_id, quantity)
+
+
+func _on_product_buy_pressed(item_id: String) -> void:
+	_play_button_click()
+	_resolve_purchase(item_id, 1)
+
+
+func _resolve_purchase(item_id: String, quantity: int) -> void:
+	var result: Dictionary = _purchase_resolver.purchase(item_id, _progress_manager, _shop_catalog, quantity)
 	feedback_label.text = SHOP_PURCHASE_FORMATTER_SCRIPT.format_purchase_result(result)
 	_refresh_wallet()
-	if bool(result.get("accepted", false)):
-		_refresh_items()
 
 
-func _on_back_button_pressed() -> void:
+func _on_back_button_delayed_pressed() -> void:
 	_play_button_click()
 	back_pressed.emit()
 

@@ -15,11 +15,13 @@ const REASON_INVALID_PRICE := "invalid_price"
 const REASON_INVALID_REWARD := "invalid_reward"
 
 
-func purchase(item_id: String, progress_manager, shop_catalog) -> Dictionary:
+func purchase(item_id: String, progress_manager, shop_catalog, quantity: int = 1) -> Dictionary:
+	var normalized_quantity: int = max(1, quantity)
 	var result := {
 		"accepted": false,
 		"reason": REASON_INVALID_ITEM,
 		"item_id": item_id,
+		"quantity": normalized_quantity,
 		"spent": [],
 		"granted": [],
 	}
@@ -36,12 +38,12 @@ func purchase(item_id: String, progress_manager, shop_catalog) -> Dictionary:
 		return result
 
 	if item.purchase_kind == SHOP_PURCHASE_KIND_SCRIPT.CURRENCY:
-		return _purchase_with_currency(item, progress_manager, result)
+		return _purchase_with_currency(item, progress_manager, result, normalized_quantity)
 
 	return result
 
 
-func _purchase_with_currency(item, progress_manager, result: Dictionary) -> Dictionary:
+func _purchase_with_currency(item, progress_manager, result: Dictionary, quantity: int) -> Dictionary:
 	if progress_manager == null:
 		result["reason"] = REASON_INVALID_PROGRESS
 		return result
@@ -55,33 +57,35 @@ func _purchase_with_currency(item, progress_manager, result: Dictionary) -> Dict
 			result["reason"] = REASON_INVALID_REWARD
 			return result
 
-	if not progress_manager.can_spend_currency(item.price_currency_id, item.price_amount):
+	var total_price: int = item.price_amount * quantity
+
+	if not progress_manager.can_spend_currency(item.price_currency_id, total_price):
 		if item.price_currency_id == CURRENCY_TYPE_SCRIPT.GOLD:
 			result["reason"] = REASON_NOT_ENOUGH_GOLD
 		else:
 			result["reason"] = REASON_NOT_ENOUGH_GEMS
 		return result
 
-	if not progress_manager.spend_currency(item.price_currency_id, item.price_amount):
+	if not progress_manager.spend_currency(item.price_currency_id, total_price):
 		if item.price_currency_id == CURRENCY_TYPE_SCRIPT.GOLD:
 			result["reason"] = REASON_NOT_ENOUGH_GOLD
 		else:
 			result["reason"] = REASON_NOT_ENOUGH_GEMS
 		return result
 
-	var spent: Array = [{"currency_id": item.price_currency_id, "amount": item.price_amount}]
+	var spent: Array = [{"currency_id": item.price_currency_id, "amount": total_price}]
 	var granted: Array = []
 
 	for reward in item.rewards:
 		match str(reward.get("type", "")):
 			SHOP_REWARD_TYPE_SCRIPT.CURRENCY:
 				var currency_id := str(reward.get("currency_id", ""))
-				var amount := int(reward.get("amount", 0))
+				var amount := int(reward.get("amount", 0)) * quantity
 				progress_manager.add_currency(currency_id, amount)
 				granted.append({"type": SHOP_REWARD_TYPE_SCRIPT.CURRENCY, "currency_id": currency_id, "amount": amount})
 			SHOP_REWARD_TYPE_SCRIPT.BOOSTER:
 				var booster_id := str(reward.get("booster_id", ""))
-				var booster_amount := int(reward.get("amount", 0))
+				var booster_amount := int(reward.get("amount", 0)) * quantity
 				progress_manager.add_booster(booster_id, booster_amount)
 				granted.append({"type": SHOP_REWARD_TYPE_SCRIPT.BOOSTER, "booster_id": booster_id, "amount": booster_amount})
 

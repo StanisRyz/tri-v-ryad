@@ -50,6 +50,7 @@ const UI_ASSET_KEYS := {
 	"settings_background": "ui_settings_background",
 	"settings_panel": "ui_settings_panel",
 	"settings_window": "ui_settings_window",
+	"shop_window": "ui_shop_window",
 	"shared_background": "ui_shared_background",
 	"shared_back_button_default": "ui_shared_back_button_default",
 	"shared_back_button_pressed": "ui_shared_back_button_pressed",
@@ -73,6 +74,26 @@ const LEVEL_BUTTON_ASSET_KEYS := {
 	"open": "ui_level_button_open",
 	"locked": "ui_level_button_locked",
 	"completed": "ui_level_button_completed",
+}
+
+const SHOP_BOOSTER_ICON_ASSET_KEYS := {
+	"hammer": "shop_icon_booster_hammer",
+	"freeze_time": "shop_icon_booster_freeze_time",
+	"rocket_barrage": "shop_icon_booster_rocket_barrage",
+}
+
+const SHOP_GEM_PRODUCT_ICON_ASSET_KEYS := {
+	"gems_50": "shop_icon_gems_50",
+	"gems_150": "shop_icon_gems_150",
+	"gems_250": "shop_icon_gems_250",
+	"gems_500": "shop_icon_gems_500",
+}
+
+const SHOP_BUNDLE_ICON_ASSET_KEYS := {
+	"bundle_small": "shop_icon_bundle_small",
+	"bundle_medium": "shop_icon_bundle_medium",
+	"bundle_large": "shop_icon_bundle_large",
+	"bundle_mega": "shop_icon_bundle_mega",
 }
 
 const MAIN_MENU_BACKGROUND_ASSET_KEY := "main_menu_background"
@@ -115,6 +136,18 @@ static func get_level_button_asset_key(state: String) -> String:
 
 static func get_star_asset_key(filled: bool) -> String:
 	return "ui_star_filled" if filled else "ui_star_empty"
+
+
+static func get_shop_booster_icon_asset_key(booster_id: String) -> String:
+	return SHOP_BOOSTER_ICON_ASSET_KEYS.get(booster_id, "")
+
+
+static func get_shop_gem_product_icon_asset_key(product_id: String) -> String:
+	return SHOP_GEM_PRODUCT_ICON_ASSET_KEYS.get(product_id, "")
+
+
+static func get_shop_bundle_icon_asset_key(bundle_id: String) -> String:
+	return SHOP_BUNDLE_ICON_ASSET_KEYS.get(bundle_id, "")
 
 
 static func get_main_menu_background_asset_key() -> String:

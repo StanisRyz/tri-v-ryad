@@ -1,0 +1,45 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/shop/shop_booster_tile.gd" id="1_tile"]
+[ext_resource type="Script" path="res://scripts/ui/fallback_image_slot.gd" id="2_slot"]
+
+[node name="ShopBoosterTile" type="PanelContainer"]
+custom_minimum_size = Vector2(176, 190)
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("1_tile")
+
+[node name="Content" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="IconArea" type="Control" parent="Content"]
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="IconSlot" type="Control" parent="Content/IconArea"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2_slot")
+placeholder_color = Color(0.36, 0.3, 0.5, 1)
+
+[node name="QuantitySpin" type="SpinBox" parent="Content"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 1.0
+max_value = 99.0
+value = 1.0
+step = 1.0
+alignment = 1
+
+[node name="BuyButton" type="Button" parent="Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+text = "20 Gold"
