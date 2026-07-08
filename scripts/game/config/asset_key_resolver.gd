@@ -51,6 +51,8 @@ const UI_ASSET_KEYS := {
 	"settings_panel": "ui_settings_panel",
 	"settings_window": "ui_settings_window",
 	"shop_window": "ui_shop_window",
+	"shop_tab_default": "ui_shop_tab_default",
+	"shop_tab_pressed": "ui_shop_tab_pressed",
 	"shared_background": "ui_shared_background",
 	"shared_back_button_default": "ui_shared_back_button_default",
 	"shared_back_button_pressed": "ui_shared_back_button_pressed",

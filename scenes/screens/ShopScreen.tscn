@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://bsjj7davox3yf"]
+[gd_scene load_steps=16 format=3 uid="uid://bsjj7davox3yf"]
 
 [ext_resource type="Script" uid="uid://g1lkmxhr2bma" path="res://scripts/screens/shop_screen.gd" id="1_shop1"]
 [ext_resource type="Script" uid="uid://b0dlqhi1wwh6t" path="res://scripts/ui/fallback_image_slot.gd" id="2_slot"]
@@ -7,8 +7,19 @@
 [ext_resource type="Texture2D" uid="uid://cs7cqykhsk7m8" path="res://assets/images/ui/shop/shop_window.png" id="4_wmsxa"]
 [ext_resource type="Texture2D" uid="uid://c06ua0pjgbjwj" path="res://assets/images/ui/shared/buttons/back_default.png" id="5_back_n"]
 [ext_resource type="Texture2D" uid="uid://8dpiq5nunba1" path="res://assets/images/ui/shared/buttons/back_pressed.png" id="6_back_p"]
+[ext_resource type="Texture2D" uid="uid://bxf8anjllhjqv" path="res://assets/images/ui/shop/tabs/tabs_default.png" id="6_d8auu"]
+[ext_resource type="Script" uid="uid://ba8ko8fowviou" path="res://scripts/ui/shop/shop_tab_button.gd" id="7_tabbtn"]
+[ext_resource type="Texture2D" uid="uid://vole2qnqvu15" path="res://assets/images/ui/shop/tabs/tabs_pressed.png" id="8_tabpress"]
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_1op1a"]
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_t2ujj"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_uqcu1"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_weuau"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_004tl"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_c68wq"]
 
 [node name="ShopScreen" type="Control"]
 layout_mode = 3
@@ -75,7 +86,6 @@ script = ExtResource("2_slot")
 placeholder_color = Color(0.14, 0.16, 0.22, 1)
 
 [node name="Fallback" type="ColorRect" parent="ShopWindow/WindowVisual"]
-visible = false
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -94,69 +104,297 @@ stretch_mode = 5
 [node name="BoostersTabButton" type="Button" parent="ShopWindow"]
 unique_name_in_owner = true
 layout_mode = 1
-offset_left = 40.0
-offset_top = 28.0
-offset_right = 175.0
-offset_bottom = 82.0
+offset_left = 10.0
+offset_top = 13.0
+offset_right = 160.0
+offset_bottom = 93.0
+focus_mode = 0
+theme_override_colors/font_color = Color(0, 0, 0, 0)
+theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
+theme_override_styles/normal = SubResource("StyleBoxEmpty_t2ujj")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_t2ujj")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_t2ujj")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_t2ujj")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_t2ujj")
+flat = true
+script = ExtResource("7_tabbtn")
+default_texture = ExtResource("6_d8auu")
+selected_texture = ExtResource("8_tabpress")
+button_text = "Бустеры"
+is_selected = true
+
+[node name="Fallback" type="ColorRect" parent="ShopWindow/BoostersTabButton"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.35, 0.5, 0.32, 1)
+
+[node name="ButtonTexture" type="TextureRect" parent="ShopWindow/BoostersTabButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("8_tabpress")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TextMargin" type="MarginContainer" parent="ShopWindow/BoostersTabButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="ShopWindow/BoostersTabButton/TextMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 20
 text = "Бустеры"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="GemsTabButton" type="Button" parent="ShopWindow"]
 unique_name_in_owner = true
 layout_mode = 1
-offset_left = 175.0
-offset_top = 28.0
+offset_left = 160.0
+offset_top = 13.0
 offset_right = 310.0
-offset_bottom = 82.0
+offset_bottom = 93.0
+focus_mode = 0
+theme_override_colors/font_color = Color(0, 0, 0, 0)
+theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
+theme_override_styles/normal = SubResource("StyleBoxEmpty_uqcu1")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_uqcu1")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_uqcu1")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_uqcu1")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_uqcu1")
+flat = true
+script = ExtResource("7_tabbtn")
+default_texture = ExtResource("6_d8auu")
+selected_texture = ExtResource("8_tabpress")
+button_text = "Гемы"
+
+[node name="Fallback" type="ColorRect" parent="ShopWindow/GemsTabButton"]
+visible = false
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.22, 0.24, 0.32, 1)
+
+[node name="ButtonTexture" type="TextureRect" parent="ShopWindow/GemsTabButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_d8auu")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TextMargin" type="MarginContainer" parent="ShopWindow/GemsTabButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="ShopWindow/GemsTabButton/TextMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 20
 text = "Гемы"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="BundlesTabButton" type="Button" parent="ShopWindow"]
 unique_name_in_owner = true
 layout_mode = 1
 offset_left = 310.0
-offset_top = 28.0
-offset_right = 445.0
-offset_bottom = 82.0
+offset_top = 13.0
+offset_right = 460.0
+offset_bottom = 93.0
+focus_mode = 0
+theme_override_colors/font_color = Color(0, 0, 0, 0)
+theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
+theme_override_styles/normal = SubResource("StyleBoxEmpty_weuau")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_weuau")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_weuau")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_weuau")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_weuau")
+flat = true
+script = ExtResource("7_tabbtn")
+default_texture = ExtResource("6_d8auu")
+selected_texture = ExtResource("8_tabpress")
+button_text = "Пакеты"
+
+[node name="Fallback" type="ColorRect" parent="ShopWindow/BundlesTabButton"]
+visible = false
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.22, 0.24, 0.32, 1)
+
+[node name="ButtonTexture" type="TextureRect" parent="ShopWindow/BundlesTabButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_d8auu")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TextMargin" type="MarginContainer" parent="ShopWindow/BundlesTabButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="ShopWindow/BundlesTabButton/TextMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 20
 text = "Пакеты"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="OffersTabButton" type="Button" parent="ShopWindow"]
 unique_name_in_owner = true
 layout_mode = 1
-offset_left = 445.0
-offset_top = 28.0
-offset_right = 580.0
-offset_bottom = 82.0
+offset_left = 460.0
+offset_top = 13.0
+offset_right = 610.0
+offset_bottom = 93.0
+focus_mode = 0
+theme_override_colors/font_color = Color(0, 0, 0, 0)
+theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
+theme_override_styles/normal = SubResource("StyleBoxEmpty_004tl")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_004tl")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_004tl")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_004tl")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_004tl")
+flat = true
+script = ExtResource("7_tabbtn")
+default_texture = ExtResource("6_d8auu")
+selected_texture = ExtResource("8_tabpress")
+button_text = "Предложения"
+
+[node name="Fallback" type="ColorRect" parent="ShopWindow/OffersTabButton"]
+visible = false
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.22, 0.24, 0.32, 1)
+
+[node name="ButtonTexture" type="TextureRect" parent="ShopWindow/OffersTabButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_d8auu")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TextMargin" type="MarginContainer" parent="ShopWindow/OffersTabButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="ShopWindow/OffersTabButton/TextMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 20
 text = "Предложения"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="GoldLabel" type="Label" parent="ShopWindow"]
 unique_name_in_owner = true
 layout_mode = 1
-offset_left = 40.0
-offset_top = 92.0
-offset_right = 300.0
-offset_bottom = 120.0
+offset_left = 150.0
+offset_top = 135.0
+offset_right = 301.0
+offset_bottom = 174.0
 theme_override_font_sizes/font_size = 20
 text = "Gold: 0"
-horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="GemsLabel" type="Label" parent="ShopWindow"]
 unique_name_in_owner = true
 layout_mode = 1
-offset_left = 320.0
-offset_top = 92.0
-offset_right = 580.0
-offset_bottom = 120.0
+offset_left = 378.0
+offset_top = 140.0
+offset_right = 516.0
+offset_bottom = 168.0
 theme_override_font_sizes/font_size = 20
 text = "Gems: 0"
-horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="ContentRoot" type="Control" parent="ShopWindow"]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 0
-offset_left = 20.0
-offset_top = 130.0
-offset_right = 600.0
-offset_bottom = 630.0
+offset_left = 30.0
+offset_top = 193.0
+offset_right = 590.0
+offset_bottom = 660.0
 
 [node name="BoostersContent" type="VBoxContainer" parent="ShopWindow/ContentRoot"]
 unique_name_in_owner = true
@@ -164,6 +402,7 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_top = 33.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 8
@@ -261,11 +500,11 @@ theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
 theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
 theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
 theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
-theme_override_styles/normal = SubResource("StyleBoxEmpty_1op1a")
-theme_override_styles/pressed = SubResource("StyleBoxEmpty_1op1a")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_1op1a")
-theme_override_styles/disabled = SubResource("StyleBoxEmpty_1op1a")
-theme_override_styles/focus = SubResource("StyleBoxEmpty_1op1a")
+theme_override_styles/normal = SubResource("StyleBoxEmpty_c68wq")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_c68wq")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_c68wq")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_c68wq")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_c68wq")
 flat = true
 script = ExtResource("3_btn")
 normal_texture = ExtResource("5_back_n")

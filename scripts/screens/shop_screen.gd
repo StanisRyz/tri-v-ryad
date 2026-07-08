@@ -13,9 +13,6 @@ const GAME_ASSET_CATALOG := preload("res://scripts/game/config/game_asset_catalo
 const SHOP_BOOSTER_TILE_SCENE := preload("res://scenes/ui/shop/ShopBoosterTile.tscn")
 const SHOP_PRODUCT_TILE_SCENE := preload("res://scenes/ui/shop/ShopProductTile.tscn")
 
-const TAB_MODULATE_SELECTED := Color(1, 1, 1, 1)
-const TAB_MODULATE_UNSELECTED := Color(0.55, 0.55, 0.55, 1)
-
 const BOOSTER_IDS := [
 	BOOSTER_CATALOG_SCRIPT.HAMMER,
 	BOOSTER_CATALOG_SCRIPT.FREEZE_TIME,
@@ -28,10 +25,10 @@ const BUNDLE_IDS := ["bundle_small", "bundle_medium", "bundle_large", "bundle_me
 @onready var background_rect: FallbackImageSlot = %Background
 @onready var shop_window_visual: FallbackImageSlot = %WindowVisual
 @onready var back_button: PressableTextureButton = %BackButton
-@onready var boosters_tab_button: Button = %BoostersTabButton
-@onready var gems_tab_button: Button = %GemsTabButton
-@onready var bundles_tab_button: Button = %BundlesTabButton
-@onready var offers_tab_button: Button = %OffersTabButton
+@onready var boosters_tab_button: ShopTabButton = %BoostersTabButton
+@onready var gems_tab_button: ShopTabButton = %GemsTabButton
+@onready var bundles_tab_button: ShopTabButton = %BundlesTabButton
+@onready var offers_tab_button: ShopTabButton = %OffersTabButton
 @onready var gold_label: Label = %GoldLabel
 @onready var gems_label: Label = %GemsLabel
 @onready var boosters_content: Control = %BoostersContent
@@ -76,6 +73,7 @@ func _bind_static_ui_assets() -> void:
 	_bind_texture_slot(background_rect, "shared_background")
 	_bind_texture_slot(shop_window_visual, "shop_window")
 	_bind_back_button_textures()
+	_bind_tab_button_textures()
 
 
 func _bind_texture_slot(slot: FallbackImageSlot, ui_id: String) -> void:
@@ -99,6 +97,18 @@ func _bind_back_button_textures() -> void:
 		var pressed_texture := GAME_ASSET_CATALOG.try_load_texture_cached(ASSET_KEY_RESOLVER_SCRIPT.get_ui_asset_key("shared_back_button_pressed"))
 		if pressed_texture != null:
 			back_button.set_pressed_texture(pressed_texture)
+
+
+func _bind_tab_button_textures() -> void:
+	var default_texture := GAME_ASSET_CATALOG.try_load_texture_cached(ASSET_KEY_RESOLVER_SCRIPT.get_ui_asset_key("shop_tab_default"))
+	var selected_texture := GAME_ASSET_CATALOG.try_load_texture_cached(ASSET_KEY_RESOLVER_SCRIPT.get_ui_asset_key("shop_tab_pressed"))
+	for tab_button in [boosters_tab_button, gems_tab_button, bundles_tab_button, offers_tab_button]:
+		if tab_button == null:
+			continue
+		if tab_button.default_texture == null and default_texture != null:
+			tab_button.default_texture = default_texture
+		if tab_button.selected_texture == null and selected_texture != null:
+			tab_button.selected_texture = selected_texture
 
 
 func _refresh_wallet() -> void:
@@ -125,10 +135,10 @@ func _show_category(category: String) -> void:
 
 
 func _update_tab_visuals() -> void:
-	boosters_tab_button.modulate = TAB_MODULATE_SELECTED if _selected_category == SHOP_ITEM_CATEGORY_SCRIPT.BOOSTERS else TAB_MODULATE_UNSELECTED
-	gems_tab_button.modulate = TAB_MODULATE_SELECTED if _selected_category == SHOP_ITEM_CATEGORY_SCRIPT.GEMS else TAB_MODULATE_UNSELECTED
-	bundles_tab_button.modulate = TAB_MODULATE_SELECTED if _selected_category == SHOP_ITEM_CATEGORY_SCRIPT.BUNDLES else TAB_MODULATE_UNSELECTED
-	offers_tab_button.modulate = TAB_MODULATE_SELECTED if _selected_category == SHOP_ITEM_CATEGORY_SCRIPT.OFFERS else TAB_MODULATE_UNSELECTED
+	boosters_tab_button.set_selected(_selected_category == SHOP_ITEM_CATEGORY_SCRIPT.BOOSTERS)
+	gems_tab_button.set_selected(_selected_category == SHOP_ITEM_CATEGORY_SCRIPT.GEMS)
+	bundles_tab_button.set_selected(_selected_category == SHOP_ITEM_CATEGORY_SCRIPT.BUNDLES)
+	offers_tab_button.set_selected(_selected_category == SHOP_ITEM_CATEGORY_SCRIPT.OFFERS)
 
 
 func _build_boosters_content() -> void:

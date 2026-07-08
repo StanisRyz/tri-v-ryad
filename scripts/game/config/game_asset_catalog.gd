@@ -43,6 +43,8 @@ const ASSET_MAP := {
 	"ui_settings_panel": "res://assets/images/ui/settings_panel.png",
 	"ui_settings_window": "res://assets/images/ui/settings/settings_window.png",
 	"ui_shop_window": "res://assets/images/ui/shop/shop_window.png",
+	"ui_shop_tab_default": "res://assets/images/ui/shop/tabs/tabs_default.png",
+	"ui_shop_tab_pressed": "res://assets/images/ui/shop/tabs/tabs_pressed.png",
 	"shop_icon_booster_hammer": "res://assets/images/ui/icons/boosters/hammer.png",
 	"shop_icon_booster_freeze_time": "res://assets/images/ui/icons/boosters/freeze_time.png",
 	"shop_icon_booster_rocket_barrage": "res://assets/images/ui/icons/boosters/rocket_barrage.png",
