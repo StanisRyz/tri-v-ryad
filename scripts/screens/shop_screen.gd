@@ -32,7 +32,8 @@ const BUNDLE_IDS := ["bundle_small", "bundle_medium", "bundle_large", "bundle_me
 @onready var gems_tab_button: Button = %GemsTabButton
 @onready var bundles_tab_button: Button = %BundlesTabButton
 @onready var offers_tab_button: Button = %OffersTabButton
-@onready var wallet_label: Label = %WalletLabel
+@onready var gold_label: Label = %GoldLabel
+@onready var gems_label: Label = %GemsLabel
 @onready var boosters_content: Control = %BoostersContent
 @onready var gems_content: Control = %GemsContent
 @onready var bundles_content: Control = %BundlesContent
@@ -101,7 +102,7 @@ func _bind_back_button_textures() -> void:
 
 
 func _refresh_wallet() -> void:
-	if wallet_label == null:
+	if gold_label == null or gems_label == null:
 		return
 
 	var gold := 0
@@ -110,7 +111,8 @@ func _refresh_wallet() -> void:
 		gold = _progress_manager.get_currency(CURRENCY_TYPE_SCRIPT.GOLD)
 		gems = _progress_manager.get_currency(CURRENCY_TYPE_SCRIPT.GEMS)
 
-	wallet_label.text = "Gold: %d   Gems: %d" % [gold, gems]
+	gold_label.text = "Gold: %d" % gold
+	gems_label.text = "Gems: %d" % gems
 
 
 func _show_category(category: String) -> void:

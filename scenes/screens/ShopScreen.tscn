@@ -1,13 +1,13 @@
 [gd_scene load_steps=8 format=3 uid="uid://bsjj7davox3yf"]
 
-[ext_resource type="Script" path="res://scripts/screens/shop_screen.gd" id="1_shop1"]
-[ext_resource type="Script" path="res://scripts/ui/fallback_image_slot.gd" id="2_slot"]
-[ext_resource type="Script" path="res://scripts/ui/pressable_texture_button.gd" id="3_btn"]
+[ext_resource type="Script" uid="uid://g1lkmxhr2bma" path="res://scripts/screens/shop_screen.gd" id="1_shop1"]
+[ext_resource type="Script" uid="uid://b0dlqhi1wwh6t" path="res://scripts/ui/fallback_image_slot.gd" id="2_slot"]
+[ext_resource type="Script" uid="uid://bxwkgbqyalc6e" path="res://scripts/ui/pressable_texture_button.gd" id="3_btn"]
 [ext_resource type="Texture2D" uid="uid://ca8j4jbl5k8ss" path="res://assets/images/ui/shared/background.png" id="4_bg"]
-[ext_resource type="Texture2D" path="res://assets/images/ui/shared/buttons/back_default.png" id="5_back_n"]
-[ext_resource type="Texture2D" path="res://assets/images/ui/shared/buttons/back_pressed.png" id="6_back_p"]
+[ext_resource type="Texture2D" uid="uid://c06ua0pjgbjwj" path="res://assets/images/ui/shared/buttons/back_default.png" id="5_back_n"]
+[ext_resource type="Texture2D" uid="uid://8dpiq5nunba1" path="res://assets/images/ui/shared/buttons/back_pressed.png" id="6_back_p"]
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_shop1"]
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ll742"]
 
 [node name="ShopScreen" type="Control"]
 layout_mode = 3
@@ -30,16 +30,33 @@ mouse_filter = 2
 script = ExtResource("2_slot")
 texture = ExtResource("4_bg")
 placeholder_color = Color(0.08, 0.1, 0.15, 1)
+
+[node name="Fallback" type="ColorRect" parent="Background"]
+visible = false
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.08, 0.1, 0.15, 1)
+
+[node name="TextureDisplay" type="TextureRect" parent="Background"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("4_bg")
 expand_mode = 1
 stretch_mode = 5
 
 [node name="ShopWindow" type="Control" parent="."]
 unique_name_in_owner = true
 layout_mode = 1
+anchors_preset = 0
 offset_left = 50.0
 offset_top = 330.0
 offset_right = 670.0
-offset_bottom = 950.0
+offset_bottom = 1150.0
 mouse_filter = 2
 
 [node name="WindowVisual" type="Control" parent="ShopWindow"]
@@ -53,64 +70,88 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("2_slot")
 placeholder_color = Color(0.14, 0.16, 0.22, 1)
+
+[node name="Fallback" type="ColorRect" parent="ShopWindow/WindowVisual"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.14, 0.16, 0.22, 1)
+
+[node name="TextureDisplay" type="TextureRect" parent="ShopWindow/WindowVisual"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="TabRow" type="HBoxContainer" parent="ShopWindow"]
+[node name="BoostersTabButton" type="Button" parent="ShopWindow"]
 unique_name_in_owner = true
 layout_mode = 1
 offset_left = 40.0
-offset_top = 20.0
-offset_right = 580.0
-offset_bottom = 74.0
-theme_override_constants/separation = 0
-
-[node name="BoostersTabButton" type="Button" parent="ShopWindow/TabRow"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(135, 54)
-layout_mode = 2
-size_flags_horizontal = 3
+offset_top = 28.0
+offset_right = 175.0
+offset_bottom = 82.0
 text = "Бустеры"
 
-[node name="GemsTabButton" type="Button" parent="ShopWindow/TabRow"]
+[node name="GemsTabButton" type="Button" parent="ShopWindow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(135, 54)
-layout_mode = 2
-size_flags_horizontal = 3
+layout_mode = 1
+offset_left = 175.0
+offset_top = 28.0
+offset_right = 310.0
+offset_bottom = 82.0
 text = "Гемы"
 
-[node name="BundlesTabButton" type="Button" parent="ShopWindow/TabRow"]
+[node name="BundlesTabButton" type="Button" parent="ShopWindow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(135, 54)
-layout_mode = 2
-size_flags_horizontal = 3
+layout_mode = 1
+offset_left = 310.0
+offset_top = 28.0
+offset_right = 445.0
+offset_bottom = 82.0
 text = "Пакеты"
 
-[node name="OffersTabButton" type="Button" parent="ShopWindow/TabRow"]
+[node name="OffersTabButton" type="Button" parent="ShopWindow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(135, 54)
-layout_mode = 2
-size_flags_horizontal = 3
+layout_mode = 1
+offset_left = 445.0
+offset_top = 28.0
+offset_right = 580.0
+offset_bottom = 82.0
 text = "Предложения"
 
-[node name="WalletLabel" type="Label" parent="ShopWindow"]
+[node name="GoldLabel" type="Label" parent="ShopWindow"]
 unique_name_in_owner = true
 layout_mode = 1
 offset_left = 40.0
-offset_top = 82.0
-offset_right = 580.0
-offset_bottom = 110.0
+offset_top = 92.0
+offset_right = 300.0
+offset_bottom = 120.0
 theme_override_font_sizes/font_size = 20
-text = "Gold: 0   Gems: 0"
+text = "Gold: 0"
+horizontal_alignment = 1
+
+[node name="GemsLabel" type="Label" parent="ShopWindow"]
+unique_name_in_owner = true
+layout_mode = 1
+offset_left = 320.0
+offset_top = 92.0
+offset_right = 580.0
+offset_bottom = 120.0
+theme_override_font_sizes/font_size = 20
+text = "Gems: 0"
 horizontal_alignment = 1
 
 [node name="ContentRoot" type="Control" parent="ShopWindow"]
 unique_name_in_owner = true
 layout_mode = 1
+anchors_preset = 0
 offset_left = 20.0
-offset_top = 118.0
+offset_top = 130.0
 offset_right = 600.0
-offset_bottom = 440.0
+offset_bottom = 630.0
 
 [node name="BoostersContent" type="VBoxContainer" parent="ShopWindow/ContentRoot"]
 unique_name_in_owner = true
@@ -196,31 +237,30 @@ vertical_alignment = 1
 unique_name_in_owner = true
 layout_mode = 1
 offset_left = 40.0
-offset_top = 448.0
+offset_top = 645.0
 offset_right = 580.0
-offset_bottom = 474.0
+offset_bottom = 675.0
 theme_override_font_sizes/font_size = 16
-text = ""
 horizontal_alignment = 1
 
 [node name="BackButton" type="Button" parent="ShopWindow"]
 unique_name_in_owner = true
 layout_mode = 1
 offset_left = 180.0
-offset_top = 480.0
+offset_top = 680.0
 offset_right = 440.0
-offset_bottom = 570.0
+offset_bottom = 770.0
 focus_mode = 0
 theme_override_colors/font_color = Color(0, 0, 0, 0)
 theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
 theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
 theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
 theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
-theme_override_styles/normal = SubResource("StyleBoxEmpty_shop1")
-theme_override_styles/pressed = SubResource("StyleBoxEmpty_shop1")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_shop1")
-theme_override_styles/disabled = SubResource("StyleBoxEmpty_shop1")
-theme_override_styles/focus = SubResource("StyleBoxEmpty_shop1")
+theme_override_styles/normal = SubResource("StyleBoxEmpty_ll742")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_ll742")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_ll742")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_ll742")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_ll742")
 flat = true
 script = ExtResource("3_btn")
 normal_texture = ExtResource("5_back_n")
