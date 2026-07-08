@@ -1477,3 +1477,16 @@ Stage 63.4.4 removes the text-based `StarsLabel` from `LevelInfoPopup` in favor 
 - **Popup-first level launch flow preserved.** Locked levels still never open `LevelInfoPopup`; `StartButton` remains the sole emitter of `level_selected` for `_pending_level_id`; `PopupBackButton` still only hides the popup and clears `_pending_level_id`, never emitting the screen-level `back_pressed`.
 - **Unchanged by design.** Zones of 5 levels, `LevelButton1`-`5` fixed-slot logic, `ZoneSelector`, the screen `BackButton`'s own behavior, `MainMenuScreen`, `SettingsScreen`, `ShopScreen`, `GameScreen`, economy, rewards, booster spending, deterministic layouts/boosts, holes, ice, no-move shuffle, and the victory/defeat/result flow are all untouched.
 - **No automated tests were added, updated, touched, or run.** Manual verification in the Godot editor is expected.
+
+## Stage 63.4.5: Level Zone Selector Polish v0.1
+
+Stage 63.4.5 polishes the still-temporary `ZoneSelector` `OptionButton`: its dropdown popup rows are styled to better match the selector's own size/readability, and each zone item now displays an accumulated zone star rating alongside its level range.
+
+- **Dropdown popup styled via theme overrides.** New `_style_zone_selector_popup()` fetches `zone_selector.get_popup()` (safely no-op'ing if `null`) and applies a `font_size` override plus `v_separation`/`item_start_padding`/`item_end_padding` constant overrides, sized against the current `ZoneSelector` node's own height without hardcoding the node's own rect (still manually adjusted by the user in the editor). Called once from `_ready()` and again at the end of every `_build_zone_selector()` rebuild.
+- **New zone star rating helper.** `_get_zone_rating_stars(zone_index)` sums earned stars across the zone's 5-level range against `existing_level_count * 3` max stars: exactly 100% → 3, 50-99% → 2, below 50% → 1 (including when the zone has no levels or zero max stars, per explicit request that under-50% still shows a star rather than none).
+- **New star text formatter.** `_format_zone_stars(stars)` clamps to `1..3` and renders `★`/`☆` glyphs (e.g. `2` → `★★☆`).
+- **Zone labels now show stars**, appended after the existing `LevelZoneHelper.format_zone_label()` text — e.g. `"Zone 1: Levels 1-5 ★☆☆"` — with the label's existing wording otherwise untouched.
+- **Zone stars stay current** automatically, since `refresh_progress_state()`/`_refresh()` already rebuild `ZoneSelector` via `_build_zone_selector()` on every progress update.
+- **`ZoneSelector` selection/id behavior preserved.** Item ids are still `zone_index`; unlocked-zone list building, "stay on the current selection while valid, else default to highest unlocked zone" logic, and `_on_zone_selected()` are unchanged.
+- **Unchanged by design.** `LevelButton1`-`5` fixed-slot logic/overlay/filter behavior, `LevelInfoPopup`'s star-state window and popup-first launch flow, the screen `BackButton`, `MainMenuScreen`, `SettingsScreen`, `ShopScreen`, `GameScreen`, economy, rewards, booster spending, deterministic layouts/boosts, holes, ice, no-move shuffle, and the victory/defeat/result flow are all untouched.
+- **No automated tests were added, updated, touched, or run.** Manual verification in the Godot editor is expected.

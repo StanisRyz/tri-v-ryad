@@ -48,6 +48,7 @@ func _ready() -> void:
 		_level_buttons[slot_index].pressed.connect(_on_level_button_pressed.bind(slot_index))
 	popup_start_button.delayed_pressed.connect(_on_popup_start_button_pressed)
 	popup_back_button.delayed_pressed.connect(_on_popup_back_button_pressed)
+	_style_zone_selector_popup()
 	_refresh()
 
 
@@ -137,11 +138,50 @@ func _build_zone_selector() -> void:
 	for zone_index in unlocked_zone_indices:
 		var level_range: Vector2i = LEVEL_ZONE_HELPER_SCRIPT.get_level_range_for_zone(zone_index, total_levels)
 		var label: String = LEVEL_ZONE_HELPER_SCRIPT.format_zone_label(zone_index, level_range.x, level_range.y)
+		label += " %s" % _format_zone_stars(_get_zone_rating_stars(zone_index))
 		zone_selector.add_item(label, zone_index)
 		if zone_index == _selected_zone_index:
 			selected_item_index = zone_selector.get_item_count() - 1
 
 	zone_selector.select(selected_item_index)
+	_style_zone_selector_popup()
+
+
+func _style_zone_selector_popup() -> void:
+	var popup := zone_selector.get_popup()
+	if popup == null:
+		return
+
+	popup.add_theme_font_size_override("font_size", 26)
+	popup.add_theme_constant_override("v_separation", 18)
+	popup.add_theme_constant_override("item_start_padding", 16)
+	popup.add_theme_constant_override("item_end_padding", 16)
+
+
+func _get_zone_rating_stars(zone_index: int) -> int:
+	var levels: Array = _level_catalog.get_all_levels()
+	var level_range: Vector2i = LEVEL_ZONE_HELPER_SCRIPT.get_level_range_for_zone(zone_index, levels.size())
+	if level_range == Vector2i.ZERO:
+		return 1
+
+	var earned_stars := 0
+	var max_stars := 0
+	for level_number in range(level_range.x, level_range.y + 1):
+		earned_stars += _get_level_stars("level_%d" % level_number)
+		max_stars += 3
+
+	if max_stars <= 0:
+		return 1
+	if earned_stars == max_stars:
+		return 3
+	if float(earned_stars) / float(max_stars) >= 0.5:
+		return 2
+	return 1
+
+
+func _format_zone_stars(stars: int) -> String:
+	var clamped_stars: int = clampi(stars, 1, 3)
+	return "★".repeat(clamped_stars) + "☆".repeat(3 - clamped_stars)
 
 
 func _refresh_level_button_slots() -> void:
