@@ -47,7 +47,7 @@ func refresh_progress_state() -> void:
 
 
 func _apply_background_texture() -> void:
-	if background_rect == null:
+	if background_rect == null or background_rect.texture != null:
 		return
 	var texture := GAME_ASSET_CATALOG.try_load_texture_cached(ASSET_KEY_RESOLVER_SCRIPT.get_main_menu_background_asset_key())
 	if texture != null:
@@ -62,14 +62,17 @@ func _bind_button_textures() -> void:
 
 
 func _bind_button_texture(button: PressableTextureButton, button_id: String) -> void:
-	var normal_key := ASSET_KEY_RESOLVER_SCRIPT.get_main_menu_button_asset_key(button_id, "default")
-	var pressed_key := ASSET_KEY_RESOLVER_SCRIPT.get_main_menu_button_asset_key(button_id, "pressed")
-	var normal_texture := GAME_ASSET_CATALOG.try_load_texture_cached(normal_key)
-	var pressed_texture := GAME_ASSET_CATALOG.try_load_texture_cached(pressed_key)
-	if normal_texture != null:
-		button.set_normal_texture(normal_texture)
-	if pressed_texture != null:
-		button.set_pressed_texture(pressed_texture)
+	if button.normal_texture == null:
+		var normal_key := ASSET_KEY_RESOLVER_SCRIPT.get_main_menu_button_asset_key(button_id, "default")
+		var normal_texture := GAME_ASSET_CATALOG.try_load_texture_cached(normal_key)
+		if normal_texture != null:
+			button.set_normal_texture(normal_texture)
+
+	if button.pressed_texture == null:
+		var pressed_key := ASSET_KEY_RESOLVER_SCRIPT.get_main_menu_button_asset_key(button_id, "pressed")
+		var pressed_texture := GAME_ASSET_CATALOG.try_load_texture_cached(pressed_key)
+		if pressed_texture != null:
+			button.set_pressed_texture(pressed_texture)
 
 
 func _refresh_wallet_labels() -> void:

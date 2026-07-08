@@ -28,6 +28,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_qnlxi")
+metadata/_edit_vertical_guides_ = [283.0]
 
 [node name="Background" type="TextureRect" parent="."]
 unique_name_in_owner = true
@@ -42,55 +43,26 @@ texture = ExtResource("4_bg")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="GoldField" type="Control" parent="."]
+[node name="GoldLabel" type="Label" parent="."]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 0
-offset_left = 85.0
+offset_left = 159.0
 offset_top = 355.0
-offset_right = 261.0
+offset_right = 342.0
 offset_bottom = 403.0
-mouse_filter = 2
-
-[node name="GoldLabel" type="Label" parent="GoldField"]
-unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 75.0
-offset_top = 1.0
-offset_right = 75.0
-offset_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
 theme_override_font_sizes/font_size = 28
 text = "Gold: 0"
 vertical_alignment = 1
 
-[node name="GemsField" type="Control" parent="."]
+[node name="GemsLabel" type="Label" parent="."]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 0
 offset_left = 450.0
-offset_top = 356.0
-offset_right = 615.0
-offset_bottom = 404.0
-mouse_filter = 2
-
-[node name="GemsLabel" type="Label" parent="GemsField"]
-unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -1.0
-offset_right = -58.0
-grow_horizontal = 2
-grow_vertical = 2
+offset_top = 355.0
+offset_right = 631.0
+offset_bottom = 403.0
 theme_override_font_sizes/font_size = 28
 text = "Gems: 0"
-horizontal_alignment = 2
 vertical_alignment = 1
 
 [node name="PlayButton" type="Button" parent="."]
@@ -117,7 +89,15 @@ normal_texture = ExtResource("5_play_n")
 pressed_texture = ExtResource("6_play_p")
 button_text = "Играть"
 
-[node name="ButtonTexture2" type="TextureRect" parent="PlayButton"]
+[node name="Placeholder" type="ColorRect" parent="PlayButton"]
+visible = false
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.22, 0.24, 0.32, 1)
+
+[node name="ButtonTexture" type="TextureRect" parent="PlayButton"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -129,14 +109,33 @@ texture = ExtResource("5_play_n")
 expand_mode = 1
 stretch_mode = 4
 
-[node name="TextMargin2" type="MarginContainer" parent="PlayButton"]
+[node name="TextMargin" type="MarginContainer" parent="PlayButton"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 138.0
+offset_top = -2.0
+offset_right = -11.0
+offset_bottom = -2.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
+
+[node name="Label" type="Label" parent="PlayButton/TextMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 30
+text = "Играть"
+vertical_alignment = 1
 
 [node name="LevelSelectButton" type="Button" parent="."]
 unique_name_in_owner = true
@@ -162,7 +161,15 @@ normal_texture = ExtResource("7_ls_n")
 pressed_texture = ExtResource("8_ls_p")
 button_text = "Выбрать уровень"
 
-[node name="ButtonTexture2" type="TextureRect" parent="LevelSelectButton"]
+[node name="Placeholder" type="ColorRect" parent="LevelSelectButton"]
+visible = false
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.22, 0.24, 0.32, 1)
+
+[node name="ButtonTexture" type="TextureRect" parent="LevelSelectButton"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -174,14 +181,30 @@ texture = ExtResource("7_ls_n")
 expand_mode = 1
 stretch_mode = 4
 
-[node name="TextMargin2" type="MarginContainer" parent="LevelSelectButton"]
+[node name="TextMargin" type="MarginContainer" parent="LevelSelectButton"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 138.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
+
+[node name="Label" type="Label" parent="LevelSelectButton/TextMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 30
+text = "Выбрать уровень"
+vertical_alignment = 1
 
 [node name="ShopButton" type="Button" parent="."]
 unique_name_in_owner = true
@@ -207,7 +230,15 @@ normal_texture = ExtResource("9_shop_n")
 pressed_texture = ExtResource("10_shop_p")
 button_text = "Магазин"
 
-[node name="ButtonTexture2" type="TextureRect" parent="ShopButton"]
+[node name="Placeholder" type="ColorRect" parent="ShopButton"]
+visible = false
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.22, 0.24, 0.32, 1)
+
+[node name="ButtonTexture" type="TextureRect" parent="ShopButton"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -219,14 +250,30 @@ texture = ExtResource("9_shop_n")
 expand_mode = 1
 stretch_mode = 4
 
-[node name="TextMargin2" type="MarginContainer" parent="ShopButton"]
+[node name="TextMargin" type="MarginContainer" parent="ShopButton"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 138.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
+
+[node name="Label" type="Label" parent="ShopButton/TextMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 30
+text = "Магазин"
+vertical_alignment = 1
 
 [node name="SettingsButton" type="Button" parent="."]
 unique_name_in_owner = true
@@ -252,7 +299,15 @@ normal_texture = ExtResource("11_set_n")
 pressed_texture = ExtResource("12_set_p")
 button_text = "Настройки"
 
-[node name="ButtonTexture2" type="TextureRect" parent="SettingsButton"]
+[node name="Placeholder" type="ColorRect" parent="SettingsButton"]
+visible = false
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.22, 0.24, 0.32, 1)
+
+[node name="ButtonTexture" type="TextureRect" parent="SettingsButton"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -264,14 +319,30 @@ texture = ExtResource("11_set_n")
 expand_mode = 1
 stretch_mode = 4
 
-[node name="TextMargin2" type="MarginContainer" parent="SettingsButton"]
+[node name="TextMargin" type="MarginContainer" parent="SettingsButton"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 138.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
+
+[node name="Label" type="Label" parent="SettingsButton/TextMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 30
+text = "Настройки"
+vertical_alignment = 1
 
 [node name="HeroesButton" type="Button" parent="."]
 unique_name_in_owner = true

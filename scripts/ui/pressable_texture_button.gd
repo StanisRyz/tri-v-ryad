@@ -14,6 +14,14 @@ class_name PressableTextureButton
 ## child nodes present. Because TextMargin/Label are children of the button
 ## (not screen-level nodes), text always follows the button when it is moved
 ## or resized in the Inspector.
+##
+## Child lookup/creation only ever happens once, from _ready(), never from an
+## exported-property setter: during scene instantiation Godot applies a
+## node's exported properties before its own tscn-declared children are
+## attached, so creating children from a setter would race the real
+## "ButtonTexture"/"TextMargin" nodes and get auto-renamed to "...2" on
+## collision. Setters are safe to call at any time; they just no-op until
+## _ready() has run once.
 
 signal delayed_pressed
 
@@ -65,11 +73,16 @@ signal delayed_pressed
 
 @export var pressed_text_offset: Vector2 = Vector2(0, 3)
 
+const LABEL_FONT_COLOR := Color(1, 1, 1, 1)
+const LABEL_OUTLINE_COLOR := Color(0, 0, 0, 1)
+const LABEL_OUTLINE_SIZE := 4
+
 var _placeholder_rect: ColorRect
 var _texture_rect: TextureRect
 var _text_zone: MarginContainer
 var _label: Label
 var _animation_pending := false
+var _ready_done := false
 
 
 func _ready() -> void:
@@ -77,6 +90,7 @@ func _ready() -> void:
 	flat = true
 	_clear_button_visuals()
 	_ensure_children()
+	_ready_done = true
 	_update_visual()
 	_update_label()
 	_update_label_font_size()
@@ -152,12 +166,15 @@ func _ensure_children() -> void:
 			_label = Label.new()
 			_label.name = "Label"
 			_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-			_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-			_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
 			_text_zone.add_child(_label)
 			_own_created_node(_label)
+		_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		_label.add_theme_color_override("font_color", LABEL_FONT_COLOR)
+		_label.add_theme_color_override("font_outline_color", LABEL_OUTLINE_COLOR)
+		_label.add_theme_constant_override("outline_size", LABEL_OUTLINE_SIZE)
 
 
 func _own_created_node(node: Node) -> void:
@@ -170,24 +187,28 @@ func _own_created_node(node: Node) -> void:
 
 
 func _update_visual() -> void:
-	_ensure_children()
+	if not _ready_done:
+		return
 	_texture_rect.texture = normal_texture
 	_placeholder_rect.color = placeholder_color
 	_placeholder_rect.visible = normal_texture == null
 
 
 func _update_label() -> void:
-	_ensure_children()
+	if not _ready_done:
+		return
 	_label.text = button_text
 
 
 func _update_label_font_size() -> void:
-	_ensure_children()
+	if not _ready_done:
+		return
 	_label.add_theme_font_size_override("font_size", text_font_size)
 
 
 func _update_text_margins() -> void:
-	_ensure_children()
+	if not _ready_done:
+		return
 	_text_zone.add_theme_constant_override("margin_left", int(text_margin_left))
 	_text_zone.add_theme_constant_override("margin_top", int(text_margin_top))
 	_text_zone.add_theme_constant_override("margin_right", int(text_margin_right))
@@ -202,7 +223,6 @@ func _on_pressed() -> void:
 
 
 func _play_pressed_animation() -> void:
-	_ensure_children()
 	_texture_rect.texture = pressed_texture if pressed_texture != null else normal_texture
 	_placeholder_rect.visible = pressed_texture == null and normal_texture == null
 	var text_zone_base_position := _text_zone.position
