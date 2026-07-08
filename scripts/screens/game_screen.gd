@@ -127,7 +127,7 @@ func _apply_portrait_layout() -> void:
 	enemy_panel.custom_minimum_size = Vector2(0, 132)
 	board_view.custom_minimum_size = Vector2(PORTRAIT_BOARD_SIZE, PORTRAIT_BOARD_SIZE)
 	hero_party_panel.custom_minimum_size = Vector2(PORTRAIT_CONTENT_WIDTH, 132)
-	booster_panel.custom_minimum_size = Vector2(PORTRAIT_CONTENT_WIDTH, 132)
+	booster_panel.custom_minimum_size = Vector2(PORTRAIT_CONTENT_WIDTH, 160)
 
 
 func _apply_landscape_layout() -> void:
@@ -138,7 +138,7 @@ func _apply_landscape_layout() -> void:
 	enemy_panel.custom_minimum_size = Vector2(0, 92)
 	board_view.custom_minimum_size = Vector2(LANDSCAPE_BOARD_SIZE, LANDSCAPE_BOARD_SIZE)
 	hero_party_panel.custom_minimum_size = Vector2(LANDSCAPE_CONTENT_WIDTH, 96)
-	booster_panel.custom_minimum_size = Vector2(LANDSCAPE_CONTENT_WIDTH, 96)
+	booster_panel.custom_minimum_size = Vector2(LANDSCAPE_CONTENT_WIDTH, 112)
 
 
 func _setup_playable_battle() -> void:

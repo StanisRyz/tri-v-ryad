@@ -3,11 +3,15 @@ class_name BoosterPanel
 
 signal booster_pressed(booster_id: String)
 
-const BOOSTER_BUTTON_SCENE := preload("res://scenes/ui/BoosterButton.tscn")
+const BOOSTER_TEXTURE_BUTTON_SCENE := preload("res://scenes/ui/BoosterTextureButton.tscn")
+const ASSET_KEY_RESOLVER_SCRIPT := preload("res://scripts/game/config/asset_key_resolver.gd")
+const GAME_ASSET_CATALOG_SCRIPT := preload("res://scripts/game/config/game_asset_catalog.gd")
 const UI_ASSET_BINDING_SCRIPT := preload("res://scripts/ui/ui_asset_binding.gd")
 
+const BUTTON_SIZE_MARGIN := 8.0
+const MIN_BUTTON_SIZE := 48.0
+
 @onready var button_row: HBoxContainer = %ButtonRow
-@onready var freeze_label: Label = %FreezeLabel
 
 var _catalog
 var _booster_state
@@ -18,6 +22,7 @@ var _inventory_counts: Dictionary = {}
 
 func _ready() -> void:
 	UI_ASSET_BINDING_SCRIPT.bind_ui_asset(self, "booster_panel")
+	resized.connect(_apply_button_square_size)
 	refresh()
 
 
@@ -47,7 +52,7 @@ func set_booster_counts(counts: Dictionary) -> void:
 
 
 func play_booster_feedback(booster_id: String, animations_enabled: bool = true, reduced_motion_enabled: bool = false) -> void:
-	var button: BoosterButton = _buttons.get(booster_id)
+	var button: BoosterTextureButton = _buttons.get(booster_id)
 	if button != null and button.has_method("play_feedback"):
 		button.play_feedback(animations_enabled, reduced_motion_enabled)
 
@@ -57,20 +62,14 @@ func refresh() -> void:
 		return
 
 	for booster_id in _buttons.keys():
-		var button: BoosterButton = _buttons[booster_id]
+		var button: BoosterTextureButton = _buttons[booster_id]
 		var battle_uses_left := 0
 		if _booster_state != null:
 			battle_uses_left = _booster_state.get_uses_left(booster_id)
 		var inventory_count: int = int(_inventory_counts.get(booster_id, 0))
-		button.set_uses_left(inventory_count)
-		button.set_selected(booster_id == _selected_booster_id)
-		button.set_disabled_state(battle_uses_left <= 0 or inventory_count <= 0)
-
-	if freeze_label != null:
-		var freeze_turns := 0
-		if _booster_state != null:
-			freeze_turns = _booster_state.freeze_turns_left
-		freeze_label.text = "Freeze turns: %d" % freeze_turns
+		button.set_count(inventory_count)
+		button.is_selected = booster_id == _selected_booster_id
+		button.is_disabled_state = battle_uses_left <= 0 or inventory_count <= 0
 
 
 func get_button_count() -> int:
@@ -89,13 +88,29 @@ func _rebuild_buttons() -> void:
 		return
 
 	for booster in _catalog.get_all_boosters():
-		var button: BoosterButton = BOOSTER_BUTTON_SCENE.instantiate()
+		var button: BoosterTextureButton = BOOSTER_TEXTURE_BUTTON_SCENE.instantiate()
 		button.name = "%sButton" % booster.booster_id.capitalize().replace(" ", "")
 		button.tooltip_text = "%s\n%s" % [booster.display_name, booster.description]
-		button.set_booster_id(booster.booster_id)
+		button.booster_id = booster.booster_id
+		button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		button.default_texture = GAME_ASSET_CATALOG_SCRIPT.try_load_texture_cached(
+			ASSET_KEY_RESOLVER_SCRIPT.get_shop_booster_icon_asset_key(booster.booster_id)
+		)
 		button.pressed.connect(_on_button_pressed.bind(booster.booster_id))
 		button_row.add_child(button)
 		_buttons[booster.booster_id] = button
+
+	_apply_button_square_size.call_deferred()
+
+
+func _apply_button_square_size() -> void:
+	if button_row == null or _buttons.is_empty():
+		return
+
+	var target_size: float = maxf(button_row.size.y - BUTTON_SIZE_MARGIN, MIN_BUTTON_SIZE)
+	for button in _buttons.values():
+		button.custom_minimum_size = Vector2(target_size, target_size)
 
 
 func _on_button_pressed(booster_id: String) -> void:
