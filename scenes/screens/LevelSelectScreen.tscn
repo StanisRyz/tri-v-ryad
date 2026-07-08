@@ -1,9 +1,11 @@
-[gd_scene load_steps=10 format=3 uid="uid://bh81ijy0wbws7"]
+[gd_scene load_steps=11 format=3 uid="uid://bh81ijy0wbws7"]
 
 [ext_resource type="Script" uid="uid://5v56citcawlq" path="res://scripts/screens/level_select_screen.gd" id="1_goqfh"]
 [ext_resource type="Script" uid="uid://b0dlqhi1wwh6t" path="res://scripts/ui/fallback_image_slot.gd" id="2_slot"]
 [ext_resource type="Script" uid="uid://bvmn6lyn0nih2" path="res://scripts/ui/level_select/level_map_button.gd" id="3_mapbtn"]
-[ext_resource type="Texture2D" uid="uid://semi2431w8h0" path="res://assets/images/ui/level_select/background.png" id="3_swk1e"]
+[ext_resource type="Script" uid="uid://bxwkgbqyalc6e" path="res://scripts/ui/pressable_texture_button.gd" id="4_btn"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_swk1e"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_nai4m"]
 
@@ -23,6 +25,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_goqfh")
+metadata/_edit_vertical_guides_ = [-62.0, 700.0]
 
 [node name="LevelSelectCanvas" type="Control" parent="."]
 unique_name_in_owner = true
@@ -64,7 +67,6 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-texture = ExtResource("3_swk1e")
 expand_mode = 1
 stretch_mode = 5
 
@@ -73,59 +75,73 @@ unique_name_in_owner = true
 layout_mode = 1
 offset_left = 20.0
 offset_top = 40.0
-offset_right = 130.0
-offset_bottom = 94.0
+offset_right = 222.0
+offset_bottom = 110.0
+focus_mode = 0
+theme_override_colors/font_color = Color(0, 0, 0, 0)
+theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
+theme_override_styles/normal = SubResource("StyleBoxEmpty_swk1e")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_swk1e")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_swk1e")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_swk1e")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_swk1e")
+flat = true
+script = ExtResource("4_btn")
+button_text = "Назад"
+
+[node name="Placeholder" type="ColorRect" parent="LevelSelectCanvas/BackButton"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.22, 0.24, 0.32, 1)
+
+[node name="ButtonTexture" type="TextureRect" parent="LevelSelectCanvas/BackButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 4
+
+[node name="TextMargin" type="MarginContainer" parent="LevelSelectCanvas/BackButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
+
+[node name="Label" type="Label" parent="LevelSelectCanvas/BackButton/TextMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 30
 text = "Назад"
-
-[node name="SettingsButton" type="Button" parent="LevelSelectCanvas"]
-unique_name_in_owner = true
-layout_mode = 1
-offset_left = 560.0
-offset_top = 40.0
-offset_right = 700.0
-offset_bottom = 94.0
-text = "Settings"
-
-[node name="TitleLabel" type="Label" parent="LevelSelectCanvas"]
-layout_mode = 1
-offset_left = 140.0
-offset_top = 40.0
-offset_right = 560.0
-offset_bottom = 94.0
-theme_override_font_sizes/font_size = 34
-text = "Select Level"
 horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="PointsLabel" type="Label" parent="LevelSelectCanvas"]
-unique_name_in_owner = true
-layout_mode = 1
-offset_left = 20.0
-offset_top = 100.0
-offset_right = 700.0
-offset_bottom = 130.0
-theme_override_font_sizes/font_size = 22
-text = "Progress: 0 levels complete"
-horizontal_alignment = 1
-
-[node name="ZoneLabel" type="Label" parent="LevelSelectCanvas"]
-unique_name_in_owner = true
-layout_mode = 1
-offset_left = 20.0
-offset_top = 138.0
-offset_right = 90.0
-offset_bottom = 192.0
-theme_override_font_sizes/font_size = 22
-text = "Zone"
 vertical_alignment = 1
 
 [node name="ZoneSelector" type="OptionButton" parent="LevelSelectCanvas"]
 unique_name_in_owner = true
 layout_mode = 1
-offset_left = 100.0
-offset_top = 138.0
-offset_right = 520.0
-offset_bottom = 192.0
+offset_left = 239.0
+offset_top = 40.0
+offset_right = 699.0
+offset_bottom = 110.0
 
 [node name="LevelButton1" type="Button" parent="LevelSelectCanvas"]
 unique_name_in_owner = true
@@ -191,6 +207,23 @@ text = "1"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="StateFilter" type="TextureRect" parent="LevelSelectCanvas/LevelButton1"]
+visible = false
+modulate = Color(0, 0, 0, 0.45)
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+expand_mode = 1
+
+[node name="StateOverlay" type="TextureRect" parent="LevelSelectCanvas/LevelButton1"]
+visible = false
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+expand_mode = 1
+
 [node name="LevelButton2" type="Button" parent="LevelSelectCanvas"]
 unique_name_in_owner = true
 layout_mode = 1
@@ -254,6 +287,23 @@ theme_override_font_sizes/font_size = 26
 text = "2"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="StateFilter" type="TextureRect" parent="LevelSelectCanvas/LevelButton2"]
+visible = false
+modulate = Color(0, 0, 0, 0.45)
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+expand_mode = 1
+
+[node name="StateOverlay" type="TextureRect" parent="LevelSelectCanvas/LevelButton2"]
+visible = false
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+expand_mode = 1
 
 [node name="LevelButton3" type="Button" parent="LevelSelectCanvas"]
 unique_name_in_owner = true
@@ -319,6 +369,23 @@ text = "3"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="StateFilter" type="TextureRect" parent="LevelSelectCanvas/LevelButton3"]
+visible = false
+modulate = Color(0, 0, 0, 0.45)
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+expand_mode = 1
+
+[node name="StateOverlay" type="TextureRect" parent="LevelSelectCanvas/LevelButton3"]
+visible = false
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+expand_mode = 1
+
 [node name="LevelButton4" type="Button" parent="LevelSelectCanvas"]
 unique_name_in_owner = true
 layout_mode = 1
@@ -382,6 +449,23 @@ theme_override_font_sizes/font_size = 26
 text = "4"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="StateFilter" type="TextureRect" parent="LevelSelectCanvas/LevelButton4"]
+visible = false
+modulate = Color(0, 0, 0, 0.45)
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+expand_mode = 1
+
+[node name="StateOverlay" type="TextureRect" parent="LevelSelectCanvas/LevelButton4"]
+visible = false
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+expand_mode = 1
 
 [node name="LevelButton5" type="Button" parent="LevelSelectCanvas"]
 unique_name_in_owner = true
@@ -447,6 +531,23 @@ text = "5"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="StateFilter" type="TextureRect" parent="LevelSelectCanvas/LevelButton5"]
+visible = false
+modulate = Color(0, 0, 0, 0.45)
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+expand_mode = 1
+
+[node name="StateOverlay" type="TextureRect" parent="LevelSelectCanvas/LevelButton5"]
+visible = false
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+expand_mode = 1
+
 [node name="LevelInfoPopup" type="Control" parent="LevelSelectCanvas"]
 unique_name_in_owner = true
 visible = false
@@ -470,6 +571,7 @@ color = Color(0, 0, 0, 0.55)
 [node name="PopupWindow" type="Control" parent="LevelSelectCanvas/LevelInfoPopup"]
 unique_name_in_owner = true
 layout_mode = 1
+anchors_preset = 0
 offset_left = 120.0
 offset_top = 460.0
 offset_right = 600.0

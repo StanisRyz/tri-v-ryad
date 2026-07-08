@@ -14,9 +14,7 @@ signal back_pressed
 
 const LEVEL_SLOT_COUNT := 5
 
-@onready var back_button: Button = %BackButton
-@onready var settings_button: Button = %SettingsButton
-@onready var points_label: Label = %PointsLabel
+@onready var back_button: PressableTextureButton = %BackButton
 @onready var zone_selector: OptionButton = %ZoneSelector
 @onready var background_slot: FallbackImageSlot = %Background
 @onready var level_button_1: LevelMapButton = %LevelButton1
@@ -45,8 +43,7 @@ var _pending_level_id := ""
 func _ready() -> void:
 	_level_buttons = [level_button_1, level_button_2, level_button_3, level_button_4, level_button_5]
 	_bind_static_ui_assets()
-	back_button.pressed.connect(_on_back_button_pressed)
-	settings_button.pressed.connect(_on_settings_button_pressed)
+	back_button.delayed_pressed.connect(_on_back_button_pressed)
 	zone_selector.item_selected.connect(_on_zone_selected)
 	for slot_index in range(_level_buttons.size()):
 		_level_buttons[slot_index].pressed.connect(_on_level_button_pressed.bind(slot_index))
@@ -59,6 +56,7 @@ func _bind_static_ui_assets() -> void:
 	background_slot.texture = UI_ASSET_BINDING_SCRIPT.bind_ui_asset(background_slot, "level_select_background")
 	UI_ASSET_BINDING_SCRIPT.bind_ui_asset(zone_selector, "zone_selector_panel")
 	popup_window_slot.texture = UI_ASSET_BINDING_SCRIPT.bind_ui_asset(popup_window_slot, "level_info_window")
+	_bind_back_button_textures()
 
 	var default_texture := _load_ui_texture("level_button_default")
 	var locked_overlay_texture := _load_ui_texture("level_button_locked_overlay")
@@ -80,6 +78,18 @@ func _load_ui_texture(ui_id: String) -> Texture2D:
 	return GAME_ASSET_CATALOG_SCRIPT.try_load_texture_cached(asset_key)
 
 
+func _bind_back_button_textures() -> void:
+	if back_button.normal_texture == null:
+		var normal_texture := _load_ui_texture("shared_back_button_default")
+		if normal_texture != null:
+			back_button.set_normal_texture(normal_texture)
+
+	if back_button.pressed_texture == null:
+		var pressed_texture := _load_ui_texture("shared_back_button_pressed")
+		if pressed_texture != null:
+			back_button.set_pressed_texture(pressed_texture)
+
+
 func set_progress_manager(progress_manager) -> void:
 	_progress_manager = progress_manager
 	if is_inside_tree():
@@ -97,7 +107,6 @@ func refresh_progress_state() -> void:
 
 
 func _refresh() -> void:
-	_refresh_points()
 	_build_zone_selector()
 	_refresh_level_button_slots()
 
@@ -220,27 +229,9 @@ func _on_popup_back_button_pressed() -> void:
 	_hide_level_info_popup()
 
 
-func _on_settings_button_pressed() -> void:
-	_play_button_click()
-	settings_pressed.emit()
-
-
 func _on_back_button_pressed() -> void:
 	_play_button_click()
 	back_pressed.emit()
-
-
-func _refresh_points() -> void:
-	if _progress_manager == null:
-		points_label.text = "Progress: 0 levels complete"
-		return
-
-	var completed_count := 0
-	for level_config in _level_catalog.get_all_levels():
-		if _progress_manager.is_level_completed(level_config.level_id):
-			completed_count += 1
-
-	points_label.text = "Progress: %d levels complete" % completed_count
 
 
 func _is_level_unlocked(level_id: String) -> bool:
