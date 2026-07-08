@@ -1,10 +1,11 @@
-[gd_scene load_steps=5 format=3 uid="uid://b3n64jvxsu5wj"]
+[gd_scene load_steps=6 format=3 uid="uid://b3n64jvxsu5wj"]
 
 [ext_resource type="Script" uid="uid://bdsa4t3ghsmhi" path="res://scripts/screens/settings_screen.gd" id="1_st0gs"]
-[ext_resource type="Script" uid="uid://cg1emludahx6p" path="res://scripts/ui/image_slot.gd" id="2_xux43"]
-[ext_resource type="Script" uid="uid://bxwkgbqyalc6e" path="res://scripts/ui/pressable_texture_button.gd" id="3_btn"]
+[ext_resource type="Script" uid="uid://bxwkgbqyalc6e" path="res://scripts/ui/pressable_texture_button.gd" id="2_btn"]
+[ext_resource type="Texture2D" uid="uid://ca8j4jbl5k8ss" path="res://assets/images/ui/shared/background.png" id="3_bg"]
+[ext_resource type="Texture2D" uid="uid://darx6vshcyc6a" path="res://assets/images/ui/settings/settings_window.png" id="4_window"]
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ixper"]
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_b8k66"]
 
 [node name="SettingsScreen" type="Control"]
 layout_mode = 3
@@ -15,7 +16,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_st0gs")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="TextureRect" parent="."]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -24,12 +25,11 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0.055, 0.07, 0.1, 1)
-script = ExtResource("2_xux43")
-placeholder_color = Color(0.055, 0.07, 0.1, 1)
-stretch_mode = 6
+texture = ExtResource("3_bg")
+expand_mode = 1
+stretch_mode = 5
 
-[node name="SettingsWindow" type="ColorRect" parent="."]
+[node name="SettingsWindow" type="TextureRect" parent="."]
 unique_name_in_owner = true
 layout_mode = 1
 offset_left = 50.0
@@ -37,16 +37,15 @@ offset_top = 330.0
 offset_right = 670.0
 offset_bottom = 950.0
 mouse_filter = 2
-color = Color(0.12, 0.14, 0.2, 1)
-script = ExtResource("2_xux43")
-placeholder_color = Color(0.12, 0.14, 0.2, 1)
-stretch_mode = 6
+texture = ExtResource("4_window")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="TitleLabel" type="Label" parent="SettingsWindow"]
 layout_mode = 1
-offset_top = 24.0
+offset_top = 36.0
 offset_right = 620.0
-offset_bottom = 80.0
+offset_bottom = 92.0
 theme_override_font_sizes/font_size = 34
 text = "Settings"
 horizontal_alignment = 1
@@ -144,13 +143,13 @@ theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
 theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
 theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
 theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
-theme_override_styles/normal = SubResource("StyleBoxEmpty_ixper")
-theme_override_styles/pressed = SubResource("StyleBoxEmpty_ixper")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_ixper")
-theme_override_styles/disabled = SubResource("StyleBoxEmpty_ixper")
-theme_override_styles/focus = SubResource("StyleBoxEmpty_ixper")
+theme_override_styles/normal = SubResource("StyleBoxEmpty_b8k66")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_b8k66")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_b8k66")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_b8k66")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_b8k66")
 flat = true
-script = ExtResource("3_btn")
+script = ExtResource("2_btn")
 button_text = "Back"
 
 [node name="Placeholder" type="ColorRect" parent="SettingsWindow/BackButton"]

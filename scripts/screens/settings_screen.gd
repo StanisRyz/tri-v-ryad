@@ -13,8 +13,8 @@ const GAME_ASSET_CATALOG := preload("res://scripts/game/config/game_asset_catalo
 @onready var debug_labels_toggle: CheckButton = get_node_or_null("%DebugLabelsToggle")
 @onready var music_toggle: CheckButton = %MusicToggle
 @onready var sound_effects_toggle: CheckButton = %SoundEffectsToggle
-@onready var background_slot: ImageSlot = %Background
-@onready var settings_window_slot: ImageSlot = %SettingsWindow
+@onready var background_rect: TextureRect = %Background
+@onready var settings_window_rect: TextureRect = %SettingsWindow
 
 var _settings_manager
 var _is_refreshing := false
@@ -33,11 +33,27 @@ func _ready() -> void:
 
 
 func _bind_static_ui_assets() -> void:
-	UI_ASSET_BINDING_SCRIPT.bind_ui_asset(background_slot, "shared_background")
-	UI_ASSET_BINDING_SCRIPT.bind_ui_asset(settings_window_slot, "settings_window")
+	_apply_background_texture()
+	_apply_settings_window_texture()
 	_bind_back_button_textures()
 	for toggle in _visible_toggles():
 		_bind_toggle_asset_key(toggle)
+
+
+func _apply_background_texture() -> void:
+	if background_rect == null or background_rect.texture != null:
+		return
+	var texture := GAME_ASSET_CATALOG.try_load_texture_cached(ASSET_KEY_RESOLVER_SCRIPT.get_ui_asset_key("shared_background"))
+	if texture != null:
+		background_rect.texture = texture
+
+
+func _apply_settings_window_texture() -> void:
+	if settings_window_rect == null or settings_window_rect.texture != null:
+		return
+	var texture := GAME_ASSET_CATALOG.try_load_texture_cached(ASSET_KEY_RESOLVER_SCRIPT.get_ui_asset_key("settings_window"))
+	if texture != null:
+		settings_window_rect.texture = texture
 
 
 func _bind_back_button_textures() -> void:
