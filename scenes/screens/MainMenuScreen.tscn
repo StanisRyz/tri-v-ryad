@@ -1,8 +1,24 @@
-[gd_scene load_steps=4 format=3 uid="uid://cfysu0cnngfq2"]
+[gd_scene load_steps=16 format=3 uid="uid://cfysu0cnngfq2"]
 
-[ext_resource type="Script" path="res://scripts/screens/main_menu_screen.gd" id="1_qnlxi"]
-[ext_resource type="Script" path="res://scripts/ui/image_slot.gd" id="2_bg"]
-[ext_resource type="Script" path="res://scripts/ui/pressable_texture_button.gd" id="3_btn"]
+[ext_resource type="Script" uid="uid://ct0naihd2ndf7" path="res://scripts/screens/main_menu_screen.gd" id="1_qnlxi"]
+[ext_resource type="Script" uid="uid://bxwkgbqyalc6e" path="res://scripts/ui/pressable_texture_button.gd" id="3_btn"]
+[ext_resource type="Texture2D" uid="uid://tp80sucexojn" path="res://assets/images/ui/main_menu/background.png" id="4_bg"]
+[ext_resource type="Texture2D" uid="uid://drhewju50eu1t" path="res://assets/images/ui/main_menu/buttons/play_default.png" id="5_play_n"]
+[ext_resource type="Texture2D" uid="uid://dqoedm6vt8h2a" path="res://assets/images/ui/main_menu/buttons/play_pressed.png" id="6_play_p"]
+[ext_resource type="Texture2D" uid="uid://dr6d63fhf8fh3" path="res://assets/images/ui/main_menu/buttons/level_select_default.png" id="7_ls_n"]
+[ext_resource type="Texture2D" uid="uid://c8cqihlmafqpb" path="res://assets/images/ui/main_menu/buttons/level_select_pressed.png" id="8_ls_p"]
+[ext_resource type="Texture2D" uid="uid://dwnhsmvg7tlcl" path="res://assets/images/ui/main_menu/buttons/shop_default.png" id="9_shop_n"]
+[ext_resource type="Texture2D" uid="uid://bjepmgopopnfx" path="res://assets/images/ui/main_menu/buttons/shop_pressed.png" id="10_shop_p"]
+[ext_resource type="Texture2D" uid="uid://257wxsdwbokl" path="res://assets/images/ui/main_menu/buttons/settings_default.png" id="11_set_n"]
+[ext_resource type="Texture2D" uid="uid://dheh5pqs3mmwy" path="res://assets/images/ui/main_menu/buttons/settings_pressed.png" id="12_set_p"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_xdoj1"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_r8dqv"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_i6e2i"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_dto11"]
 
 [node name="MainMenuScreen" type="Control"]
 layout_mode = 3
@@ -13,7 +29,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_qnlxi")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="TextureRect" parent="."]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -22,83 +38,245 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0.07, 0.09, 0.13, 1)
-script = ExtResource("2_bg")
-placeholder_color = Color(0.07, 0.09, 0.13, 1)
-stretch_mode = 6
+texture = ExtResource("4_bg")
+expand_mode = 1
+stretch_mode = 5
 
-[node name="GoldLabel" type="Label" parent="."]
+[node name="GoldField" type="Control" parent="."]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 0
-offset_left = 32.0
-offset_top = 48.0
-offset_right = 320.0
-offset_bottom = 96.0
+offset_left = 85.0
+offset_top = 355.0
+offset_right = 261.0
+offset_bottom = 403.0
+mouse_filter = 2
+
+[node name="GoldLabel" type="Label" parent="GoldField"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 75.0
+offset_top = 1.0
+offset_right = 75.0
+offset_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 theme_override_font_sizes/font_size = 28
 text = "Gold: 0"
+vertical_alignment = 1
 
-[node name="GemsLabel" type="Label" parent="."]
+[node name="GemsField" type="Control" parent="."]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 0
-offset_left = 400.0
-offset_top = 48.0
-offset_right = 688.0
-offset_bottom = 96.0
-horizontal_alignment = 2
+offset_left = 450.0
+offset_top = 356.0
+offset_right = 615.0
+offset_bottom = 404.0
+mouse_filter = 2
+
+[node name="GemsLabel" type="Label" parent="GemsField"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -1.0
+offset_right = -58.0
+grow_horizontal = 2
+grow_vertical = 2
 theme_override_font_sizes/font_size = 28
 text = "Gems: 0"
+horizontal_alignment = 2
+vertical_alignment = 1
 
 [node name="PlayButton" type="Button" parent="."]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 0
 offset_left = 145.0
 offset_top = 600.0
 offset_right = 575.0
 offset_bottom = 764.0
+focus_mode = 0
+theme_override_colors/font_color = Color(0, 0, 0, 0)
+theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
+theme_override_styles/normal = SubResource("StyleBoxEmpty_xdoj1")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_xdoj1")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_xdoj1")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_xdoj1")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_xdoj1")
+flat = true
 script = ExtResource("3_btn")
+normal_texture = ExtResource("5_play_n")
+pressed_texture = ExtResource("6_play_p")
 button_text = "Играть"
+
+[node name="ButtonTexture2" type="TextureRect" parent="PlayButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("5_play_n")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="TextMargin2" type="MarginContainer" parent="PlayButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 
 [node name="LevelSelectButton" type="Button" parent="."]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 0
 offset_left = 145.0
 offset_top = 768.0
 offset_right = 575.0
 offset_bottom = 932.0
+focus_mode = 0
+theme_override_colors/font_color = Color(0, 0, 0, 0)
+theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
+theme_override_styles/normal = SubResource("StyleBoxEmpty_r8dqv")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_r8dqv")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_r8dqv")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_r8dqv")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_r8dqv")
+flat = true
 script = ExtResource("3_btn")
+normal_texture = ExtResource("7_ls_n")
+pressed_texture = ExtResource("8_ls_p")
 button_text = "Выбрать уровень"
+
+[node name="ButtonTexture2" type="TextureRect" parent="LevelSelectButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("7_ls_n")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="TextMargin2" type="MarginContainer" parent="LevelSelectButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 
 [node name="ShopButton" type="Button" parent="."]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 0
 offset_left = 145.0
 offset_top = 936.0
 offset_right = 575.0
 offset_bottom = 1100.0
+focus_mode = 0
+theme_override_colors/font_color = Color(0, 0, 0, 0)
+theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
+theme_override_styles/normal = SubResource("StyleBoxEmpty_i6e2i")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_i6e2i")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_i6e2i")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_i6e2i")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_i6e2i")
+flat = true
 script = ExtResource("3_btn")
+normal_texture = ExtResource("9_shop_n")
+pressed_texture = ExtResource("10_shop_p")
 button_text = "Магазин"
+
+[node name="ButtonTexture2" type="TextureRect" parent="ShopButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("9_shop_n")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="TextMargin2" type="MarginContainer" parent="ShopButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 
 [node name="SettingsButton" type="Button" parent="."]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 0
 offset_left = 145.0
 offset_top = 1104.0
 offset_right = 575.0
 offset_bottom = 1268.0
+focus_mode = 0
+theme_override_colors/font_color = Color(0, 0, 0, 0)
+theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
+theme_override_styles/normal = SubResource("StyleBoxEmpty_dto11")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_dto11")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_dto11")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_dto11")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_dto11")
+flat = true
 script = ExtResource("3_btn")
+normal_texture = ExtResource("11_set_n")
+pressed_texture = ExtResource("12_set_p")
 button_text = "Настройки"
+
+[node name="ButtonTexture2" type="TextureRect" parent="SettingsButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("11_set_n")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="TextMargin2" type="MarginContainer" parent="SettingsButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 
 [node name="HeroesButton" type="Button" parent="."]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
-anchors_preset = 0
 offset_left = 145.0
 offset_top = 1104.0
 offset_right = 575.0
