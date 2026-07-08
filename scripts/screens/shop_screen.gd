@@ -26,7 +26,7 @@ const GEM_PRODUCT_IDS := ["gems_50", "gems_150", "gems_250", "gems_500"]
 const BUNDLE_IDS := ["bundle_small", "bundle_medium", "bundle_large", "bundle_mega"]
 
 @onready var background_rect: FallbackImageSlot = %Background
-@onready var shop_window_rect: FallbackImageSlot = %ShopWindow
+@onready var shop_window_visual: FallbackImageSlot = %WindowVisual
 @onready var back_button: PressableTextureButton = %BackButton
 @onready var boosters_tab_button: Button = %BoostersTabButton
 @onready var gems_tab_button: Button = %GemsTabButton
@@ -73,7 +73,7 @@ func refresh_progress_state() -> void:
 
 func _bind_static_ui_assets() -> void:
 	_bind_texture_slot(background_rect, "shared_background")
-	_bind_texture_slot(shop_window_rect, "shop_window")
+	_bind_texture_slot(shop_window_visual, "shop_window")
 	_bind_back_button_textures()
 
 
