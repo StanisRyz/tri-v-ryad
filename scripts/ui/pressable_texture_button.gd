@@ -22,6 +22,13 @@ class_name PressableTextureButton
 ## "ButtonTexture"/"TextMargin" nodes and get auto-renamed to "...2" on
 ## collision. Setters are safe to call at any time; they just no-op until
 ## _ready() has run once.
+##
+## Default alignment/color/outline/size-flags are applied only when the
+## "TextMargin/Label" node has to be created because it is missing from the
+## scene. If it already exists (i.e. it was hand-configured in the
+## Inspector and saved), those Inspector settings are the source of truth
+## and are never overwritten — only Label.text/font size still update from
+## the exported button_text/text_font_size.
 
 signal delayed_pressed
 
@@ -166,15 +173,15 @@ func _ensure_children() -> void:
 			_label = Label.new()
 			_label.name = "Label"
 			_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
+			_label.add_theme_color_override("font_color", LABEL_FONT_COLOR)
+			_label.add_theme_color_override("font_outline_color", LABEL_OUTLINE_COLOR)
+			_label.add_theme_constant_override("outline_size", LABEL_OUTLINE_SIZE)
 			_text_zone.add_child(_label)
 			_own_created_node(_label)
-		_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
-		_label.add_theme_color_override("font_color", LABEL_FONT_COLOR)
-		_label.add_theme_color_override("font_outline_color", LABEL_OUTLINE_COLOR)
-		_label.add_theme_constant_override("outline_size", LABEL_OUTLINE_SIZE)
 
 
 func _own_created_node(node: Node) -> void:
