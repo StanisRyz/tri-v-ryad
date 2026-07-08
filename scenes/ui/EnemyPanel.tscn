@@ -1,80 +1,99 @@
 [gd_scene load_steps=3 format=3 uid="uid://bfo3m71bj6cub"]
 
 [ext_resource type="Script" path="res://scripts/ui/enemy_panel.gd" id="1_5dnth"]
-[ext_resource type="Script" path="res://scripts/ui/image_slot.gd" id="2_c13rl"]
+[ext_resource type="Script" path="res://scripts/ui/fallback_image_slot.gd" id="2_fbimg"]
 
 [node name="EnemyPanel" type="PanelContainer"]
 custom_minimum_size = Vector2(0, 132)
 offset_right = 664.0
 offset_bottom = 132.0
+mouse_filter = 2
 script = ExtResource("1_5dnth")
 
-[node name="Margin" type="MarginContainer" parent="."]
-layout_mode = 2
-theme_override_constants/margin_left = 18
-theme_override_constants/margin_top = 14
-theme_override_constants/margin_right = 18
-theme_override_constants/margin_bottom = 14
-
-[node name="Row" type="HBoxContainer" parent="Margin"]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="EnemyImageSlot" type="ColorRect" parent="Margin/Row"]
+[node name="Layers" type="Control" parent="."]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
-size_flags_vertical = 4
 mouse_filter = 2
-color = Color(0.18, 0.2, 0.24, 1)
-script = ExtResource("2_c13rl")
-placeholder_color = Color(0.18, 0.2, 0.24, 1)
 
-[node name="Text" type="VBoxContainer" parent="Margin/Row"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 6
-
-[node name="EnemyNameLabel" type="Label" parent="Margin/Row/Text"]
+[node name="BackgroundVisual" type="Control" parent="Layers"]
 unique_name_in_owner = true
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "Training Enemy"
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_fbimg")
+placeholder_color = Color(0.14, 0.16, 0.2, 1)
+stretch_mode = 6
+
+[node name="EnemySprite" type="Control" parent="Layers"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_fbimg")
+placeholder_color = Color(0.22, 0.24, 0.3, 1)
+
+[node name="HpBarRoot" type="Control" parent="Layers"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 14.0
+offset_top = -30.0
+offset_right = -14.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+
+[node name="HpBarBackground" type="ColorRect" parent="Layers/HpBarRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.15, 0.06, 0.06, 1)
+
+[node name="HpBarFill" type="ColorRect" parent="Layers/HpBarRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 0
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.85, 0.16, 0.16, 1)
+
+[node name="HpValueLabel" type="Label" parent="Layers/HpBarRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 14
+text = "-- / --"
 horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="EnemyHpLabel" type="Label" parent="Margin/Row/Text"]
+[node name="HitEffectLayer" type="Control" parent="Layers"]
 unique_name_in_owner = true
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "HP: -- / --"
-horizontal_alignment = 1
-
-[node name="EnemyHpBar" type="ProgressBar" parent="Margin/Row/Text"]
-unique_name_in_owner = true
-layout_mode = 2
-custom_minimum_size = Vector2(0, 14)
-max_value = 1.0
-step = 0.001
-value = 1.0
-show_percentage = false
-
-[node name="EnemyIntentLabel" type="Label" parent="Margin/Row/Text"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Intent: Waiting"
-horizontal_alignment = 1
-autowrap_mode = 3
-
-[node name="EnemyTargetLabel" type="Label" parent="Margin/Row/Text"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Target: --"
-horizontal_alignment = 1
-autowrap_mode = 3
-
-[node name="HitEffectLayer" type="Control" parent="."]
-unique_name_in_owner = true
-layout_mode = 2
+layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0

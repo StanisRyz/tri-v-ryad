@@ -39,7 +39,6 @@ const LANDSCAPE_BOARD_SIZE := 320.0
 @onready var result_overlay: PanelContainer = %BattleResultOverlay
 @onready var background_slot: ImageSlot = %Background
 @onready var round_modifier_panel: PanelContainer = %RoundModifierPanel
-@onready var modifier_name_label: Label = %ModifierNameLabel
 @onready var modifier_description_label: Label = %ModifierDescriptionLabel
 @onready var battle_effect_layer: Control = %BattleEffectLayer
 
@@ -267,10 +266,10 @@ func _on_round_modifier_changed(_modifier) -> void:
 	pass
 
 
-## Stage 60.3 v0.1: RoundModifierPanel/ModifierNameLabel/ModifierDescriptionLabel
-## (scene node names unchanged) now display the active current_level_boost
-## instead of the legacy random round modifier. A none/fallback boost hides
-## the panel, matching the old null-modifier behavior.
+## Stage 60.3 v0.1: RoundModifierPanel/ModifierDescriptionLabel display the
+## active current_level_boost instead of the legacy random round modifier.
+## Stage 64.1 v0.1: ModifierNameLabel was removed; only the description shows.
+## A none/fallback boost hides the panel, matching the old null-modifier behavior.
 func _on_level_boost_changed(boost) -> void:
 	_current_level_boost = boost
 
@@ -279,7 +278,6 @@ func _on_level_boost_changed(boost) -> void:
 		return
 
 	round_modifier_panel.visible = true
-	modifier_name_label.text = LEVEL_BOOST_FORMATTER_SCRIPT.format_label(boost)
 	modifier_description_label.text = boost.description
 
 
@@ -1034,6 +1032,8 @@ func _play_enemy_damage() -> void:
 	var audio_manager = _get_audio_manager()
 	if audio_manager != null:
 		audio_manager.play_enemy_damage()
+	if enemy_panel != null and enemy_panel.has_method("play_damage_feedback"):
+		enemy_panel.play_damage_feedback()
 
 
 func _play_victory() -> void:

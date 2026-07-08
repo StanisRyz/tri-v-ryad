@@ -1,31 +1,34 @@
 extends PanelContainer
 
 const ASSET_KEY_RESOLVER_SCRIPT := preload("res://scripts/game/config/asset_key_resolver.gd")
+const GAME_ASSET_CATALOG_SCRIPT := preload("res://scripts/game/config/game_asset_catalog.gd")
 const UI_ASSET_BINDING_SCRIPT := preload("res://scripts/ui/ui_asset_binding.gd")
 
-const TARGET_LANE_LABELS := {
-	0: "Left",
-	1: "Center",
-	2: "Right",
-}
-
-@onready var enemy_image_slot: ImageSlot = %EnemyImageSlot
-@onready var enemy_name_label: Label = %EnemyNameLabel
-@onready var enemy_hp_label: Label = %EnemyHpLabel
-@onready var enemy_hp_bar: ProgressBar = %EnemyHpBar
-@onready var enemy_intent_label: Label = %EnemyIntentLabel
-@onready var enemy_target_label: Label = %EnemyTargetLabel
+@onready var background_visual: FallbackImageSlot = %BackgroundVisual
+@onready var enemy_sprite: FallbackImageSlot = %EnemySprite
+@onready var hp_bar_fill: ColorRect = %HpBarFill
+@onready var hp_value_label: Label = %HpValueLabel
 @onready var hit_effect_layer: Control = %HitEffectLayer
 
 var _animations_enabled := true
 var _reduced_motion_enabled := false
 var _hp_tween: Tween
 var _hit_tween: Tween
+var _damage_feedback_tween: Tween
+
+var _sprite_manual_override := false
+var _background_manual_override := false
+var _normal_texture: Texture2D
+var _damaged_texture: Texture2D
 
 
 func _ready() -> void:
 	UI_ASSET_BINDING_SCRIPT.bind_ui_asset(self, "enemy_panel")
-	set_placeholder_values("Training Enemy", "HP: -- / --", 1.0, "Intent: Waiting", "Target: --")
+	_sprite_manual_override = enemy_sprite.has_texture()
+	_background_manual_override = background_visual.has_texture()
+	if not _background_manual_override:
+		background_visual.set_texture(_pick_random_background_texture())
+	set_hp_values(0, 0)
 
 
 func configure_presentation(animations_enabled: bool, reduced_motion_enabled: bool) -> void:
@@ -33,44 +36,43 @@ func configure_presentation(animations_enabled: bool, reduced_motion_enabled: bo
 	_reduced_motion_enabled = reduced_motion_enabled
 
 
-func set_enemy_state(enemy: EnemyData, intent: EnemyIntent) -> void:
+func set_enemy_state(enemy: EnemyData, _intent: EnemyIntent) -> void:
 	if enemy == null:
-		set_placeholder_values("Enemy", "HP: -- / --", 0.0, "Intent: --", "Target: --")
+		set_hp_values(0, 0)
 		return
 
-	var hp_ratio := float(enemy.current_hp) / float(enemy.max_hp) if enemy.max_hp > 0 else 0.0
-	var intent_text := "Intent: attacks in %d" % intent.turns_until_action if intent != null else "Intent: --"
-	var attack_text := "Attack: %d" % enemy.attack
-	var target_text := "Target: %s" % _format_target_lane(intent.target_lane if intent != null else -1)
-	if not FeatureFlags.HERO_SYSTEMS_ENABLED:
-		intent_text = "Goal: defeat enemy"
-		attack_text = "Enemy does not attack"
-		target_text = "Match crystals to deal damage"
-
-	set_placeholder_values(
-		enemy.display_name,
-		"HP: %d / %d" % [enemy.current_hp, enemy.max_hp],
-		hp_ratio,
-		"%s | %s" % [intent_text, attack_text],
-		target_text,
-		ASSET_KEY_RESOLVER_SCRIPT.get_enemy_asset_key(enemy.id)
+	set_hp_values(enemy.current_hp, enemy.max_hp)
+	set_enemy_textures(
+		GAME_ASSET_CATALOG_SCRIPT.try_load_texture_cached(ASSET_KEY_RESOLVER_SCRIPT.get_enemy_normal_asset_key(enemy.id)),
+		GAME_ASSET_CATALOG_SCRIPT.try_load_texture_cached(ASSET_KEY_RESOLVER_SCRIPT.get_enemy_damaged_asset_key(enemy.id))
 	)
 
 
-func set_placeholder_values(enemy_name: String, enemy_hp: String, hp_ratio: float, enemy_intent: String, enemy_target: String = "Target: --", enemy_asset_key: String = "") -> void:
-	enemy_name_label.text = enemy_name
-	enemy_hp_label.text = enemy_hp
-	_animate_hp_bar_to(clampf(hp_ratio, 0.0, 1.0))
-	enemy_intent_label.text = enemy_intent
-	enemy_target_label.text = enemy_target
-	if enemy_image_slot != null:
-		enemy_image_slot.set_placeholder_color(Color(0.18, 0.2, 0.24, 1.0))
-		enemy_image_slot.set_asset_key(enemy_asset_key)
+func set_enemy_textures(normal_texture: Texture2D, damaged_texture: Texture2D) -> void:
+	_damaged_texture = damaged_texture
+	if normal_texture != null:
+		_normal_texture = normal_texture
+	if not _sprite_manual_override and _normal_texture != null:
+		enemy_sprite.set_texture(_normal_texture)
+
+
+func set_hp_values(current_hp: int, max_hp: int) -> void:
+	var safe_current: int = maxi(current_hp, 0)
+	var safe_max: int = maxi(max_hp, 0)
+	if hp_value_label != null:
+		hp_value_label.text = "%d / %d" % [safe_current, safe_max]
+
+	var ratio: float = float(safe_current) / float(safe_max) if safe_max > 0 else 0.0
+	_animate_hp_bar_to(clampf(ratio, 0.0, 1.0))
+
+
+func animate_hp_change(current_hp: int, max_hp: int) -> void:
+	set_hp_values(current_hp, max_hp)
 
 
 func get_hit_target_global_position() -> Vector2:
-	if enemy_image_slot != null:
-		return enemy_image_slot.global_position + enemy_image_slot.size * 0.5
+	if enemy_sprite != null:
+		return enemy_sprite.global_position + enemy_sprite.size * 0.5
 	return global_position + size * 0.5
 
 
@@ -78,6 +80,25 @@ func play_hit_feedback(damage: int) -> void:
 	_play_flash_and_shake()
 	if damage > 0:
 		show_floating_damage(damage)
+
+
+func play_damage_feedback() -> void:
+	if _damage_feedback_tween != null and _damage_feedback_tween.is_valid():
+		_damage_feedback_tween.kill()
+
+	if not _sprite_manual_override and _damaged_texture != null:
+		var restore_texture: Texture2D = _normal_texture
+		enemy_sprite.set_texture(_damaged_texture)
+		var duration: float = 0.12 if _reduced_motion_enabled else 0.22
+		_damage_feedback_tween = create_tween()
+		_damage_feedback_tween.tween_interval(duration)
+		_damage_feedback_tween.tween_callback(func() -> void:
+			if is_instance_valid(enemy_sprite) and restore_texture != null:
+				enemy_sprite.set_texture(restore_texture)
+		)
+		return
+
+	_play_flash_and_shake()
 
 
 func show_floating_damage(damage: int) -> void:
@@ -112,22 +133,24 @@ func show_floating_damage(damage: int) -> void:
 	)
 
 
-func animate_hp_change(current_hp: int, max_hp: int) -> void:
-	if enemy_hp_label != null:
-		enemy_hp_label.text = "HP: %d / %d" % [maxi(current_hp, 0), max_hp]
-
-	var ratio: float = float(current_hp) / float(max_hp) if max_hp > 0 else 0.0
-	_animate_hp_bar_to(clampf(ratio, 0.0, 1.0))
+func _pick_random_background_texture() -> Texture2D:
+	var asset_keys: Array = ASSET_KEY_RESOLVER_SCRIPT.get_enemy_panel_background_asset_keys()
+	asset_keys.shuffle()
+	for asset_key in asset_keys:
+		var texture := GAME_ASSET_CATALOG_SCRIPT.try_load_texture_cached(asset_key)
+		if texture != null:
+			return texture
+	return null
 
 
 func _animate_hp_bar_to(ratio: float) -> void:
-	if enemy_hp_bar == null:
+	if hp_bar_fill == null:
 		return
 
 	if not _animations_enabled:
 		if _hp_tween != null and _hp_tween.is_valid():
 			_hp_tween.kill()
-		enemy_hp_bar.value = ratio
+		hp_bar_fill.anchor_right = ratio
 		return
 
 	if _hp_tween != null and _hp_tween.is_valid():
@@ -135,32 +158,28 @@ func _animate_hp_bar_to(ratio: float) -> void:
 
 	var duration: float = 0.12 if _reduced_motion_enabled else 0.3
 	_hp_tween = create_tween()
-	_hp_tween.tween_property(enemy_hp_bar, "value", ratio, duration)
+	_hp_tween.tween_property(hp_bar_fill, "anchor_right", ratio, duration)
 
 
 func _play_flash_and_shake() -> void:
-	if enemy_image_slot == null or not _animations_enabled:
+	if enemy_sprite == null or not _animations_enabled:
 		return
 
 	if _hit_tween != null and _hit_tween.is_valid():
 		_hit_tween.kill()
 
-	enemy_image_slot.pivot_offset = enemy_image_slot.size * 0.5
-	var base_position: Vector2 = enemy_image_slot.position
+	enemy_sprite.pivot_offset = enemy_sprite.size * 0.5
+	var base_position: Vector2 = enemy_sprite.position
 	var base_scale: Vector2 = Vector2.ONE
 	var flash_scale: Vector2 = Vector2(1.03, 1.03) if _reduced_motion_enabled else Vector2(1.07, 1.07)
 	var shake_offset: float = 2.0 if _reduced_motion_enabled else 6.0
 
 	_hit_tween = create_tween()
-	_hit_tween.tween_property(enemy_image_slot, "modulate", Color(1.6, 1.6, 1.6, 1.0), 0.05)
-	_hit_tween.parallel().tween_property(enemy_image_slot, "scale", flash_scale, 0.05)
+	_hit_tween.tween_property(enemy_sprite, "modulate", Color(1.6, 1.6, 1.6, 1.0), 0.05)
+	_hit_tween.parallel().tween_property(enemy_sprite, "scale", flash_scale, 0.05)
 	if not _reduced_motion_enabled:
-		_hit_tween.tween_property(enemy_image_slot, "position", base_position + Vector2(shake_offset, 0.0), 0.035)
-		_hit_tween.tween_property(enemy_image_slot, "position", base_position - Vector2(shake_offset, 0.0), 0.035)
-	_hit_tween.tween_property(enemy_image_slot, "position", base_position, 0.04)
-	_hit_tween.parallel().tween_property(enemy_image_slot, "modulate", Color.WHITE, 0.08)
-	_hit_tween.parallel().tween_property(enemy_image_slot, "scale", base_scale, 0.08)
-
-
-func _format_target_lane(target_lane: int) -> String:
-	return TARGET_LANE_LABELS.get(target_lane, "Unknown")
+		_hit_tween.tween_property(enemy_sprite, "position", base_position + Vector2(shake_offset, 0.0), 0.035)
+		_hit_tween.tween_property(enemy_sprite, "position", base_position - Vector2(shake_offset, 0.0), 0.035)
+	_hit_tween.tween_property(enemy_sprite, "position", base_position, 0.04)
+	_hit_tween.parallel().tween_property(enemy_sprite, "modulate", Color.WHITE, 0.08)
+	_hit_tween.parallel().tween_property(enemy_sprite, "scale", base_scale, 0.08)

@@ -19,6 +19,13 @@ All Stage 39 entries are reserved placeholders. Current status is `missing/place
 | enemy_orc_brute | res://assets/images/enemies/enemy_orc_brute.png | missing/placeholder expected | active future enemy image |
 | enemy_cave_shaman | res://assets/images/enemies/enemy_cave_shaman.png | missing/placeholder expected | active future enemy image |
 | enemy_gatekeeper | res://assets/images/enemies/enemy_gatekeeper.png | missing/placeholder expected | active future enemy image |
+| gatekeeper_normal | res://assets/images/ui/game/enemies/gatekeeper_normal.png | missing/placeholder expected | active Stage 64.1 EnemyPanel EnemySprite normal state for gatekeeper |
+| gatekeeper_damaged | res://assets/images/ui/game/enemies/gatekeeper_damaged.png | missing/placeholder expected | active Stage 64.1 EnemyPanel EnemySprite damaged state for gatekeeper |
+| enemy_panel_bg_01 | res://assets/images/ui/game/enemy_panel/backgrounds/enemy_panel_bg_01.png | missing/placeholder expected | active Stage 64.1 EnemyPanel BackgroundVisual candidate |
+| enemy_panel_bg_02 | res://assets/images/ui/game/enemy_panel/backgrounds/enemy_panel_bg_02.png | missing/placeholder expected | active Stage 64.1 EnemyPanel BackgroundVisual candidate |
+| enemy_panel_bg_03 | res://assets/images/ui/game/enemy_panel/backgrounds/enemy_panel_bg_03.png | missing/placeholder expected | active Stage 64.1 EnemyPanel BackgroundVisual candidate |
+| enemy_panel_bg_04 | res://assets/images/ui/game/enemy_panel/backgrounds/enemy_panel_bg_04.png | missing/placeholder expected | active Stage 64.1 EnemyPanel BackgroundVisual candidate |
+| enemy_panel_bg_05 | res://assets/images/ui/game/enemy_panel/backgrounds/enemy_panel_bg_05.png | missing/placeholder expected | active Stage 64.1 EnemyPanel BackgroundVisual candidate |
 | tile_red | res://assets/images/tiles/tile_red.png | missing/placeholder expected | active optional tile texture |
 | tile_blue | res://assets/images/tiles/tile_blue.png | missing/placeholder expected | active optional tile texture |
 | tile_green | res://assets/images/tiles/tile_green.png | missing/placeholder expected | active optional tile texture |

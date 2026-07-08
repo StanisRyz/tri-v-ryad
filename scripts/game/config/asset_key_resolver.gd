@@ -25,6 +25,18 @@ const ENEMY_ASSET_KEYS := {
 	"gatekeeper": "enemy_gatekeeper",
 }
 
+const ENEMY_STATE_ASSET_KEYS := {
+	"gatekeeper": {"normal": "gatekeeper_normal", "damaged": "gatekeeper_damaged"},
+}
+
+const ENEMY_PANEL_BACKGROUND_ASSET_KEYS := [
+	"enemy_panel_bg_01",
+	"enemy_panel_bg_02",
+	"enemy_panel_bg_03",
+	"enemy_panel_bg_04",
+	"enemy_panel_bg_05",
+]
+
 const TILE_ASSET_KEYS := {
 	TILE_TYPE_SCRIPT.RED: "tile_red",
 	TILE_TYPE_SCRIPT.BLUE: "tile_blue",
@@ -126,6 +138,18 @@ static func get_background_asset_key(background_id: String) -> String:
 
 static func get_enemy_asset_key(enemy_id: String) -> String:
 	return ENEMY_ASSET_KEYS.get(enemy_id, "")
+
+
+static func get_enemy_normal_asset_key(enemy_id: String) -> String:
+	return ENEMY_STATE_ASSET_KEYS.get(enemy_id, {}).get("normal", "")
+
+
+static func get_enemy_damaged_asset_key(enemy_id: String) -> String:
+	return ENEMY_STATE_ASSET_KEYS.get(enemy_id, {}).get("damaged", "")
+
+
+static func get_enemy_panel_background_asset_keys() -> Array:
+	return ENEMY_PANEL_BACKGROUND_ASSET_KEYS.duplicate()
 
 
 static func get_tile_asset_key(tile_type: int) -> String:
