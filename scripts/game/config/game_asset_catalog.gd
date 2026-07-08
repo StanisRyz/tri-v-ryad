@@ -29,7 +29,6 @@ const ASSET_MAP := {
 	"ui_battle_hud_panel": "res://assets/images/ui/battle_hud_panel.png",
 	"ui_level_select_panel": "res://assets/images/ui/level_select_panel.png",
 	"ui_level_select_background": "res://assets/images/ui/level_select/background.png",
-	"ui_level_select_zone_001_map": "res://assets/images/ui/level_select/zones/zone_001_map.png",
 	"ui_zone_selector_panel": "res://assets/images/ui/zone_selector_panel.png",
 	"ui_level_button_default": "res://assets/images/ui/level_select/buttons/level_default.png",
 	"ui_level_button_locked": "res://assets/images/ui/level_select/buttons/level_locked.png",

@@ -17,9 +17,7 @@ const LEVEL_SLOT_COUNT := 5
 @onready var settings_button: Button = %SettingsButton
 @onready var points_label: Label = %PointsLabel
 @onready var zone_selector: OptionButton = %ZoneSelector
-@onready var root_panel: Control = %Root
 @onready var background_slot: FallbackImageSlot = %Background
-@onready var zone_map_visual: FallbackImageSlot = %ZoneMapVisual
 @onready var level_button_1: LevelMapButton = %LevelButton1
 @onready var level_button_2: LevelMapButton = %LevelButton2
 @onready var level_button_3: LevelMapButton = %LevelButton3
@@ -49,9 +47,7 @@ func _ready() -> void:
 
 func _bind_static_ui_assets() -> void:
 	background_slot.texture = UI_ASSET_BINDING_SCRIPT.bind_ui_asset(background_slot, "level_select_background")
-	UI_ASSET_BINDING_SCRIPT.bind_ui_asset(root_panel, "level_select_panel")
 	UI_ASSET_BINDING_SCRIPT.bind_ui_asset(zone_selector, "zone_selector_panel")
-	zone_map_visual.texture = _load_ui_texture("level_select_zone_001_map")
 
 	var locked_texture := _load_ui_texture("level_button_locked")
 	var open_texture := _load_ui_texture("level_button_default")

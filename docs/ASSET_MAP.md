@@ -35,7 +35,6 @@ All Stage 39 entries are reserved placeholders. Current status is `missing/place
 | ui_result_panel | res://assets/images/ui/result_panel.png | missing/placeholder expected | active result overlay binding |
 | ui_level_select_background | res://assets/images/ui/level_select/background.png | missing/placeholder expected | active LevelSelect background FallbackImageSlot |
 | ui_level_select_panel | res://assets/images/ui/level_select_panel.png | missing/placeholder expected | active LevelSelect panel binding |
-| ui_level_select_zone_001_map | res://assets/images/ui/level_select/zones/zone_001_map.png | missing/placeholder expected | active LevelSelect zone map FallbackImageSlot |
 | ui_zone_selector_panel | res://assets/images/ui/zone_selector_panel.png | missing/placeholder expected | active zone selector binding |
 | ui_level_button_default | res://assets/images/ui/level_select/buttons/level_default.png | missing/placeholder expected | active open/default LevelMapButton state |
 | ui_level_button_locked | res://assets/images/ui/level_select/buttons/level_locked.png | missing/placeholder expected | active locked LevelMapButton state |

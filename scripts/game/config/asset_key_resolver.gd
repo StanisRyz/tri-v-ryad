@@ -45,7 +45,6 @@ const UI_ASSET_KEYS := {
 	"enemy_panel": "ui_enemy_panel",
 	"level_select_background": "ui_level_select_background",
 	"level_select_panel": "ui_level_select_panel",
-	"level_select_zone_001_map": "ui_level_select_zone_001_map",
 	"level_button_default": "ui_level_button_default",
 	"level_button_locked": "ui_level_button_locked",
 	"level_button_completed": "ui_level_button_completed",
