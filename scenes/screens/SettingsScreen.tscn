@@ -1,7 +1,10 @@
-[gd_scene load_steps=3 format=3 uid="uid://b3n64jvxsu5wj"]
+[gd_scene load_steps=5 format=3 uid="uid://b3n64jvxsu5wj"]
 
-[ext_resource type="Script" path="res://scripts/screens/settings_screen.gd" id="1_st0gs"]
-[ext_resource type="Script" path="res://scripts/ui/image_slot.gd" id="2_xux43"]
+[ext_resource type="Script" uid="uid://bdsa4t3ghsmhi" path="res://scripts/screens/settings_screen.gd" id="1_st0gs"]
+[ext_resource type="Script" uid="uid://cg1emludahx6p" path="res://scripts/ui/image_slot.gd" id="2_xux43"]
+[ext_resource type="Script" uid="uid://bxwkgbqyalc6e" path="res://scripts/ui/pressable_texture_button.gd" id="3_btn"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ixper"]
 
 [node name="SettingsScreen" type="Control"]
 layout_mode = 3
@@ -26,109 +29,169 @@ script = ExtResource("2_xux43")
 placeholder_color = Color(0.055, 0.07, 0.1, 1)
 stretch_mode = 6
 
-[node name="SafeMargin" type="MarginContainer" parent="."]
+[node name="SettingsWindow" type="ColorRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+offset_left = 50.0
+offset_top = 330.0
+offset_right = 670.0
+offset_bottom = 950.0
+mouse_filter = 2
+color = Color(0.12, 0.14, 0.2, 1)
+script = ExtResource("2_xux43")
+placeholder_color = Color(0.12, 0.14, 0.2, 1)
+stretch_mode = 6
+
+[node name="TitleLabel" type="Label" parent="SettingsWindow"]
+layout_mode = 1
+offset_top = 24.0
+offset_right = 620.0
+offset_bottom = 80.0
+theme_override_font_sizes/font_size = 34
+text = "Settings"
+horizontal_alignment = 1
+
+[node name="SettingsContent" type="VBoxContainer" parent="SettingsWindow"]
+unique_name_in_owner = true
+layout_mode = 1
+offset_left = 40.0
+offset_top = 110.0
+offset_right = 580.0
+offset_bottom = 460.0
+theme_override_constants/separation = 24
+
+[node name="AnimationsRow" type="HBoxContainer" parent="SettingsWindow/SettingsContent"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="AnimationsLabel" type="Label" parent="SettingsWindow/SettingsContent/AnimationsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 22
+text = "Animations"
+
+[node name="AnimationsToggle" type="CheckButton" parent="SettingsWindow/SettingsContent/AnimationsRow"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="ReducedMotionRow" type="HBoxContainer" parent="SettingsWindow/SettingsContent"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ReducedMotionLabel" type="Label" parent="SettingsWindow/SettingsContent/ReducedMotionRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 22
+text = "Reduced Motion"
+
+[node name="ReducedMotionToggle" type="CheckButton" parent="SettingsWindow/SettingsContent/ReducedMotionRow"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="MusicRow" type="HBoxContainer" parent="SettingsWindow/SettingsContent"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="MusicLabel" type="Label" parent="SettingsWindow/SettingsContent/MusicRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 22
+text = "Music"
+
+[node name="MusicToggle" type="CheckButton" parent="SettingsWindow/SettingsContent/MusicRow"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="SoundEffectsRow" type="HBoxContainer" parent="SettingsWindow/SettingsContent"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="SoundEffectsLabel" type="Label" parent="SettingsWindow/SettingsContent/SoundEffectsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 22
+text = "Sound Effects"
+
+[node name="SoundEffectsToggle" type="CheckButton" parent="SettingsWindow/SettingsContent/SoundEffectsRow"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="DebugLabelsRow" type="HBoxContainer" parent="SettingsWindow/SettingsContent"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="DebugLabelsLabel" type="Label" parent="SettingsWindow/SettingsContent/DebugLabelsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 22
+text = "Debug Labels"
+
+[node name="DebugLabelsToggle" type="CheckButton" parent="SettingsWindow/SettingsContent/DebugLabelsRow"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="BackButton" type="Button" parent="SettingsWindow"]
+unique_name_in_owner = true
+layout_mode = 1
+offset_left = 180.0
+offset_top = 480.0
+offset_right = 440.0
+offset_bottom = 570.0
+focus_mode = 0
+theme_override_colors/font_color = Color(0, 0, 0, 0)
+theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
+theme_override_styles/normal = SubResource("StyleBoxEmpty_ixper")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_ixper")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_ixper")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_ixper")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_ixper")
+flat = true
+script = ExtResource("3_btn")
+button_text = "Back"
+
+[node name="Placeholder" type="ColorRect" parent="SettingsWindow/BackButton"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.22, 0.24, 0.32, 1)
+
+[node name="ButtonTexture" type="TextureRect" parent="SettingsWindow/BackButton"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 32
-theme_override_constants/margin_top = 40
-theme_override_constants/margin_right = 32
-theme_override_constants/margin_bottom = 32
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 4
 
-[node name="Root" type="VBoxContainer" parent="SafeMargin"]
-layout_mode = 2
-theme_override_constants/separation = 20
+[node name="TextMargin" type="MarginContainer" parent="SettingsWindow/BackButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
 
-[node name="TopBar" type="HBoxContainer" parent="SafeMargin/Root"]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="TitleLabel" type="Label" parent="SafeMargin/Root/TopBar"]
+[node name="Label" type="Label" parent="SettingsWindow/BackButton/TextMargin"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 34
-text = "Settings"
-
-[node name="BackButton" type="Button" parent="SafeMargin/Root/TopBar"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(120, 54)
-layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 30
 text = "Back"
-
-[node name="TogglesPanel" type="VBoxContainer" parent="SafeMargin/Root"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_constants/separation = 18
-
-[node name="AnimationsRow" type="HBoxContainer" parent="SafeMargin/Root/TogglesPanel"]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="AnimationsLabel" type="Label" parent="SafeMargin/Root/TogglesPanel/AnimationsRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 22
-text = "Animations"
-
-[node name="AnimationsToggle" type="CheckButton" parent="SafeMargin/Root/TogglesPanel/AnimationsRow"]
-unique_name_in_owner = true
-layout_mode = 2
-
-[node name="ReducedMotionRow" type="HBoxContainer" parent="SafeMargin/Root/TogglesPanel"]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="ReducedMotionLabel" type="Label" parent="SafeMargin/Root/TogglesPanel/ReducedMotionRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 22
-text = "Reduced Motion"
-
-[node name="ReducedMotionToggle" type="CheckButton" parent="SafeMargin/Root/TogglesPanel/ReducedMotionRow"]
-unique_name_in_owner = true
-layout_mode = 2
-
-[node name="DebugLabelsRow" type="HBoxContainer" parent="SafeMargin/Root/TogglesPanel"]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="DebugLabelsLabel" type="Label" parent="SafeMargin/Root/TogglesPanel/DebugLabelsRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 22
-text = "Debug Labels"
-
-[node name="DebugLabelsToggle" type="CheckButton" parent="SafeMargin/Root/TogglesPanel/DebugLabelsRow"]
-unique_name_in_owner = true
-layout_mode = 2
-
-[node name="MusicRow" type="HBoxContainer" parent="SafeMargin/Root/TogglesPanel"]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="MusicLabel" type="Label" parent="SafeMargin/Root/TogglesPanel/MusicRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 22
-text = "Music"
-
-[node name="MusicToggle" type="CheckButton" parent="SafeMargin/Root/TogglesPanel/MusicRow"]
-unique_name_in_owner = true
-layout_mode = 2
-
-[node name="SoundEffectsRow" type="HBoxContainer" parent="SafeMargin/Root/TogglesPanel"]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="SoundEffectsLabel" type="Label" parent="SafeMargin/Root/TogglesPanel/SoundEffectsRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 22
-text = "Sound Effects"
-
-[node name="SoundEffectsToggle" type="CheckButton" parent="SafeMargin/Root/TogglesPanel/SoundEffectsRow"]
-unique_name_in_owner = true
-layout_mode = 2
+horizontal_alignment = 1
+vertical_alignment = 1
