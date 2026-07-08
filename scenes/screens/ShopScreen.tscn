@@ -1,13 +1,14 @@
-[gd_scene load_steps=8 format=3 uid="uid://bsjj7davox3yf"]
+[gd_scene load_steps=9 format=3 uid="uid://bsjj7davox3yf"]
 
 [ext_resource type="Script" uid="uid://g1lkmxhr2bma" path="res://scripts/screens/shop_screen.gd" id="1_shop1"]
 [ext_resource type="Script" uid="uid://b0dlqhi1wwh6t" path="res://scripts/ui/fallback_image_slot.gd" id="2_slot"]
 [ext_resource type="Script" uid="uid://bxwkgbqyalc6e" path="res://scripts/ui/pressable_texture_button.gd" id="3_btn"]
 [ext_resource type="Texture2D" uid="uid://ca8j4jbl5k8ss" path="res://assets/images/ui/shared/background.png" id="4_bg"]
+[ext_resource type="Texture2D" uid="uid://cs7cqykhsk7m8" path="res://assets/images/ui/shop/shop_window.png" id="4_wmsxa"]
 [ext_resource type="Texture2D" uid="uid://c06ua0pjgbjwj" path="res://assets/images/ui/shared/buttons/back_default.png" id="5_back_n"]
 [ext_resource type="Texture2D" uid="uid://8dpiq5nunba1" path="res://assets/images/ui/shared/buttons/back_pressed.png" id="6_back_p"]
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ll742"]
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_1op1a"]
 
 [node name="ShopScreen" type="Control"]
 layout_mode = 3
@@ -44,6 +45,8 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 texture = ExtResource("4_bg")
 expand_mode = 1
@@ -72,6 +75,7 @@ script = ExtResource("2_slot")
 placeholder_color = Color(0.14, 0.16, 0.22, 1)
 
 [node name="Fallback" type="ColorRect" parent="ShopWindow/WindowVisual"]
+visible = false
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -83,6 +87,7 @@ layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
+texture = ExtResource("4_wmsxa")
 expand_mode = 1
 stretch_mode = 5
 
@@ -256,11 +261,11 @@ theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
 theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
 theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
 theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
-theme_override_styles/normal = SubResource("StyleBoxEmpty_ll742")
-theme_override_styles/pressed = SubResource("StyleBoxEmpty_ll742")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_ll742")
-theme_override_styles/disabled = SubResource("StyleBoxEmpty_ll742")
-theme_override_styles/focus = SubResource("StyleBoxEmpty_ll742")
+theme_override_styles/normal = SubResource("StyleBoxEmpty_1op1a")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_1op1a")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_1op1a")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_1op1a")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_1op1a")
 flat = true
 script = ExtResource("3_btn")
 normal_texture = ExtResource("5_back_n")
