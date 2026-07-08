@@ -36,10 +36,13 @@ All Stage 39 entries are reserved placeholders. Current status is `missing/place
 | ui_level_select_background | res://assets/images/ui/level_select/background.png | missing/placeholder expected | active LevelSelect background FallbackImageSlot |
 | ui_level_select_panel | res://assets/images/ui/level_select_panel.png | missing/placeholder expected | active LevelSelect panel binding |
 | ui_zone_selector_panel | res://assets/images/ui/zone_selector_panel.png | missing/placeholder expected | active zone selector binding |
-| ui_level_button_default | res://assets/images/ui/level_select/buttons/level_default.png | missing/placeholder expected | active open/default LevelMapButton state |
-| ui_level_button_locked | res://assets/images/ui/level_select/buttons/level_locked.png | missing/placeholder expected | active locked LevelMapButton state |
-| ui_level_button_completed | res://assets/images/ui/level_select/buttons/level_completed.png | missing/placeholder expected | active completed LevelMapButton state |
+| ui_level_button_default | res://assets/images/ui/level_select/buttons/level_default.png | missing/placeholder expected | active LevelMapButton base texture for every state |
+| ui_level_button_locked | res://assets/images/ui/level_select/buttons/level_locked.png | missing/placeholder expected | legacy full locked texture, unused since Stage 63.4.2 (kept for compatibility) |
+| ui_level_button_completed | res://assets/images/ui/level_select/buttons/level_completed.png | missing/placeholder expected | legacy full completed texture, unused since Stage 63.4.2 (kept for compatibility) |
+| ui_level_button_locked_overlay | res://assets/images/ui/level_select/buttons/level_locked_overlay.png | missing/placeholder expected | active locked-state overlay drawn on top of the base texture + dark filter |
+| ui_level_button_completed_overlay | res://assets/images/ui/level_select/buttons/level_completed_overlay.png | missing/placeholder expected | active completed-state overlay drawn on top of the base texture + green filter |
 | ui_level_button_pressed | res://assets/images/ui/level_select/buttons/level_pressed.png | missing/placeholder expected | reserved LevelMapButton pressed state |
+| ui_level_info_window | res://assets/images/ui/level_select/level_info_window.png | missing/placeholder expected | active LevelInfoPopup window FallbackImageSlot |
 | ui_star_empty | res://assets/images/ui/star_empty.png | missing/placeholder expected | active empty star binding |
 | ui_star_filled | res://assets/images/ui/star_filled.png | missing/placeholder expected | active filled star binding |
 | ui_settings_background | res://assets/images/ui/settings_background.png | missing/placeholder expected | active Settings background ImageSlot |

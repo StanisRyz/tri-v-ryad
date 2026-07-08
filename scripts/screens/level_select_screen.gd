@@ -2,6 +2,7 @@ extends Control
 
 const LEVEL_CATALOG_SCRIPT := preload("res://scripts/game/config/level_catalog.gd")
 const LEVEL_ZONE_HELPER_SCRIPT := preload("res://scripts/game/config/level_zone_helper.gd")
+const LEVEL_LABEL_FORMATTER_SCRIPT := preload("res://scripts/game/config/level_label_formatter.gd")
 const ASSET_KEY_RESOLVER_SCRIPT := preload("res://scripts/game/config/asset_key_resolver.gd")
 const GAME_ASSET_CATALOG_SCRIPT := preload("res://scripts/game/config/game_asset_catalog.gd")
 const UI_ASSET_BINDING_SCRIPT := preload("res://scripts/ui/ui_asset_binding.gd")
@@ -23,6 +24,12 @@ const LEVEL_SLOT_COUNT := 5
 @onready var level_button_3: LevelMapButton = %LevelButton3
 @onready var level_button_4: LevelMapButton = %LevelButton4
 @onready var level_button_5: LevelMapButton = %LevelButton5
+@onready var level_info_popup: Control = %LevelInfoPopup
+@onready var popup_window_slot: FallbackImageSlot = %PopupWindow
+@onready var popup_level_title_label: Label = %LevelTitleLabel
+@onready var popup_stars_label: Label = %StarsLabel
+@onready var popup_start_button: Button = %StartButton
+@onready var popup_back_button: Button = %PopupBackButton
 
 var _level_buttons: Array[LevelMapButton] = []
 
@@ -32,6 +39,7 @@ var _settings_manager
 var _selected_zone_index := -1
 var _has_manual_zone_selection := false
 var _slot_level_ids: Array[String] = ["", "", "", "", ""]
+var _pending_level_id := ""
 
 
 func _ready() -> void:
@@ -42,22 +50,29 @@ func _ready() -> void:
 	zone_selector.item_selected.connect(_on_zone_selected)
 	for slot_index in range(_level_buttons.size()):
 		_level_buttons[slot_index].pressed.connect(_on_level_button_pressed.bind(slot_index))
+	popup_start_button.pressed.connect(_on_popup_start_button_pressed)
+	popup_back_button.pressed.connect(_on_popup_back_button_pressed)
 	_refresh()
 
 
 func _bind_static_ui_assets() -> void:
 	background_slot.texture = UI_ASSET_BINDING_SCRIPT.bind_ui_asset(background_slot, "level_select_background")
 	UI_ASSET_BINDING_SCRIPT.bind_ui_asset(zone_selector, "zone_selector_panel")
+	popup_window_slot.texture = UI_ASSET_BINDING_SCRIPT.bind_ui_asset(popup_window_slot, "level_info_window")
 
-	var locked_texture := _load_ui_texture("level_button_locked")
-	var open_texture := _load_ui_texture("level_button_default")
-	var completed_texture := _load_ui_texture("level_button_completed")
+	var default_texture := _load_ui_texture("level_button_default")
+	var locked_overlay_texture := _load_ui_texture("level_button_locked_overlay")
+	var completed_overlay_texture := _load_ui_texture("level_button_completed_overlay")
 	var pressed_texture := _load_ui_texture("level_button_pressed")
 	for button in _level_buttons:
-		button.locked_texture = locked_texture
-		button.open_texture = open_texture
-		button.completed_texture = completed_texture
-		button.pressed_texture = pressed_texture
+		if button.default_texture == null:
+			button.default_texture = default_texture
+		if button.locked_overlay_texture == null:
+			button.locked_overlay_texture = locked_overlay_texture
+		if button.completed_overlay_texture == null:
+			button.completed_overlay_texture = completed_overlay_texture
+		if button.pressed_texture == null:
+			button.pressed_texture = pressed_texture
 
 
 func _load_ui_texture(ui_id: String) -> Texture2D:
@@ -166,8 +181,43 @@ func _on_level_button_pressed(slot_index: int) -> void:
 	if not _is_level_unlocked(level_id):
 		return
 
+	_show_level_info_popup(level_id)
+
+
+func _show_level_info_popup(level_id: String) -> void:
+	_pending_level_id = level_id
+
+	var level_number := LEVEL_LABEL_FORMATTER_SCRIPT.extract_level_number(level_id)
+	var level_config = _level_catalog.get_level(level_id)
+	popup_level_title_label.text = LEVEL_LABEL_FORMATTER_SCRIPT.format_level_label(level_id, level_config.display_name) if level_number <= 0 else "Level %d" % level_number
+	popup_stars_label.text = "Stars: %s" % _format_stars_text(_get_level_stars(level_id))
+
+	level_info_popup.visible = true
+
+
+func _hide_level_info_popup() -> void:
+	level_info_popup.visible = false
+	_pending_level_id = ""
+
+
+func _format_stars_text(stars: int) -> String:
+	var filled_count: int = clampi(stars, 0, 3)
+	return "★".repeat(filled_count) + "☆".repeat(3 - filled_count)
+
+
+func _on_popup_start_button_pressed() -> void:
+	if _pending_level_id == "":
+		return
+
+	var level_id := _pending_level_id
+	_hide_level_info_popup()
 	_play_level_select()
 	level_selected.emit(level_id)
+
+
+func _on_popup_back_button_pressed() -> void:
+	_play_button_click()
+	_hide_level_info_popup()
 
 
 func _on_settings_button_pressed() -> void:

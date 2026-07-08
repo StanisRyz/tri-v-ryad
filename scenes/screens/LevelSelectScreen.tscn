@@ -446,3 +446,97 @@ theme_override_font_sizes/font_size = 26
 text = "5"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="LevelInfoPopup" type="Control" parent="LevelSelectCanvas"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Scrim" type="ColorRect" parent="LevelSelectCanvas/LevelInfoPopup"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.55)
+
+[node name="PopupWindow" type="Control" parent="LevelSelectCanvas/LevelInfoPopup"]
+unique_name_in_owner = true
+layout_mode = 1
+offset_left = 120.0
+offset_top = 460.0
+offset_right = 600.0
+offset_bottom = 820.0
+mouse_filter = 2
+script = ExtResource("2_slot")
+placeholder_color = Color(0.16, 0.17, 0.22, 1)
+
+[node name="Fallback" type="ColorRect" parent="LevelSelectCanvas/LevelInfoPopup/PopupWindow"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.16, 0.17, 0.22, 1)
+
+[node name="TextureDisplay" type="TextureRect" parent="LevelSelectCanvas/LevelInfoPopup/PopupWindow"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LevelTitleLabel" type="Label" parent="LevelSelectCanvas/LevelInfoPopup"]
+unique_name_in_owner = true
+layout_mode = 1
+offset_left = 140.0
+offset_top = 490.0
+offset_right = 580.0
+offset_bottom = 540.0
+theme_override_font_sizes/font_size = 30
+text = "Level"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="StarsLabel" type="Label" parent="LevelSelectCanvas/LevelInfoPopup"]
+unique_name_in_owner = true
+layout_mode = 1
+offset_left = 140.0
+offset_top = 550.0
+offset_right = 580.0
+offset_bottom = 600.0
+theme_override_font_sizes/font_size = 26
+text = "Stars: ☆☆☆"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="StartButton" type="Button" parent="LevelSelectCanvas/LevelInfoPopup"]
+unique_name_in_owner = true
+layout_mode = 1
+offset_left = 180.0
+offset_top = 650.0
+offset_right = 540.0
+offset_bottom = 710.0
+text = "Начать"
+
+[node name="PopupBackButton" type="Button" parent="LevelSelectCanvas/LevelInfoPopup"]
+unique_name_in_owner = true
+layout_mode = 1
+offset_left = 180.0
+offset_top = 730.0
+offset_right = 540.0
+offset_bottom = 790.0
+text = "Назад"

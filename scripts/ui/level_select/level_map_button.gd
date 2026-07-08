@@ -2,11 +2,21 @@
 extends Button
 class_name LevelMapButton
 
-## Reusable level-map button: shows the texture for the current `state`
-## (locked/open/completed) and falls back to a solid fallback_*_color rect
-## when that state's texture is missing, so a button never renders blank.
+## Reusable level-map button: every state renders the same `default_texture`
+## as its base art. `locked`/`completed` layer a semi-transparent color
+## filter (`locked_filter_color`/`completed_filter_color`) plus an optional
+## state overlay texture (`locked_overlay_texture`/`completed_overlay_texture`)
+## on top of that base — the filter alone is enough to distinguish the state
+## even when no overlay art exists yet, so a missing overlay never hides the
+## state. `open` shows only the base texture, no filter, no overlay.
 ## `pressed_texture` is reserved for a future press animation and is not
 ## swapped in during this stage.
+##
+## StateFilter renders `default_texture` again (not a plain ColorRect) and
+## is tinted via `modulate`: since modulate multiplies the texture's own
+## alpha, the filter color only ever appears where `default_texture` itself
+## is opaque, so a round button with a transparent background never gets a
+## square-looking dark/green tint bleeding outside its edges.
 ##
 ## Mirrors ShopTabButton's structure/lifecycle: children are only ever
 ## looked up/created once from _ready(), never from an exported-property
@@ -18,19 +28,19 @@ const STATE_LOCKED := "locked"
 const STATE_OPEN := "open"
 const STATE_COMPLETED := "completed"
 
-@export var locked_texture: Texture2D:
+@export var default_texture: Texture2D:
 	set(value):
-		locked_texture = value
+		default_texture = value
 		_update_visual()
 
-@export var open_texture: Texture2D:
+@export var locked_overlay_texture: Texture2D:
 	set(value):
-		open_texture = value
+		locked_overlay_texture = value
 		_update_visual()
 
-@export var completed_texture: Texture2D:
+@export var completed_overlay_texture: Texture2D:
 	set(value):
-		completed_texture = value
+		completed_overlay_texture = value
 		_update_visual()
 
 @export var pressed_texture: Texture2D
@@ -45,22 +55,20 @@ const STATE_COMPLETED := "completed"
 		state = value
 		_update_visual()
 
-@export var fallback_locked_color: Color = Color(0.22, 0.24, 0.32, 1.0):
+@export var fallback_color: Color = Color(0.22, 0.24, 0.32, 1.0):
 	set(value):
-		fallback_locked_color = value
+		fallback_color = value
 		_update_visual()
 
-@export var fallback_open_color: Color = Color(0.24, 0.42, 0.3, 1.0):
+@export var locked_filter_color: Color = Color(0, 0, 0, 0.45):
 	set(value):
-		fallback_open_color = value
+		locked_filter_color = value
 		_update_visual()
 
-@export var fallback_completed_color: Color = Color(0.55, 0.45, 0.16, 1.0):
+@export var completed_filter_color: Color = Color(0.1, 0.8, 0.25, 0.30):
 	set(value):
-		fallback_completed_color = value
+		completed_filter_color = value
 		_update_visual()
-
-@export var fallback_pressed_color: Color = Color(0.35, 0.5, 0.32, 1.0)
 
 @export var text_font_size: int = 26:
 	set(value):
@@ -73,6 +81,8 @@ const LABEL_OUTLINE_SIZE := 4
 
 var _fallback_rect: ColorRect
 var _texture_rect: TextureRect
+var _state_filter_rect: TextureRect
+var _state_overlay_rect: TextureRect
 var _text_zone: MarginContainer
 var _label: Label
 var _ready_done := false
@@ -136,6 +146,30 @@ func _ensure_children() -> void:
 			add_child(_texture_rect)
 			_own_created_node(_texture_rect)
 
+	if _state_filter_rect == null:
+		_state_filter_rect = get_node_or_null("StateFilter") as TextureRect
+		if _state_filter_rect == null:
+			_state_filter_rect = TextureRect.new()
+			_state_filter_rect.name = "StateFilter"
+			_state_filter_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			_state_filter_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			_state_filter_rect.stretch_mode = TextureRect.STRETCH_SCALE
+			_state_filter_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+			add_child(_state_filter_rect)
+			_own_created_node(_state_filter_rect)
+
+	if _state_overlay_rect == null:
+		_state_overlay_rect = get_node_or_null("StateOverlay") as TextureRect
+		if _state_overlay_rect == null:
+			_state_overlay_rect = TextureRect.new()
+			_state_overlay_rect.name = "StateOverlay"
+			_state_overlay_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			_state_overlay_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			_state_overlay_rect.stretch_mode = TextureRect.STRETCH_SCALE
+			_state_overlay_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+			add_child(_state_overlay_rect)
+			_own_created_node(_state_overlay_rect)
+
 	if _text_zone == null:
 		_text_zone = get_node_or_null("TextMargin") as MarginContainer
 		if _text_zone == null:
@@ -172,33 +206,42 @@ func _own_created_node(node: Node) -> void:
 	node.owner = edited_root if edited_root != null else owner
 
 
-func _get_active_texture() -> Texture2D:
+func _get_active_overlay_texture() -> Texture2D:
 	match state:
-		STATE_OPEN:
-			return open_texture
+		STATE_LOCKED:
+			return locked_overlay_texture
 		STATE_COMPLETED:
-			return completed_texture
+			return completed_overlay_texture
 		_:
-			return locked_texture
+			return null
 
 
-func _get_active_fallback_color() -> Color:
+func _get_active_filter_color() -> Color:
 	match state:
-		STATE_OPEN:
-			return fallback_open_color
+		STATE_LOCKED:
+			return locked_filter_color
 		STATE_COMPLETED:
-			return fallback_completed_color
+			return completed_filter_color
 		_:
-			return fallback_locked_color
+			return Color(0, 0, 0, 0)
 
 
 func _update_visual() -> void:
 	if not _ready_done:
 		return
-	var active_texture := _get_active_texture()
-	_texture_rect.texture = active_texture
-	_fallback_rect.color = _get_active_fallback_color()
-	_fallback_rect.visible = active_texture == null
+
+	_texture_rect.texture = default_texture
+	_fallback_rect.color = fallback_color
+	_fallback_rect.visible = default_texture == null
+
+	var is_open := state == STATE_OPEN
+	_state_filter_rect.texture = default_texture
+	_state_filter_rect.modulate = _get_active_filter_color()
+	_state_filter_rect.visible = not is_open and default_texture != null
+
+	var overlay_texture := _get_active_overlay_texture()
+	_state_overlay_rect.texture = overlay_texture
+	_state_overlay_rect.visible = not is_open and overlay_texture != null
 
 
 func _update_label() -> void:
