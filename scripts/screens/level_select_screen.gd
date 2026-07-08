@@ -25,9 +25,8 @@ const LEVEL_SLOT_COUNT := 5
 @onready var level_info_popup: Control = %LevelInfoPopup
 @onready var popup_window_slot: FallbackImageSlot = %PopupWindow
 @onready var popup_level_title_label: Label = %LevelTitleLabel
-@onready var popup_stars_label: Label = %StarsLabel
-@onready var popup_start_button: Button = %StartButton
-@onready var popup_back_button: Button = %PopupBackButton
+@onready var popup_start_button: PressableTextureButton = %StartButton
+@onready var popup_back_button: PressableTextureButton = %PopupBackButton
 
 var _level_buttons: Array[LevelMapButton] = []
 
@@ -47,16 +46,17 @@ func _ready() -> void:
 	zone_selector.item_selected.connect(_on_zone_selected)
 	for slot_index in range(_level_buttons.size()):
 		_level_buttons[slot_index].pressed.connect(_on_level_button_pressed.bind(slot_index))
-	popup_start_button.pressed.connect(_on_popup_start_button_pressed)
-	popup_back_button.pressed.connect(_on_popup_back_button_pressed)
+	popup_start_button.delayed_pressed.connect(_on_popup_start_button_pressed)
+	popup_back_button.delayed_pressed.connect(_on_popup_back_button_pressed)
 	_refresh()
 
 
 func _bind_static_ui_assets() -> void:
 	background_slot.texture = UI_ASSET_BINDING_SCRIPT.bind_ui_asset(background_slot, "level_select_background")
 	UI_ASSET_BINDING_SCRIPT.bind_ui_asset(zone_selector, "zone_selector_panel")
-	popup_window_slot.texture = UI_ASSET_BINDING_SCRIPT.bind_ui_asset(popup_window_slot, "level_info_window")
 	_bind_back_button_textures()
+	_bind_pressable_texture_button(popup_start_button, "shared_back_button_default", "shared_back_button_pressed")
+	_bind_pressable_texture_button(popup_back_button, "shared_back_button_default", "shared_back_button_pressed")
 
 	var default_texture := _load_ui_texture("level_button_default")
 	var locked_overlay_texture := _load_ui_texture("level_button_locked_overlay")
@@ -79,15 +79,19 @@ func _load_ui_texture(ui_id: String) -> Texture2D:
 
 
 func _bind_back_button_textures() -> void:
-	if back_button.normal_texture == null:
-		var normal_texture := _load_ui_texture("shared_back_button_default")
-		if normal_texture != null:
-			back_button.set_normal_texture(normal_texture)
+	_bind_pressable_texture_button(back_button, "shared_back_button_default", "shared_back_button_pressed")
 
-	if back_button.pressed_texture == null:
-		var pressed_texture := _load_ui_texture("shared_back_button_pressed")
+
+func _bind_pressable_texture_button(button: PressableTextureButton, normal_key: String, pressed_key: String) -> void:
+	if button.normal_texture == null:
+		var normal_texture := _load_ui_texture(normal_key)
+		if normal_texture != null:
+			button.set_normal_texture(normal_texture)
+
+	if button.pressed_texture == null:
+		var pressed_texture := _load_ui_texture(pressed_key)
 		if pressed_texture != null:
-			back_button.set_pressed_texture(pressed_texture)
+			button.set_pressed_texture(pressed_texture)
 
 
 func set_progress_manager(progress_manager) -> void:
@@ -199,7 +203,7 @@ func _show_level_info_popup(level_id: String) -> void:
 	var level_number := LEVEL_LABEL_FORMATTER_SCRIPT.extract_level_number(level_id)
 	var level_config = _level_catalog.get_level(level_id)
 	popup_level_title_label.text = LEVEL_LABEL_FORMATTER_SCRIPT.format_level_label(level_id, level_config.display_name) if level_number <= 0 else "Level %d" % level_number
-	popup_stars_label.text = "Stars: %s" % _format_stars_text(_get_level_stars(level_id))
+	_apply_popup_window_texture(_get_level_stars(level_id))
 
 	level_info_popup.visible = true
 
@@ -209,9 +213,21 @@ func _hide_level_info_popup() -> void:
 	_pending_level_id = ""
 
 
-func _format_stars_text(stars: int) -> String:
-	var filled_count: int = clampi(stars, 0, 3)
-	return "★".repeat(filled_count) + "☆".repeat(3 - filled_count)
+func _apply_popup_window_texture(stars: int) -> void:
+	popup_window_slot.texture = _load_ui_texture(_get_popup_window_asset_id(stars))
+
+
+func _get_popup_window_asset_id(stars: int) -> String:
+	var clamped_stars: int = clampi(stars, 0, 3)
+	match clamped_stars:
+		0:
+			return "level_info_window_0_stars"
+		1:
+			return "level_info_window_1_star"
+		2:
+			return "level_info_window_2_stars"
+		_:
+			return "level_info_window_3_stars"
 
 
 func _on_popup_start_button_pressed() -> void:
