@@ -33,12 +33,14 @@ All Stage 39 entries are reserved placeholders. Current status is `missing/place
 | ui_round_modifier_panel | res://assets/images/ui/round_modifier_panel.png | missing/placeholder expected | active round modifier panel binding |
 | ui_status_panel | res://assets/images/ui/status_panel.png | missing/placeholder expected | active battle status panel binding |
 | ui_result_panel | res://assets/images/ui/result_panel.png | missing/placeholder expected | active result overlay binding |
-| ui_level_select_background | res://assets/images/ui/level_select_background.png | missing/placeholder expected | active LevelSelect background ImageSlot |
+| ui_level_select_background | res://assets/images/ui/level_select/background.png | missing/placeholder expected | active LevelSelect background FallbackImageSlot |
 | ui_level_select_panel | res://assets/images/ui/level_select_panel.png | missing/placeholder expected | active LevelSelect panel binding |
+| ui_level_select_zone_001_map | res://assets/images/ui/level_select/zones/zone_001_map.png | missing/placeholder expected | active LevelSelect zone map FallbackImageSlot |
 | ui_zone_selector_panel | res://assets/images/ui/zone_selector_panel.png | missing/placeholder expected | active zone selector binding |
-| ui_level_button_open | res://assets/images/ui/level_button_open.png | missing/placeholder expected | active open level button binding |
-| ui_level_button_locked | res://assets/images/ui/level_button_locked.png | missing/placeholder expected | active locked level button binding |
-| ui_level_button_completed | res://assets/images/ui/level_button_completed.png | missing/placeholder expected | active completed level button binding |
+| ui_level_button_default | res://assets/images/ui/level_select/buttons/level_default.png | missing/placeholder expected | active open/default LevelMapButton state |
+| ui_level_button_locked | res://assets/images/ui/level_select/buttons/level_locked.png | missing/placeholder expected | active locked LevelMapButton state |
+| ui_level_button_completed | res://assets/images/ui/level_select/buttons/level_completed.png | missing/placeholder expected | active completed LevelMapButton state |
+| ui_level_button_pressed | res://assets/images/ui/level_select/buttons/level_pressed.png | missing/placeholder expected | reserved LevelMapButton pressed state |
 | ui_star_empty | res://assets/images/ui/star_empty.png | missing/placeholder expected | active empty star binding |
 | ui_star_filled | res://assets/images/ui/star_filled.png | missing/placeholder expected | active filled star binding |
 | ui_settings_background | res://assets/images/ui/settings_background.png | missing/placeholder expected | active Settings background ImageSlot |

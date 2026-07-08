@@ -1,7 +1,7 @@
 extends RefCounted
 class_name LevelZoneHelper
 
-const ZONE_SIZE := 10
+const ZONE_SIZE := 5
 
 
 static func get_zone_count(total_levels: int, zone_size: int = ZONE_SIZE) -> int:

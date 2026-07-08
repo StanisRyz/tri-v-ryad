@@ -1,7 +1,18 @@
-[gd_scene load_steps=3 format=3 uid="uid://bh81ijy0wbws7"]
+[gd_scene load_steps=9 format=3 uid="uid://bh81ijy0wbws7"]
 
-[ext_resource type="Script" path="res://scripts/screens/level_select_screen.gd" id="1_goqfh"]
-[ext_resource type="Script" path="res://scripts/ui/image_slot.gd" id="2_5ivm8"]
+[ext_resource type="Script" uid="uid://5v56citcawlq" path="res://scripts/screens/level_select_screen.gd" id="1_goqfh"]
+[ext_resource type="Script" uid="uid://b0dlqhi1wwh6t" path="res://scripts/ui/fallback_image_slot.gd" id="2_slot"]
+[ext_resource type="Script" uid="uid://bvmn6lyn0nih2" path="res://scripts/ui/level_select/level_map_button.gd" id="3_mapbtn"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ejleq"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_swk1e"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_nai4m"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_jfvir"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_feo6e"]
 
 [node name="LevelSelectScreen" type="Control"]
 layout_mode = 3
@@ -12,7 +23,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_goqfh")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="Control" parent="."]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -21,27 +32,46 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0.055, 0.07, 0.1, 1)
-script = ExtResource("2_5ivm8")
+script = ExtResource("2_slot")
 placeholder_color = Color(0.055, 0.07, 0.1, 1)
-stretch_mode = 6
 
-[node name="SafeMargin" type="MarginContainer" parent="."]
+[node name="Fallback" type="ColorRect" parent="Background"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
+color = Color(0.055, 0.07, 0.1, 1)
+
+[node name="TextureDisplay" type="TextureRect" parent="Background"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="SafeMargin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 190.0
+grow_horizontal = 2
+grow_vertical = 2
 theme_override_constants/margin_left = 32
 theme_override_constants/margin_top = 40
 theme_override_constants/margin_right = 32
-theme_override_constants/margin_bottom = 32
+theme_override_constants/margin_bottom = 0
 
 [node name="Root" type="VBoxContainer" parent="SafeMargin"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_constants/separation = 24
+theme_override_constants/separation = 16
 
 [node name="TopBar" type="HBoxContainer" parent="SafeMargin/Root"]
 layout_mode = 2
@@ -76,6 +106,7 @@ layout_mode = 2
 theme_override_constants/separation = 12
 
 [node name="ZoneLabel" type="Label" parent="SafeMargin/Root/ZoneRow"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
 text = "Zone"
@@ -87,13 +118,367 @@ custom_minimum_size = Vector2(420, 54)
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="LevelScroll" type="ScrollContainer" parent="SafeMargin/Root"]
-layout_mode = 2
-size_flags_vertical = 3
-horizontal_scroll_mode = 0
-
-[node name="LevelButtons" type="VBoxContainer" parent="SafeMargin/Root/LevelScroll"]
+[node name="MapRoot" type="Control" parent="."]
 unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 230.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ZoneMapVisual" type="Control" parent="MapRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_slot")
+placeholder_color = Color(0.1, 0.13, 0.18, 1)
+
+[node name="Fallback" type="ColorRect" parent="MapRoot/ZoneMapVisual"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.1, 0.13, 0.18, 1)
+
+[node name="TextureDisplay" type="TextureRect" parent="MapRoot/ZoneMapVisual"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LevelButton1" type="Button" parent="MapRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+offset_left = 90.0
+offset_top = 560.0
+offset_right = 230.0
+offset_bottom = 700.0
+focus_mode = 0
+theme_override_colors/font_color = Color(0, 0, 0, 0)
+theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
+theme_override_styles/normal = SubResource("StyleBoxEmpty_ejleq")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_ejleq")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_ejleq")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_ejleq")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_ejleq")
+flat = true
+script = ExtResource("3_mapbtn")
+level_text = "1"
+
+[node name="Fallback" type="ColorRect" parent="MapRoot/LevelButton1"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.22, 0.24, 0.32, 1)
+
+[node name="ButtonTexture" type="TextureRect" parent="MapRoot/LevelButton1"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TextMargin" type="MarginContainer" parent="MapRoot/LevelButton1"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="MapRoot/LevelButton1/TextMargin"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 14
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 26
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="LevelButton2" type="Button" parent="MapRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+offset_left = 300.0
+offset_top = 460.0
+offset_right = 440.0
+offset_bottom = 600.0
+focus_mode = 0
+theme_override_colors/font_color = Color(0, 0, 0, 0)
+theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
+theme_override_styles/normal = SubResource("StyleBoxEmpty_swk1e")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_swk1e")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_swk1e")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_swk1e")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_swk1e")
+flat = true
+script = ExtResource("3_mapbtn")
+level_text = "2"
+
+[node name="Fallback" type="ColorRect" parent="MapRoot/LevelButton2"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.22, 0.24, 0.32, 1)
+
+[node name="ButtonTexture" type="TextureRect" parent="MapRoot/LevelButton2"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TextMargin" type="MarginContainer" parent="MapRoot/LevelButton2"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="MapRoot/LevelButton2/TextMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 26
+text = "2"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="LevelButton3" type="Button" parent="MapRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+offset_left = 90.0
+offset_top = 360.0
+offset_right = 230.0
+offset_bottom = 500.0
+focus_mode = 0
+theme_override_colors/font_color = Color(0, 0, 0, 0)
+theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
+theme_override_styles/normal = SubResource("StyleBoxEmpty_nai4m")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_nai4m")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_nai4m")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_nai4m")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_nai4m")
+flat = true
+script = ExtResource("3_mapbtn")
+level_text = "3"
+
+[node name="Fallback" type="ColorRect" parent="MapRoot/LevelButton3"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.22, 0.24, 0.32, 1)
+
+[node name="ButtonTexture" type="TextureRect" parent="MapRoot/LevelButton3"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TextMargin" type="MarginContainer" parent="MapRoot/LevelButton3"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="MapRoot/LevelButton3/TextMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 26
+text = "3"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="LevelButton4" type="Button" parent="MapRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+offset_left = 300.0
+offset_top = 260.0
+offset_right = 440.0
+offset_bottom = 400.0
+focus_mode = 0
+theme_override_colors/font_color = Color(0, 0, 0, 0)
+theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
+theme_override_styles/normal = SubResource("StyleBoxEmpty_jfvir")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_jfvir")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_jfvir")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_jfvir")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_jfvir")
+flat = true
+script = ExtResource("3_mapbtn")
+level_text = "4"
+
+[node name="Fallback" type="ColorRect" parent="MapRoot/LevelButton4"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.22, 0.24, 0.32, 1)
+
+[node name="ButtonTexture" type="TextureRect" parent="MapRoot/LevelButton4"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TextMargin" type="MarginContainer" parent="MapRoot/LevelButton4"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="MapRoot/LevelButton4/TextMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 26
+text = "4"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="LevelButton5" type="Button" parent="MapRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+offset_left = 90.0
+offset_top = 160.0
+offset_right = 230.0
+offset_bottom = 300.0
+focus_mode = 0
+theme_override_colors/font_color = Color(0, 0, 0, 0)
+theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
+theme_override_styles/normal = SubResource("StyleBoxEmpty_feo6e")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_feo6e")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_feo6e")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_feo6e")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_feo6e")
+flat = true
+script = ExtResource("3_mapbtn")
+level_text = "5"
+
+[node name="Fallback" type="ColorRect" parent="MapRoot/LevelButton5"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.22, 0.24, 0.32, 1)
+
+[node name="ButtonTexture" type="TextureRect" parent="MapRoot/LevelButton5"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TextMargin" type="MarginContainer" parent="MapRoot/LevelButton5"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="MapRoot/LevelButton5/TextMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 26
+text = "5"
+horizontal_alignment = 1
+vertical_alignment = 1

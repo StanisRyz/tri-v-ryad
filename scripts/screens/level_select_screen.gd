@@ -1,42 +1,72 @@
 extends Control
 
 const LEVEL_CATALOG_SCRIPT := preload("res://scripts/game/config/level_catalog.gd")
-const LEVEL_LABEL_FORMATTER_SCRIPT := preload("res://scripts/game/config/level_label_formatter.gd")
 const LEVEL_ZONE_HELPER_SCRIPT := preload("res://scripts/game/config/level_zone_helper.gd")
 const ASSET_KEY_RESOLVER_SCRIPT := preload("res://scripts/game/config/asset_key_resolver.gd")
+const GAME_ASSET_CATALOG_SCRIPT := preload("res://scripts/game/config/game_asset_catalog.gd")
 const UI_ASSET_BINDING_SCRIPT := preload("res://scripts/ui/ui_asset_binding.gd")
+const LEVEL_MAP_BUTTON_SCRIPT := preload("res://scripts/ui/level_select/level_map_button.gd")
 
 signal level_selected(level_id: String)
 signal settings_pressed
 signal back_pressed
 
+const LEVEL_SLOT_COUNT := 5
+
 @onready var back_button: Button = %BackButton
 @onready var settings_button: Button = %SettingsButton
 @onready var points_label: Label = %PointsLabel
 @onready var zone_selector: OptionButton = %ZoneSelector
-@onready var level_buttons: VBoxContainer = %LevelButtons
-@onready var background_slot: ImageSlot = %Background
 @onready var root_panel: Control = %Root
+@onready var background_slot: FallbackImageSlot = %Background
+@onready var zone_map_visual: FallbackImageSlot = %ZoneMapVisual
+@onready var level_button_1: LevelMapButton = %LevelButton1
+@onready var level_button_2: LevelMapButton = %LevelButton2
+@onready var level_button_3: LevelMapButton = %LevelButton3
+@onready var level_button_4: LevelMapButton = %LevelButton4
+@onready var level_button_5: LevelMapButton = %LevelButton5
+
+var _level_buttons: Array[LevelMapButton] = []
 
 var _level_catalog = LEVEL_CATALOG_SCRIPT.new()
 var _progress_manager
 var _settings_manager
 var _selected_zone_index := -1
 var _has_manual_zone_selection := false
+var _slot_level_ids: Array[String] = ["", "", "", "", ""]
 
 
 func _ready() -> void:
+	_level_buttons = [level_button_1, level_button_2, level_button_3, level_button_4, level_button_5]
 	_bind_static_ui_assets()
 	back_button.pressed.connect(_on_back_button_pressed)
 	settings_button.pressed.connect(_on_settings_button_pressed)
 	zone_selector.item_selected.connect(_on_zone_selected)
+	for slot_index in range(_level_buttons.size()):
+		_level_buttons[slot_index].pressed.connect(_on_level_button_pressed.bind(slot_index))
 	_refresh()
 
 
 func _bind_static_ui_assets() -> void:
-	UI_ASSET_BINDING_SCRIPT.bind_ui_asset(background_slot, "level_select_background")
+	background_slot.texture = UI_ASSET_BINDING_SCRIPT.bind_ui_asset(background_slot, "level_select_background")
 	UI_ASSET_BINDING_SCRIPT.bind_ui_asset(root_panel, "level_select_panel")
 	UI_ASSET_BINDING_SCRIPT.bind_ui_asset(zone_selector, "zone_selector_panel")
+	zone_map_visual.texture = _load_ui_texture("level_select_zone_001_map")
+
+	var locked_texture := _load_ui_texture("level_button_locked")
+	var open_texture := _load_ui_texture("level_button_default")
+	var completed_texture := _load_ui_texture("level_button_completed")
+	var pressed_texture := _load_ui_texture("level_button_pressed")
+	for button in _level_buttons:
+		button.locked_texture = locked_texture
+		button.open_texture = open_texture
+		button.completed_texture = completed_texture
+		button.pressed_texture = pressed_texture
+
+
+func _load_ui_texture(ui_id: String) -> Texture2D:
+	var asset_key: String = ASSET_KEY_RESOLVER_SCRIPT.get_ui_asset_key(ui_id)
+	return GAME_ASSET_CATALOG_SCRIPT.try_load_texture_cached(asset_key)
 
 
 func set_progress_manager(progress_manager) -> void:
@@ -58,7 +88,7 @@ func refresh_progress_state() -> void:
 func _refresh() -> void:
 	_refresh_points()
 	_build_zone_selector()
-	_build_level_buttons()
+	_refresh_level_button_slots()
 
 
 func _build_zone_selector() -> void:
@@ -90,47 +120,56 @@ func _build_zone_selector() -> void:
 	zone_selector.select(selected_item_index)
 
 
-func _build_level_buttons() -> void:
-	for child in level_buttons.get_children():
-		child.queue_free()
-
+func _refresh_level_button_slots() -> void:
 	var levels: Array = _level_catalog.get_all_levels()
 	var level_range: Vector2i = LEVEL_ZONE_HELPER_SCRIPT.get_level_range_for_zone(_selected_zone_index, levels.size())
-	if level_range == Vector2i.ZERO:
-		return
 
-	for level_number in range(level_range.x, level_range.y + 1):
+	for slot_index in range(LEVEL_SLOT_COUNT):
+		var button := _level_buttons[slot_index]
+		var level_number := level_range.x + slot_index
+
+		if level_range == Vector2i.ZERO or level_number > level_range.y:
+			button.visible = false
+			_slot_level_ids[slot_index] = ""
+			continue
+
 		var level_config = _level_catalog.get_level("level_%d" % level_number)
-		var button := Button.new()
 		var unlocked := _is_level_unlocked(level_config.level_id)
 		var completed := _is_level_completed(level_config.level_id)
 		var stars := _get_level_stars(level_config.level_id)
-		var status := "Locked"
-		if completed:
-			status = "Completed"
-		elif unlocked:
-			status = "Open"
 
-		button.custom_minimum_size = Vector2(420, 74)
-		var title: String = LEVEL_LABEL_FORMATTER_SCRIPT.format_level_label(level_config.level_id, level_config.display_name)
+		_slot_level_ids[slot_index] = level_config.level_id
+		button.visible = true
+		button.level_text = str(level_number)
 		if _is_debug_labels_enabled():
-			title = "%s (%s)" % [title, level_config.level_id]
-		button.text = "%s\n%s | Stars: %d/3" % [title, status, stars]
+			button.level_text = "%d (%s)" % [level_number, level_config.level_id]
+		button.state = _get_level_button_state(completed, unlocked)
 		button.disabled = not unlocked
-		if unlocked:
-			button.pressed.connect(_on_level_button_pressed.bind(level_config.level_id))
-		button.set_meta("asset_key", _get_level_button_asset_key(completed, unlocked))
 		button.set_meta("star_asset_keys", _get_star_asset_keys(stars))
-		level_buttons.add_child(button)
+		button.set_meta("level_stars", stars)
+
+
+func _get_level_button_state(completed: bool, unlocked: bool) -> String:
+	if completed:
+		return LEVEL_MAP_BUTTON_SCRIPT.STATE_COMPLETED
+	if unlocked:
+		return LEVEL_MAP_BUTTON_SCRIPT.STATE_OPEN
+	return LEVEL_MAP_BUTTON_SCRIPT.STATE_LOCKED
 
 
 func _on_zone_selected(item_index: int) -> void:
 	_selected_zone_index = zone_selector.get_item_id(item_index)
 	_has_manual_zone_selection = true
-	_build_level_buttons()
+	_refresh_level_button_slots()
 
 
-func _on_level_button_pressed(level_id: String) -> void:
+func _on_level_button_pressed(slot_index: int) -> void:
+	var level_id: String = _slot_level_ids[slot_index]
+	if level_id == "":
+		return
+	if not _is_level_unlocked(level_id):
+		return
+
 	_play_level_select()
 	level_selected.emit(level_id)
 
@@ -184,14 +223,6 @@ func _get_level_stars(level_id: String) -> int:
 	if _progress_manager == null:
 		return 0
 	return _progress_manager.get_level_stars(level_id)
-
-
-func _get_level_button_asset_key(completed: bool, unlocked: bool) -> String:
-	if completed:
-		return ASSET_KEY_RESOLVER_SCRIPT.get_level_button_asset_key("completed")
-	if unlocked:
-		return ASSET_KEY_RESOLVER_SCRIPT.get_level_button_asset_key("open")
-	return ASSET_KEY_RESOLVER_SCRIPT.get_level_button_asset_key("locked")
 
 
 func _get_star_asset_keys(stars: int) -> Array[String]:

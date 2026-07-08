@@ -45,6 +45,11 @@ const UI_ASSET_KEYS := {
 	"enemy_panel": "ui_enemy_panel",
 	"level_select_background": "ui_level_select_background",
 	"level_select_panel": "ui_level_select_panel",
+	"level_select_zone_001_map": "ui_level_select_zone_001_map",
+	"level_button_default": "ui_level_button_default",
+	"level_button_locked": "ui_level_button_locked",
+	"level_button_completed": "ui_level_button_completed",
+	"level_button_pressed": "ui_level_button_pressed",
 	"result_panel": "ui_result_panel",
 	"round_modifier_panel": "ui_round_modifier_panel",
 	"settings_background": "ui_settings_background",
@@ -73,9 +78,10 @@ const BOOSTER_ASSET_KEYS := {
 }
 
 const LEVEL_BUTTON_ASSET_KEYS := {
-	"open": "ui_level_button_open",
+	"open": "ui_level_button_default",
 	"locked": "ui_level_button_locked",
 	"completed": "ui_level_button_completed",
+	"pressed": "ui_level_button_pressed",
 }
 
 const SHOP_BOOSTER_ICON_ASSET_KEYS := {
