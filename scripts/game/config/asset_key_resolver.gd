@@ -84,6 +84,7 @@ const UI_ASSET_KEYS := {
 	"toggle_on": "ui_toggle_on",
 	"zone_selector_panel": "ui_zone_selector_panel",
 	"booster_panel": "ui_booster_panel",
+	"booster_panel_background": "ui_booster_panel_background",
 	"booster_button_ready": "ui_booster_button_ready",
 	"booster_button_disabled": "ui_booster_button_disabled",
 	"booster_button_selected": "ui_booster_button_selected",

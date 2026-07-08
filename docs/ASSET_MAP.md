@@ -26,6 +26,7 @@ All Stage 39 entries are reserved placeholders. Current status is `missing/place
 | enemy_panel_bg_03 | res://assets/images/ui/game/enemy_panel/backgrounds/enemy_panel_bg_03.png | missing/placeholder expected | active Stage 64.1 EnemyPanel BackgroundVisual candidate |
 | enemy_panel_bg_04 | res://assets/images/ui/game/enemy_panel/backgrounds/enemy_panel_bg_04.png | missing/placeholder expected | active Stage 64.1 EnemyPanel BackgroundVisual candidate |
 | enemy_panel_bg_05 | res://assets/images/ui/game/enemy_panel/backgrounds/enemy_panel_bg_05.png | missing/placeholder expected | active Stage 64.1 EnemyPanel BackgroundVisual candidate |
+| ui_booster_panel_background | res://assets/images/ui/game/booster_panel/background.png | missing/placeholder expected | active Stage 64.3 BoosterPanel PanelBackground binding |
 | tile_red | res://assets/images/tiles/tile_red.png | missing/placeholder expected | active optional tile texture |
 | tile_blue | res://assets/images/tiles/tile_blue.png | missing/placeholder expected | active optional tile texture |
 | tile_green | res://assets/images/tiles/tile_green.png | missing/placeholder expected | active optional tile texture |

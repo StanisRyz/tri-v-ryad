@@ -3,7 +3,6 @@ class_name BoosterPanel
 
 signal booster_pressed(booster_id: String)
 
-const BOOSTER_TEXTURE_BUTTON_SCENE := preload("res://scenes/ui/BoosterTextureButton.tscn")
 const ASSET_KEY_RESOLVER_SCRIPT := preload("res://scripts/game/config/asset_key_resolver.gd")
 const GAME_ASSET_CATALOG_SCRIPT := preload("res://scripts/game/config/game_asset_catalog.gd")
 const UI_ASSET_BINDING_SCRIPT := preload("res://scripts/ui/ui_asset_binding.gd")
@@ -11,7 +10,11 @@ const UI_ASSET_BINDING_SCRIPT := preload("res://scripts/ui/ui_asset_binding.gd")
 const BUTTON_SIZE_MARGIN := 8.0
 const MIN_BUTTON_SIZE := 48.0
 
+@onready var panel_background: FallbackImageSlot = %PanelBackground
 @onready var button_row: HBoxContainer = %ButtonRow
+@onready var hammer_button: BoosterTextureButton = %HammerButton
+@onready var freeze_time_button: BoosterTextureButton = %FreezeTimeButton
+@onready var rocket_barrage_button: BoosterTextureButton = %RocketBarrageButton
 
 var _catalog
 var _booster_state
@@ -22,13 +25,19 @@ var _inventory_counts: Dictionary = {}
 
 func _ready() -> void:
 	UI_ASSET_BINDING_SCRIPT.bind_ui_asset(self, "booster_panel")
+	_bind_panel_background()
+	_register_fixed_buttons()
 	resized.connect(_apply_button_square_size)
 	refresh()
 
 
+## Stage 64.3 v0.1: booster buttons are fixed editor-visible scene nodes
+## (HammerButton/FreezeTimeButton/RocketBarrageButton), no longer created at
+## runtime. setup_boosters() still accepts the catalog for tooltip text, but
+## no longer instantiates or clears any UI nodes.
 func setup_boosters(catalog) -> void:
 	_catalog = catalog
-	_rebuild_buttons()
+	_apply_tooltips()
 	refresh()
 
 
@@ -58,11 +67,10 @@ func play_booster_feedback(booster_id: String, animations_enabled: bool = true, 
 
 
 func refresh() -> void:
-	if button_row == null:
-		return
-
 	for booster_id in _buttons.keys():
 		var button: BoosterTextureButton = _buttons[booster_id]
+		if button == null:
+			continue
 		var battle_uses_left := 0
 		if _booster_state != null:
 			battle_uses_left = _booster_state.get_uses_left(booster_id)
@@ -76,32 +84,54 @@ func get_button_count() -> int:
 	return _buttons.size()
 
 
-func _rebuild_buttons() -> void:
-	if button_row == null:
+func _register_fixed_buttons() -> void:
+	_buttons = {
+		"hammer": hammer_button,
+		"freeze_time": freeze_time_button,
+		"rocket_barrage": rocket_barrage_button,
+	}
+
+	for booster_id in _buttons.keys():
+		var button: BoosterTextureButton = _buttons[booster_id]
+		if button == null:
+			continue
+		if not button.pressed.is_connected(_on_button_pressed):
+			button.pressed.connect(_on_button_pressed.bind(booster_id))
+		_bind_booster_icon(button, booster_id)
+
+	_apply_button_square_size.call_deferred()
+
+
+## Fallback-only: an Inspector-assigned default_texture is never overwritten.
+func _bind_booster_icon(button: BoosterTextureButton, booster_id: String) -> void:
+	if button.default_texture != null:
 		return
 
-	for child in button_row.get_children():
-		child.queue_free()
-	_buttons.clear()
+	button.default_texture = GAME_ASSET_CATALOG_SCRIPT.try_load_texture_cached(
+		ASSET_KEY_RESOLVER_SCRIPT.get_shop_booster_icon_asset_key(booster_id)
+	)
 
+
+func _bind_panel_background() -> void:
+	if panel_background == null or panel_background.has_texture():
+		return
+
+	panel_background.set_texture(GAME_ASSET_CATALOG_SCRIPT.try_load_texture_cached(
+		ASSET_KEY_RESOLVER_SCRIPT.get_ui_asset_key("booster_panel_background")
+	))
+
+
+func _apply_tooltips() -> void:
 	if _catalog == null:
 		return
 
-	for booster in _catalog.get_all_boosters():
-		var button: BoosterTextureButton = BOOSTER_TEXTURE_BUTTON_SCENE.instantiate()
-		button.name = "%sButton" % booster.booster_id.capitalize().replace(" ", "")
-		button.tooltip_text = "%s\n%s" % [booster.display_name, booster.description]
-		button.booster_id = booster.booster_id
-		button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-		button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		button.default_texture = GAME_ASSET_CATALOG_SCRIPT.try_load_texture_cached(
-			ASSET_KEY_RESOLVER_SCRIPT.get_shop_booster_icon_asset_key(booster.booster_id)
-		)
-		button.pressed.connect(_on_button_pressed.bind(booster.booster_id))
-		button_row.add_child(button)
-		_buttons[booster.booster_id] = button
-
-	_apply_button_square_size.call_deferred()
+	for booster_id in _buttons.keys():
+		var button: BoosterTextureButton = _buttons[booster_id]
+		if button == null:
+			continue
+		var config = _catalog.get_booster(booster_id)
+		if config != null:
+			button.tooltip_text = "%s\n%s" % [config.display_name, config.description]
 
 
 func _apply_button_square_size() -> void:
@@ -110,6 +140,8 @@ func _apply_button_square_size() -> void:
 
 	var target_size: float = maxf(button_row.size.y - BUTTON_SIZE_MARGIN, MIN_BUTTON_SIZE)
 	for button in _buttons.values():
+		if button == null:
+			continue
 		button.custom_minimum_size = Vector2(target_size, target_size)
 
 
