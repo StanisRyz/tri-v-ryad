@@ -28,41 +28,41 @@ func to_enemy_intent() -> EnemyIntent:
 	return EnemyIntent.new(intent_turns, target_lane)
 
 
-static func training_dummy():
-	return load(SCRIPT_PATH).new("training_dummy", "Training Dummy", 220, 10, 4, 1)
+static func enemy_1():
+	return load(SCRIPT_PATH).new("enemy_1", "Enemy 1", 220, 10, 4, 1)
 
 
-static func small_slime():
-	return load(SCRIPT_PATH).new("small_slime", "Small Slime", 260, 12, 4, 0)
+static func enemy_2():
+	return load(SCRIPT_PATH).new("enemy_2", "Enemy 2", 260, 12, 4, 0)
 
 
-static func goblin_scout():
-	return load(SCRIPT_PATH).new("goblin_scout", "Goblin Scout", 310, 15, 3, 2)
+static func enemy_3():
+	return load(SCRIPT_PATH).new("enemy_3", "Enemy 3", 310, 15, 3, 2)
 
 
-static func goblin_fighter():
-	return load(SCRIPT_PATH).new("goblin_fighter", "Goblin Fighter", 360, 18, 3, 1)
+static func enemy_4():
+	return load(SCRIPT_PATH).new("enemy_4", "Enemy 4", 360, 18, 3, 1)
 
 
-static func armored_goblin():
-	return load(SCRIPT_PATH).new("armored_goblin", "Armored Goblin", 430, 20, 3, 2)
+static func enemy_5():
+	return load(SCRIPT_PATH).new("enemy_5", "Enemy 5", 430, 20, 3, 2)
 
 
-static func wild_wolf():
-	return load(SCRIPT_PATH).new("wild_wolf", "Wild Wolf", 470, 24, 2, 0)
+static func enemy_6():
+	return load(SCRIPT_PATH).new("enemy_6", "Enemy 6", 470, 24, 2, 0)
 
 
-static func bandit():
-	return load(SCRIPT_PATH).new("bandit", "Bandit", 540, 27, 2, 1)
+static func enemy_7():
+	return load(SCRIPT_PATH).new("enemy_7", "Enemy 7", 540, 27, 2, 1)
 
 
-static func orc_brute():
-	return load(SCRIPT_PATH).new("orc_brute", "Orc Brute", 620, 30, 2, 2)
+static func enemy_8():
+	return load(SCRIPT_PATH).new("enemy_8", "Enemy 8", 620, 30, 2, 2)
 
 
-static func cave_shaman():
-	return load(SCRIPT_PATH).new("cave_shaman", "Cave Shaman", 680, 32, 3, 1)
+static func enemy_9():
+	return load(SCRIPT_PATH).new("enemy_9", "Enemy 9", 680, 32, 3, 1)
 
 
-static func gatekeeper():
-	return load(SCRIPT_PATH).new("gatekeeper", "Gatekeeper", 820, 38, 2, 1)
+static func enemy_10():
+	return load(SCRIPT_PATH).new("enemy_10", "Enemy 10", 820, 38, 2, 1)

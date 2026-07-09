@@ -30,7 +30,7 @@ func has_enemy(enemy_id: String) -> bool:
 
 
 func get_default_enemy():
-	return get_enemy("training_dummy")
+	return get_enemy("enemy_1")
 
 
 func is_valid_enemy(enemy_config) -> bool:
@@ -53,16 +53,16 @@ func is_valid_enemy(enemy_config) -> bool:
 
 
 func _register_enemies() -> void:
-	_add_enemy(ENEMY_CONFIG_SCRIPT.training_dummy())
-	_add_enemy(ENEMY_CONFIG_SCRIPT.small_slime())
-	_add_enemy(ENEMY_CONFIG_SCRIPT.goblin_scout())
-	_add_enemy(ENEMY_CONFIG_SCRIPT.goblin_fighter())
-	_add_enemy(ENEMY_CONFIG_SCRIPT.armored_goblin())
-	_add_enemy(ENEMY_CONFIG_SCRIPT.wild_wolf())
-	_add_enemy(ENEMY_CONFIG_SCRIPT.bandit())
-	_add_enemy(ENEMY_CONFIG_SCRIPT.orc_brute())
-	_add_enemy(ENEMY_CONFIG_SCRIPT.cave_shaman())
-	_add_enemy(ENEMY_CONFIG_SCRIPT.gatekeeper())
+	_add_enemy(ENEMY_CONFIG_SCRIPT.enemy_1())
+	_add_enemy(ENEMY_CONFIG_SCRIPT.enemy_2())
+	_add_enemy(ENEMY_CONFIG_SCRIPT.enemy_3())
+	_add_enemy(ENEMY_CONFIG_SCRIPT.enemy_4())
+	_add_enemy(ENEMY_CONFIG_SCRIPT.enemy_5())
+	_add_enemy(ENEMY_CONFIG_SCRIPT.enemy_6())
+	_add_enemy(ENEMY_CONFIG_SCRIPT.enemy_7())
+	_add_enemy(ENEMY_CONFIG_SCRIPT.enemy_8())
+	_add_enemy(ENEMY_CONFIG_SCRIPT.enemy_9())
+	_add_enemy(ENEMY_CONFIG_SCRIPT.enemy_10())
 
 
 func _add_enemy(enemy_config) -> void:

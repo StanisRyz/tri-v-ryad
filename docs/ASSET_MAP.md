@@ -9,18 +9,26 @@ All Stage 39 entries are reserved placeholders. Current status is `missing/place
 | background_3 | res://assets/images/backgrounds/background_3.png | missing/placeholder expected | active future battle background |
 | background_4 | res://assets/images/backgrounds/background_4.png | missing/placeholder expected | active future battle background |
 | background_5 | res://assets/images/backgrounds/background_5.png | missing/placeholder expected | active future battle background |
-| enemy_training_dummy | res://assets/images/enemies/enemy_training_dummy.png | missing/placeholder expected | active future enemy image |
-| enemy_small_slime | res://assets/images/enemies/enemy_small_slime.png | missing/placeholder expected | active future enemy image |
-| enemy_goblin_scout | res://assets/images/enemies/enemy_goblin_scout.png | missing/placeholder expected | active future enemy image |
-| enemy_goblin_fighter | res://assets/images/enemies/enemy_goblin_fighter.png | missing/placeholder expected | active future enemy image |
-| enemy_armored_goblin | res://assets/images/enemies/enemy_armored_goblin.png | missing/placeholder expected | active future enemy image |
-| enemy_wild_wolf | res://assets/images/enemies/enemy_wild_wolf.png | missing/placeholder expected | active future enemy image |
-| enemy_bandit | res://assets/images/enemies/enemy_bandit.png | missing/placeholder expected | active future enemy image |
-| enemy_orc_brute | res://assets/images/enemies/enemy_orc_brute.png | missing/placeholder expected | active future enemy image |
-| enemy_cave_shaman | res://assets/images/enemies/enemy_cave_shaman.png | missing/placeholder expected | active future enemy image |
-| enemy_gatekeeper | res://assets/images/enemies/enemy_gatekeeper.png | missing/placeholder expected | active future enemy image |
-| enemy_1_normal | res://assets/images/ui/game/enemies/enemy_1_normal.png | missing/placeholder expected | active Stage 64.1/64.5 EnemyPanel EnemySprite normal state for gameplay enemy id "gatekeeper" |
-| enemy_1_damaged | res://assets/images/ui/game/enemies/enemy_1_damaged.png | missing/placeholder expected | active Stage 64.1/64.5 EnemyPanel EnemySprite damaged state for gameplay enemy id "gatekeeper" |
+| enemy_1_normal | res://assets/images/ui/game/enemies/enemy_1_normal.png | missing/placeholder expected | active Stage 64.1/64.5/64.6 EnemyPanel EnemySprite normal state for gameplay enemy id "enemy_1" |
+| enemy_1_damaged | res://assets/images/ui/game/enemies/enemy_1_damaged.png | missing/placeholder expected | active Stage 64.1/64.5/64.6 EnemyPanel EnemySprite damaged state for gameplay enemy id "enemy_1" |
+| enemy_2_normal | res://assets/images/ui/game/enemies/enemy_2_normal.png | missing/placeholder expected | active Stage 64.6 EnemyPanel EnemySprite normal state for gameplay enemy id "enemy_2" |
+| enemy_2_damaged | res://assets/images/ui/game/enemies/enemy_2_damaged.png | missing/placeholder expected | active Stage 64.6 EnemyPanel EnemySprite damaged state for gameplay enemy id "enemy_2" |
+| enemy_3_normal | res://assets/images/ui/game/enemies/enemy_3_normal.png | missing/placeholder expected | active Stage 64.6 EnemyPanel EnemySprite normal state for gameplay enemy id "enemy_3" |
+| enemy_3_damaged | res://assets/images/ui/game/enemies/enemy_3_damaged.png | missing/placeholder expected | active Stage 64.6 EnemyPanel EnemySprite damaged state for gameplay enemy id "enemy_3" |
+| enemy_4_normal | res://assets/images/ui/game/enemies/enemy_4_normal.png | missing/placeholder expected | active Stage 64.6 EnemyPanel EnemySprite normal state for gameplay enemy id "enemy_4" |
+| enemy_4_damaged | res://assets/images/ui/game/enemies/enemy_4_damaged.png | missing/placeholder expected | active Stage 64.6 EnemyPanel EnemySprite damaged state for gameplay enemy id "enemy_4" |
+| enemy_5_normal | res://assets/images/ui/game/enemies/enemy_5_normal.png | missing/placeholder expected | active Stage 64.6 EnemyPanel EnemySprite normal state for gameplay enemy id "enemy_5" |
+| enemy_5_damaged | res://assets/images/ui/game/enemies/enemy_5_damaged.png | missing/placeholder expected | active Stage 64.6 EnemyPanel EnemySprite damaged state for gameplay enemy id "enemy_5" |
+| enemy_6_normal | res://assets/images/ui/game/enemies/enemy_6_normal.png | missing/placeholder expected | active Stage 64.6 EnemyPanel EnemySprite normal state for gameplay enemy id "enemy_6" |
+| enemy_6_damaged | res://assets/images/ui/game/enemies/enemy_6_damaged.png | missing/placeholder expected | active Stage 64.6 EnemyPanel EnemySprite damaged state for gameplay enemy id "enemy_6" |
+| enemy_7_normal | res://assets/images/ui/game/enemies/enemy_7_normal.png | missing/placeholder expected | active Stage 64.6 EnemyPanel EnemySprite normal state for gameplay enemy id "enemy_7" |
+| enemy_7_damaged | res://assets/images/ui/game/enemies/enemy_7_damaged.png | missing/placeholder expected | active Stage 64.6 EnemyPanel EnemySprite damaged state for gameplay enemy id "enemy_7" |
+| enemy_8_normal | res://assets/images/ui/game/enemies/enemy_8_normal.png | missing/placeholder expected | active Stage 64.6 EnemyPanel EnemySprite normal state for gameplay enemy id "enemy_8" |
+| enemy_8_damaged | res://assets/images/ui/game/enemies/enemy_8_damaged.png | missing/placeholder expected | active Stage 64.6 EnemyPanel EnemySprite damaged state for gameplay enemy id "enemy_8" |
+| enemy_9_normal | res://assets/images/ui/game/enemies/enemy_9_normal.png | missing/placeholder expected | active Stage 64.6 EnemyPanel EnemySprite normal state for gameplay enemy id "enemy_9" |
+| enemy_9_damaged | res://assets/images/ui/game/enemies/enemy_9_damaged.png | missing/placeholder expected | active Stage 64.6 EnemyPanel EnemySprite damaged state for gameplay enemy id "enemy_9" |
+| enemy_10_normal | res://assets/images/ui/game/enemies/enemy_10_normal.png | missing/placeholder expected | active Stage 64.6 EnemyPanel EnemySprite normal state for gameplay enemy id "enemy_10" |
+| enemy_10_damaged | res://assets/images/ui/game/enemies/enemy_10_damaged.png | missing/placeholder expected | active Stage 64.6 EnemyPanel EnemySprite damaged state for gameplay enemy id "enemy_10" |
 | enemy_background_1 | res://assets/images/ui/game/enemy_panel/backgrounds/enemy_background_1.png | missing/placeholder expected | active Stage 64.1/64.5 EnemyPanel BackgroundVisual candidate |
 | enemy_background_2 | res://assets/images/ui/game/enemy_panel/backgrounds/enemy_background_2.png | missing/placeholder expected | active Stage 64.1/64.5 EnemyPanel BackgroundVisual candidate |
 | enemy_background_3 | res://assets/images/ui/game/enemy_panel/backgrounds/enemy_background_3.png | missing/placeholder expected | active Stage 64.1/64.5 EnemyPanel BackgroundVisual candidate |

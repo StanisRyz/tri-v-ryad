@@ -5,7 +5,7 @@ Stage 39 completes the reserved AssetKey texture binding surface for current and
 ## Folder Structure
 
 - `assets/images/backgrounds/`: future battle background images named `background_1.png` through `background_5.png`.
-- `assets/images/enemies/`: future enemy portraits or sprites using the reserved enemy asset keys.
+- `assets/images/enemies/`: unused legacy folder (kept with `.gitkeep`). The old per-name roster keys it held (`enemy_training_dummy`, `enemy_gatekeeper`, etc.) were removed from `GameAssetCatalog` in Stage 64.6; enemy visuals now live under `assets/images/ui/game/enemies/`.
 - `assets/images/tiles/`: base tile images (`tile_red.png`, `tile_blue.png`, `tile_green.png`, `tile_yellow.png`, `tile_purple.png`) plus special tile overlays/placeholders (`tile_special_horizontal.png`, `tile_special_vertical.png`, `tile_color_bomb.png`).
 - `assets/images/ui/`: future panel, button, star, toggle, and screen background textures.
 - `assets/images/boosters/`: legacy duplicate booster icon path, kept for `BoosterConfig`/legacy `BoosterButton` compatibility. New booster icon art belongs under `assets/images/ui/icons/boosters/` instead (see the Stage 64.5 naming rule below).
@@ -19,15 +19,14 @@ Each folder contains a `.gitkeep` file so the empty folder is tracked.
 
 ## Naming
 
-Image filenames should match the `GameAssetCatalog` path for their asset key. For example, `background_1` maps to `res://assets/images/backgrounds/background_1.png`, `enemy_small_slime` maps to `res://assets/images/enemies/enemy_small_slime.png`, and `booster_hammer` maps to `res://assets/images/boosters/booster_hammer.png`.
+Image filenames should match the `GameAssetCatalog` path for their asset key. For example, `background_1` maps to `res://assets/images/backgrounds/background_1.png`, and `booster_hammer` maps to `res://assets/images/boosters/booster_hammer.png`.
 
-Stage 64.5 introduced a numeric naming convention for `EnemyPanel` visual assets, since art no longer needs to be tied to one specific enemy name:
+Stage 64.5 introduced a numeric naming convention for `EnemyPanel` visual assets, and Stage 64.6 extended the same numeric scheme to the underlying gameplay enemy ids, so art no longer needs to be tied to any specific enemy name:
 
-- Enemy sprite states: `enemy_N_normal.png` / `enemy_N_damaged.png` under `assets/images/ui/game/enemies/` (asset keys `enemy_N_normal`/`enemy_N_damaged`). The gameplay enemy id is unchanged (still `"gatekeeper"` for the first enemy); `AssetKeyResolver.ENEMY_STATE_ASSET_KEYS` maps that gameplay id to the numeric asset keys, so gameplay ids/level/battle configs were not touched.
-- Enemy panel backgrounds: `enemy_background_N.png` under `assets/images/ui/game/enemy_panel/backgrounds/` (asset keys `enemy_background_N`), returned in order by `AssetKeyResolver.get_enemy_panel_background_asset_keys()` and picked at random by `enemy_panel.gd`.
-- Booster icons: shared UI icon art continues to live at `assets/images/ui/icons/boosters/<booster_id>.png` (`hammer.png`/`freeze_time.png`/`rocket_barrage.png`); new booster art should be added there, not under the legacy `assets/images/boosters/` folder.
-
-Future numbered enemies should follow the same pattern (`enemy_2_normal.png`/`enemy_2_damaged.png`, etc.) as they're added to `AssetKeyResolver.ENEMY_STATE_ASSET_KEYS`.
+- Gameplay enemy ids: `EnemyCatalog`/`EnemyConfig` now register `enemy_1` through `enemy_10` (`EnemyConfig.enemy_1()`..`enemy_10()`), in the same HP/attack/intent/target order as the old `training_dummy`..`gatekeeper` factory methods.
+- Enemy sprite states: `enemy_N_normal.png` / `enemy_N_damaged.png` under `assets/images/ui/game/enemies/` (asset keys `enemy_N_normal`/`enemy_N_damaged`), for `N` in `1`..`10`. `AssetKeyResolver.ENEMY_STATE_ASSET_KEYS` maps each gameplay enemy id (`"enemy_1"`..`"enemy_10"`) directly to its matching numeric asset keys, so a battle's enemy id and its texture keys share the same number.
+- Enemy panel backgrounds: `enemy_background_N.png` under `assets/images/ui/game/enemy_panel/backgrounds/` (asset keys `enemy_background_N`, `N` = `1`..`5`), returned in order by `AssetKeyResolver.get_enemy_panel_background_asset_keys()` and picked at random by `enemy_panel.gd`. These are independent of the enemy id (any background can appear behind any enemy).
+- Booster icons: shared UI icon art continues to live at `assets/images/ui/icons/boosters/<booster_id>.png` (`hammer.png`/`freeze_time.png`/`rocket_barrage.png`); booster ids themselves (`hammer`/`freeze_time`/`rocket_barrage`) were not touched by the enemy renaming.
 
 ## Missing Assets
 

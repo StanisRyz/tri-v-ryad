@@ -13,20 +13,29 @@ const BACKGROUND_ASSET_KEYS := {
 }
 
 const ENEMY_ASSET_KEYS := {
-	"training_dummy": "enemy_training_dummy",
-	"small_slime": "enemy_small_slime",
-	"goblin_scout": "enemy_goblin_scout",
-	"goblin_fighter": "enemy_goblin_fighter",
-	"armored_goblin": "enemy_armored_goblin",
-	"wild_wolf": "enemy_wild_wolf",
-	"bandit": "enemy_bandit",
-	"orc_brute": "enemy_orc_brute",
-	"cave_shaman": "enemy_cave_shaman",
-	"gatekeeper": "enemy_gatekeeper",
+	"enemy_1": "enemy_1_normal",
+	"enemy_2": "enemy_2_normal",
+	"enemy_3": "enemy_3_normal",
+	"enemy_4": "enemy_4_normal",
+	"enemy_5": "enemy_5_normal",
+	"enemy_6": "enemy_6_normal",
+	"enemy_7": "enemy_7_normal",
+	"enemy_8": "enemy_8_normal",
+	"enemy_9": "enemy_9_normal",
+	"enemy_10": "enemy_10_normal",
 }
 
 const ENEMY_STATE_ASSET_KEYS := {
-	"gatekeeper": {"normal": "enemy_1_normal", "damaged": "enemy_1_damaged"},
+	"enemy_1": {"normal": "enemy_1_normal", "damaged": "enemy_1_damaged"},
+	"enemy_2": {"normal": "enemy_2_normal", "damaged": "enemy_2_damaged"},
+	"enemy_3": {"normal": "enemy_3_normal", "damaged": "enemy_3_damaged"},
+	"enemy_4": {"normal": "enemy_4_normal", "damaged": "enemy_4_damaged"},
+	"enemy_5": {"normal": "enemy_5_normal", "damaged": "enemy_5_damaged"},
+	"enemy_6": {"normal": "enemy_6_normal", "damaged": "enemy_6_damaged"},
+	"enemy_7": {"normal": "enemy_7_normal", "damaged": "enemy_7_damaged"},
+	"enemy_8": {"normal": "enemy_8_normal", "damaged": "enemy_8_damaged"},
+	"enemy_9": {"normal": "enemy_9_normal", "damaged": "enemy_9_damaged"},
+	"enemy_10": {"normal": "enemy_10_normal", "damaged": "enemy_10_damaged"},
 }
 
 const ENEMY_PANEL_BACKGROUND_ASSET_KEYS := [

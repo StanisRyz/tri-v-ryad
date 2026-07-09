@@ -77,7 +77,7 @@ func _get_reward_for_level(level_number: int) -> int:
 func _get_fallback_enemy_for_level(level_number: int):
 	var enemies: Array = ENEMY_CATALOG_SCRIPT.new().get_all_enemies()
 	if enemies.is_empty():
-		return ENEMY_CONFIG_SCRIPT.training_dummy()
+		return ENEMY_CONFIG_SCRIPT.enemy_1()
 
 	var enemy_index := (level_number - 1) % enemies.size()
 	return enemies[enemy_index]
