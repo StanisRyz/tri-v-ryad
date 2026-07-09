@@ -4,11 +4,7 @@ All Stage 39 entries are reserved placeholders. Current status is `missing/place
 
 | asset_key | expected path | status | usage |
 |---|---|---|---|
-| background_1 | res://assets/images/backgrounds/background_1.png | missing/placeholder expected | active future battle background |
-| background_2 | res://assets/images/backgrounds/background_2.png | missing/placeholder expected | active future battle background |
-| background_3 | res://assets/images/backgrounds/background_3.png | missing/placeholder expected | active future battle background |
-| background_4 | res://assets/images/backgrounds/background_4.png | missing/placeholder expected | active future battle background |
-| background_5 | res://assets/images/backgrounds/background_5.png | missing/placeholder expected | active future battle background |
+| background_1 | res://assets/images/backgrounds/background_1.png | missing/placeholder expected | active single game field background (GameScreen `%Background`), target 720x1280 (Stage 64.3.3) |
 | enemy_1_normal | res://assets/images/ui/game/enemies/enemy_1_normal.png | missing/placeholder expected | active Stage 64.1/64.5/64.6 EnemyPanel EnemySprite normal state for gameplay enemy id "enemy_1" |
 | enemy_1_damaged | res://assets/images/ui/game/enemies/enemy_1_damaged.png | missing/placeholder expected | active Stage 64.1/64.5/64.6 EnemyPanel EnemySprite damaged state for gameplay enemy id "enemy_1" |
 | enemy_2_normal | res://assets/images/ui/game/enemies/enemy_2_normal.png | missing/placeholder expected | active Stage 64.6 EnemyPanel EnemySprite normal state for gameplay enemy id "enemy_2" |

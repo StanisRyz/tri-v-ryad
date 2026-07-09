@@ -4,7 +4,7 @@ Stage 39 completes the reserved AssetKey texture binding surface for current and
 
 ## Folder Structure
 
-- `assets/images/backgrounds/`: future battle background images named `background_1.png` through `background_5.png`.
+- `assets/images/backgrounds/`: the single game field background image, `background_1.png` (target 720x1280). Was 5 randomly-selected variants (`background_1.png` through `background_5.png`) before Stage 64.3.3 reduced `BattleBackgroundCatalog` to one entry.
 - `assets/images/enemies/`: unused legacy folder (kept with `.gitkeep`). The old per-name roster keys it held (`enemy_training_dummy`, `enemy_gatekeeper`, etc.) were removed from `GameAssetCatalog` in Stage 64.6; enemy visuals now live under `assets/images/ui/game/enemies/`.
 - `assets/images/tiles/`: base tile images (`tile_red.png`, `tile_blue.png`, `tile_green.png`, `tile_yellow.png`, `tile_purple.png`) plus special tile overlays/placeholders (`tile_special_horizontal.png`, `tile_special_vertical.png`, `tile_color_bomb.png`).
 - `assets/images/ui/`: future panel, button, star, toggle, and screen background textures.
@@ -19,7 +19,7 @@ Each folder contains a `.gitkeep` file so the empty folder is tracked.
 
 ## Naming
 
-Image filenames should match the `GameAssetCatalog` path for their asset key. For example, `background_1` maps to `res://assets/images/backgrounds/background_1.png`, and `booster_hammer` maps to `res://assets/images/boosters/booster_hammer.png`.
+Image filenames should match the `GameAssetCatalog` path for their asset key. For example, `background_1` (the sole game field background, target 720x1280) maps to `res://assets/images/backgrounds/background_1.png`, and `booster_hammer` maps to `res://assets/images/boosters/booster_hammer.png`.
 
 Stage 64.5 introduced a numeric naming convention for `EnemyPanel` visual assets, and Stage 64.6 extended the same numeric scheme to the underlying gameplay enemy ids, so art no longer needs to be tied to any specific enemy name:
 

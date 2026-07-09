@@ -28,7 +28,7 @@ const PORTRAIT_BOARD_SIZE := PORTRAIT_CONTENT_WIDTH
 const LANDSCAPE_CONTENT_WIDTH := 560.0
 const LANDSCAPE_BOARD_SIZE := 320.0
 
-@onready var menu_button: Button = %MenuButton
+@onready var menu_button: PressableTextureButton = %MenuButton
 @onready var battle_root: VBoxContainer = %BattleRoot
 @onready var battle_hud: PanelContainer = %BattleHud
 @onready var enemy_panel: PanelContainer = %EnemyPanel
@@ -39,6 +39,7 @@ const LANDSCAPE_BOARD_SIZE := 320.0
 @onready var result_overlay: PanelContainer = %BattleResultOverlay
 @onready var background_slot: ImageSlot = %Background
 @onready var round_modifier_panel: PanelContainer = %RoundModifierPanel
+@onready var round_modifier_background: FallbackImageSlot = %RoundModifierBackground
 @onready var modifier_description_label: Label = %ModifierDescriptionLabel
 @onready var battle_effect_layer: Control = %BattleEffectLayer
 
@@ -83,8 +84,8 @@ var _last_shuffle_debug_info: Dictionary = {}
 var _last_booster_spend_failed := false
 
 func _ready() -> void:
-	if not menu_button.pressed.is_connected(_on_menu_button_pressed):
-		menu_button.pressed.connect(_on_menu_button_pressed)
+	if not menu_button.delayed_pressed.is_connected(_on_menu_button_pressed):
+		menu_button.delayed_pressed.connect(_on_menu_button_pressed)
 
 	_bind_static_ui_assets()
 	_layout_manager = LayoutManager.new(get_viewport())
@@ -97,9 +98,18 @@ func _ready() -> void:
 func _bind_static_ui_assets() -> void:
 	UI_ASSET_BINDING_SCRIPT.bind_ui_asset(battle_hud, "battle_hud_panel")
 	UI_ASSET_BINDING_SCRIPT.bind_ui_asset(enemy_panel, "enemy_panel")
-	UI_ASSET_BINDING_SCRIPT.bind_ui_asset(round_modifier_panel, "round_modifier_panel")
+	var round_modifier_texture := UI_ASSET_BINDING_SCRIPT.bind_ui_asset(round_modifier_panel, "round_modifier_panel")
 	UI_ASSET_BINDING_SCRIPT.bind_ui_asset(status_label, "status_panel")
 	UI_ASSET_BINDING_SCRIPT.bind_ui_asset(result_overlay, "result_panel")
+	_bind_round_modifier_panel_background(round_modifier_texture)
+
+
+## Fallback-only: an Inspector-assigned background texture is never overwritten.
+func _bind_round_modifier_panel_background(texture: Texture2D) -> void:
+	if round_modifier_background == null or round_modifier_background.has_texture():
+		return
+
+	round_modifier_background.set_texture(texture)
 
 
 func _on_menu_button_pressed() -> void:
@@ -122,7 +132,7 @@ func _apply_layout(mode: int) -> void:
 func _apply_portrait_layout() -> void:
 	battle_root.custom_minimum_size = Vector2(PORTRAIT_CONTENT_WIDTH, 0)
 	battle_root.add_theme_constant_override("separation", 12)
-	menu_button.custom_minimum_size = Vector2(118, 60)
+	menu_button.custom_minimum_size = Vector2(176, 60)
 	battle_hud.custom_minimum_size = Vector2(0, 60)
 	enemy_panel.custom_minimum_size = Vector2(0, 200)
 	round_modifier_panel.custom_minimum_size = Vector2(0, 48)
@@ -134,7 +144,7 @@ func _apply_portrait_layout() -> void:
 func _apply_landscape_layout() -> void:
 	battle_root.custom_minimum_size = Vector2(LANDSCAPE_CONTENT_WIDTH, 0)
 	battle_root.add_theme_constant_override("separation", 10)
-	menu_button.custom_minimum_size = Vector2(104, 52)
+	menu_button.custom_minimum_size = Vector2(176, 52)
 	battle_hud.custom_minimum_size = Vector2(0, 52)
 	enemy_panel.custom_minimum_size = Vector2(0, 120)
 	round_modifier_panel.custom_minimum_size = Vector2(0, 40)

@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://dsqit1j6lh7mq"]
+[gd_scene load_steps=13 format=3 uid="uid://dsqit1j6lh7mq"]
 
 [ext_resource type="Script" uid="uid://b5wvx7fj57dsq" path="res://scripts/screens/game_screen.gd" id="1_jyptq"]
 [ext_resource type="PackedScene" uid="uid://dgyetmlb8yxxp" path="res://scenes/ui/BattleHud.tscn" id="2_2dfvm"]
@@ -8,6 +8,10 @@
 [ext_resource type="PackedScene" uid="uid://bx5ox10ddo3mg" path="res://scenes/ui/BattleResultOverlay.tscn" id="6_mdu30"]
 [ext_resource type="Script" uid="uid://cg1emludahx6p" path="res://scripts/ui/image_slot.gd" id="7_i0qml"]
 [ext_resource type="PackedScene" uid="uid://dw7c5doec6mm2" path="res://scenes/ui/BoosterPanel.tscn" id="8_hn13u"]
+[ext_resource type="Script" uid="uid://bxwkgbqyalc6e" path="res://scripts/ui/pressable_texture_button.gd" id="9_ptbtn"]
+[ext_resource type="Texture2D" uid="uid://c06ua0pjgbjwj" path="res://assets/images/ui/shared/buttons/back_default.png" id="10_back_n"]
+[ext_resource type="Texture2D" uid="uid://8dpiq5nunba1" path="res://assets/images/ui/shared/buttons/back_pressed.png" id="11_back_p"]
+[ext_resource type="Script" path="res://scripts/ui/fallback_image_slot.gd" id="12_fbimg"]
 
 [node name="GameScreen" type="Control"]
 layout_mode = 3
@@ -62,6 +66,14 @@ unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
 
+[node name="RoundModifierBackground" type="Control" parent="SafeMargin/BattleCenter/BattleRoot/RoundModifierPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("12_fbimg")
+placeholder_color = Color(0.1, 0.11, 0.14, 1)
+stretch_mode = 6
+
 [node name="RoundModifierBox" type="VBoxContainer" parent="SafeMargin/BattleCenter/BattleRoot/RoundModifierPanel"]
 layout_mode = 2
 mouse_filter = 2
@@ -113,9 +125,56 @@ size_flags_horizontal = 3
 
 [node name="MenuButton" type="Button" parent="SafeMargin/BattleCenter/BattleRoot/BottomHudRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(118, 60)
+custom_minimum_size = Vector2(176, 60)
 layout_mode = 2
+focus_mode = 0
+flat = true
+script = ExtResource("9_ptbtn")
+normal_texture = ExtResource("10_back_n")
+pressed_texture = ExtResource("11_back_p")
+button_text = "Menu"
+text_font_size = 18
+
+[node name="Placeholder" type="ColorRect" parent="SafeMargin/BattleCenter/BattleRoot/BottomHudRow/MenuButton"]
+visible = false
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.22, 0.24, 0.32, 1)
+
+[node name="ButtonTexture" type="TextureRect" parent="SafeMargin/BattleCenter/BattleRoot/BottomHudRow/MenuButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("10_back_n")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="TextMargin" type="MarginContainer" parent="SafeMargin/BattleCenter/BattleRoot/BottomHudRow/MenuButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="SafeMargin/BattleCenter/BattleRoot/BottomHudRow/MenuButton/TextMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 18
 text = "Menu"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="BattleEffectLayer" type="Control" parent="."]
 unique_name_in_owner = true

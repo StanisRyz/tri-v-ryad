@@ -3,10 +3,6 @@ class_name GameAssetCatalog
 
 const ASSET_MAP := {
 	"background_1": "res://assets/images/backgrounds/background_1.png",
-	"background_2": "res://assets/images/backgrounds/background_2.png",
-	"background_3": "res://assets/images/backgrounds/background_3.png",
-	"background_4": "res://assets/images/backgrounds/background_4.png",
-	"background_5": "res://assets/images/backgrounds/background_5.png",
 	"enemy_1_normal": "res://assets/images/ui/game/enemies/enemy_1_normal.png",
 	"enemy_1_damaged": "res://assets/images/ui/game/enemies/enemy_1_damaged.png",
 	"enemy_2_normal": "res://assets/images/ui/game/enemies/enemy_2_normal.png",

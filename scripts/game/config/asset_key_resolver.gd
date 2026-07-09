@@ -6,10 +6,6 @@ const SPECIAL_TILE_TYPE_SCRIPT := preload("res://scripts/game/board/special_tile
 
 const BACKGROUND_ASSET_KEYS := {
 	"background_1": "background_1",
-	"background_2": "background_2",
-	"background_3": "background_3",
-	"background_4": "background_4",
-	"background_5": "background_5",
 }
 
 const ENEMY_ASSET_KEYS := {

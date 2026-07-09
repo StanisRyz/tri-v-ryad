@@ -50,11 +50,7 @@ func is_valid_background(background_config) -> bool:
 
 
 func _register_backgrounds() -> void:
-	_add_background(_make_background("background_1", "Training Grounds", Color(0.16, 0.2, 0.24, 1.0)))
-	_add_background(_make_background("background_2", "Forest Path", Color(0.11, 0.24, 0.15, 1.0)))
-	_add_background(_make_background("background_3", "Cave Hall", Color(0.18, 0.15, 0.2, 1.0)))
-	_add_background(_make_background("background_4", "Mountain Pass", Color(0.22, 0.2, 0.16, 1.0)))
-	_add_background(_make_background("background_5", "Dark Arena", Color(0.1, 0.1, 0.14, 1.0)))
+	_add_background(_make_background("background_1", "Battle Grounds", Color(0.16, 0.2, 0.24, 1.0)))
 
 
 func _make_background(background_id: String, display_name: String, placeholder_color: Color):
