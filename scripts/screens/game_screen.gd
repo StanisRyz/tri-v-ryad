@@ -124,7 +124,8 @@ func _apply_portrait_layout() -> void:
 	battle_root.add_theme_constant_override("separation", 12)
 	menu_button.custom_minimum_size = Vector2(118, 60)
 	battle_hud.custom_minimum_size = Vector2(0, 60)
-	enemy_panel.custom_minimum_size = Vector2(0, 132)
+	enemy_panel.custom_minimum_size = Vector2(0, 200)
+	round_modifier_panel.custom_minimum_size = Vector2(0, 48)
 	board_view.custom_minimum_size = Vector2(PORTRAIT_BOARD_SIZE, PORTRAIT_BOARD_SIZE)
 	hero_party_panel.custom_minimum_size = Vector2(PORTRAIT_CONTENT_WIDTH, 132)
 	booster_panel.custom_minimum_size = Vector2(PORTRAIT_CONTENT_WIDTH, 160)
@@ -135,7 +136,8 @@ func _apply_landscape_layout() -> void:
 	battle_root.add_theme_constant_override("separation", 10)
 	menu_button.custom_minimum_size = Vector2(104, 52)
 	battle_hud.custom_minimum_size = Vector2(0, 52)
-	enemy_panel.custom_minimum_size = Vector2(0, 92)
+	enemy_panel.custom_minimum_size = Vector2(0, 120)
+	round_modifier_panel.custom_minimum_size = Vector2(0, 40)
 	board_view.custom_minimum_size = Vector2(LANDSCAPE_BOARD_SIZE, LANDSCAPE_BOARD_SIZE)
 	hero_party_panel.custom_minimum_size = Vector2(LANDSCAPE_CONTENT_WIDTH, 96)
 	booster_panel.custom_minimum_size = Vector2(LANDSCAPE_CONTENT_WIDTH, 112)
@@ -269,7 +271,10 @@ func _on_round_modifier_changed(_modifier) -> void:
 ## Stage 60.3 v0.1: RoundModifierPanel/ModifierDescriptionLabel display the
 ## active current_level_boost instead of the legacy random round modifier.
 ## Stage 64.1 v0.1: ModifierNameLabel was removed; only the description shows.
-## A none/fallback boost hides the panel, matching the old null-modifier behavior.
+## Stage 64.4 v0.1: the label now shows LevelBoostFormatter.format_gameplay_label()
+## (a short "x2 Damage Red"/"+3 Moves"-style string) instead of the verbose
+## LevelBoostConfig.description. A none/fallback boost hides the panel,
+## matching the old null-modifier behavior.
 func _on_level_boost_changed(boost) -> void:
 	_current_level_boost = boost
 
@@ -278,7 +283,7 @@ func _on_level_boost_changed(boost) -> void:
 		return
 
 	round_modifier_panel.visible = true
-	modifier_description_label.text = boost.description
+	modifier_description_label.text = LEVEL_BOOST_FORMATTER_SCRIPT.format_gameplay_label(boost)
 
 
 func _on_level_changed(level_config) -> void:

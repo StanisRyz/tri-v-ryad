@@ -21,6 +21,26 @@ static func format_label(boost) -> String:
 			return "No Boost"
 
 
+## Stage 64.4 v0.1: short, gameplay-oriented text for the visible
+## RoundModifierPanel/ModifierDescriptionLabel (replaces the old verbose
+## LevelBoostConfig.description). Kept separate from format_label() (still
+## used for the compact debug status line) since the two audiences want
+## different wording.
+static func format_gameplay_label(boost) -> String:
+	if boost == null or boost.is_none():
+		return ""
+
+	match boost.boost_type:
+		LevelBoostType.COLOR_DAMAGE_MULTIPLIER:
+			return "x%s Damage %s" % [_format_multiplier(boost.color_multiplier), _tile_color_name(boost.tile_type)]
+		LevelBoostType.LARGE_MATCH_MULTIPLIER:
+			return "x%s Damage Match-4 + x%s Damage Match-5" % [_format_multiplier(boost.match_4_multiplier), _format_multiplier(boost.match_5_multiplier)]
+		LevelBoostType.EXTRA_MOVES:
+			return "+%d Moves" % boost.extra_moves
+		_:
+			return ""
+
+
 static func format_debug_label(boost) -> String:
 	if boost == null:
 		return "boost: none"

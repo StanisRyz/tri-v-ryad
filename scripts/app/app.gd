@@ -155,7 +155,7 @@ func _on_shop_back_pressed() -> void:
 
 
 func _on_game_back_pressed() -> void:
-	_show_level_select()
+	_show_main_menu()
 
 
 func _on_upgrade_back_pressed() -> void:

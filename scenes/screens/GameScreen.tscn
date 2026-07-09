@@ -1,13 +1,13 @@
 [gd_scene load_steps=9 format=3 uid="uid://dsqit1j6lh7mq"]
 
-[ext_resource type="Script" path="res://scripts/screens/game_screen.gd" id="1_jyptq"]
-[ext_resource type="PackedScene" path="res://scenes/ui/BattleHud.tscn" id="2_2dfvm"]
-[ext_resource type="PackedScene" path="res://scenes/ui/EnemyPanel.tscn" id="3_746sx"]
-[ext_resource type="PackedScene" path="res://scenes/game/BoardView.tscn" id="4_4hyiu"]
-[ext_resource type="PackedScene" path="res://scenes/ui/HeroPartyPanel.tscn" id="5_uw1i4"]
-[ext_resource type="PackedScene" path="res://scenes/ui/BattleResultOverlay.tscn" id="6_mdu30"]
-[ext_resource type="Script" path="res://scripts/ui/image_slot.gd" id="7_i0qml"]
-[ext_resource type="PackedScene" path="res://scenes/ui/BoosterPanel.tscn" id="8_hn13u"]
+[ext_resource type="Script" uid="uid://b5wvx7fj57dsq" path="res://scripts/screens/game_screen.gd" id="1_jyptq"]
+[ext_resource type="PackedScene" uid="uid://dgyetmlb8yxxp" path="res://scenes/ui/BattleHud.tscn" id="2_2dfvm"]
+[ext_resource type="PackedScene" uid="uid://bfo3m71bj6cub" path="res://scenes/ui/EnemyPanel.tscn" id="3_746sx"]
+[ext_resource type="PackedScene" uid="uid://b42kot8is5261" path="res://scenes/game/BoardView.tscn" id="4_4hyiu"]
+[ext_resource type="PackedScene" uid="uid://b5kfq68o6t8tf" path="res://scenes/ui/HeroPartyPanel.tscn" id="5_uw1i4"]
+[ext_resource type="PackedScene" uid="uid://bx5ox10ddo3mg" path="res://scenes/ui/BattleResultOverlay.tscn" id="6_mdu30"]
+[ext_resource type="Script" uid="uid://cg1emludahx6p" path="res://scripts/ui/image_slot.gd" id="7_i0qml"]
+[ext_resource type="PackedScene" uid="uid://dw7c5doec6mm2" path="res://scenes/ui/BoosterPanel.tscn" id="8_hn13u"]
 
 [node name="GameScreen" type="Control"]
 layout_mode = 3
@@ -40,9 +40,9 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_left = 28
-theme_override_constants/margin_top = 28
+theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 28
-theme_override_constants/margin_bottom = 28
+theme_override_constants/margin_bottom = 20
 
 [node name="BattleCenter" type="CenterContainer" parent="SafeMargin"]
 layout_mode = 2
@@ -52,21 +52,6 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(664, 0)
 layout_mode = 2
 theme_override_constants/separation = 12
-
-[node name="HudRow" type="HBoxContainer" parent="SafeMargin/BattleCenter/BattleRoot"]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="BattleHud" parent="SafeMargin/BattleCenter/BattleRoot/HudRow" instance=ExtResource("2_2dfvm")]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="MenuButton" type="Button" parent="SafeMargin/BattleCenter/BattleRoot/HudRow"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(118, 60)
-layout_mode = 2
-text = "Levels"
 
 [node name="EnemyPanel" parent="SafeMargin/BattleCenter/BattleRoot" instance=ExtResource("3_746sx")]
 unique_name_in_owner = true
@@ -85,10 +70,10 @@ theme_override_constants/separation = 2
 [node name="ModifierDescriptionLabel" type="Label" parent="SafeMargin/BattleCenter/BattleRoot/RoundModifierPanel/RoundModifierBox"]
 unique_name_in_owner = true
 layout_mode = 2
-mouse_filter = 2
+size_flags_vertical = 3
 theme_override_font_sizes/font_size = 13
-text = ""
 horizontal_alignment = 1
+vertical_alignment = 1
 autowrap_mode = 3
 
 [node name="BoardArea" type="CenterContainer" parent="SafeMargin/BattleCenter/BattleRoot"]
@@ -110,11 +95,27 @@ autowrap_mode = 3
 
 [node name="HeroPartyPanel" parent="SafeMargin/BattleCenter/BattleRoot" instance=ExtResource("5_uw1i4")]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 
 [node name="BoosterPanel" parent="SafeMargin/BattleCenter/BattleRoot" instance=ExtResource("8_hn13u")]
 unique_name_in_owner = true
 layout_mode = 2
+
+[node name="BottomHudRow" type="HBoxContainer" parent="SafeMargin/BattleCenter/BattleRoot"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="BattleHud" parent="SafeMargin/BattleCenter/BattleRoot/BottomHudRow" instance=ExtResource("2_2dfvm")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MenuButton" type="Button" parent="SafeMargin/BattleCenter/BattleRoot/BottomHudRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(118, 60)
+layout_mode = 2
+text = "Menu"
 
 [node name="BattleEffectLayer" type="Control" parent="."]
 unique_name_in_owner = true
@@ -128,4 +129,3 @@ mouse_filter = 2
 
 [node name="BattleResultOverlay" parent="." instance=ExtResource("6_mdu30")]
 unique_name_in_owner = true
-layout_mode = 1
