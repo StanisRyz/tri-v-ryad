@@ -3,9 +3,14 @@ extends Button
 class_name BoosterTextureButton
 
 ## Square, texture-based booster control. Shows `default_texture` normally,
-## swapping to `selected_texture`/`disabled_texture` for those states (falling
-## back to a colored rect plus a `StateFilter` tint when a texture is missing),
-## with `CountLabel` always rendered as a bottom-center overlay.
+## swapping to `selected_texture`/`disabled_texture` for those states. When an
+## active texture is present, state tint is applied via `ButtonTexture.modulate`
+## so only the visible icon is affected, keeping transparent pixels transparent.
+## Priority (highest first): selected (green, stays green even while hovered),
+## hover (white highlight, applies whether the booster is available or not),
+## disabled/unavailable (dim), normal (white). `StateFilter` (full-rect tint)
+## is used only alongside `Fallback`, when no active texture is available.
+## `CountLabel` is always rendered as a bottom-center overlay.
 
 @export var booster_id: String = ""
 
@@ -59,9 +64,24 @@ class_name BoosterTextureButton
 		disabled_filter_color = value
 		_update_visual()
 
-@export var selected_filter_color: Color = Color(1.0, 0.85, 0.3, 0.35):
+@export var selected_filter_color: Color = Color(0.3, 1.0, 0.4, 0.35):
 	set(value):
 		selected_filter_color = value
+		_update_visual()
+
+@export var disabled_texture_modulate: Color = Color(0.55, 0.55, 0.55, 0.6):
+	set(value):
+		disabled_texture_modulate = value
+		_update_visual()
+
+@export var selected_texture_modulate: Color = Color(0.45, 1.4, 0.55, 1.0):
+	set(value):
+		selected_texture_modulate = value
+		_update_visual()
+
+@export var hover_texture_modulate: Color = Color.WHITE:
+	set(value):
+		hover_texture_modulate = value
 		_update_visual()
 
 var _fallback: ColorRect
@@ -70,13 +90,39 @@ var _state_filter: ColorRect
 var _count_label: Label
 var _ready_done := false
 var _feedback_tween: Tween
+var _is_hovered := false
 
 
 func _ready() -> void:
 	focus_mode = Control.FOCUS_NONE
+	_clear_button_theme_backgrounds()
 	_ensure_children()
+	if not mouse_entered.is_connected(_on_mouse_entered):
+		mouse_entered.connect(_on_mouse_entered)
+	if not mouse_exited.is_connected(_on_mouse_exited):
+		mouse_exited.connect(_on_mouse_exited)
 	_ready_done = true
 	_update_visual()
+
+
+func _on_mouse_entered() -> void:
+	_is_hovered = true
+	_update_visual()
+
+
+func _on_mouse_exited() -> void:
+	_is_hovered = false
+	_update_visual()
+
+
+## Button draws its own normal/hover/pressed/disabled/focus StyleBox panel by
+## default, which would fill the whole square behind our transparent icon
+## regardless of Fallback/StateFilter. Strip it so only our own child nodes
+## are ever visible.
+func _clear_button_theme_backgrounds() -> void:
+	var empty_style := StyleBoxEmpty.new()
+	for style_name in ["normal", "hover", "pressed", "disabled", "focus", "hover_pressed"]:
+		add_theme_stylebox_override(style_name, empty_style)
 
 
 func set_count(value: int) -> void:
@@ -146,7 +192,8 @@ func _ensure_children() -> void:
 			_count_label.name = "CountLabel"
 			_count_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			_count_label.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-			_count_label.offset_top = -22.0
+			_count_label.offset_top = -27.0
+			_count_label.offset_bottom = -5.0
 			_count_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			_count_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 			_count_label.add_theme_font_size_override("font_size", 16)
@@ -179,17 +226,37 @@ func _update_visual() -> void:
 	elif is_selected:
 		fallback_color = fallback_selected_color
 
-	_button_texture.texture = active_texture
-	_fallback.color = fallback_color
-	_fallback.visible = active_texture == null
+	var has_texture := active_texture != null
 
-	if is_disabled_state:
-		_state_filter.color = disabled_filter_color
-		_state_filter.visible = true
-	elif is_selected:
-		_state_filter.color = selected_filter_color
-		_state_filter.visible = true
-	else:
+	_button_texture.texture = active_texture
+	_button_texture.visible = has_texture
+	_fallback.color = fallback_color
+	_fallback.visible = not has_texture
+
+	if has_texture:
+		# State tint applies to the icon itself, not a full-rect overlay, so
+		# transparent pixels around the icon stay transparent. Selected wins
+		# over everything (stays green even while hovered); otherwise hover
+		# highlights the icon (available or not) before the disabled dim tint.
+		if is_selected:
+			_button_texture.modulate = selected_texture_modulate
+		elif _is_hovered:
+			_button_texture.modulate = hover_texture_modulate
+		elif is_disabled_state:
+			_button_texture.modulate = disabled_texture_modulate
+		else:
+			_button_texture.modulate = Color.WHITE
 		_state_filter.visible = false
+	else:
+		_button_texture.modulate = Color.WHITE
+		# No active texture: fall back to tinting the full-rect Fallback color.
+		if is_disabled_state:
+			_state_filter.color = disabled_filter_color
+			_state_filter.visible = true
+		elif is_selected:
+			_state_filter.color = selected_filter_color
+			_state_filter.visible = true
+		else:
+			_state_filter.visible = false
 
 	_count_label.text = count_text
