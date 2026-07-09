@@ -19,13 +19,13 @@ All Stage 39 entries are reserved placeholders. Current status is `missing/place
 | enemy_orc_brute | res://assets/images/enemies/enemy_orc_brute.png | missing/placeholder expected | active future enemy image |
 | enemy_cave_shaman | res://assets/images/enemies/enemy_cave_shaman.png | missing/placeholder expected | active future enemy image |
 | enemy_gatekeeper | res://assets/images/enemies/enemy_gatekeeper.png | missing/placeholder expected | active future enemy image |
-| gatekeeper_normal | res://assets/images/ui/game/enemies/gatekeeper_normal.png | missing/placeholder expected | active Stage 64.1 EnemyPanel EnemySprite normal state for gatekeeper |
-| gatekeeper_damaged | res://assets/images/ui/game/enemies/gatekeeper_damaged.png | missing/placeholder expected | active Stage 64.1 EnemyPanel EnemySprite damaged state for gatekeeper |
-| enemy_panel_bg_01 | res://assets/images/ui/game/enemy_panel/backgrounds/enemy_panel_bg_01.png | missing/placeholder expected | active Stage 64.1 EnemyPanel BackgroundVisual candidate |
-| enemy_panel_bg_02 | res://assets/images/ui/game/enemy_panel/backgrounds/enemy_panel_bg_02.png | missing/placeholder expected | active Stage 64.1 EnemyPanel BackgroundVisual candidate |
-| enemy_panel_bg_03 | res://assets/images/ui/game/enemy_panel/backgrounds/enemy_panel_bg_03.png | missing/placeholder expected | active Stage 64.1 EnemyPanel BackgroundVisual candidate |
-| enemy_panel_bg_04 | res://assets/images/ui/game/enemy_panel/backgrounds/enemy_panel_bg_04.png | missing/placeholder expected | active Stage 64.1 EnemyPanel BackgroundVisual candidate |
-| enemy_panel_bg_05 | res://assets/images/ui/game/enemy_panel/backgrounds/enemy_panel_bg_05.png | missing/placeholder expected | active Stage 64.1 EnemyPanel BackgroundVisual candidate |
+| enemy_1_normal | res://assets/images/ui/game/enemies/enemy_1_normal.png | missing/placeholder expected | active Stage 64.1/64.5 EnemyPanel EnemySprite normal state for gameplay enemy id "gatekeeper" |
+| enemy_1_damaged | res://assets/images/ui/game/enemies/enemy_1_damaged.png | missing/placeholder expected | active Stage 64.1/64.5 EnemyPanel EnemySprite damaged state for gameplay enemy id "gatekeeper" |
+| enemy_background_1 | res://assets/images/ui/game/enemy_panel/backgrounds/enemy_background_1.png | missing/placeholder expected | active Stage 64.1/64.5 EnemyPanel BackgroundVisual candidate |
+| enemy_background_2 | res://assets/images/ui/game/enemy_panel/backgrounds/enemy_background_2.png | missing/placeholder expected | active Stage 64.1/64.5 EnemyPanel BackgroundVisual candidate |
+| enemy_background_3 | res://assets/images/ui/game/enemy_panel/backgrounds/enemy_background_3.png | missing/placeholder expected | active Stage 64.1/64.5 EnemyPanel BackgroundVisual candidate |
+| enemy_background_4 | res://assets/images/ui/game/enemy_panel/backgrounds/enemy_background_4.png | missing/placeholder expected | active Stage 64.1/64.5 EnemyPanel BackgroundVisual candidate |
+| enemy_background_5 | res://assets/images/ui/game/enemy_panel/backgrounds/enemy_background_5.png | missing/placeholder expected | active Stage 64.1/64.5 EnemyPanel BackgroundVisual candidate |
 | ui_booster_panel_background | res://assets/images/ui/game/booster_panel/background.png | missing/placeholder expected | active Stage 64.3 BoosterPanel PanelBackground binding |
 | tile_red | res://assets/images/tiles/tile_red.png | missing/placeholder expected | active optional tile texture |
 | tile_blue | res://assets/images/tiles/tile_blue.png | missing/placeholder expected | active optional tile texture |
@@ -61,9 +61,9 @@ All Stage 39 entries are reserved placeholders. Current status is `missing/place
 | ui_settings_panel | res://assets/images/ui/settings_panel.png | missing/placeholder expected | active Settings panel binding |
 | ui_toggle_on | res://assets/images/ui/toggle_on.png | missing/placeholder expected | active Settings toggle binding |
 | ui_toggle_off | res://assets/images/ui/toggle_off.png | missing/placeholder expected | active Settings toggle binding |
-| booster_hammer | res://assets/images/boosters/booster_hammer.png | missing/placeholder expected | reserved future booster icon |
-| booster_freeze_time | res://assets/images/boosters/booster_freeze_time.png | missing/placeholder expected | reserved future booster icon |
-| booster_rocket_barrage | res://assets/images/boosters/booster_rocket_barrage.png | missing/placeholder expected | reserved future booster icon |
+| booster_hammer | res://assets/images/boosters/booster_hammer.png | missing/placeholder expected | legacy duplicate icon path, kept because it is still `BoosterConfig.icon_asset_key`/`BoosterCatalog`'s HAMMER icon and is read by the legacy visual-only `BoosterButton` stub; the active `BoosterPanel`/`BoosterTextureButton` UI uses `shop_icon_booster_hammer` instead |
+| booster_freeze_time | res://assets/images/boosters/booster_freeze_time.png | missing/placeholder expected | legacy duplicate icon path, kept because it is still `BoosterConfig.icon_asset_key`/`BoosterCatalog`'s FREEZE_TIME icon and is read by the legacy visual-only `BoosterButton` stub; the active `BoosterPanel`/`BoosterTextureButton` UI uses `shop_icon_booster_freeze_time` instead |
+| booster_rocket_barrage | res://assets/images/boosters/booster_rocket_barrage.png | missing/placeholder expected | legacy duplicate icon path, kept because it is still `BoosterConfig.icon_asset_key`/`BoosterCatalog`'s ROCKET_BARRAGE icon and is read by the legacy visual-only `BoosterButton` stub; the active `BoosterPanel`/`BoosterTextureButton` UI uses `shop_icon_booster_rocket_barrage` instead |
 | ui_booster_panel | res://assets/images/ui/booster_panel.png | missing/placeholder expected | reserved future booster panel |
 | ui_booster_button_ready | res://assets/images/ui/booster_button_ready.png | missing/placeholder expected | visual-only BoosterButton state |
 | ui_booster_button_disabled | res://assets/images/ui/booster_button_disabled.png | missing/placeholder expected | visual-only BoosterButton state |

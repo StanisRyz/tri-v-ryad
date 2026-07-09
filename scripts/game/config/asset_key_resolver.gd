@@ -26,15 +26,15 @@ const ENEMY_ASSET_KEYS := {
 }
 
 const ENEMY_STATE_ASSET_KEYS := {
-	"gatekeeper": {"normal": "gatekeeper_normal", "damaged": "gatekeeper_damaged"},
+	"gatekeeper": {"normal": "enemy_1_normal", "damaged": "enemy_1_damaged"},
 }
 
 const ENEMY_PANEL_BACKGROUND_ASSET_KEYS := [
-	"enemy_panel_bg_01",
-	"enemy_panel_bg_02",
-	"enemy_panel_bg_03",
-	"enemy_panel_bg_04",
-	"enemy_panel_bg_05",
+	"enemy_background_1",
+	"enemy_background_2",
+	"enemy_background_3",
+	"enemy_background_4",
+	"enemy_background_5",
 ]
 
 const TILE_ASSET_KEYS := {
