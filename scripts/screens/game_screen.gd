@@ -82,6 +82,7 @@ var _shuffle_rng := RandomNumberGenerator.new()
 var _shuffle_count := 0
 var _last_shuffle_debug_info: Dictionary = {}
 var _last_booster_spend_failed := false
+var _developer_mode_active: bool = false
 
 func _ready() -> void:
 	if not menu_button.delayed_pressed.is_connected(_on_menu_button_pressed):
@@ -93,6 +94,71 @@ func _ready() -> void:
 
 	_setup_playable_battle()
 	_apply_layout(_layout_manager.get_layout_mode())
+
+
+## Stage 64.16 v0.1: developer-only debug hotkeys, fully gated behind
+## FeatureFlags.DEBUG_MODE_ENABLED so they are inert in production builds.
+## F12 toggles developer mode; F1/F2 only do anything once developer mode is
+## active. Echoed (auto-repeat) key events are ignored so holding a key down
+## doesn't spam grants or repeatedly trigger a win.
+func _unhandled_input(event: InputEvent) -> void:
+	if not FeatureFlags.DEBUG_MODE_ENABLED:
+		return
+	if not (event is InputEventKey) or not event.pressed or event.echo:
+		return
+
+	if event.keycode == KEY_F12:
+		_developer_mode_active = not _developer_mode_active
+		print_debug("Developer mode %s" % ("ON" if _developer_mode_active else "OFF"))
+		return
+
+	if not _developer_mode_active:
+		return
+
+	if event.keycode == KEY_F1:
+		_debug_grant_boosters()
+	elif event.keycode == KEY_F2:
+		_debug_complete_level()
+
+
+## Stage 64.16 v0.1: grants +10 of every catalog booster through the same
+## ProgressManager API normal booster rewards use, then refreshes BoosterPanel
+## so the new counts are visible immediately.
+func _debug_grant_boosters() -> void:
+	if _progress_manager == null or _presenter == null:
+		return
+
+	var catalog = _presenter.get_booster_catalog()
+	if catalog == null:
+		return
+
+	for booster_id in catalog.get_default_booster_ids():
+		_progress_manager.add_booster(booster_id, 10)
+
+	_refresh_booster_inventory_ui()
+	print_debug("Developer mode: granted +10 of each booster")
+
+
+## Stage 64.16 v0.1: forces the current battle to a victory by zeroing enemy
+## HP and re-deriving status through BattleState.update_status(), then routes
+## through the normal _show_battle_result() path so reward granting, save,
+## UI refresh and the result overlay all behave exactly as a real win would.
+## Guards against firing before a battle exists, after the battle already
+## finished, or while the result overlay is already on screen.
+func _debug_complete_level() -> void:
+	if _presenter == null or _presenter.state == null or _presenter.state.enemy == null:
+		return
+	if _presenter.is_battle_finished():
+		return
+	if result_overlay != null and result_overlay.visible:
+		return
+
+	_presenter.state.enemy.current_hp = 0
+	_presenter.state.update_status()
+	_pending_battle_status = _presenter.state.status
+	_feedback_active = false
+	print_debug("Developer mode: instant level win triggered")
+	_show_battle_result(_pending_battle_status)
 
 
 func _bind_static_ui_assets() -> void:
