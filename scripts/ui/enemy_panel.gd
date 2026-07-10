@@ -89,7 +89,7 @@ func play_damage_feedback() -> void:
 	if not _sprite_manual_override and _damaged_texture != null:
 		var restore_texture: Texture2D = _normal_texture
 		enemy_sprite.set_texture(_damaged_texture)
-		var duration: float = 0.12 if _reduced_motion_enabled else 0.22
+		var duration: float = 0.24 if _reduced_motion_enabled else 0.44
 		_damage_feedback_tween = create_tween()
 		_damage_feedback_tween.tween_interval(duration)
 		_damage_feedback_tween.tween_callback(func() -> void:
@@ -119,7 +119,7 @@ func show_floating_damage(damage: int) -> void:
 	label.position = target_local - Vector2(12, 12)
 	layer.add_child(label)
 
-	var duration: float = 0.55 if _animations_enabled else 0.01
+	var duration: float = 1.1 if _animations_enabled else 0.01
 	if _reduced_motion_enabled:
 		duration *= 0.6
 	var rise: float = 12.0 if _reduced_motion_enabled else 26.0
@@ -175,11 +175,11 @@ func _play_flash_and_shake() -> void:
 	var shake_offset: float = 2.0 if _reduced_motion_enabled else 6.0
 
 	_hit_tween = create_tween()
-	_hit_tween.tween_property(enemy_sprite, "modulate", Color(1.6, 1.6, 1.6, 1.0), 0.05)
-	_hit_tween.parallel().tween_property(enemy_sprite, "scale", flash_scale, 0.05)
+	_hit_tween.tween_property(enemy_sprite, "modulate", Color(1.6, 1.6, 1.6, 1.0), 0.1)
+	_hit_tween.parallel().tween_property(enemy_sprite, "scale", flash_scale, 0.1)
 	if not _reduced_motion_enabled:
-		_hit_tween.tween_property(enemy_sprite, "position", base_position + Vector2(shake_offset, 0.0), 0.035)
-		_hit_tween.tween_property(enemy_sprite, "position", base_position - Vector2(shake_offset, 0.0), 0.035)
-	_hit_tween.tween_property(enemy_sprite, "position", base_position, 0.04)
-	_hit_tween.parallel().tween_property(enemy_sprite, "modulate", Color.WHITE, 0.08)
-	_hit_tween.parallel().tween_property(enemy_sprite, "scale", base_scale, 0.08)
+		_hit_tween.tween_property(enemy_sprite, "position", base_position + Vector2(shake_offset, 0.0), 0.07)
+		_hit_tween.tween_property(enemy_sprite, "position", base_position - Vector2(shake_offset, 0.0), 0.07)
+	_hit_tween.tween_property(enemy_sprite, "position", base_position, 0.08)
+	_hit_tween.parallel().tween_property(enemy_sprite, "modulate", Color.WHITE, 0.16)
+	_hit_tween.parallel().tween_property(enemy_sprite, "scale", base_scale, 0.16)

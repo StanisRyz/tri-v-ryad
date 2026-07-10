@@ -15,6 +15,16 @@ const LANE_WIDTH := 3
 const DEFAULT_BOARD_SIZE := 664.0
 const BOOSTER_TARGET_PREVIEW_COLOR := Color(1.0, 1.0, 1.0, 0.78)
 const BOOSTER_TARGET_PREVIEW_INSET_RATIO := 0.06
+## Stage 64.21 v0.1: the booster targeting preview now tints the crystal's own
+## icon instead of drawing a flat square over the whole cell. There's no cheap
+## way to recolor a texture to literal flat white without a custom shader
+## (which this project avoids everywhere else, favoring plain Tween/ColorRect/
+## TextureRect effects), so this multiplies the icon's own colors by a strong
+## overbright factor instead — high enough that every crystal's fairly
+## saturated base colors blow out close to white, while the highlight still
+## reads as "this crystal" (masked to its own silhouette/alpha) rather than a
+## plain rectangle unrelated to its shape.
+const BOOSTER_TARGET_PREVIEW_TEXTURE_BRIGHTNESS := 4.0
 
 @onready var tile_grid: GridContainer = %TileGrid
 @onready var animation_layer: Control = %AnimationLayer
@@ -237,7 +247,7 @@ func show_booster_target_preview(cells: Array[Vector2i], _preview_type: String) 
 	for cell in cells:
 		if _board != null and not _board.is_cell_active(cell):
 			continue
-		var preview := _create_booster_preview_cell(cell, BOOSTER_TARGET_PREVIEW_COLOR)
+		var preview := _create_booster_target_preview(cell, BOOSTER_TARGET_PREVIEW_COLOR)
 		if preview != null:
 			_booster_preview_nodes.append(preview)
 
@@ -448,7 +458,14 @@ func create_tile_ghost(cell: Vector2i) -> Control:
 	var ghost := Button.new()
 	ghost.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	ghost.focus_mode = Control.FOCUS_NONE
-	ghost.disabled = true
+	# Stage 64.20 v0.1 fix: `disabled = true` is unnecessary here (mouse_filter
+	# = IGNORE already blocks all interaction) and was making Godot's default
+	# Button theme render every ghost's icon visibly dimmed/desaturated versus
+	# the real TileView (which uses disabled = false while active) — the
+	# entire board looked darker for the whole overlay-mode window of every
+	# single animated turn. Real active TileViews are never disabled, so
+	# ghosts standing in for them shouldn't be either.
+	ghost.disabled = false
 	ghost.size = tile.size
 	ghost.position = tile.global_position - animation_layer.global_position
 	ghost.pivot_offset = tile.size * 0.5
@@ -577,7 +594,13 @@ func create_tile_ghost_from_data(tile_type: int, special_data, ghost_position: V
 	var ghost := Button.new()
 	ghost.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	ghost.focus_mode = Control.FOCUS_NONE
-	ghost.disabled = true
+	# Stage 64.20 v0.1 fix: see create_tile_ghost() above — disabled = true
+	# isn't needed for interaction blocking (mouse_filter = IGNORE already
+	# does that) and was darkening every ghost's icon via Godot's default
+	# disabled-button theming, for the whole overlay-mode window of every
+	# single animated turn (build_full_board_ghosts() builds one of these per
+	# active cell at the start of every turn).
+	ghost.disabled = false
 	ghost.size = ghost_size
 	ghost.position = ghost_position
 	ghost.pivot_offset = ghost_size * 0.5
@@ -1818,6 +1841,10 @@ func _create_cell_highlight(cell: Vector2i, horizontal: bool, color: Color) -> C
 	return highlight
 
 
+## Used by _play_booster_impact_flash() for the post-activation impact flash
+## (a themed colored pulse over the whole cell, e.g. hammer's yellow/rocket's
+## orange) — unrelated to targeting and intentionally unchanged by Stage
+## 64.21 below (see _create_booster_target_preview() for that one).
 func _create_booster_preview_cell(cell: Vector2i, color: Color) -> ColorRect:
 	if animation_layer == null:
 		return null
@@ -1838,6 +1865,71 @@ func _create_booster_preview_cell(cell: Vector2i, color: Color) -> ColorRect:
 	var tween := create_tween()
 	_register_special_activation_tween(tween)
 	tween.tween_property(preview, "modulate:a", 1.0, 0.05)
+	return preview
+
+
+## Stage 64.21 v0.1: the pre-activation targeting preview (which cells the
+## booster will affect, shown while the player is choosing a target) now
+## highlights the crystal itself rather than the whole cell — a TextureRect
+## showing the cell's own current icon (same texture TileView is already
+## displaying), sized/centered exactly like TileView's own icon
+## (TileView.compute_icon_max_width()), tinted toward white via
+## BOOSTER_TARGET_PREVIEW_TEXTURE_BRIGHTNESS so only the crystal's own
+## silhouette lights up instead of a flat square covering the cell. Falls
+## back to the previous full-cell ColorRect only when the cell has no tile
+## texture to highlight (missing art/edge case), so the preview never
+## silently disappears. Kept separate from _create_booster_preview_cell()
+## above, which the post-activation impact flash still uses unchanged.
+func _create_booster_target_preview(cell: Vector2i, color: Color) -> Control:
+	if animation_layer == null:
+		return null
+
+	var rect := _get_animation_cell_rect(cell)
+	if rect.size == Vector2.ZERO:
+		return null
+
+	var tile := get_tile_view(cell)
+	var texture: Texture2D = tile.icon if tile != null else null
+	var preview: Control = _build_booster_target_texture_preview(rect, texture, color) if texture != null else _build_booster_preview_fallback(rect, color)
+	if preview == null:
+		return null
+
+	animation_layer.add_child(preview)
+	preview.move_to_front()
+
+	var tween := create_tween()
+	_register_special_activation_tween(tween)
+	tween.tween_property(preview, "modulate:a", color.a, 0.05)
+	return preview
+
+
+func _build_booster_target_texture_preview(rect: Rect2, texture: Texture2D, color: Color) -> TextureRect:
+	var icon_size := float(TileView.compute_icon_max_width(rect.size))
+	if icon_size <= 0.0:
+		return null
+
+	var preview := TextureRect.new()
+	preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	preview.texture = texture
+	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	preview.stretch_mode = TextureRect.STRETCH_SCALE
+	preview.size = Vector2(icon_size, icon_size)
+	preview.position = rect.position + (rect.size - preview.size) * 0.5
+	var brightness := BOOSTER_TARGET_PREVIEW_TEXTURE_BRIGHTNESS
+	preview.modulate = Color(color.r * brightness, color.g * brightness, color.b * brightness, 0.0)
+	return preview
+
+
+## Fallback-only: used when the cell has no crystal texture to tint (e.g. a
+## missing/not-yet-loaded asset), so the targeting preview still shows
+## something rather than silently vanishing for that cell.
+func _build_booster_preview_fallback(rect: Rect2, color: Color) -> ColorRect:
+	var preview := ColorRect.new()
+	preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	preview.position = rect.position + rect.size * BOOSTER_TARGET_PREVIEW_INSET_RATIO
+	preview.size = rect.size * (1.0 - BOOSTER_TARGET_PREVIEW_INSET_RATIO * 2.0)
+	preview.color = color
+	preview.modulate = Color(1.0, 1.0, 1.0, 0.0)
 	return preview
 
 
