@@ -56,6 +56,44 @@ const SPECIAL_TILE_ASSET_KEYS := {
 	SPECIAL_TILE_TYPE_SCRIPT.COLOR_BOMB: "tile_color_bomb",
 }
 
+## Stage 64.9 v0.1: per-base-color special crystal art — 3 special types x 5
+## tile colors = 15 dedicated asset keys, one per (special_type, tile_type)
+## pair. get_special_tile_asset_key() prefers this table when a tile_type is
+## given and mapped; SPECIAL_TILE_ASSET_KEYS above remains the color-agnostic
+## fallback for when a color-specific texture is missing or no tile_type is
+## known.
+const SPECIAL_TILE_COLOR_ASSET_KEYS := {
+	SPECIAL_TILE_TYPE_SCRIPT.LINE_HORIZONTAL: {
+		TILE_TYPE_SCRIPT.RED: "tile_special_horizontal_red",
+		TILE_TYPE_SCRIPT.BLUE: "tile_special_horizontal_blue",
+		TILE_TYPE_SCRIPT.GREEN: "tile_special_horizontal_green",
+		TILE_TYPE_SCRIPT.YELLOW: "tile_special_horizontal_yellow",
+		TILE_TYPE_SCRIPT.PURPLE: "tile_special_horizontal_purple",
+	},
+	SPECIAL_TILE_TYPE_SCRIPT.LINE_VERTICAL: {
+		TILE_TYPE_SCRIPT.RED: "tile_special_vertical_red",
+		TILE_TYPE_SCRIPT.BLUE: "tile_special_vertical_blue",
+		TILE_TYPE_SCRIPT.GREEN: "tile_special_vertical_green",
+		TILE_TYPE_SCRIPT.YELLOW: "tile_special_vertical_yellow",
+		TILE_TYPE_SCRIPT.PURPLE: "tile_special_vertical_purple",
+	},
+	SPECIAL_TILE_TYPE_SCRIPT.COLOR_BOMB: {
+		TILE_TYPE_SCRIPT.RED: "tile_color_bomb_red",
+		TILE_TYPE_SCRIPT.BLUE: "tile_color_bomb_blue",
+		TILE_TYPE_SCRIPT.GREEN: "tile_color_bomb_green",
+		TILE_TYPE_SCRIPT.YELLOW: "tile_color_bomb_yellow",
+		TILE_TYPE_SCRIPT.PURPLE: "tile_color_bomb_purple",
+	},
+}
+
+## Stage 64.8 v0.1: line blast is a single shared texture — horizontal and
+## vertical clears both use "effect_line_blast", with the vertical
+## orientation produced by rotating the same texture 90 degrees at render
+## time (see BoardView._create_line_blast_highlight()), not a second asset.
+const EFFECT_ASSET_KEYS := {
+	"line_blast": "effect_line_blast",
+}
+
 const UI_ASSET_KEYS := {
 	"board_frame": "ui_board_frame",
 	"board_background": "ui_board_background",
@@ -163,8 +201,22 @@ static func get_tile_asset_key(tile_type: int) -> String:
 	return TILE_ASSET_KEYS.get(tile_type, "")
 
 
-static func get_special_tile_asset_key(special_type: int) -> String:
+## tile_type defaults to -1 (unknown/omitted): callers that only pass
+## special_type keep getting the color-agnostic key (old behavior,
+## unchanged). When a real tile_type is passed and it has a dedicated
+## per-color entry in SPECIAL_TILE_COLOR_ASSET_KEYS, that key is preferred;
+## otherwise this still falls back to the color-agnostic key.
+static func get_special_tile_asset_key(special_type: int, tile_type: int = -1) -> String:
+	if tile_type != -1:
+		var color_keys: Dictionary = SPECIAL_TILE_COLOR_ASSET_KEYS.get(special_type, {})
+		if color_keys.has(tile_type):
+			return color_keys[tile_type]
+
 	return SPECIAL_TILE_ASSET_KEYS.get(special_type, "")
+
+
+static func get_effect_asset_key(effect_id: String) -> String:
+	return EFFECT_ASSET_KEYS.get(effect_id, "")
 
 
 static func get_ui_asset_key(ui_id: String) -> String:

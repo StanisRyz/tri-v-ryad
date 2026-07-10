@@ -59,6 +59,15 @@ const INACTIVE_CELL_BACKGROUND_COLOR := Color(0.04, 0.045, 0.06, 0.55)
 ## inset on every side with no extra positioning code.
 const CRYSTAL_SCALE_RATIO := 0.8
 
+## Stage 64.10 v0.1: idle "breathing" emphasis for special crystals — the
+## icon cycles between 100% (SPECIAL_PULSE_MAX_RATIO) and 90%
+## (SPECIAL_PULSE_MIN_RATIO) of the cell size, forever, while the cell holds
+## a special and is active. Values are ratios of the cell's own current size
+## (like CRYSTAL_SCALE_RATIO), not fixed pixels.
+const SPECIAL_PULSE_MAX_RATIO := 1.0
+const SPECIAL_PULSE_MIN_RATIO := 0.9
+const SPECIAL_PULSE_HALF_DURATION := 0.6
+
 static var _animations_enabled := true
 static var _reduced_motion_enabled := false
 
@@ -83,6 +92,7 @@ var _press_start_position := Vector2.ZERO
 var _has_press_start := false
 var _suppress_next_pressed := false
 var _active_tween: Tween
+var _special_pulse_tween: Tween
 
 
 static func configure_presentation(animations_enabled: bool, reduced_motion_enabled: bool) -> void:
@@ -113,7 +123,13 @@ func _ready() -> void:
 ## keeps the crystal centered with an equal inset on every side. Re-applied
 ## on resize (e.g. portrait/landscape layout changes) and from
 ## _apply_visuals() so it always matches the tile's current laid-out size.
+## Stage 64.10 v0.1: a no-op while the special-crystal pulse tween owns
+## icon_max_width, so this static ratio never fights that tween's per-step
+## value; _stop_special_pulse() calls this directly to restore the static
+## ratio the instant pulsing stops.
 func _apply_icon_size() -> void:
+	if _special_pulse_tween != null and _special_pulse_tween.is_valid():
+		return
 	add_theme_constant_override("icon_max_width", compute_icon_max_width(size))
 
 
@@ -526,7 +542,23 @@ func _apply_visuals() -> void:
 		return
 
 	disabled = false
-	var tile_texture: Texture2D = GAME_ASSET_CATALOG.try_load_texture_cached(get_tile_asset_key())
+	# Stage 64.8/64.9 v0.1: a special crystal (horizontal/vertical line, color
+	# bomb) prefers its own per-base-color texture (e.g. a red horizontal
+	# special looks different from a blue one), then the color-agnostic
+	# special texture, then finally the base crystal texture/color plus the
+	# "H"/"V"/"B" marker text below — so the special is still visually
+	# distinguishable even if some art is missing, never invisible.
+	var special_type := SPECIAL_TILE_TYPE_SCRIPT.NONE
+	if special_tile_data is SPECIAL_TILE_DATA_SCRIPT:
+		special_type = special_tile_data.special_type
+	var special_texture: Texture2D = null
+	if special_type != SPECIAL_TILE_TYPE_SCRIPT.NONE:
+		var color_special_key := ASSET_KEY_RESOLVER_SCRIPT.get_special_tile_asset_key(special_type, tile_type)
+		special_texture = GAME_ASSET_CATALOG.try_load_texture_cached(color_special_key)
+		if special_texture == null:
+			var generic_special_key := ASSET_KEY_RESOLVER_SCRIPT.get_special_tile_asset_key(special_type)
+			special_texture = GAME_ASSET_CATALOG.try_load_texture_cached(generic_special_key)
+	var tile_texture: Texture2D = special_texture if special_texture != null else GAME_ASSET_CATALOG.try_load_texture_cached(get_tile_asset_key())
 	var base_color: Color = TILE_COLORS.get(tile_type, Color(0.20, 0.22, 0.26, 1.0))
 	var style := StyleBoxFlat.new()
 	# Fallback-only: the solid color fill is a placeholder for a missing
@@ -562,12 +594,17 @@ func _apply_visuals() -> void:
 	add_theme_stylebox_override("hover", style)
 	add_theme_stylebox_override("pressed", style)
 	icon = tile_texture
-	text = _get_special_marker_text()
+	# Marker text ("H"/"V"/"B") is only a fallback for when the dedicated
+	# special texture failed to load — once real special art is showing, the
+	# letter overlay would be redundant clutter on top of it.
+	var marker_text := "" if special_texture != null else _get_special_marker_text()
+	text = marker_text
 	add_theme_color_override("font_color", Color.WHITE)
 	add_theme_color_override("font_hover_color", Color.WHITE)
 	add_theme_color_override("font_pressed_color", Color.WHITE)
-	add_theme_font_size_override("font_size", 24 if _get_special_marker_text() == "B" else 22)
+	add_theme_font_size_override("font_size", 24 if marker_text == "B" else 22)
 	_apply_ice_overlay()
+	_update_special_pulse(special_type)
 
 
 ## Stage 55 v0.1: inactive cells never show a tile texture/color, a special
@@ -598,6 +635,7 @@ func _apply_inactive_visuals() -> void:
 		_ice_overlay.visible = false
 	if _ice_overlay_inner != null:
 		_ice_overlay_inner.visible = false
+	_stop_special_pulse()
 
 
 ## Stage 57.3 v0.1: single source of truth for the ice overlay color at a
@@ -640,6 +678,44 @@ func _get_special_marker_text() -> String:
 		return SPECIAL_TILE_TYPE_SCRIPT.get_marker_text(special_tile_data.special_type)
 
 	return ""
+
+
+## Stage 64.10 v0.1: starts/stops the idle special-crystal pulse to match
+## current state. Deliberately independent of _active_tween (used by
+## selection/match/swap/flash feedback): the pulse only ever touches
+## icon_max_width (see _apply_icon_size()/_set_special_pulse_ratio()), never
+## `scale`/`modulate`, so it can run forever alongside those transient
+## effects without fighting them for the same tweened property.
+func _update_special_pulse(special_type: int) -> void:
+	var should_pulse := special_type != SPECIAL_TILE_TYPE_SCRIPT.NONE and _animations_enabled
+	if should_pulse:
+		if _special_pulse_tween == null or not _special_pulse_tween.is_valid():
+			_start_special_pulse()
+	else:
+		_stop_special_pulse()
+
+
+func _start_special_pulse() -> void:
+	var min_ratio := SPECIAL_PULSE_MIN_RATIO
+	if _reduced_motion_enabled:
+		min_ratio = lerpf(SPECIAL_PULSE_MIN_RATIO, SPECIAL_PULSE_MAX_RATIO, 0.6)
+	var half_duration := _adjust_duration(SPECIAL_PULSE_HALF_DURATION)
+
+	_special_pulse_tween = create_tween()
+	_special_pulse_tween.set_loops()
+	_special_pulse_tween.tween_method(_set_special_pulse_ratio, SPECIAL_PULSE_MAX_RATIO, min_ratio, half_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_special_pulse_tween.tween_method(_set_special_pulse_ratio, min_ratio, SPECIAL_PULSE_MAX_RATIO, half_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+func _stop_special_pulse() -> void:
+	if _special_pulse_tween != null:
+		_special_pulse_tween.kill()
+		_special_pulse_tween = null
+	_apply_icon_size()
+
+
+func _set_special_pulse_ratio(ratio: float) -> void:
+	add_theme_constant_override("icon_max_width", int(round(size.x * ratio)))
 
 
 func _play_flash_tween(flash_modulate: Color, flash_scale: Vector2) -> void:

@@ -466,7 +466,84 @@ func create_tile_ghost(cell: Vector2i) -> Control:
 	ghost.add_theme_color_override("font_disabled_color", Color.WHITE)
 	ghost.add_theme_font_size_override("font_size", tile.get_theme_font_size("font_size"))
 	animation_layer.add_child(ghost)
+	if tile.special_tile_data is SPECIAL_TILE_DATA_SCRIPT:
+		_start_ghost_special_pulse(ghost)
 	return ghost
+
+
+## Stage 64.11 v0.1: mirrors TileView._start_special_pulse()/_set_special_pulse_ratio()
+## for a plain ghost `Button` — a special tile still visibly "breathes"
+## (icon cycles between 100% and 90% of its cell size, forever) even while it
+## is rendered as an overlay-mode ghost during an animation that doesn't
+## target it (e.g. every cell is rebuilt as a static ghost by
+## build_full_board_ghosts() at the start of an animated turn, and a special
+## elsewhere on the board previously froze at the static 80% ratio and
+## stopped pulsing for the whole turn). Reads TileView's shared
+## _animations_enabled/_reduced_motion_enabled flags so the ghost pulse
+## always matches the real TileView pulse's current settings. The tween is
+## bound to `ghost` via `ghost.create_tween()`, so it is automatically
+## stopped when the ghost is freed — no explicit cleanup needed.
+func _start_ghost_special_pulse(ghost: Control) -> void:
+	if not TileView._animations_enabled:
+		return
+
+	var min_ratio := TileView.SPECIAL_PULSE_MIN_RATIO
+	if TileView._reduced_motion_enabled:
+		min_ratio = lerpf(TileView.SPECIAL_PULSE_MIN_RATIO, TileView.SPECIAL_PULSE_MAX_RATIO, 0.6)
+	var half_duration := TileView.SPECIAL_PULSE_HALF_DURATION
+
+	var set_ratio := func(ratio: float) -> void:
+		if is_instance_valid(ghost):
+			ghost.add_theme_constant_override("icon_max_width", int(round(ghost.size.x * ratio)))
+
+	var pulse_tween := ghost.create_tween()
+	pulse_tween.set_loops()
+	pulse_tween.tween_method(set_ratio, TileView.SPECIAL_PULSE_MAX_RATIO, min_ratio, half_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	pulse_tween.tween_method(set_ratio, min_ratio, TileView.SPECIAL_PULSE_MAX_RATIO, half_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+## Stage 64.8/64.9 v0.1: shared special-texture resolution used by every
+## ghost/overlay path — per-color special texture first, then the
+## color-agnostic special texture, then null (caller falls back to base
+## crystal texture/color + marker text). Mirrors TileView._apply_visuals().
+func _resolve_special_texture(special_type: int, tile_type: int) -> Texture2D:
+	if special_type == SPECIAL_TILE_TYPE_SCRIPT.NONE:
+		return null
+
+	var color_key := ASSET_KEY_RESOLVER_SCRIPT.get_special_tile_asset_key(special_type, tile_type)
+	var texture: Texture2D = GAME_ASSET_CATALOG.try_load_texture_cached(color_key)
+	if texture != null:
+		return texture
+
+	var generic_key := ASSET_KEY_RESOLVER_SCRIPT.get_special_tile_asset_key(special_type)
+	return GAME_ASSET_CATALOG.try_load_texture_cached(generic_key)
+
+
+## Stage 64.10 v0.1: updates an already-built ghost `Button` in place once a
+## special's texture/type is known (used by _play_overlay_special_create(),
+## where the ghost was already created earlier as a plain base-color ghost).
+## If a dedicated texture resolves, it replaces the icon, clears the marker
+## text (no redundant letter over real art), and drops the stylebox's
+## color fill (matching every other special-texture call site); otherwise it
+## falls back to the "H"/"V"/"B" marker text on the existing base-color icon.
+func _apply_special_texture_to_ghost(ghost: Control, special_type: int, tile_type: int) -> void:
+	if not (ghost is Button):
+		return
+
+	var button := ghost as Button
+	var special_texture := _resolve_special_texture(special_type, tile_type)
+	if special_texture == null:
+		button.text = SPECIAL_TILE_TYPE_SCRIPT.get_marker_text(special_type)
+		return
+
+	button.icon = special_texture
+	button.text = ""
+	for state in ["normal", "hover", "pressed", "disabled"]:
+		var existing_style := button.get_theme_stylebox(state)
+		if existing_style is StyleBoxFlat:
+			var transparent_style: StyleBoxFlat = existing_style.duplicate()
+			transparent_style.bg_color = Color(0.0, 0.0, 0.0, 0.0)
+			button.add_theme_stylebox_override(state, transparent_style)
 
 
 ## Stage 57.5 v0.1: builds a moving tile ghost — tile color/icon and special
@@ -489,7 +566,14 @@ func create_tile_ghost_from_data(tile_type: int, special_data, ghost_position: V
 	ghost.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	ghost.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
 	ghost.add_theme_constant_override("icon_max_width", TileView.compute_icon_max_width(ghost_size))
-	var ghost_texture: Texture2D = GAME_ASSET_CATALOG.try_load_texture_cached(ASSET_KEY_RESOLVER_SCRIPT.get_tile_asset_key(tile_type))
+	# Stage 64.8/64.9 v0.1: mirrors TileView._apply_visuals() — a special
+	# ghost (swap/gravity/refill/overlay) prefers its own per-base-color
+	# texture, then the color-agnostic special texture, then falls back to
+	# the base crystal texture/color + marker text when both are missing.
+	var special_texture: Texture2D = null
+	if special_data is SPECIAL_TILE_DATA_SCRIPT:
+		special_texture = _resolve_special_texture(special_data.special_type, tile_type)
+	var ghost_texture: Texture2D = special_texture if special_texture != null else GAME_ASSET_CATALOG.try_load_texture_cached(ASSET_KEY_RESOLVER_SCRIPT.get_tile_asset_key(tile_type))
 	ghost.icon = ghost_texture
 	var style := StyleBoxFlat.new()
 	# Fallback-only: matches TileView._apply_visuals() — no colored fill once
@@ -510,9 +594,11 @@ func create_tile_ghost_from_data(tile_type: int, special_data, ghost_position: V
 	ghost.add_theme_color_override("font_color", Color.WHITE)
 	ghost.add_theme_color_override("font_disabled_color", Color.WHITE)
 	ghost.add_theme_font_size_override("font_size", 22)
-	if special_data is SPECIAL_TILE_DATA_SCRIPT:
+	if special_data is SPECIAL_TILE_DATA_SCRIPT and special_texture == null:
 		ghost.text = SPECIAL_TILE_TYPE_SCRIPT.get_marker_text(special_data.special_type)
 	animation_layer.add_child(ghost)
+	if special_data is SPECIAL_TILE_DATA_SCRIPT:
+		_start_ghost_special_pulse(ghost)
 	return ghost
 
 
@@ -1410,7 +1496,14 @@ func _play_overlay_special_create(created_special_tiles: Array, duration: float)
 						gather_ghost.free()
 			)
 
-		ghost.text = SPECIAL_TILE_TYPE_SCRIPT.get_marker_text(special_type)
+		# Stage 64.10 v0.1: apply the dedicated special texture to the
+		# creation-cell ghost immediately (not just its marker text), so the
+		# special already shows its real art during the gather/pulse overlay
+		# animation instead of only after overlay mode exits and the real
+		# TileView takes over.
+		var cell_tile_type: int = _board.get_tile(cell) if _board != null else BoardModel.EMPTY
+		_apply_special_texture_to_ghost(ghost, special_type, cell_tile_type)
+		_start_ghost_special_pulse(ghost)
 
 		var base_scale: Vector2 = ghost.scale if ghost.scale != Vector2.ZERO else Vector2.ONE
 		var pulse_scale := base_scale * 1.12
@@ -1489,7 +1582,7 @@ func _play_line_sweep(cells: Array[Vector2i], duration: float, horizontal: bool)
 
 	for index in range(cells.size()):
 		var cell := cells[index]
-		var highlight := _create_cell_highlight(cell, horizontal, sweep_color)
+		var highlight := _create_line_blast_highlight(cell, horizontal, sweep_color)
 		if highlight == null:
 			continue
 
@@ -1540,6 +1633,44 @@ func _play_affected_cell_highlights(cells: Array[Vector2i], duration: float, col
 			if is_instance_valid(highlight):
 				highlight.free()
 		)
+
+
+## Stage 64.8 v0.1: the line-blast visual for horizontal/vertical special
+## clears. Both orientations reuse the single "effect_line_blast" texture —
+## horizontal draws it unrotated, vertical rotates the same texture 90
+## degrees around its own center — so there is only ever one blast asset on
+## disk. Falls back to the plain ColorRect sweep band (_create_cell_highlight)
+## when the texture is missing, so a missing asset never breaks the effect.
+func _create_line_blast_highlight(cell: Vector2i, horizontal: bool, color: Color) -> Control:
+	if animation_layer == null:
+		return null
+
+	var rect := _get_animation_cell_rect(cell)
+	if rect.size == Vector2.ZERO:
+		return null
+
+	var blast_texture: Texture2D = GAME_ASSET_CATALOG.try_load_texture_cached(
+		ASSET_KEY_RESOLVER_SCRIPT.get_effect_asset_key("line_blast")
+	)
+	if blast_texture == null:
+		return _create_cell_highlight(cell, horizontal, color)
+
+	var band_thickness: float = maxf((rect.size.y if horizontal else rect.size.x) * 0.28, 4.0)
+	var band_length: float = rect.size.x if horizontal else rect.size.y
+
+	var blast := TextureRect.new()
+	blast.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	blast.texture = blast_texture
+	blast.stretch_mode = TextureRect.STRETCH_SCALE
+	blast.size = Vector2(band_length, band_thickness)
+	blast.pivot_offset = blast.size * 0.5
+	blast.rotation = 0.0 if horizontal else deg_to_rad(90.0)
+	var center := rect.position + rect.size * 0.5
+	blast.position = center - blast.size * 0.5
+	blast.modulate = Color(1.0, 1.0, 1.0, color.a)
+	animation_layer.add_child(blast)
+	blast.move_to_front()
+	return blast
 
 
 func _create_cell_highlight(cell: Vector2i, horizontal: bool, color: Color) -> ColorRect:
