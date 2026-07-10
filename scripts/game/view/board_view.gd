@@ -465,6 +465,7 @@ func create_tile_ghost(cell: Vector2i) -> Control:
 	ghost.add_theme_color_override("font_color", Color.WHITE)
 	ghost.add_theme_color_override("font_disabled_color", Color.WHITE)
 	ghost.add_theme_font_size_override("font_size", tile.get_theme_font_size("font_size"))
+	ghost.set_meta("is_special_tile", tile.special_tile_data is SPECIAL_TILE_DATA_SCRIPT)
 	animation_layer.add_child(ghost)
 	if tile.special_tile_data is SPECIAL_TILE_DATA_SCRIPT:
 		_start_ghost_special_pulse(ghost)
@@ -500,6 +501,24 @@ func _start_ghost_special_pulse(ghost: Control) -> void:
 	pulse_tween.set_loops()
 	pulse_tween.tween_method(set_ratio, TileView.SPECIAL_PULSE_MAX_RATIO, min_ratio, half_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	pulse_tween.tween_method(set_ratio, min_ratio, TileView.SPECIAL_PULSE_MAX_RATIO, half_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+## Stage 64.12 v0.1: spawns a texture-aware CrystalBurstEffect for a ghost
+## about to be cleared (match/cascade/special/booster — every clear path
+## routes through _play_overlay_fade(), see there). Uses the ghost's own
+## current `icon`/`size`/`position` and its "is_special_tile" meta (set by
+## every ghost constructor above) so the burst always matches exactly what
+## was on screen, with no extra board/state lookups and no risk of getting
+## out of sync with what the player actually saw. Visual-only: never touches
+## board/tile data, never delays the caller.
+func _spawn_crystal_burst_for_ghost(ghost: Control) -> void:
+	if animation_layer == null or not is_instance_valid(ghost):
+		return
+
+	var is_special := bool(ghost.get_meta("is_special_tile", false))
+	var texture: Texture2D = ghost.icon if ghost is Button else null
+	var center := ghost.position + ghost.size * 0.5
+	CrystalBurstEffect.spawn(animation_layer, center, ghost.size, texture, is_special, TileView._animations_enabled, TileView._reduced_motion_enabled)
 
 
 ## Stage 64.8/64.9 v0.1: shared special-texture resolution used by every
@@ -596,6 +615,10 @@ func create_tile_ghost_from_data(tile_type: int, special_data, ghost_position: V
 	ghost.add_theme_font_size_override("font_size", 22)
 	if special_data is SPECIAL_TILE_DATA_SCRIPT and special_texture == null:
 		ghost.text = SPECIAL_TILE_TYPE_SCRIPT.get_marker_text(special_data.special_type)
+	# Stage 64.12 v0.1: remembers whether this ghost represents a special
+	# tile, independent of board/timing state, so _spawn_crystal_burst_for_ghost()
+	# can pick the normal/special burst preset from the ghost alone.
+	ghost.set_meta("is_special_tile", special_data is SPECIAL_TILE_DATA_SCRIPT)
 	animation_layer.add_child(ghost)
 	if special_data is SPECIAL_TILE_DATA_SCRIPT:
 		_start_ghost_special_pulse(ghost)
@@ -819,12 +842,19 @@ func _get_valid_overlay_ghost(cell: Vector2i) -> Control:
 	return ghost as Control
 
 
+## Stage 64.12 v0.1: single shared choke point for match, cascade, special,
+## and booster clears in overlay mode (see play_match_clear_animation(),
+## play_cascade_step_animation(), play_special_clear_animation(),
+## play_booster_clear_animation() below) — spawning the crystal burst here
+## covers every one of those clear paths, including chain-reaction cascades,
+## with no per-call-site duplication.
 func _play_overlay_fade(cells: Array[Vector2i], duration: float) -> void:
 	var step_duration := maxf(duration, 0.01)
 	for cell in cells:
 		var ghost := _get_valid_overlay_ghost(cell)
 		if ghost == null:
 			continue
+		_spawn_crystal_burst_for_ghost(ghost)
 		var tween := create_tween()
 		_register_special_activation_tween(tween)
 		tween.tween_property(ghost, "modulate:a", 0.0, step_duration)
@@ -1207,12 +1237,26 @@ func _play_invalid_swap_bounce(cells: Array[Vector2i], from_cell: Vector2i, to_c
 	)
 
 
+## Stage 64.12 v0.1: non-overlay-mode counterpart of _spawn_crystal_burst_for_ghost()
+## — used by the direct/legacy per-TileView clear paths below (overlay mode,
+## entered by GameScreen for every real animated turn per Stage 45, always
+## uses _play_overlay_fade()/the ghost version instead).
+func _spawn_crystal_burst_for_tile(tile: TileView) -> void:
+	if animation_layer == null or not is_instance_valid(tile):
+		return
+
+	var is_special := tile.special_tile_data is SPECIAL_TILE_DATA_SCRIPT
+	var center := tile.global_position - animation_layer.global_position + tile.size * 0.5
+	CrystalBurstEffect.spawn(animation_layer, center, tile.size, tile.icon, is_special, TileView._animations_enabled, TileView._reduced_motion_enabled)
+
+
 func play_match_clear_animation(cells: Array[Vector2i], duration: float) -> void:
 	if _overlay_mode:
 		_play_overlay_fade(cells, duration)
 		return
 
 	for tile in get_tile_views(cells):
+		_spawn_crystal_burst_for_tile(tile)
 		tile.play_match_clear(duration)
 
 
@@ -1401,6 +1445,7 @@ func play_special_clear_animation(cells: Array[Vector2i], duration: float) -> vo
 	# each tile directly; callers clear any lingering highlight state via
 	# BoardView.clear_cell_highlights() once the whole turn/booster flow ends.
 	for tile in get_tile_views(cells):
+		_spawn_crystal_burst_for_tile(tile)
 		tile.play_special_clear(duration)
 
 
@@ -1410,6 +1455,7 @@ func play_booster_clear_animation(cells: Array[Vector2i], duration: float) -> vo
 		return
 
 	for tile in get_tile_views(cells):
+		_spawn_crystal_burst_for_tile(tile)
 		tile.play_flash()
 
 
@@ -1503,6 +1549,7 @@ func _play_overlay_special_create(created_special_tiles: Array, duration: float)
 		# TileView takes over.
 		var cell_tile_type: int = _board.get_tile(cell) if _board != null else BoardModel.EMPTY
 		_apply_special_texture_to_ghost(ghost, special_type, cell_tile_type)
+		ghost.set_meta("is_special_tile", true)
 		_start_ghost_special_pulse(ghost)
 
 		var base_scale: Vector2 = ghost.scale if ghost.scale != Vector2.ZERO else Vector2.ONE
@@ -1662,6 +1709,12 @@ func _create_line_blast_highlight(cell: Vector2i, horizontal: bool, color: Color
 	blast.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	blast.texture = blast_texture
 	blast.stretch_mode = TextureRect.STRETCH_SCALE
+	# Stage 64.14 v0.1 fix: without EXPAND_IGNORE_SIZE, TextureRect's default
+	# EXPAND_KEEP_SIZE snaps size back to the texture's own natural pixel
+	# size on the next layout pass, silently overriding the thin band size
+	# set below — this was a pre-existing bug from Stage 64.8, found while
+	# fixing the identical issue in CrystalBurstEffect's fragments.
+	blast.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	blast.size = Vector2(band_length, band_thickness)
 	blast.pivot_offset = blast.size * 0.5
 	blast.rotation = 0.0 if horizontal else deg_to_rad(90.0)
