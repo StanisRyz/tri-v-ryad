@@ -39,7 +39,8 @@ All Stage 39 entries are reserved placeholders. Current status is `missing/place
 | tile_special_horizontal | res://assets/images/tiles/tile_special_horizontal.png | missing/placeholder expected | reserved special tile texture |
 | tile_special_vertical | res://assets/images/tiles/tile_special_vertical.png | missing/placeholder expected | reserved special tile texture |
 | tile_color_bomb | res://assets/images/tiles/tile_color_bomb.png | missing/placeholder expected | reserved special tile texture |
-| ui_board_frame | res://assets/images/ui/board_frame.png | missing/placeholder expected | reserved board frame image |
+| ui_board_frame | res://assets/images/ui/board_frame.png | missing/placeholder expected | reserved board frame image (unused `BoardFrame.tscn`, not instanced in `GameScreen`) |
+| ui_board_background | res://assets/images/ui/game/board/background.png | missing/placeholder expected | active `BoardView` `BoardBackground` layer, behind the tile grid (Stage 64.7) |
 | ui_battle_hud_panel | res://assets/images/ui/battle_hud_panel.png | missing/placeholder expected | active battle HUD panel binding |
 | ui_enemy_panel | res://assets/images/ui/enemy_panel.png | missing/placeholder expected | active enemy panel binding |
 | ui_round_modifier_panel | res://assets/images/ui/round_modifier_panel.png | missing/placeholder expected | active round modifier panel binding |

@@ -58,6 +58,7 @@ const SPECIAL_TILE_ASSET_KEYS := {
 
 const UI_ASSET_KEYS := {
 	"board_frame": "ui_board_frame",
+	"board_background": "ui_board_background",
 	"battle_hud_panel": "ui_battle_hud_panel",
 	"enemy_panel": "ui_enemy_panel",
 	"level_select_background": "ui_level_select_background",

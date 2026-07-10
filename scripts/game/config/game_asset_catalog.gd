@@ -80,6 +80,7 @@ const ASSET_MAP := {
 	"ui_shared_back_button_pressed": "res://assets/images/ui/shared/buttons/back_pressed.png",
 	"ui_toggle_on": "res://assets/images/ui/toggle_on.png",
 	"ui_toggle_off": "res://assets/images/ui/toggle_off.png",
+	"ui_board_background": "res://assets/images/ui/game/board/background.png",
 	"ui_booster_panel": "res://assets/images/ui/booster_panel.png",
 	"ui_booster_panel_background": "res://assets/images/ui/game/booster_panel/background.png",
 	"ui_booster_button_ready": "res://assets/images/ui/booster_button_ready.png",

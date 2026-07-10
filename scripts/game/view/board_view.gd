@@ -18,6 +18,7 @@ const BOOSTER_TARGET_PREVIEW_INSET_RATIO := 0.06
 
 @onready var tile_grid: GridContainer = %TileGrid
 @onready var animation_layer: Control = %AnimationLayer
+@onready var board_background: FallbackImageSlot = %BoardBackground
 
 var _board: BoardModel
 var _tile_views: Dictionary = {}
@@ -42,9 +43,20 @@ var _booster_preview_nodes: Array[Control] = []
 
 func _ready() -> void:
 	custom_minimum_size = Vector2(DEFAULT_BOARD_SIZE, DEFAULT_BOARD_SIZE)
+	_bind_board_background()
 	tile_grid.columns = BOARD_SIZE
 	_create_tiles()
 	_update_grid_rect()
+
+
+## Fallback-only: an Inspector-assigned background texture is never overwritten.
+func _bind_board_background() -> void:
+	if board_background == null or board_background.has_texture():
+		return
+
+	board_background.set_texture(GAME_ASSET_CATALOG.try_load_texture_cached(
+		ASSET_KEY_RESOLVER_SCRIPT.get_ui_asset_key("board_background")
+	))
 
 
 func _notification(what: int) -> void:
@@ -443,6 +455,9 @@ func create_tile_ghost(cell: Vector2i) -> Control:
 	ghost.icon = tile.icon
 	ghost.text = tile.text
 	ghost.expand_icon = true
+	ghost.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	ghost.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
+	ghost.add_theme_constant_override("icon_max_width", TileView.compute_icon_max_width(ghost.size))
 	for state in ["normal", "hover", "pressed", "disabled"]:
 		var style = tile.get_theme_stylebox("normal")
 		if style != null:
@@ -471,9 +486,16 @@ func create_tile_ghost_from_data(tile_type: int, special_data, ghost_position: V
 	ghost.position = ghost_position
 	ghost.pivot_offset = ghost_size * 0.5
 	ghost.expand_icon = true
-	ghost.icon = GAME_ASSET_CATALOG.try_load_texture_cached(ASSET_KEY_RESOLVER_SCRIPT.get_tile_asset_key(tile_type))
+	ghost.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	ghost.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
+	ghost.add_theme_constant_override("icon_max_width", TileView.compute_icon_max_width(ghost_size))
+	var ghost_texture: Texture2D = GAME_ASSET_CATALOG.try_load_texture_cached(ASSET_KEY_RESOLVER_SCRIPT.get_tile_asset_key(tile_type))
+	ghost.icon = ghost_texture
 	var style := StyleBoxFlat.new()
-	style.bg_color = TileView.TILE_COLORS.get(tile_type, Color(0.20, 0.22, 0.26, 1.0))
+	# Fallback-only: matches TileView._apply_visuals() — no colored fill once
+	# a real crystal texture is loaded, so the ghost doesn't show a colored
+	# square behind/around the shrunk crystal during swap/fall/refill.
+	style.bg_color = Color(0.0, 0.0, 0.0, 0.0) if ghost_texture != null else TileView.TILE_COLORS.get(tile_type, Color(0.20, 0.22, 0.26, 1.0))
 	style.border_width_left = 1
 	style.border_width_top = 1
 	style.border_width_right = 1
@@ -1690,8 +1712,6 @@ func _draw() -> void:
 		color = color.lightened(0.35)
 		color.a = 0.38
 		draw_rect(lane_rect, color, true)
-
-	draw_rect(board_rect, Color(1, 1, 1, 0.85), false, 3.0)
 
 
 func _create_tiles() -> void:

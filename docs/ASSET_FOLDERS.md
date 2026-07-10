@@ -14,6 +14,7 @@ Stage 39 completes the reserved AssetKey texture binding surface for current and
 - `assets/images/ui/game/enemies/`: `EnemyPanel` enemy sprite states, named `enemy_N_normal.png`/`enemy_N_damaged.png` (Stage 64.5 numeric naming).
 - `assets/images/ui/game/enemy_panel/backgrounds/`: `EnemyPanel` background candidates, named `enemy_background_N.png` (Stage 64.5 numeric naming).
 - `assets/images/ui/game/booster_panel/`: `BoosterPanel`'s `PanelBackground`, `background.png`.
+- `assets/images/ui/game/board/`: `BoardView`'s `BoardBackground` layer, `background.png` (Stage 64.7), sitting behind the tile grid — separate from the main game field background under `assets/images/backgrounds/`.
 
 Each folder contains a `.gitkeep` file so the empty folder is tracked.
 

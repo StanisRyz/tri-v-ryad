@@ -50,6 +50,15 @@ const ICE_DEBUG_OVERLAY_COLOR_DOUBLE_INNER := Color(0.10, 0.35, 1.0, 0.85)
 ## playable" rather than "empty but playable".
 const INACTIVE_CELL_BACKGROUND_COLOR := Color(0.04, 0.045, 0.06, 0.55)
 
+## Stage 64.7 v0.1: crystal icons render smaller than their cell so the cell
+## itself (hit box, grid spacing, board size) stays untouched. 0.8 is a
+## proportional ratio, not a pixel size — it's applied to whatever the cell's
+## actual current size is (icon_max_width), so it scales correctly at any
+## board size/orientation. Paired with icon_alignment/vertical_icon_alignment
+## = CENTER (Button's icon is left-aligned by default), this gives an equal
+## inset on every side with no extra positioning code.
+const CRYSTAL_SCALE_RATIO := 0.8
+
 static var _animations_enabled := true
 static var _reduced_motion_enabled := false
 
@@ -85,11 +94,33 @@ func _ready() -> void:
 	custom_minimum_size = Vector2(48, 48)
 	focus_mode = Control.FOCUS_NONE
 	expand_icon = true
+	icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
 	gui_input.connect(_on_gui_input)
 	if not pressed.is_connected(_on_pressed):
 		pressed.connect(_on_pressed)
+	if not resized.is_connected(_apply_icon_size):
+		resized.connect(_apply_icon_size)
 	_create_ice_overlays()
 	_apply_visuals()
+
+
+## Stage 64.7 v0.1: caps the icon at 80% of the cell's actual current size
+## (icon_max_width), independent of cell size, so the crystal renders
+## smaller than the cell while the cell/hit box itself stays unchanged.
+## Combined with icon_alignment/vertical_icon_alignment = CENTER (set once in
+## _ready(); Button's icon defaults to left-aligned, not centered), this
+## keeps the crystal centered with an equal inset on every side. Re-applied
+## on resize (e.g. portrait/landscape layout changes) and from
+## _apply_visuals() so it always matches the tile's current laid-out size.
+func _apply_icon_size() -> void:
+	add_theme_constant_override("icon_max_width", compute_icon_max_width(size))
+
+
+static func compute_icon_max_width(cell_size: Vector2) -> int:
+	if cell_size.x <= 0.0:
+		return 0
+	return int(round(cell_size.x * CRYSTAL_SCALE_RATIO))
 
 
 ## Stage 56 v0.1: two plain ColorRect children drawn on top of the Button's
@@ -489,14 +520,23 @@ func _release_pointer(pointer_position: Vector2) -> void:
 
 
 func _apply_visuals() -> void:
+	_apply_icon_size()
 	if not _is_active:
 		_apply_inactive_visuals()
 		return
 
 	disabled = false
+	var tile_texture: Texture2D = GAME_ASSET_CATALOG.try_load_texture_cached(get_tile_asset_key())
 	var base_color: Color = TILE_COLORS.get(tile_type, Color(0.20, 0.22, 0.26, 1.0))
 	var style := StyleBoxFlat.new()
-	style.bg_color = base_color.lightened(0.22) if _is_selected or _is_highlighted else base_color
+	# Fallback-only: the solid color fill is a placeholder for a missing
+	# crystal texture. Once a real texture loads, the fill is dropped
+	# (transparent) so only the crystal art and the cell border/selection
+	# state remain visible — no colored square behind/around the crystal.
+	if tile_texture != null:
+		style.bg_color = Color(0.0, 0.0, 0.0, 0.0)
+	else:
+		style.bg_color = base_color.lightened(0.22) if _is_selected or _is_highlighted else base_color
 	var border_width := 1
 	var border_color := Color(0.05, 0.06, 0.08, 0.8)
 	if _is_invalid_feedback:
@@ -521,7 +561,7 @@ func _apply_visuals() -> void:
 	add_theme_stylebox_override("normal", style)
 	add_theme_stylebox_override("hover", style)
 	add_theme_stylebox_override("pressed", style)
-	icon = GAME_ASSET_CATALOG.try_load_texture_cached(get_tile_asset_key())
+	icon = tile_texture
 	text = _get_special_marker_text()
 	add_theme_color_override("font_color", Color.WHITE)
 	add_theme_color_override("font_hover_color", Color.WHITE)
