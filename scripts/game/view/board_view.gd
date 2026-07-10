@@ -625,30 +625,78 @@ func create_tile_ghost_from_data(tile_type: int, special_data, ghost_position: V
 	return ghost
 
 
-## Stage 57.5 v0.1: a standalone, cell-anchored ice visual — a plain
-## ColorRect (plus an inset ColorRect child for double/strong ice) added
+## Stage 57.5 v0.1: a standalone, cell-anchored ice visual — a plain Control
+## wrapper (plus an inset ColorRect child for double/strong ice) added
 ## directly to animation_layer at a fixed board-cell position, entirely
 ## independent of whatever tile ghost currently occupies that cell. Returns
 ## null (and creates nothing) for a non-ice obstacle or zero layers, so a
 ## cell with no ice never gets an overlay node at all.
+## Stage 64.18 v0.1: the wrapper's fill is now built by
+## _apply_obstacle_overlay_ghost_visual() (shared with update_overlay_obstacle_ghost()),
+## which mirrors TileView._apply_ice_overlay()'s texture-with-color-fallback
+## logic so overlay-mode ice always matches the real board's ice art/color.
 func _create_obstacle_overlay_ghost(ghost_position: Vector2, ghost_size: Vector2, obstacle_type: int, obstacle_layers: int) -> Control:
 	if animation_layer == null or not CELL_OBSTACLE_TYPE_SCRIPT.is_ice(obstacle_type) or obstacle_layers <= 0:
 		return null
 
-	var overlay := ColorRect.new()
+	var overlay := Control.new()
 	overlay.name = "IceOverlay"
 	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	overlay.position = ghost_position
 	overlay.size = ghost_size
-	overlay.color = TileView.resolve_ice_overlay_color(obstacle_layers)
 	animation_layer.add_child(overlay)
-
-	if obstacle_layers >= 2:
-		var inner := _build_obstacle_overlay_inner_rect(ghost_size)
-		inner.color = TileView.resolve_ice_overlay_inner_color()
-		overlay.add_child(inner)
+	_apply_obstacle_overlay_ghost_visual(overlay, obstacle_layers)
 
 	return overlay
+
+
+## Stage 64.18 v0.1: shows the real ice texture (TileView.resolve_ice_overlay_texture())
+## when it has loaded, otherwise falls back to the existing placeholder
+## ColorFill/inner-accent look — exactly one of "texture" or "color" is ever
+## visible, mirroring TileView._apply_ice_overlay(). Lazily builds ColorFill/
+## TextureFill/IceOverlayInner children on first use so both
+## _create_obstacle_overlay_ghost() and update_overlay_obstacle_ghost() share
+## one code path with no duplicated fallback logic.
+func _apply_obstacle_overlay_ghost_visual(overlay: Control, layers: int) -> void:
+	var color_fill := overlay.get_node_or_null("ColorFill") as ColorRect
+	if color_fill == null:
+		color_fill = ColorRect.new()
+		color_fill.name = "ColorFill"
+		color_fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		color_fill.set_anchors_preset(Control.PRESET_FULL_RECT)
+		overlay.add_child(color_fill)
+
+	var texture_fill := overlay.get_node_or_null("TextureFill") as TextureRect
+	if texture_fill == null:
+		texture_fill = TextureRect.new()
+		texture_fill.name = "TextureFill"
+		texture_fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		texture_fill.set_anchors_preset(Control.PRESET_FULL_RECT)
+		texture_fill.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		texture_fill.stretch_mode = TextureRect.STRETCH_SCALE
+		overlay.add_child(texture_fill)
+
+	overlay.set_meta("ice_layers", layers)
+	var texture := TileView.resolve_ice_overlay_texture(layers)
+	if texture != null:
+		texture_fill.texture = texture
+		texture_fill.modulate = TileView.ICE_TEXTURE_OVERLAY_MODULATE
+		texture_fill.visible = true
+		color_fill.visible = false
+	else:
+		texture_fill.visible = false
+		color_fill.visible = true
+		color_fill.color = TileView.resolve_ice_overlay_color(layers)
+
+	var inner := overlay.get_node_or_null("IceOverlayInner") as ColorRect
+	if layers >= 2 and texture == null:
+		if inner == null:
+			inner = _build_obstacle_overlay_inner_rect(overlay.size)
+			overlay.add_child(inner)
+		inner.color = TileView.resolve_ice_overlay_inner_color()
+		inner.visible = true
+	elif inner != null:
+		inner.visible = false
 
 
 func _build_obstacle_overlay_inner_rect(outer_size: Vector2) -> ColorRect:
@@ -1250,6 +1298,38 @@ func _spawn_crystal_burst_for_tile(tile: TileView) -> void:
 	CrystalBurstEffect.spawn(animation_layer, center, tile.size, tile.icon, is_special, TileView._animations_enabled, TileView._reduced_motion_enabled)
 
 
+## Stage 64.19 v0.1: non-overlay-mode counterpart of _spawn_ice_burst_for_overlay_ghost() —
+## reuses the same CrystalBurstEffect a broken crystal gets, using the tile's
+## own current ice texture (TileView.resolve_ice_overlay_texture(), same
+## texture-with-fallback lookup _apply_ice_overlay() already uses) so a
+## broken ice layer shatters visually the same way a cleared crystal does.
+## Called before tile.play_ice_break() clears _obstacle_layers, so the layer
+## count (and therefore weak/strong texture and burst preset) is still the
+## pre-break value.
+func _spawn_ice_burst_for_tile(tile: TileView) -> void:
+	if animation_layer == null or not is_instance_valid(tile) or not tile.is_iced():
+		return
+
+	var layers := tile.get_obstacle_layers()
+	var texture := TileView.resolve_ice_overlay_texture(layers)
+	var center := tile.global_position - animation_layer.global_position + tile.size * 0.5
+	CrystalBurstEffect.spawn(animation_layer, center, tile.size, texture, layers >= 2, TileView._animations_enabled, TileView._reduced_motion_enabled)
+
+
+## Stage 64.19 v0.1: overlay-mode counterpart of _spawn_ice_burst_for_tile() —
+## the cell-anchored ice ghost stores its own layer count as "ice_layers"
+## metadata (set by _apply_obstacle_overlay_ghost_visual()), so the burst can
+## resolve the correct weak/strong texture without any extra board lookups.
+func _spawn_ice_burst_for_overlay_ghost(overlay: Control) -> void:
+	if animation_layer == null or not is_instance_valid(overlay):
+		return
+
+	var layers: int = int(overlay.get_meta("ice_layers", 1))
+	var texture := TileView.resolve_ice_overlay_texture(layers)
+	var center := overlay.position + overlay.size * 0.5
+	CrystalBurstEffect.spawn(animation_layer, center, overlay.size, texture, layers >= 2, TileView._animations_enabled, TileView._reduced_motion_enabled)
+
+
 func play_match_clear_animation(cells: Array[Vector2i], duration: float) -> void:
 	if _overlay_mode:
 		_play_overlay_fade(cells, duration)
@@ -1288,6 +1368,7 @@ func play_ice_break_animation(cells: Array[Vector2i]) -> void:
 
 	for tile in get_tile_views(cells):
 		if tile.has_method("play_ice_break"):
+			_spawn_ice_burst_for_tile(tile)
 			tile.play_ice_break()
 
 
@@ -1317,6 +1398,7 @@ func _play_overlay_ice_break(cells: Array[Vector2i]) -> void:
 		if overlay == null:
 			continue
 
+		_spawn_ice_burst_for_overlay_ghost(overlay)
 		var tween := create_tween()
 		_register_special_activation_tween(tween)
 		tween.tween_property(overlay, "modulate:a", 0.0, 0.16)
@@ -1354,11 +1436,12 @@ func update_cell_obstacle_visual(cell: Vector2i, obstacle_type: int, layers: int
 
 
 ## Stage 57.5 v0.1: updates (or lazily creates) the cell-anchored obstacle
-## overlay ghost for cell to match obstacle_type/layers — recoloring the
-## outer overlay and showing/hiding/recoloring the inner double-ice layer,
-## reusing TileView.resolve_ice_overlay_color()/resolve_ice_overlay_inner_color()
-## so overlay-mode ice always matches the real board's (and the Stage 57.3
-## debug filter's) colors with no duplicated color logic.
+## overlay ghost for cell to match obstacle_type/layers.
+## Stage 64.18 v0.1: recoloring/re-texturing now goes through the shared
+## _apply_obstacle_overlay_ghost_visual() (texture-with-color-fallback,
+## reusing TileView.resolve_ice_overlay_texture()/resolve_ice_overlay_color()/
+## resolve_ice_overlay_inner_color()) so overlay-mode ice always matches the
+## real board's ice art/color with no duplicated fallback logic.
 func update_overlay_obstacle_ghost(cell: Vector2i, obstacle_type: int, layers: int) -> void:
 	if not CELL_OBSTACLE_TYPE_SCRIPT.is_ice(obstacle_type) or layers <= 0:
 		remove_overlay_obstacle_ghost(cell)
@@ -1375,22 +1458,8 @@ func update_overlay_obstacle_ghost(cell: Vector2i, obstacle_type: int, layers: i
 			_overlay_obstacle_ghosts[cell] = created
 		return
 
-	var overlay := existing as ColorRect
-	if overlay == null:
-		return
-
-	overlay.modulate = Color.WHITE
-	overlay.color = TileView.resolve_ice_overlay_color(layers)
-	var inner := overlay.get_node_or_null("IceOverlayInner") as ColorRect
-	if layers >= 2:
-		if inner == null:
-			inner = _build_obstacle_overlay_inner_rect(overlay.size)
-			overlay.add_child(inner)
-		inner.modulate = Color.WHITE
-		inner.color = TileView.resolve_ice_overlay_inner_color()
-		inner.visible = true
-	elif inner != null:
-		inner.visible = false
+	existing.modulate = Color.WHITE
+	_apply_obstacle_overlay_ghost_visual(existing, layers)
 
 
 ## Stage 57.5 v0.1: frees and un-registers the cell-anchored obstacle overlay

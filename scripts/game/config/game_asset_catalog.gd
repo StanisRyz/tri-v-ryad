@@ -52,6 +52,8 @@ const ASSET_MAP := {
 	"tile_color_bomb_yellow": "res://assets/images/tiles/tile_color_bomb_yellow.png",
 	"tile_color_bomb_purple": "res://assets/images/tiles/tile_color_bomb_purple.png",
 	"effect_line_blast": "res://assets/images/effects/line_blast.png",
+	"tile_ice_overlay_weak": "res://assets/images/tiles/ice_overlay_weak.png",
+	"tile_ice_overlay_strong": "res://assets/images/tiles/ice_overlay_strong.png",
 	"ui_board_frame": "res://assets/images/ui/board_frame.png",
 	"ui_battle_hud_panel": "res://assets/images/ui/battle_hud_panel.png",
 	"ui_level_select_panel": "res://assets/images/ui/level_select_panel.png",

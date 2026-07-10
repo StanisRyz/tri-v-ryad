@@ -30,6 +30,14 @@ const ICE_OVERLAY_COLOR_DOUBLE := Color(0.20, 0.55, 0.95, 0.72)
 const ICE_OVERLAY_INNER_COLOR := Color(0.10, 0.40, 0.85, 0.55)
 const ICE_OVERLAY_INSET := 5.0
 
+## Stage 64.19 v0.1: the real ice texture (once loaded) renders at 50%
+## opacity so the crystal underneath stays legible through the ice, matching
+## the requested "frosted" look. Only applies to the texture overlay — the
+## placeholder ColorRect fallback keeps its own existing alpha (baked into
+## ICE_OVERLAY_COLOR/_DOUBLE above) untouched.
+const ICE_TEXTURE_OVERLAY_ALPHA := 0.5
+const ICE_TEXTURE_OVERLAY_MODULATE := Color(1.0, 1.0, 1.0, ICE_TEXTURE_OVERLAY_ALPHA)
+
 ## Stage 57.3 v0.1: temporary, strong manual-testing visibility filter for
 ## procedural ice generation (Stage 57.2 targets 32-40 frozen cells per ice
 ## level, but the Stage 57.1 frost tint above was still too subtle to
@@ -78,6 +86,7 @@ var _obstacle_type := CELL_OBSTACLE_TYPE_SCRIPT.NONE
 var _obstacle_layers := 0
 var _ice_overlay: ColorRect
 var _ice_overlay_inner: ColorRect
+var _ice_texture_overlay: TextureRect
 var _ice_tween: Tween
 var _is_selected := false
 var _is_highlighted := false
@@ -144,6 +153,11 @@ static func compute_icon_max_width(cell_size: Vector2) -> int:
 ## their parent), so they read as a frost layer over the tile without
 ## touching tile_type/special_tile_data. The inner rect is only shown for
 ## double (2-layer) ice, giving it a visually "thicker" look.
+## Stage 64.18 v0.1: a third child, _ice_texture_overlay, is added last (so it
+## paints on top of both ColorRects) for the real ice art added this stage.
+## _apply_ice_overlay() shows exactly one of "the texture" or "the two
+## ColorRects" at a time — never both — so this stays a pure visual swap with
+## no change to is_iced()/obstacle state logic.
 func _create_ice_overlays() -> void:
 	_ice_overlay = ColorRect.new()
 	_ice_overlay.name = "IceOverlay"
@@ -163,6 +177,15 @@ func _create_ice_overlays() -> void:
 	_ice_overlay_inner.color = ICE_OVERLAY_INNER_COLOR
 	_ice_overlay_inner.visible = false
 	add_child(_ice_overlay_inner)
+
+	_ice_texture_overlay = TextureRect.new()
+	_ice_texture_overlay.name = "IceTextureOverlay"
+	_ice_texture_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_ice_texture_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_ice_texture_overlay.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_ice_texture_overlay.stretch_mode = TextureRect.STRETCH_SCALE
+	_ice_texture_overlay.visible = false
+	add_child(_ice_texture_overlay)
 
 
 ## Stage 55 v0.1: switches this tile between normal playable rendering and
@@ -379,7 +402,11 @@ func play_ice_damage(new_obstacle_layers: int = -1) -> void:
 	var flash_color := Color(1.30, 1.45, 1.60, 1.0)
 	_ice_tween = create_tween()
 	_ice_tween.tween_property(_ice_overlay, "modulate", flash_color, _adjust_duration(0.06))
+	if _ice_texture_overlay != null:
+		_ice_tween.parallel().tween_property(_ice_texture_overlay, "modulate", flash_color, _adjust_duration(0.06))
 	_ice_tween.tween_property(_ice_overlay, "modulate", Color.WHITE, _adjust_duration(0.12))
+	if _ice_texture_overlay != null:
+		_ice_tween.parallel().tween_property(_ice_texture_overlay, "modulate", ICE_TEXTURE_OVERLAY_MODULATE, _adjust_duration(0.12))
 	_ice_tween.tween_callback(func() -> void:
 		if new_obstacle_layers >= 0:
 			_obstacle_layers = new_obstacle_layers
@@ -404,12 +431,16 @@ func play_ice_break() -> void:
 	_ice_tween.tween_property(_ice_overlay, "modulate:a", 0.0, duration)
 	if _ice_overlay_inner != null:
 		_ice_tween.parallel().tween_property(_ice_overlay_inner, "modulate:a", 0.0, duration)
+	if _ice_texture_overlay != null:
+		_ice_tween.parallel().tween_property(_ice_texture_overlay, "modulate:a", 0.0, duration)
 	_ice_tween.tween_callback(func() -> void:
 		_obstacle_type = CELL_OBSTACLE_TYPE_SCRIPT.NONE
 		_obstacle_layers = 0
 		_ice_overlay.modulate = Color.WHITE
 		if _ice_overlay_inner != null:
 			_ice_overlay_inner.modulate = Color.WHITE
+		if _ice_texture_overlay != null:
+			_ice_texture_overlay.modulate = ICE_TEXTURE_OVERLAY_MODULATE
 		_apply_ice_overlay()
 	)
 
@@ -635,6 +666,8 @@ func _apply_inactive_visuals() -> void:
 		_ice_overlay.visible = false
 	if _ice_overlay_inner != null:
 		_ice_overlay_inner.visible = false
+	if _ice_texture_overlay != null:
+		_ice_texture_overlay.visible = false
 	_stop_special_pulse()
 
 
@@ -652,10 +685,25 @@ static func resolve_ice_overlay_inner_color() -> Color:
 	return ICE_DEBUG_OVERLAY_COLOR_DOUBLE_INNER if ICE_DEBUG_VISIBILITY_ENABLED else ICE_OVERLAY_INNER_COLOR
 
 
+## Stage 64.18 v0.1: single source of truth for the real ice texture at a
+## given layer count (weak for 1 layer, strong for 2+), mirroring
+## resolve_ice_overlay_color()'s "both this class and BoardView's overlay-mode
+## ghosts share one lookup" pattern. Returns null (never loads/creates
+## anything else) until real art exists at the asset paths registered in
+## GameAssetCatalog, so callers safely fall back to the placeholder color
+## overlay above.
+static func resolve_ice_overlay_texture(layers: int) -> Texture2D:
+	var asset_key := ASSET_KEY_RESOLVER_SCRIPT.get_ice_overlay_asset_key(layers >= 2)
+	return GAME_ASSET_CATALOG.try_load_texture_cached(asset_key)
+
+
 ## Stage 56 v0.1: shows/hides the ice overlay(s) to match current obstacle
 ## state. Called from _apply_visuals() (active cells) and after an ice
 ## damage/break tween settles, so the overlay always ends up matching
 ## set_cell_obstacle()'s last value once any transient animation finishes.
+## Stage 64.18 v0.1: prefers the real ice texture (resolve_ice_overlay_texture())
+## when it has loaded, showing exactly one of "the texture" or "the two
+## placeholder ColorRects" — never both — so this stays a pure fallback swap.
 func _apply_ice_overlay() -> void:
 	if _ice_overlay == null:
 		return
@@ -664,8 +712,22 @@ func _apply_ice_overlay() -> void:
 		_ice_overlay.visible = false
 		if _ice_overlay_inner != null:
 			_ice_overlay_inner.visible = false
+		if _ice_texture_overlay != null:
+			_ice_texture_overlay.visible = false
 		return
 
+	var texture := resolve_ice_overlay_texture(_obstacle_layers)
+	if texture != null and _ice_texture_overlay != null:
+		_ice_texture_overlay.texture = texture
+		_ice_texture_overlay.modulate = ICE_TEXTURE_OVERLAY_MODULATE
+		_ice_texture_overlay.visible = true
+		_ice_overlay.visible = false
+		if _ice_overlay_inner != null:
+			_ice_overlay_inner.visible = false
+		return
+
+	if _ice_texture_overlay != null:
+		_ice_texture_overlay.visible = false
 	_ice_overlay.visible = true
 	_ice_overlay.color = resolve_ice_overlay_color(_obstacle_layers)
 	if _ice_overlay_inner != null:

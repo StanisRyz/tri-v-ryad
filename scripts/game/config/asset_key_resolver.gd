@@ -56,6 +56,17 @@ const SPECIAL_TILE_ASSET_KEYS := {
 	SPECIAL_TILE_TYPE_SCRIPT.COLOR_BOMB: "tile_color_bomb",
 }
 
+## Stage 64.18 v0.1: ice obstacle overlay art — one texture for weak (1-layer)
+## ice, one for strong (2-layer) ice. Same "key exists but PNG may not yet"
+## pattern as every other not-yet-shipped asset here: GameAssetCatalog.
+## try_load_texture_cached() safely returns null until real art is dropped in,
+## so callers (TileView/BoardView) keep falling back to the existing
+## placeholder color overlay until then.
+const ICE_OVERLAY_ASSET_KEYS := {
+	"weak": "tile_ice_overlay_weak",
+	"strong": "tile_ice_overlay_strong",
+}
+
 ## Stage 64.9 v0.1: per-base-color special crystal art — 3 special types x 5
 ## tile colors = 15 dedicated asset keys, one per (special_type, tile_type)
 ## pair. get_special_tile_asset_key() prefers this table when a tile_type is
@@ -213,6 +224,10 @@ static func get_special_tile_asset_key(special_type: int, tile_type: int = -1) -
 			return color_keys[tile_type]
 
 	return SPECIAL_TILE_ASSET_KEYS.get(special_type, "")
+
+
+static func get_ice_overlay_asset_key(is_strong: bool) -> String:
+	return ICE_OVERLAY_ASSET_KEYS.get("strong" if is_strong else "weak", "")
 
 
 static func get_effect_asset_key(effect_id: String) -> String:

@@ -1,106 +1,274 @@
-[gd_scene load_steps=2 format=3 uid="uid://bx5ox10ddo3mg"]
+[gd_scene load_steps=5 format=3 uid="uid://bx5ox10ddo3mg"]
 
 [ext_resource type="Script" path="res://scripts/ui/battle_result_overlay.gd" id="1_yr18t"]
+[ext_resource type="Script" path="res://scripts/ui/fallback_image_slot.gd" id="2_slot"]
+[ext_resource type="Script" path="res://scripts/ui/pressable_texture_button.gd" id="3_btn"]
 
-[node name="BattleResultOverlay" type="PanelContainer"]
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_btn"]
+
+[node name="BattleResultOverlay" type="Control"]
 visible = false
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -210.0
-offset_top = -206.0
-offset_right = 210.0
-offset_bottom = 206.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 script = ExtResource("1_yr18t")
 
-[node name="Margin" type="MarginContainer" parent="."]
-layout_mode = 2
-theme_override_constants/margin_left = 24
-theme_override_constants/margin_top = 22
-theme_override_constants/margin_right = 24
-theme_override_constants/margin_bottom = 22
+[node name="Scrim" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.55)
 
-[node name="Content" type="VBoxContainer" parent="Margin"]
-layout_mode = 2
-theme_override_constants/separation = 16
-
-[node name="ResultLabel" type="Label" parent="Margin/Content"]
+[node name="ResultWindow" type="Control" parent="."]
 unique_name_in_owner = true
-layout_mode = 2
-theme_override_font_sizes/font_size = 34
-text = "Victory"
-horizontal_alignment = 1
+layout_mode = 1
+anchors_preset = 0
+offset_left = 120.0
+offset_top = 460.0
+offset_right = 600.0
+offset_bottom = 820.0
+mouse_filter = 2
+script = ExtResource("2_slot")
+placeholder_color = Color(0.16, 0.17, 0.22, 1)
 
-[node name="RewardLabel" type="Label" parent="Margin/Content"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "Progress saved"
-horizontal_alignment = 1
+[node name="Fallback" type="ColorRect" parent="ResultWindow"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.16, 0.17, 0.22, 1)
 
-[node name="StarsLabel" type="Label" parent="Margin/Content"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "Stars: 0/3"
-horizontal_alignment = 1
+[node name="TextureDisplay" type="TextureRect" parent="ResultWindow"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
 
-[node name="MovesLabel" type="Label" parent="Margin/Content"]
+[node name="TopLabel" type="Label" parent="."]
 unique_name_in_owner = true
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "Moves left: 0"
-horizontal_alignment = 1
-
-[node name="UnlockLabel" type="Label" parent="Margin/Content"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "Next level unlocked"
+layout_mode = 1
+anchors_preset = 0
+offset_left = 140.0
+offset_top = 478.0
+offset_right = 580.0
+offset_bottom = 588.0
+theme_override_font_sizes/font_size = 20
+text = "Проигрыш"
 horizontal_alignment = 1
 autowrap_mode = 2
 
-[node name="MilestoneRewardLabel" type="Label" parent="Margin/Content"]
+[node name="RetryButton" type="Button" parent="."]
 unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 0
+offset_left = 201.0
+offset_top = 746.0
+offset_right = 351.0
+offset_bottom = 798.0
+focus_mode = 0
+theme_override_colors/font_color = Color(0, 0, 0, 0)
+theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
+theme_override_styles/normal = SubResource("StyleBoxEmpty_btn")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_btn")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_btn")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_btn")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_btn")
+flat = true
+script = ExtResource("3_btn")
+button_text = "Заново"
+
+[node name="Placeholder" type="ColorRect" parent="RetryButton"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.22, 0.24, 0.32, 1)
+
+[node name="ButtonTexture" type="TextureRect" parent="RetryButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 4
+
+[node name="TextMargin" type="MarginContainer" parent="RetryButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -6.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
+
+[node name="Label" type="Label" parent="RetryButton/TextMargin"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
-text = "No new rewards"
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 26
+text = "Заново"
 horizontal_alignment = 1
-autowrap_mode = 2
+vertical_alignment = 1
 
-[node name="Buttons" type="HBoxContainer" parent="Margin/Content"]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="NextLevelButton" type="Button" parent="Margin/Content/Buttons"]
+[node name="NextButton" type="Button" parent="."]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(112, 56)
+layout_mode = 1
+anchors_preset = 0
+offset_left = 367.0
+offset_top = 746.0
+offset_right = 517.0
+offset_bottom = 798.0
+focus_mode = 0
+theme_override_colors/font_color = Color(0, 0, 0, 0)
+theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
+theme_override_styles/normal = SubResource("StyleBoxEmpty_btn")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_btn")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_btn")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_btn")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_btn")
+flat = true
+script = ExtResource("3_btn")
+button_text = "Дальше"
+
+[node name="Placeholder" type="ColorRect" parent="NextButton"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.22, 0.24, 0.32, 1)
+
+[node name="ButtonTexture" type="TextureRect" parent="NextButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 4
+
+[node name="TextMargin" type="MarginContainer" parent="NextButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -6.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
+
+[node name="Label" type="Label" parent="NextButton/TextMargin"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Next Level"
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 26
+text = "Дальше"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="RestartButton" type="Button" parent="Margin/Content/Buttons"]
+[node name="MenuButton" type="Button" parent="."]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(104, 56)
+layout_mode = 1
+anchors_preset = 0
+offset_left = 367.0
+offset_top = 746.0
+offset_right = 517.0
+offset_bottom = 798.0
+focus_mode = 0
+theme_override_colors/font_color = Color(0, 0, 0, 0)
+theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
+theme_override_styles/normal = SubResource("StyleBoxEmpty_btn")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_btn")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_btn")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_btn")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_btn")
+flat = true
+script = ExtResource("3_btn")
+button_text = "Меню"
+
+[node name="Placeholder" type="ColorRect" parent="MenuButton"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.22, 0.24, 0.32, 1)
+
+[node name="ButtonTexture" type="TextureRect" parent="MenuButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 4
+
+[node name="TextMargin" type="MarginContainer" parent="MenuButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -6.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
+
+[node name="Label" type="Label" parent="MenuButton/TextMargin"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Retry"
-
-[node name="UpgradesButton" type="Button" parent="Margin/Content/Buttons"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(116, 56)
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Heroes"
-
-[node name="ResultMenuButton" type="Button" parent="Margin/Content/Buttons"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(104, 56)
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Menu"
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 26
+text = "Меню"
+horizontal_alignment = 1
+vertical_alignment = 1

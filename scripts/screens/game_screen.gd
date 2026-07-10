@@ -36,7 +36,7 @@ const LANDSCAPE_BOARD_SIZE := 320.0
 @onready var status_label: Label = %StatusLabel
 @onready var hero_party_panel: HBoxContainer = %HeroPartyPanel
 @onready var booster_panel = %BoosterPanel
-@onready var result_overlay: PanelContainer = %BattleResultOverlay
+@onready var result_overlay: BattleResultOverlay = %BattleResultOverlay
 @onready var background_slot: ImageSlot = %Background
 @onready var round_modifier_panel: PanelContainer = %RoundModifierPanel
 @onready var round_modifier_background: FallbackImageSlot = %RoundModifierBackground
@@ -275,7 +275,6 @@ func _setup_playable_battle() -> void:
 	result_overlay.restart_pressed.connect(_on_restart_pressed)
 	result_overlay.next_level_pressed.connect(_on_next_level_pressed)
 	result_overlay.menu_pressed.connect(_on_menu_button_pressed)
-	result_overlay.upgrades_pressed.connect(_on_upgrades_pressed)
 	_start_new_battle()
 
 
