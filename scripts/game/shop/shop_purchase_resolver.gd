@@ -8,6 +8,7 @@ const CURRENCY_TYPE_SCRIPT := preload("res://scripts/game/economy/currency_type.
 const REASON_NONE := ""
 const REASON_INVALID_ITEM := "invalid_item"
 const REASON_PAYMENT_NOT_CONNECTED := "payment_not_connected"
+const REASON_AD_NOT_CONNECTED := "ad_not_connected"
 const REASON_NOT_ENOUGH_GOLD := "not_enough_gold"
 const REASON_NOT_ENOUGH_GEMS := "not_enough_gems"
 const REASON_INVALID_PROGRESS := "invalid_progress"
@@ -35,6 +36,10 @@ func purchase(item_id: String, progress_manager, shop_catalog, quantity: int = 1
 
 	if item.purchase_kind == SHOP_PURCHASE_KIND_SCRIPT.EXTERNAL_PAYMENT:
 		result["reason"] = REASON_PAYMENT_NOT_CONNECTED
+		return result
+
+	if item.purchase_kind == SHOP_PURCHASE_KIND_SCRIPT.AD_WATCH:
+		result["reason"] = REASON_AD_NOT_CONNECTED
 		return result
 
 	if item.purchase_kind == SHOP_PURCHASE_KIND_SCRIPT.CURRENCY:

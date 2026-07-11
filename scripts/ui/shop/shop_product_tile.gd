@@ -7,15 +7,57 @@ class_name ShopProductTile
 
 signal buy_pressed(item_id: String)
 
+const GAME_ASSET_CATALOG_SCRIPT := preload("res://scripts/game/config/game_asset_catalog.gd")
+const ASSET_KEY_RESOLVER_SCRIPT := preload("res://scripts/game/config/asset_key_resolver.gd")
+
 @onready var _icon_slot: FallbackImageSlot = %IconSlot
-@onready var _buy_button: Button = %BuyButton
+@onready var _buy_button: PressableTextureButton = %BuyButton
 
 var _item_id := ""
 
 
 func _ready() -> void:
 	if _buy_button != null:
-		_buy_button.pressed.connect(_on_buy_pressed)
+		_buy_button.delayed_pressed.connect(_on_buy_pressed)
+	_bind_buy_button_textures()
+
+
+## Target height for the buy button; its width is derived from this and the
+## source texture's own aspect ratio (see below), never the other way
+## around, so a fixed compact height is guaranteed regardless of art size.
+const BUY_BUTTON_HEIGHT := 60.0
+
+
+## Reuses the shared back-button plaque art for the buy button. The button's
+## own custom_minimum_size is recomputed from the real texture's aspect
+## ratio (not hardcoded), so its size always matches the source art's
+## proportions regardless of the texture's actual pixel dimensions — only
+## the height is fixed (BUY_BUTTON_HEIGHT); width follows from that.
+func _bind_buy_button_textures() -> void:
+	if _buy_button == null:
+		return
+
+	if _buy_button.normal_texture == null:
+		var normal_texture := GAME_ASSET_CATALOG_SCRIPT.try_load_texture_cached(
+			ASSET_KEY_RESOLVER_SCRIPT.get_ui_asset_key("shared_back_button_default")
+		)
+		if normal_texture != null:
+			_buy_button.set_normal_texture(normal_texture)
+
+	if _buy_button.pressed_texture == null:
+		var pressed_texture := GAME_ASSET_CATALOG_SCRIPT.try_load_texture_cached(
+			ASSET_KEY_RESOLVER_SCRIPT.get_ui_asset_key("shared_back_button_pressed")
+		)
+		if pressed_texture != null:
+			_buy_button.set_pressed_texture(pressed_texture)
+
+	if _buy_button.normal_texture != null:
+		var texture_size := _buy_button.normal_texture.get_size()
+		if texture_size.y > 0.0:
+			_buy_button.custom_minimum_size = Vector2(
+				BUY_BUTTON_HEIGHT * (texture_size.x / texture_size.y),
+				BUY_BUTTON_HEIGHT
+			)
 
 
 func set_item(item, icon: Texture2D) -> void:
@@ -23,7 +65,7 @@ func set_item(item, icon: Texture2D) -> void:
 	if _icon_slot != null:
 		_icon_slot.texture = icon
 	if _buy_button != null:
-		_buy_button.text = item.display_name
+		_buy_button.set_button_text(item.display_name)
 
 
 func _on_buy_pressed() -> void:

@@ -7,6 +7,7 @@ const MESSAGE_PURCHASED := "Purchased!"
 const MESSAGE_NOT_ENOUGH_GOLD := "Not enough gold"
 const MESSAGE_NOT_ENOUGH_GEMS := "Not enough gems"
 const MESSAGE_PAYMENT_NOT_CONNECTED := "Payments are not connected yet"
+const MESSAGE_AD_NOT_CONNECTED := "Ads are not connected yet"
 const MESSAGE_ITEM_UNAVAILABLE := "Item unavailable"
 const MESSAGE_PURCHASE_FAILED := "Purchase failed"
 
@@ -22,6 +23,8 @@ static func format_purchase_result(result: Dictionary) -> String:
 			return MESSAGE_NOT_ENOUGH_GEMS
 		SHOP_PURCHASE_RESOLVER_SCRIPT.REASON_PAYMENT_NOT_CONNECTED:
 			return MESSAGE_PAYMENT_NOT_CONNECTED
+		SHOP_PURCHASE_RESOLVER_SCRIPT.REASON_AD_NOT_CONNECTED:
+			return MESSAGE_AD_NOT_CONNECTED
 		SHOP_PURCHASE_RESOLVER_SCRIPT.REASON_INVALID_ITEM:
 			return MESSAGE_ITEM_UNAVAILABLE
 		_:

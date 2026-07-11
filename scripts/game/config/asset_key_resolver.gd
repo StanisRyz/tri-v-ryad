@@ -164,6 +164,16 @@ const SHOP_BOOSTER_ICON_ASSET_KEYS := {
 	"rocket_barrage": "shop_icon_booster_rocket_barrage",
 }
 
+## Dedicated Shop-tile-only booster icons (Stage 65.13) — separate from
+## SHOP_BOOSTER_ICON_ASSET_KEYS above, which `BoosterPanel` (in-game) also
+## reads; these live under ui/shop/boosters/ and are used only by
+## `ShopBoosterTile`, so shop and in-game booster art can differ later.
+const SHOP_BOOSTER_TILE_ICON_ASSET_KEYS := {
+	"hammer": "shop_booster_tile_icon_hammer",
+	"freeze_time": "shop_booster_tile_icon_freeze_time",
+	"rocket_barrage": "shop_booster_tile_icon_rocket_barrage",
+}
+
 const SHOP_GEM_PRODUCT_ICON_ASSET_KEYS := {
 	"gems_50": "shop_icon_gems_50",
 	"gems_150": "shop_icon_gems_150",
@@ -176,6 +186,13 @@ const SHOP_BUNDLE_ICON_ASSET_KEYS := {
 	"bundle_medium": "shop_icon_bundle_medium",
 	"bundle_large": "shop_icon_bundle_large",
 	"bundle_mega": "shop_icon_bundle_mega",
+}
+
+const SHOP_OFFER_ICON_ASSET_KEYS := {
+	"offer_watch_ad": "shop_icon_offer_watch_ad",
+	"offer_gems": "shop_icon_offer_gems",
+	"offer_mega_gems": "shop_icon_offer_mega_gems",
+	"offer_boosters": "shop_icon_offer_boosters",
 }
 
 const MAIN_MENU_BACKGROUND_ASSET_KEY := "main_menu_background"
@@ -254,12 +271,20 @@ static func get_shop_booster_icon_asset_key(booster_id: String) -> String:
 	return SHOP_BOOSTER_ICON_ASSET_KEYS.get(booster_id, "")
 
 
+static func get_shop_booster_tile_icon_asset_key(booster_id: String) -> String:
+	return SHOP_BOOSTER_TILE_ICON_ASSET_KEYS.get(booster_id, "")
+
+
 static func get_shop_gem_product_icon_asset_key(product_id: String) -> String:
 	return SHOP_GEM_PRODUCT_ICON_ASSET_KEYS.get(product_id, "")
 
 
 static func get_shop_bundle_icon_asset_key(bundle_id: String) -> String:
 	return SHOP_BUNDLE_ICON_ASSET_KEYS.get(bundle_id, "")
+
+
+static func get_shop_offer_icon_asset_key(offer_id: String) -> String:
+	return SHOP_OFFER_ICON_ASSET_KEYS.get(offer_id, "")
 
 
 static func get_main_menu_background_asset_key() -> String:

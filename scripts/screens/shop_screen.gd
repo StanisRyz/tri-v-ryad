@@ -21,6 +21,7 @@ const BOOSTER_IDS := [
 
 const GEM_PRODUCT_IDS := ["gems_50", "gems_150", "gems_250", "gems_500"]
 const BUNDLE_IDS := ["bundle_small", "bundle_medium", "bundle_large", "bundle_mega"]
+const OFFER_IDS := ["offer_watch_ad", "offer_gems", "offer_mega_gems", "offer_boosters"]
 
 @onready var background_rect: FallbackImageSlot = %Background
 @onready var shop_window_visual: FallbackImageSlot = %WindowVisual
@@ -54,6 +55,7 @@ func _ready() -> void:
 	_build_boosters_content()
 	_build_gems_content()
 	_build_bundles_content()
+	_build_offers_content()
 	_refresh_wallet()
 	_show_category(_selected_category)
 
@@ -163,7 +165,7 @@ func _add_booster_tile(row: Node, item_id: String, booster_id: String) -> void:
 
 	var tile: ShopBoosterTile = SHOP_BOOSTER_TILE_SCENE.instantiate()
 	row.add_child(tile)
-	var icon := GAME_ASSET_CATALOG.try_load_texture_cached(ASSET_KEY_RESOLVER_SCRIPT.get_shop_booster_icon_asset_key(booster_id))
+	var icon := GAME_ASSET_CATALOG.try_load_texture_cached(ASSET_KEY_RESOLVER_SCRIPT.get_shop_booster_tile_icon_asset_key(booster_id))
 	tile.set_item(item, icon)
 	tile.buy_pressed.connect(_on_booster_buy_pressed)
 
@@ -196,6 +198,21 @@ func _build_bundles_content() -> void:
 	_add_product_tile(row1, BUNDLE_IDS[1], ASSET_KEY_RESOLVER_SCRIPT.get_shop_bundle_icon_asset_key(BUNDLE_IDS[1]))
 	_add_product_tile(row2, BUNDLE_IDS[2], ASSET_KEY_RESOLVER_SCRIPT.get_shop_bundle_icon_asset_key(BUNDLE_IDS[2]))
 	_add_product_tile(row2, BUNDLE_IDS[3], ASSET_KEY_RESOLVER_SCRIPT.get_shop_bundle_icon_asset_key(BUNDLE_IDS[3]))
+
+
+func _build_offers_content() -> void:
+	if offers_content == null:
+		return
+
+	var row1 := offers_content.get_node_or_null("Row1")
+	var row2 := offers_content.get_node_or_null("Row2")
+	if row1 == null or row2 == null:
+		return
+
+	_add_product_tile(row1, OFFER_IDS[0], ASSET_KEY_RESOLVER_SCRIPT.get_shop_offer_icon_asset_key(OFFER_IDS[0]))
+	_add_product_tile(row1, OFFER_IDS[1], ASSET_KEY_RESOLVER_SCRIPT.get_shop_offer_icon_asset_key(OFFER_IDS[1]))
+	_add_product_tile(row2, OFFER_IDS[2], ASSET_KEY_RESOLVER_SCRIPT.get_shop_offer_icon_asset_key(OFFER_IDS[2]))
+	_add_product_tile(row2, OFFER_IDS[3], ASSET_KEY_RESOLVER_SCRIPT.get_shop_offer_icon_asset_key(OFFER_IDS[3]))
 
 
 func _add_product_tile(row: Node, item_id: String, icon_asset_key: String) -> void:

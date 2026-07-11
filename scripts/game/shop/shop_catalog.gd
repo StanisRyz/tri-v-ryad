@@ -46,6 +46,7 @@ func _register_items() -> void:
 	_register_booster_items()
 	_register_gem_items()
 	_register_bundle_items()
+	_register_offer_items()
 
 
 func _register_booster_items() -> void:
@@ -139,6 +140,61 @@ func _register_bundle_items() -> void:
 			0,
 			rewards
 		))
+
+
+## Offers tab (Stage 65.14): a rewarded-ad stub, two "more gems for the same
+## deal shape" special gem offers, and a real-money booster pack. All three
+## non-ad items use EXTERNAL_PAYMENT (same "listed, payments not connected
+## yet" pattern as the Gems/Bundles tabs); the ad item uses AD_WATCH (same
+## shape, distinct reason/message, pending a rewarded-ad SDK).
+func _register_offer_items() -> void:
+	_add_item(SHOP_ITEM_CONFIG_SCRIPT.new(
+		"offer_watch_ad",
+		SHOP_ITEM_CATEGORY_SCRIPT.OFFERS,
+		"Реклама",
+		"Watch an ad for a free reward.",
+		SHOP_PURCHASE_KIND_SCRIPT.AD_WATCH,
+		"",
+		0,
+		[SHOP_REWARD_TYPE_SCRIPT.make_currency_reward(CURRENCY_TYPE_SCRIPT.GEMS, 3)]
+	))
+
+	_add_item(SHOP_ITEM_CONFIG_SCRIPT.new(
+		"offer_gems",
+		SHOP_ITEM_CATEGORY_SCRIPT.OFFERS,
+		"Гемы",
+		"Limited-time bonus gem offer.",
+		SHOP_PURCHASE_KIND_SCRIPT.EXTERNAL_PAYMENT,
+		"",
+		0,
+		[SHOP_REWARD_TYPE_SCRIPT.make_currency_reward(CURRENCY_TYPE_SCRIPT.GEMS, 1000)]
+	))
+
+	_add_item(SHOP_ITEM_CONFIG_SCRIPT.new(
+		"offer_mega_gems",
+		SHOP_ITEM_CATEGORY_SCRIPT.OFFERS,
+		"Мега гемы",
+		"The biggest bonus gem offer.",
+		SHOP_PURCHASE_KIND_SCRIPT.EXTERNAL_PAYMENT,
+		"",
+		0,
+		[SHOP_REWARD_TYPE_SCRIPT.make_currency_reward(CURRENCY_TYPE_SCRIPT.GEMS, 2500)]
+	))
+
+	_add_item(SHOP_ITEM_CONFIG_SCRIPT.new(
+		"offer_boosters",
+		SHOP_ITEM_CATEGORY_SCRIPT.OFFERS,
+		"Бустеры",
+		"A pack of every booster.",
+		SHOP_PURCHASE_KIND_SCRIPT.EXTERNAL_PAYMENT,
+		"",
+		0,
+		[
+			SHOP_REWARD_TYPE_SCRIPT.make_booster_reward(BOOSTER_CATALOG_SCRIPT.HAMMER, 25),
+			SHOP_REWARD_TYPE_SCRIPT.make_booster_reward(BOOSTER_CATALOG_SCRIPT.FREEZE_TIME, 25),
+			SHOP_REWARD_TYPE_SCRIPT.make_booster_reward(BOOSTER_CATALOG_SCRIPT.ROCKET_BARRAGE, 25),
+		]
+	))
 
 
 func _add_item(config) -> void:

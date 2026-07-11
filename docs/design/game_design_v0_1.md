@@ -1768,3 +1768,174 @@ Stage 64.22 doubles the duration of every timed step in `EnemyPanel`'s "enemy ta
 - **`enemy_panel_hit_feedback_test.gd` is now stale for one assertion, left untouched per its explicit test-freeze scope.** `_test_play_hit_feedback_and_floating_damage()` waits a hardcoded `1.0s` and expects the floating damage label already freed; with the label's duration now `1.1s`, that assertion will fail until the test's wait is updated to match — not done here, since the user asked that tests not be touched in this session.
 - **Verified via a throwaway headless script** (not part of the project, deleted after use) that called `play_hit_feedback()`/`play_damage_feedback()` on a real `EnemyPanel` instance and timed how long the floating damage label took to free itself: ~1.0-1.1s, confirming the roughly-doubled duration (previously ~0.55s).
 - **No automated tests were added, updated, touched, or run.** Manual verification in the Godot editor is expected for this stage.
+
+## Stage 65.2: Shop Item Card Background Asset v0.1
+
+Stage 65.2 adds a dedicated (placeholder-art-pending) background asset for the Stage 65.1 shop item cards (`ShopBoosterTile`, `ShopProductTile`), following the exact `BoosterPanel`/`PanelBackground` pattern already used for `booster_panel_background`.
+
+- **New `Background` node** (a `FallbackImageSlot`, `stretch_mode = STRETCH_SCALE`) added as the first child of the root `PanelContainer` in both `ShopBoosterTile.tscn` and `ShopProductTile.tscn`, ahead of `Content` — since `PanelContainer` fits every direct child to its full inner rect, `Background` renders full-bleed behind `IconArea`/`QuantitySpin`/`BuyButton` (the whole card, purchase controls included) without affecting their layout. `mouse_filter = 2` (ignore) so it never blocks purchase controls.
+- **`shop_booster_tile.gd`/`shop_product_tile.gd` gained `_bind_background()`**, called once from `_ready()`, mirroring `booster_panel.gd._bind_panel_background()`: only assigns the catalog texture when no Inspector texture is already set (`FallbackImageSlot.has_texture()`), so a manually-assigned texture is never overwritten. Missing art safely falls back to `FallbackImageSlot`'s existing placeholder-color rectangle — no crash, no visual gap.
+- **Nothing else changed.** Icon/quantity/buy-button layout (Stage 65.1), shop data, purchase logic, wallet, and tab/navigation behavior are all untouched.
+- **No automated tests were added, updated, touched, or run.**
+
+## Stage 65.3: Separate Booster/Product Card Background Assets v0.1
+
+Stage 65.3 splits Stage 65.2's single shared `ui_shop_item_card` asset into two dedicated keys/paths, since `ShopBoosterTile` (176x190, near-square) and `ShopProductTile` (260x200, wider) have different aspect ratios and a shared card-frame image would need to either stretch unevenly or crop differently on each.
+
+- **`ui_shop_item_card_booster`** → `res://assets/images/ui/shop/item_card_booster.png` (target **176x190**), resolved via `AssetKeyResolver.get_ui_asset_key("shop_item_card_booster")`, bound only by `ShopBoosterTile._bind_background()`.
+- **`ui_shop_item_card_product`** → `res://assets/images/ui/shop/item_card_product.png` (target **260x200**), resolved via `AssetKeyResolver.get_ui_asset_key("shop_item_card_product")`, bound only by `ShopProductTile._bind_background()` (used for both the Gems and Bundles tabs, since both reuse `ShopProductTile`).
+- **`stretch_mode = STRETCH_SCALE` unchanged** on both `Background` nodes — now that each tile has its own art sized to its own exact aspect ratio, scaling to fill is distortion-free.
+- **The old shared `ui_shop_item_card`/`shop_item_card` key was removed** (replaced, not kept alongside) since nothing referenced it outside this stage's own code and no art existed for it yet.
+- **Nothing else changed.** Node structure, layering, fallback behavior, tile layout (Stage 65.1), and shop data/purchase/wallet/navigation behavior are all untouched.
+- **No automated tests were added, updated, touched, or run.**
+
+## Stage 65.4: Flat Purchase/Quantity Controls v0.1
+
+Stage 65.4 removes the default engine panel/box background from the shop tiles' purchase controls, per the user's request that only the text (and, for quantity, the up/down arrows) remain visible over the new Stage 65.2/65.3 card background — otherwise the control's own opaque box would sit on top of and hide the card art.
+
+- **`BuyButton` (`ShopBoosterTile.tscn` and `ShopProductTile.tscn`) gained `flat = true`.** This is `Button`'s built-in property for suppressing its normal/hover/pressed/disabled panel style entirely, leaving only the label text and its existing hover/press font-color feedback — no new StyleBoxEmpty resources needed.
+- **`QuantitySpin` (`ShopBoosterTile` only) has no equivalent `flat` property of its own** (it's a `Range`, not a `Button`), so `shop_booster_tile.gd._ready()` now calls `_quantity_spin.get_line_edit().flat = true` on the internal `LineEdit` it wraps — the one built-in Godot API for flattening a `SpinBox`'s text field. The up/down arrow icons (a separate, minimal theme element, not a background box) are unaffected and stay usable.
+- **Nothing else changed.** Price recalculation, `buy_pressed` signals, icon/background binding, tile layout (Stage 65.1), and card background assets (Stage 65.2/65.3) are all untouched — this is a pure visual style tweak to two existing controls.
+- **No automated tests were added, updated, touched, or run.**
+
+## Stage 65.5: Precise Booster Tile Purchase/Quantity Control Rects v0.1
+
+Stage 65.5 gives `QuantitySpin` and `BuyButton` inside `ShopBoosterTile.tscn` exact pixel size/offset per the user's request, instead of letting `Content`'s `VBoxContainer` auto-size them to fill their row.
+
+- **Both controls moved into a fixed-size wrapper `Control`** (`QuantitySpinSlot`/`BuyButtonSlot`), since a direct `VBoxContainer` child always has its rect fully overwritten by the container each layout pass — the wrapper reserves the same row height in the vertical flow so `IconArea`'s expand-fill doesn't shift, while the real control inside is anchored full-rect (`anchors_preset = 15`) with explicit `offset_left/top/right/bottom` insets so its final rect is fully deterministic. `%QuantitySpin`/`%BuyButton` unique names still resolve to the same nodes (just one level deeper).
+- **`BuyButtonSlot`'s reserved height (44px) matches `BuyButton`'s pre-existing explicit `custom_minimum_size`**, so no runtime work was needed there. **`QuantitySpinSlot` has no design-time size** — `SpinBox` never had an explicit `custom_minimum_size` before this stage, only a theme-derived natural one, so a guessed constant would either over- or under-reserve the row and shift every control below it. New `shop_booster_tile.gd._reserve_quantity_spin_slot_height()` (called from `_ready()`) instead sets `_quantity_spin_slot.custom_minimum_size.y = _quantity_spin.get_minimum_size().y` at runtime — reading `SpinBox`'s own natural minimum height straight from the active theme, so `BuyButtonSlot`'s own position stays correct regardless of theme/font.
+- **Follow-up visual fix once real card art was dropped in**: the reserved-height fix above only affects nodes *below* `QuantitySpinSlot` (i.e. `BuyButtonSlot`) — `QuantitySpinSlot`'s own top edge is fixed by `IconArea`'s rendered height above it and is unaffected by the slot's own reserved height, so `QuantitySpin` still rendered ~10px above where the actual card artwork's printed number capsule sits. Fixed by shifting `QuantitySpin`'s offsets down 10px within its slot (`offset_top: 0 -> 10`, `offset_bottom: -6 -> 4`), keeping its width and overall height unchanged — a pixel-calibration pass against the real art, confirmed against a user screenshot showing `BuyButton` already correctly aligned and only the quantity control sitting too high.
+- **`BuyButton`**: `offset_left/top/right/bottom = 5/5/-5/-5` — a uniform 5px inset on every side of its 44px-tall slot, which is exactly "10px smaller both horizontally and vertically, shifted 5px right from the left edge and 5px up from the bottom" as requested (the four insets resolve to that single consistent rect).
+- **`QuantitySpin`**: `offset_left/top/right/bottom = 10/0/-10/-6` — 20px narrower (10px inset each side, "shifted 10px right from the left edge" implies the mirrored 10px inset on the right too), 6px shorter, with `offset_top = 0` so its top edge stays exactly where it was ("leave it in the same place vertically" — only the bottom edge moves up by the 6px height reduction).
+- **Nothing else changed.** `ShopProductTile` is untouched (this request was booster-tile-specific); shop data, purchase logic, wallet, and tab/navigation behavior are all unaffected.
+- **No automated tests were added, updated, touched, or run.**
+
+## Stage 65.6: Gems/Bundles Fixed Icon Size and Textured Buy Button v0.1
+
+Stage 65.6 reworks `ShopProductTile` (used by both the Gems and Bundles tabs) per the user's spec: a fixed-size product icon with a purchase button below it that reuses the shared back-button plaque art instead of a plain text button, with the button's size locked to that art's own aspect ratio.
+
+- **`IconArea` is now a fixed `210x162` (`size_flags_horizontal = 4`, shrink-center)** instead of expand-filling the card — this is the exact icon size the user specified for the `gems_50`/`gems_150`/.../`bundle_small`/... product icons, centered horizontally in the card rather than stretched to its full width.
+- **`BuyButton` is now a `PressableTextureButton`** (the same reusable normal/pressed-texture-swap button class already used for `ShopScreen`'s `BackButton`, `LevelInfoPopup`, and `BattleResultOverlay`), bound to the existing `shared_back_button_default`/`shared_back_button_pressed` assets (`res://assets/images/ui/shared/buttons/back_default.png`/`back_pressed.png`, confirmed **260x90** via their PNG headers) via new `shop_product_tile.gd._bind_buy_button_textures()` — the same binding pattern `shop_screen.gd._bind_back_button_textures()` already uses for the real back button.
+- **Aspect ratio is computed at runtime, not hardcoded**: `_bind_buy_button_textures()` reads the actual loaded texture's `get_size()` and sets `_buy_button.custom_minimum_size.y = width * (texture_height / texture_width)`, so the button's rendered size always matches the source art's true proportions even if the PNG is swapped for a different-sized one later. At the current 260x90 art and the button's 210px width, that resolves to ~72.7px tall (the `.tscn` ships a `73` static fallback for editor preview before the script runs).
+- **Text moved from `Button.text` to `PressableTextureButton.button_text`** (`set_item()` now calls `_buy_button.set_button_text(item.display_name)`), matching how the class renders text as a real `Label` child over the art instead of a native `Button` label.
+- **Purchase now fires on `delayed_pressed`, not `pressed`**, again matching the existing `BackButton` convention — `pressed` still fires immediately for the Stage 65.4/65.5-style scale pulse (`_play_buy_pulse()`, unchanged behavior, now scaling the textured button instead of a flat one), while the actual `buy_pressed` signal only emits after `PressableTextureButton`'s built-in ~0.2s pressed-texture-swap animation finishes.
+- **`focus_mode = 0`/flat styling still present** (now inherited from `PressableTextureButton._ready()`'s own `focus_mode = Control.FOCUS_NONE`/`flat = true`, same fix as Stage 65.4's for `ShopBoosterTile`'s plain buttons) — no focus-ring regression.
+- **Card height grew from 200 to 244** (`ShopProductTile.custom_minimum_size = Vector2(260, 244)`) to fit the now-fixed `162 + 8 (separation) + ~73` content stack without clipping; `Content` gained `alignment = 1` (center) so the fixed-size icon+button block centers vertically if the card ends up taller than that (e.g. if `GemsContent`/`BundlesContent`'s expanding rows give it more room). **Width stays 260.**
+- **Caveat flagged, not resolved here**: growing the tile's height was necessary for the requested icon/button sizes to fit without overlap, but `GemsContent`/`BundlesContent`'s two rows (`size_flags_vertical = 3`, expand-fill) sit in a fixed ~467px-tall `ContentRoot` region of `ShopWindow`; two 244px-tall rows plus separation may now exceed that region and visually crowd/overlap `FeedbackLabel`/`BackButton` below. This needs manual verification in the editor — if it overflows, `ShopWindow`/`ContentRoot`/row sizing will need a follow-up pass (not done in this stage, since the user's spec was about the tile's internal icon/button sizing only).
+- **`ShopBoosterTile` is untouched** — this request was scoped to the Gems/Bundles product tile only.
+- **No automated tests were added, updated, touched, or run.**
+
+## Stage 65.7: Shorter Gems/Bundles Buy Button v0.1
+
+Stage 65.7 follows up on Stage 65.6 after the user reported the ~73px-tall textured buy button was too big and asked for 50px instead.
+
+- **`shop_product_tile.gd` now derives width from a fixed target height**, not the other way around: new `BUY_BUTTON_HEIGHT := 50.0` constant, and `_bind_buy_button_textures()` sets `custom_minimum_size = Vector2(BUY_BUTTON_HEIGHT * (texture_size.x / texture_size.y), BUY_BUTTON_HEIGHT)` — height is always exactly 50px, width follows from the real texture's aspect ratio (still never hardcoded), landing at ~144px for the current 260x90 art.
+- **`ShopProductTile.tscn`'s static editor-preview fallback updated to match**: `BuyButton.custom_minimum_size = Vector2(144, 50)` (was `Vector2(210, 73)`).
+- **Card height shrunk back down**: `ShopProductTile.custom_minimum_size = Vector2(260, 220)` (was `260, 244`) — `162 (icon) + 8 (separation) + 50 (button)`, reducing (not eliminating) the Stage 65.6 `GemsContent`/`BundlesContent` row-overflow risk flagged previously.
+- **Nothing else changed.** Icon size (210x162), texture binding, aspect-ratio guarantee, `delayed_pressed`/pulse behavior, and text handling are all otherwise identical to Stage 65.6.
+- **No automated tests were added, updated, touched, or run.**
+
+## Stage 65.8: Remove Obsolete Gems/Bundles Card Background v0.1
+
+Stage 65.8 removes the `ui_shop_item_card_product` card-backdrop asset (added in Stage 65.2/65.3) after the user pointed out it's obsolete: Stage 65.6/65.7 replaced the plaque-style card design with a fixed-size product icon plus a standalone textured buy button, so there's no longer a full-card background to fill.
+
+- **`ShopProductTile.tscn`'s `Background` node (a `FallbackImageSlot`) was deleted entirely** — it's no longer the first child of the root `PanelContainer`; `Content` is now the only child.
+- **`shop_product_tile.gd`'s `_background` var and `_bind_background()` were removed**, along with the `_bind_background()` call from `_ready()`.
+- **`ui_shop_item_card_product`/`shop_item_card_product` removed** from `GameAssetCatalog.ASSET_MAP`/`AssetKeyResolver.UI_ASSET_KEYS` and from `docs/ASSET_MAP.md` — nothing referenced the key any more, and no `item_card_product.png` file was ever added, so this is a clean removal with no dangling art.
+- **`ShopBoosterTile`'s own `ui_shop_item_card_booster` background is untouched** — the booster tile still uses its Stage 65.2/65.3 card-backdrop design (icon + quantity + buy button stacked on a plaque background); only the Gems/Bundles product tile dropped its card background.
+- **Nothing else changed.** Icon (210x162)/buy button (Stage 65.7, ~144x50) sizing and behavior, purchase/`delayed_pressed` flow, and pulse feedback are all unaffected.
+- **No automated tests were added, updated, touched, or run.**
+
+## Stage 65.9: Remove Default PanelContainer Background v0.1
+
+Stage 65.9 fixes a bug the user caught after Stage 65.8: even with the custom `Background` node removed, `ShopProductTile`'s 4 Gems-tab cards still showed a dark rectangle behind each item. The cause wasn't a leftover custom node — it was the engine's own default theme: both `ShopBoosterTile` and `ShopProductTile` are `PanelContainer`s, which draw a built-in `"panel"` `StyleBoxFlat` (a dark semi-transparent fill) behind their children automatically, and neither tile ever overrode it.
+
+- **Both `ShopBoosterTile.tscn` and `ShopProductTile.tscn` now set `theme_override_styles/panel` to an empty `StyleBoxEmpty` sub-resource**, so the root `PanelContainer` no longer paints anything of its own — only whatever the tile's own children draw (icon, buy button, and for `ShopBoosterTile` its dedicated `Background`/`item_card_booster` art) is visible.
+- **`ShopProductTile` was the visibly broken one** (no card background of its own since Stage 65.8, so the default dark panel showed through everywhere); **`ShopBoosterTile` was fixed too for consistency** even though its own opaque `Background` placeholder/art already fully covered the default panel style in practice — this closes a latent edge-bleed risk (e.g. rounded-corner default style peeking past a differently-shaped custom background) rather than a currently-visible bug there.
+- **Nothing else changed.** Layout, sizing, textures, and purchase behavior for both tiles are unaffected — this is purely removing an unwanted default-theme background paint.
+- **No automated tests were added, updated, touched, or run.**
+
+## Stage 65.10: Booster Tile Rebuilt to Match Product Tile Logic v0.1
+
+Stage 65.10 rebuilds `ShopBoosterTile` to follow the exact same design `ShopProductTile` adopted in Stage 65.6-65.9 (fixed-size icon + standalone textured buy button, no shared card background), just re-sized for the booster tile's smaller 176x190 footprint, per explicit user request.
+
+- **Quantity control removed entirely.** `QuantitySpinSlot`/`QuantitySpin` are gone from `ShopBoosterTile.tscn`; `shop_booster_tile.gd` dropped `_quantity_spin`/`_quantity_spin_slot`, `_current_quantity()`, `_on_quantity_changed()`, and `_reserve_quantity_spin_slot_height()`. Boosters are now always bought one at a time — `_on_buy_pressed()` emits `buy_pressed(_item_id, 1)` (the signal signature is unchanged, so `shop_screen.gd._on_booster_buy_pressed(item_id, quantity)`/`ShopPurchaseResolver` needed no changes; `quantity` is just always `1` now instead of user-adjustable 1-99).
+- **Shared card `Background` removed**, same as Stage 65.8 did for `ShopProductTile`: the `Background` `FallbackImageSlot` node, `shop_booster_tile.gd`'s `_background` var/`_bind_background()`, and the `ui_shop_item_card_booster`/`shop_item_card_booster` asset key (in `GameAssetCatalog`/`AssetKeyResolver`/`docs/ASSET_MAP.md`) are all deleted — the icon and buy button are now visually independent, each with their own art, not stacked on one shared plaque. The `item_card_booster.png` file itself was **not** deleted from disk (it's user-added art, not auto-generated) — it's just unreferenced now; delete it manually if it's no longer wanted.
+- **`BuyButton` is now a `PressableTextureButton`** bound to `shared_back_button_default`/`shared_back_button_pressed` (the same 260x90 art `ShopProductTile`'s buy button and the real `ShopScreen` `BackButton` use), via the same `_bind_buy_button_textures()` pattern: a fixed `BUY_BUTTON_HEIGHT := 36.0`, with width derived from the real texture's aspect ratio at runtime (`36 * (260/90) ≈ 104px` for the current art) so it "fits" the narrower 176px-wide card as requested, never hardcoded independent of the source art's proportions.
+- **`IconArea` is now a fixed `140x140` square** (shrink-centered, was previously expand-fill), matching the actual booster icon art's own 256x256 (1:1) aspect ratio — mirrors `ShopProductTile`'s fixed-size (not expand-fill) icon approach from Stage 65.6, just square instead of the gems/bundles' wider rectangle.
+- **`ShopBoosterTile` root `PanelContainer`'s default `"panel"` style is empty** (`theme_override_styles/panel = StyleBoxEmpty`, carried over from Stage 65.9) so no dark default-theme rectangle reappears now that the shared background is gone.
+- **Content height**: `140 (icon) + 6 (separation) + 36 (button) = 182`, fits inside the unchanged `176x190` tile with `Content.alignment = 1` (center) absorbing the small leftover.
+- **Price label, pulse feedback (Stage 65.4/65.5), `focus_mode = 0`, and `delayed_pressed`-gated purchase (matching `ShopProductTile`'s Stage 65.6 convention) are all preserved** — only the quantity control and shared background were removed; unit price display (`"20 Gold"`-style text) still updates via `_update_price_label()`.
+- **`ShopProductTile` is untouched** — this stage only rewrites `ShopBoosterTile`.
+- **No automated tests were added, updated, touched, or run.**
+
+## Stage 65.11: Taller Buy Buttons and Dedicated Per-Booster Button Art v0.1
+
+Stage 65.11 does two things the user asked for together: grows every shop buy button's height by 10px, and gives each of the 3 boosters its own dedicated buy-button art instead of reusing the shared back-button plaque.
+
+- **Buy button heights +10px on both tiles.** `ShopBoosterTile.BUY_BUTTON_HEIGHT: 36.0 -> 46.0`; `ShopProductTile.BUY_BUTTON_HEIGHT: 50.0 -> 60.0`. Width is still derived from height x the real texture's aspect ratio (unchanged formula from Stage 65.7/65.10), so it's never hardcoded independent of the source art.
+- **3 new per-booster asset key pairs** added to `GameAssetCatalog.ASSET_MAP`/new `AssetKeyResolver.SHOP_BOOSTER_BUY_BUTTON_ASSET_KEYS` + `get_shop_booster_buy_button_asset_key(booster_id, pressed)`: `shop_booster_buy_hammer_default/_pressed`, `shop_booster_buy_freeze_time_default/_pressed`, `shop_booster_buy_rocket_barrage_default/_pressed`, all under `res://assets/images/ui/shop/boosters/buy_<booster_id>_<state>.png`. **None of these reuse `shared_back_button_default`/`_pressed`** — the user explicitly asked for boosters not to use "the texture from the game" (the shared plaque `ShopProductTile`/`BackButton` still use).
+- **`shop_booster_tile.gd.set_item()` gained a required `booster_id: String` parameter** (`shop_screen.gd._add_booster_tile()` updated to pass it: `tile.set_item(item, icon, booster_id)`), since `_bind_buy_button_textures()` now needs it to resolve the per-booster key pair; texture binding moved from `_ready()` to `set_item()` accordingly (the booster id isn't known yet at `_ready()` time).
+- **`ShopBoosterTile.IconArea` shrunk `140x140 -> 138x138`** and **`BuyButton`'s tscn fallback size `104x36 -> 133x46`**, so `138 (icon) + 6 (separation) + 46 (button) = 190` still fits the unchanged `176x190` tile exactly.
+- **`ShopProductTile.custom_minimum_size` grew `260,220 -> 260,230`** and **`BuyButton`'s tscn fallback size `144x50 -> 173x60`**, so `162 (icon) + 8 (separation) + 60 (button) = 230` fits without clipping. Width stays 260.
+- **Caveat re-flagged, still not resolved**: this makes the Stage 65.6-65.9 `GemsContent`/`BundlesContent` row-overflow risk slightly worse (product tiles are now 230px tall instead of 220), on top of the ~467px fixed `ContentRoot` region already flagged as needing manual verification.
+- **`shop_icon_booster_hammer`/etc. (booster tile icons) are unaffected** — this stage only adds buy-button art, not new icon art.
+- **No automated tests were added, updated, touched, or run.**
+
+## Stage 65.12: Corrected Booster Buy Button (Shared Art) and Pulse Removal v0.1
+
+Stage 65.12 corrects a misread of the Stage 65.11 request: the user clarified that buy buttons across the shop should **share** the common `shared_back_button_default`/`_pressed` plaque (not get per-booster dedicated art — the per-item-specific-asset requirement was about the product **icons**, which were already correctly separate since Stage 63.x/65.6). Separately, the user asked to remove the scale-pulse purchase feedback (Stage 65.4/65.5/65.6) entirely, since the button's own default->pressed texture swap (already built into `PressableTextureButton`) is feedback enough on its own.
+
+- **`ShopBoosterTile` buy button reverted to `shared_back_button_default`/`_pressed`.** `shop_booster_tile.gd._bind_buy_button_textures()` now matches `ShopProductTile`'s exactly (same asset keys, same "only fill if not already set" guard) instead of resolving a per-booster key pair; `BUY_BUTTON_HEIGHT` stays `46.0` (Stage 65.11 sizing preserved, only the texture source changed).
+- **The 3 dedicated per-booster asset key pairs from Stage 65.11 were deleted** (`shop_booster_buy_hammer/freeze_time/rocket_barrage_default/_pressed` — removed from `GameAssetCatalog.ASSET_MAP`, `AssetKeyResolver.SHOP_BOOSTER_BUY_BUTTON_ASSET_KEYS`/`get_shop_booster_buy_button_asset_key()`, and `docs/ASSET_MAP.md`) — nothing references them any more, and no art was ever added for them.
+- **`shop_booster_tile.gd.set_item()`'s `booster_id` parameter was removed again** (back to `set_item(item, icon)`, matching pre-65.11), and `shop_screen.gd._add_booster_tile()`'s call site reverted to match. Texture binding moved back to `_ready()` since it no longer depends on which booster this tile is for.
+- **Scale-pulse feedback removed from both tiles.** `ShopBoosterTile`/`ShopProductTile` no longer connect `_buy_button.pressed` to a `_play_buy_pulse()` tween (both functions deleted); only `delayed_pressed` -> `_on_buy_pressed()` remains. Visual click feedback is now solely `PressableTextureButton`'s existing normal->pressed texture swap (the same mechanism `BackButton` has always used) — no scale/tween animation layered on top.
+- **Nothing else changed.** Icon sizing (Stage 65.6/65.10), button height/width-from-aspect sizing (Stage 65.11), price label text, `focus_mode = 0`, and `delayed_pressed`-gated purchase are all otherwise unchanged.
+- **No automated tests were added, updated, touched, or run.**
+
+## Stage 65.13: Dedicated Shop-Only Booster Icon Assets v0.1
+
+Stage 65.13 gives the Boosters tab its own 3 icon assets under `ui/shop/boosters/`, decoupled from the icons `BoosterPanel` (the in-game booster bar) already uses, per explicit user request.
+
+- **Root cause addressed.** `shop_icon_booster_hammer`/`_freeze_time`/`_rocket_barrage` (`res://assets/images/ui/icons/boosters/*.png`) were shared by two different UIs: `ShopBoosterTile` (via `shop_screen.gd._add_booster_tile()`) **and** the in-game `BoosterPanel` (`booster_panel.gd._bind_booster_icon()`). Changing that shared art to fit the shop tile's needs would've also changed the in-game booster bar, and vice versa.
+- **3 new asset keys** in `GameAssetCatalog.ASSET_MAP`: `shop_booster_tile_icon_hammer`/`_freeze_time`/`_rocket_barrage` -> `res://assets/images/ui/shop/boosters/hammer.png`/`freeze_time.png`/`rocket_barrage.png`. New `AssetKeyResolver.SHOP_BOOSTER_TILE_ICON_ASSET_KEYS` + `get_shop_booster_tile_icon_asset_key(booster_id)` resolve them, mirroring the existing `SHOP_BOOSTER_ICON_ASSET_KEYS`/`get_shop_booster_icon_asset_key()` pattern exactly, just a separate table.
+- **`shop_screen.gd._add_booster_tile()` switched to the new resolver** (`get_shop_booster_tile_icon_asset_key(booster_id)` instead of `get_shop_booster_icon_asset_key(booster_id)`) — only the Shop screen's booster tiles changed.
+- **`booster_panel.gd._bind_booster_icon()` is untouched** — still resolves the original `shop_icon_booster_*` keys from `res://assets/images/ui/icons/boosters/`, so the in-game `BoosterPanel` buttons are unaffected.
+- **Target size**: 256x256 (matches the existing `ui/icons/boosters/` art and `ShopBoosterTile.IconArea`'s 138x138 square from Stage 65.11).
+- **No automated tests were added, updated, touched, or run.**
+
+## Stage 65.14: Offers Tab — 4 Real Items v0.1
+
+Stage 65.14 replaces the Offers tab's "coming soon" placeholder with 4 real shop items: `Реклама` (watch-ad stub), `Гемы`/`Мега гемы` (bonus gem offers), and `Бустеры` (real-money booster pack) — following the user's confirmed decisions (ad item is a listed-but-not-connected stub like Gems/Bundles; gem offers grant more gems than the regular Gems tab tiers; the booster offer is real-money).
+
+- **New `ShopPurchaseKind.AD_WATCH := "ad_watch"`** (`shop_purchase_kind.gd`), a third purchase kind alongside `CURRENCY`/`EXTERNAL_PAYMENT` — same "listed, not wired up yet" shape as `EXTERNAL_PAYMENT`, kept distinct so it can behave/format differently once a rewarded-ad SDK exists. `ShopPurchaseResolver.purchase()` returns a new `REASON_AD_NOT_CONNECTED` for it (mirrors the `EXTERNAL_PAYMENT`/`REASON_PAYMENT_NOT_CONNECTED` branch exactly); `ShopPurchaseFormatter` gained `MESSAGE_AD_NOT_CONNECTED := "Ads are not connected yet"` for it.
+- **4 new `ShopCatalog` items** (`ShopCatalog._register_offer_items()`, called from `_register_items()`), all category `OFFERS`:
+  - `offer_watch_ad` ("Реклама", `AD_WATCH`, reward: +20 Gold — not actually granted until an ad SDK exists, same as every other stubbed purchase kind).
+  - `offer_gems` ("Гемы", `EXTERNAL_PAYMENT`, reward: +350 Gems — more than the closest regular-tab tier, `gems_250`'s 250).
+  - `offer_mega_gems` ("Мега гемы", `EXTERNAL_PAYMENT`, reward: +750 Gems — bigger than the biggest regular tier, `gems_500`'s 500).
+  - `offer_boosters` ("Бустеры", `EXTERNAL_PAYMENT`, reward: +2 of every booster — Hammer/Freeze Time/Rocket Barrage).
+- **4 new icon asset keys** (`shop_icon_offer_watch_ad`/`_gems`/`_mega_gems`/`_boosters` -> `res://assets/images/ui/shop/offers/*.png`, target 210x162 matching `ShopProductTile.IconArea`), new `AssetKeyResolver.SHOP_OFFER_ICON_ASSET_KEYS`/`get_shop_offer_icon_asset_key(offer_id)`.
+- **`OffersContent` rebuilt to match `GemsContent`/`BundlesContent` exactly**: `CenterContainer` + placeholder `OffersLabel` replaced with a `VBoxContainer` + `Row1`/`Row2` `HBoxContainer`s (same separations: 12 outer, 20 per row). `shop_screen.gd` gained `OFFER_IDS`/`_build_offers_content()`, called from `_ready()` alongside the other 3 tabs' builders, reusing the existing `ShopProductTile` scene and `_add_product_tile()`/`_on_product_buy_pressed()` — no new tile type needed, since `ShopProductTile` only cares about `item_id`/icon/display name, not purchase kind.
+- **Nothing else changed.** Boosters/Gems/Bundles tabs, wallet, tab switching, and `BackButton` are all untouched; the new items slot into the exact same purchase/reward pipeline (`ShopPurchaseResolver`, `ProgressManager`) as everything else.
+- **No automated tests were added, updated, touched, or run.**
+
+## Stage 65.15: Offers Reward Amount Tuning v0.1
+
+Stage 65.15 updates the reward amounts for the 4 Stage 65.14 Offers items per the user's follow-up numbers (`ShopCatalog._register_offer_items()`), no other changes:
+
+- `offer_watch_ad` ("Реклама"): reward changed from +20 Gold to **+3 Gems**.
+- `offer_gems` ("Гемы"): reward changed from +350 Gems to **+1000 Gems**.
+- `offer_mega_gems` ("Мега гемы"): reward changed from +750 Gems to **+2500 Gems**.
+- `offer_boosters` ("Бустеры"): reward changed from +2 to **+25 of every booster** (Hammer/Freeze Time/Rocket Barrage).
+- **Display names, purchase kinds (`AD_WATCH`/`EXTERNAL_PAYMENT`), item ids, icons, and everything else from Stage 65.14 are unchanged** — only the `amount` in each item's reward list.
+- **No automated tests were added, updated, touched, or run.**
+
+## Stage 65.1: Shop Tile Vertical Reflow v0.1
+
+Stage 65.1 is a UI layout polish patch for the Stage 63.3 shop item tiles (`ShopBoosterTile`, `ShopProductTile`): both now use their card's vertical space better, with a larger icon area and purchase controls anchored to the bottom edge. No shop data, prices, rewards, purchase logic, or wallet/tab/navigation behavior changed.
+
+- **Root cause.** `ShopBoosterTile.tscn`/`ShopProductTile.tscn`'s `IconArea` had default (fill, non-expand) size flags inside their `Content` `VBoxContainer`, while `QuantitySpin`/`BuyButton` also never expanded. Since `VBoxContainer` top-aligns children by default, any leftover height (card height minus the sum of children's minimum sizes) showed up as dead space below `BuyButton` instead of growing the icon.
+- **Fix.** `IconArea` in both scenes gained `size_flags_horizontal = 3` and `size_flags_vertical = 3` (expand + fill), so it now consumes all leftover vertical (and horizontal) space in the card; `QuantitySpin`/`BuyButton` keep their original fixed-height flags/`custom_minimum_size`, so they stay pinned directly above the card's bottom edge with no gap beneath. `IconSlot` already filled `IconArea` via full-rect anchors, so it grows with it automatically; `FallbackImageSlot`'s `STRETCH_KEEP_ASPECT_CENTERED` texture display keeps the icon centered and aspect-correct, and the un-textured fallback `ColorRect` (also full-rect) grows the same way.
+- **Tile sizes unchanged.** `ShopBoosterTile` stays 176x190, `ShopProductTile` stays 260x200 — the expand flag alone was enough to reclaim the dead space, no size increase was needed. `ShopWindow` size/position, `BoostersContent`'s 2x3 rows, `GemsContent`/`BundlesContent`'s 2x2 rows, and `OffersContent`'s placeholder are all untouched.
+- **Purchase/data/behavior untouched.** `ShopCatalog` item ids/prices/rewards, `ShopPurchaseResolver`, `ProgressManager` currency/booster APIs, `QuantitySpin` min/max/value and price recalculation, `buy_pressed(item_id, quantity)`/`buy_pressed(item_id)` signals, `BuyButton` text behavior, and icon/fallback assignment are all identical to before — this stage only repositions/reflows existing controls.
+- **No automated tests were added, updated, touched, or run.** Manual verification in the Godot editor is expected for this stage.

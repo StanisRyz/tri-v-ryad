@@ -5,6 +5,13 @@ All Stage 39 entries are reserved placeholders. Current status is `missing/place
 | asset_key | expected path | status | usage |
 |---|---|---|---|
 | background_1 | res://assets/images/backgrounds/background_1.png | missing/placeholder expected | active single game field background (GameScreen `%Background`), target 720x1280 (Stage 64.3.3) |
+| shop_booster_tile_icon_hammer | res://assets/images/ui/shop/boosters/hammer.png | missing/placeholder expected | active `ShopBoosterTile` `%IconSlot` icon for booster id "hammer" (Shop tab only — separate from `shop_icon_booster_hammer`, which `BoosterPanel`'s in-game buttons still use), target 256x256 to match `IconArea`'s 138x138 square (Stage 65.13) |
+| shop_booster_tile_icon_freeze_time | res://assets/images/ui/shop/boosters/freeze_time.png | missing/placeholder expected | active `ShopBoosterTile` `%IconSlot` icon for booster id "freeze_time" (Stage 65.13) |
+| shop_booster_tile_icon_rocket_barrage | res://assets/images/ui/shop/boosters/rocket_barrage.png | missing/placeholder expected | active `ShopBoosterTile` `%IconSlot` icon for booster id "rocket_barrage" (Stage 65.13) |
+| shop_icon_offer_watch_ad | res://assets/images/ui/shop/offers/watch_ad.png | missing/placeholder expected | active `ShopProductTile` `%IconSlot` icon for Offers item "offer_watch_ad" ("Реклама"), target 210x162 (Stage 65.14) |
+| shop_icon_offer_gems | res://assets/images/ui/shop/offers/gems.png | missing/placeholder expected | active `ShopProductTile` `%IconSlot` icon for Offers item "offer_gems" ("Гемы"), target 210x162 (Stage 65.14) |
+| shop_icon_offer_mega_gems | res://assets/images/ui/shop/offers/mega_gems.png | missing/placeholder expected | active `ShopProductTile` `%IconSlot` icon for Offers item "offer_mega_gems" ("Мега гемы"), target 210x162 (Stage 65.14) |
+| shop_icon_offer_boosters | res://assets/images/ui/shop/offers/boosters.png | missing/placeholder expected | active `ShopProductTile` `%IconSlot` icon for Offers item "offer_boosters" ("Бустеры"), target 210x162 (Stage 65.14) |
 | enemy_1_normal | res://assets/images/ui/game/enemies/enemy_1_normal.png | missing/placeholder expected | active Stage 64.1/64.5/64.6 EnemyPanel EnemySprite normal state for gameplay enemy id "enemy_1" |
 | enemy_1_damaged | res://assets/images/ui/game/enemies/enemy_1_damaged.png | missing/placeholder expected | active Stage 64.1/64.5/64.6 EnemyPanel EnemySprite damaged state for gameplay enemy id "enemy_1" |
 | enemy_2_normal | res://assets/images/ui/game/enemies/enemy_2_normal.png | missing/placeholder expected | active Stage 64.6 EnemyPanel EnemySprite normal state for gameplay enemy id "enemy_2" |
