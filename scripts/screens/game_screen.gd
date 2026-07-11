@@ -95,6 +95,10 @@ func _ready() -> void:
 
 	_setup_playable_battle()
 	_apply_layout(_layout_manager.get_layout_mode())
+	_localize_ui()
+	var localization_manager := get_node_or_null("/root/LocalizationManager")
+	if localization_manager != null:
+		localization_manager.language_changed.connect(_localize_ui)
 
 
 ## Stage 64.16 v0.1: developer-only debug hotkeys, fully gated behind
@@ -207,6 +211,39 @@ func _bind_round_modifier_panel_background(texture: Texture2D) -> void:
 		return
 
 	round_modifier_background.set_texture(texture)
+
+
+func _localize_ui() -> void:
+	var localization_manager := get_node_or_null("/root/LocalizationManager")
+	if localization_manager == null:
+		return
+	menu_button.button_text = localization_manager.tr_key("ui.game.menu")
+
+
+func _localized_level_label(level_id: String, fallback_display_name: String) -> String:
+	var localization_manager := get_node_or_null("/root/LocalizationManager")
+	if localization_manager == null:
+		return LEVEL_LABEL_FORMATTER_SCRIPT.format_level_label(level_id, fallback_display_name)
+	var level_number := LEVEL_LABEL_FORMATTER_SCRIPT.extract_level_number(level_id)
+	if level_number > 0:
+		return localization_manager.format_key("ui.game.level", {"level": level_number})
+	if fallback_display_name != "":
+		return fallback_display_name
+	return localization_manager.tr_key("ui.common.levels")
+
+
+func _localized_not_enough_gems_message() -> String:
+	var localization_manager := get_node_or_null("/root/LocalizationManager")
+	if localization_manager == null:
+		return "Недостаточно гемов"
+	return localization_manager.tr_key("ui.lose_continue.not_enough_gems")
+
+
+func _localized_moves_label(moves_left: int) -> String:
+	var localization_manager := get_node_or_null("/root/LocalizationManager")
+	if localization_manager == null:
+		return "Moves: %d" % moves_left
+	return localization_manager.format_key("ui.game.moves", {"moves": moves_left})
 
 
 func _on_menu_button_pressed() -> void:
@@ -343,7 +380,7 @@ func _on_board_changed(board: BoardModel) -> void:
 
 func _on_battle_state_changed(state: BattleState) -> void:
 	if battle_hud.has_method("set_values"):
-		battle_hud.set_values(LEVEL_LABEL_FORMATTER_SCRIPT.format_level_label(_current_level_id, _current_level_name), "Moves: %d" % state.moves_left)
+		battle_hud.set_values(_localized_level_label(_current_level_id, _current_level_name), _localized_moves_label(state.moves_left))
 
 	if enemy_panel.has_method("set_enemy_state"):
 		enemy_panel.set_enemy_state(state.enemy, state.enemy_intent)
@@ -569,11 +606,11 @@ func _try_continue_with_ad() -> void:
 func _try_continue_with_gems() -> void:
 	const CONTINUE_GEM_COST := 5
 	if _progress_manager == null or not _progress_manager.can_spend_currency(CurrencyType.GEMS, CONTINUE_GEM_COST):
-		lose_continue_popup.show_feedback("Недостаточно гемов")
+		lose_continue_popup.show_feedback(_localized_not_enough_gems_message())
 		return
 
 	if not _progress_manager.spend_currency(CurrencyType.GEMS, CONTINUE_GEM_COST):
-		lose_continue_popup.show_feedback("Недостаточно гемов")
+		lose_continue_popup.show_feedback(_localized_not_enough_gems_message())
 		return
 
 	_grant_continue_moves(5)

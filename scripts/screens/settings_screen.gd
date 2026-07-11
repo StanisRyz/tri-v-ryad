@@ -15,6 +15,11 @@ const GAME_ASSET_CATALOG := preload("res://scripts/game/config/game_asset_catalo
 @onready var sound_effects_toggle: CheckButton = %SoundEffectsToggle
 @onready var background_rect: TextureRect = %Background
 @onready var settings_window_rect: TextureRect = %SettingsWindow
+@onready var title_label: Label = %TitleLabel
+@onready var animations_label: Label = %AnimationsLabel
+@onready var reduced_motion_label: Label = %ReducedMotionLabel
+@onready var music_label: Label = %MusicLabel
+@onready var sound_effects_label: Label = %SoundEffectsLabel
 
 var _settings_manager
 var _is_refreshing := false
@@ -30,6 +35,22 @@ func _ready() -> void:
 	music_toggle.toggled.connect(_on_music_toggled)
 	sound_effects_toggle.toggled.connect(_on_sound_effects_toggled)
 	_refresh_from_settings()
+	_localize_ui()
+	var localization_manager := get_node_or_null("/root/LocalizationManager")
+	if localization_manager != null:
+		localization_manager.language_changed.connect(_localize_ui)
+
+
+func _localize_ui() -> void:
+	var localization_manager := get_node_or_null("/root/LocalizationManager")
+	if localization_manager == null:
+		return
+	title_label.text = localization_manager.tr_key("ui.settings.title")
+	animations_label.text = localization_manager.tr_key("ui.settings.animations")
+	reduced_motion_label.text = localization_manager.tr_key("ui.settings.reduced_motion")
+	music_label.text = localization_manager.tr_key("ui.settings.music")
+	sound_effects_label.text = localization_manager.tr_key("ui.settings.sound_effects")
+	back_button.button_text = localization_manager.tr_key("ui.common.back")
 
 
 func _bind_static_ui_assets() -> void:

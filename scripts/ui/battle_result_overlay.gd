@@ -33,6 +33,19 @@ func _ready() -> void:
 	next_button.delayed_pressed.connect(_on_next_button_pressed)
 	menu_button.delayed_pressed.connect(_on_menu_button_pressed)
 	hide_result()
+	_localize_ui()
+	var localization_manager := get_node_or_null("/root/LocalizationManager")
+	if localization_manager != null:
+		localization_manager.language_changed.connect(_localize_ui)
+
+
+func _localize_ui() -> void:
+	var localization_manager := get_node_or_null("/root/LocalizationManager")
+	if localization_manager == null:
+		return
+	retry_button.button_text = localization_manager.tr_key("ui.result.retry")
+	next_button.button_text = localization_manager.tr_key("ui.result.next")
+	menu_button.button_text = localization_manager.tr_key("ui.result.menu")
 
 
 func show_victory_result(data: Dictionary) -> void:
@@ -53,7 +66,8 @@ func show_victory_result(data: Dictionary) -> void:
 
 func show_defeat_result(_data: Dictionary) -> void:
 	_apply_result_window_texture(0)
-	top_label.text = DEFEAT_TITLE_TEXT
+	var localization_manager := get_node_or_null("/root/LocalizationManager")
+	top_label.text = localization_manager.tr_key("ui.result.lose") if localization_manager != null else DEFEAT_TITLE_TEXT
 	retry_button.visible = true
 	next_button.visible = false
 	next_button.disabled = true
@@ -67,7 +81,8 @@ func hide_result() -> void:
 
 
 func _format_victory_top_text(milestone_rewards: Array, new_zone_unlocked: bool) -> String:
-	var lines := LEVEL_REWARD_FORMATTER_SCRIPT.format_rewards(milestone_rewards)
+	var localization_manager := get_node_or_null("/root/LocalizationManager")
+	var lines := LEVEL_REWARD_FORMATTER_SCRIPT.format_rewards(milestone_rewards, localization_manager)
 	if new_zone_unlocked:
 		lines.append(ZONE_UNLOCKED_TEXT)
 	if lines.is_empty():

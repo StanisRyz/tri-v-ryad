@@ -10,7 +10,14 @@ const GAME_ASSET_CATALOG_SCRIPT := preload("res://scripts/game/config/game_asset
 
 func _ready() -> void:
 	_bind_panel_background()
-	set_placeholder_values("Level 1", "Moves: --")
+	var localization_manager := get_node_or_null("/root/LocalizationManager")
+	if localization_manager != null:
+		set_placeholder_values(
+			localization_manager.format_key("ui.game.level", {"level": 1}),
+			localization_manager.format_key("ui.game.moves", {"moves": "--"})
+		)
+	else:
+		set_placeholder_values("Level 1", "Moves: --")
 
 
 ## Fallback-only: an Inspector-assigned background texture is never overwritten.

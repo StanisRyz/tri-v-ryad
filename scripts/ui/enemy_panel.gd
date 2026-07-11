@@ -60,7 +60,11 @@ func set_hp_values(current_hp: int, max_hp: int) -> void:
 	var safe_current: int = maxi(current_hp, 0)
 	var safe_max: int = maxi(max_hp, 0)
 	if hp_value_label != null:
-		hp_value_label.text = "%d / %d" % [safe_current, safe_max]
+		var localization_manager := get_node_or_null("/root/LocalizationManager")
+		if localization_manager != null:
+			hp_value_label.text = localization_manager.format_key("ui.game.hp_value", {"current": safe_current, "max": safe_max})
+		else:
+			hp_value_label.text = "%d / %d" % [safe_current, safe_max]
 
 	var ratio: float = float(safe_current) / float(safe_max) if safe_max > 0 else 0.0
 	_animate_hp_bar_to(clampf(ratio, 0.0, 1.0))

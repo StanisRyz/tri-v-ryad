@@ -39,6 +39,20 @@ func _ready() -> void:
 	close_button.delayed_pressed.connect(_on_close_button_pressed)
 	title_label.text = TITLE_TEXT
 	hide_popup()
+	_localize_ui()
+	var localization_manager := get_node_or_null("/root/LocalizationManager")
+	if localization_manager != null:
+		localization_manager.language_changed.connect(_localize_ui)
+
+
+func _localize_ui() -> void:
+	var localization_manager := get_node_or_null("/root/LocalizationManager")
+	if localization_manager == null:
+		return
+	title_label.text = localization_manager.tr_key("ui.lose_continue.title")
+	watch_ad_button.button_text = localization_manager.tr_key("ui.lose_continue.watch_ad")
+	buy_moves_button.button_text = localization_manager.tr_key("ui.lose_continue.buy_moves")
+	close_button.button_text = localization_manager.tr_key("ui.lose_continue.close")
 
 
 func show_popup() -> void:

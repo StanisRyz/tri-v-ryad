@@ -34,6 +34,10 @@ func _ready() -> void:
 	heroes_button.visible = FeatureFlags.HERO_SYSTEMS_ENABLED
 
 	_refresh_wallet_labels()
+	_localize_ui()
+	var localization_manager := get_node_or_null("/root/LocalizationManager")
+	if localization_manager != null:
+		localization_manager.language_changed.connect(_localize_ui)
 
 
 func set_progress_manager(progress_manager) -> void:
@@ -75,6 +79,16 @@ func _bind_button_texture(button: PressableTextureButton, button_id: String) -> 
 			button.set_pressed_texture(pressed_texture)
 
 
+func _localize_ui() -> void:
+	var localization_manager := get_node_or_null("/root/LocalizationManager")
+	if localization_manager == null:
+		return
+	play_button.button_text = localization_manager.tr_key("ui.main.play")
+	level_select_button.button_text = localization_manager.tr_key("ui.main.level_select")
+	shop_button.button_text = localization_manager.tr_key("ui.main.shop")
+	settings_button.button_text = localization_manager.tr_key("ui.main.settings")
+
+
 func _refresh_wallet_labels() -> void:
 	if gold_label == null or gems_label == null:
 		return
@@ -85,8 +99,13 @@ func _refresh_wallet_labels() -> void:
 		gold = _progress_manager.get_currency(CURRENCY_TYPE_SCRIPT.GOLD)
 		gems = _progress_manager.get_currency(CURRENCY_TYPE_SCRIPT.GEMS)
 
-	gold_label.text = "Gold: %d" % gold
-	gems_label.text = "Gems: %d" % gems
+	var localization_manager := get_node_or_null("/root/LocalizationManager")
+	if localization_manager != null:
+		gold_label.text = localization_manager.format_key("ui.common.gold", {"gold": gold})
+		gems_label.text = localization_manager.format_key("ui.common.gems", {"gems": gems})
+	else:
+		gold_label.text = "Gold: %d" % gold
+		gems_label.text = "Gems: %d" % gems
 
 
 func _on_play_button_delayed_pressed() -> void:

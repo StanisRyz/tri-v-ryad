@@ -58,6 +58,10 @@ func _ready() -> void:
 	_build_offers_content()
 	_refresh_wallet()
 	_show_category(_selected_category)
+	_localize_ui()
+	var localization_manager := get_node_or_null("/root/LocalizationManager")
+	if localization_manager != null:
+		localization_manager.language_changed.connect(_localize_ui)
 
 
 func set_progress_manager(progress_manager) -> void:
@@ -123,8 +127,25 @@ func _refresh_wallet() -> void:
 		gold = _progress_manager.get_currency(CURRENCY_TYPE_SCRIPT.GOLD)
 		gems = _progress_manager.get_currency(CURRENCY_TYPE_SCRIPT.GEMS)
 
-	gold_label.text = "Gold: %d" % gold
-	gems_label.text = "Gems: %d" % gems
+	var localization_manager := get_node_or_null("/root/LocalizationManager")
+	if localization_manager != null:
+		gold_label.text = localization_manager.format_key("ui.common.gold", {"gold": gold})
+		gems_label.text = localization_manager.format_key("ui.common.gems", {"gems": gems})
+	else:
+		gold_label.text = "Gold: %d" % gold
+		gems_label.text = "Gems: %d" % gems
+
+
+func _localize_ui() -> void:
+	var localization_manager := get_node_or_null("/root/LocalizationManager")
+	if localization_manager == null:
+		return
+	boosters_tab_button.set_button_text(localization_manager.tr_key("ui.shop.tab.boosters"))
+	gems_tab_button.set_button_text(localization_manager.tr_key("ui.shop.tab.gems"))
+	bundles_tab_button.set_button_text(localization_manager.tr_key("ui.shop.tab.bundles"))
+	offers_tab_button.set_button_text(localization_manager.tr_key("ui.shop.tab.offers"))
+	if back_button != null:
+		back_button.button_text = localization_manager.tr_key("ui.common.back")
 
 
 func _show_category(category: String) -> void:
@@ -259,7 +280,8 @@ func _on_product_buy_pressed(item_id: String) -> void:
 
 func _resolve_purchase(item_id: String, quantity: int) -> void:
 	var result: Dictionary = _purchase_resolver.purchase(item_id, _progress_manager, _shop_catalog, quantity)
-	feedback_label.text = SHOP_PURCHASE_FORMATTER_SCRIPT.format_purchase_result(result)
+	var localization_manager := get_node_or_null("/root/LocalizationManager")
+	feedback_label.text = SHOP_PURCHASE_FORMATTER_SCRIPT.format_purchase_result(result, localization_manager)
 	_refresh_wallet()
 
 
