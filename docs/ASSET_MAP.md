@@ -53,6 +53,10 @@ All Stage 39 entries are reserved placeholders. Current status is `missing/place
 | ui_round_modifier_panel | res://assets/images/ui/round_modifier_panel.png | missing/placeholder expected | active round modifier panel binding |
 | ui_status_panel | res://assets/images/ui/status_panel.png | missing/placeholder expected | active battle status panel binding |
 | ui_result_panel | res://assets/images/ui/result_panel.png | missing/placeholder expected | active result overlay binding |
+| ui_lose_continue_window | res://assets/images/ui/lose_continue/window.png | missing/placeholder expected | active `LoseContinuePopup` `%Window` backdrop, target 600x320 (Stage 65.17) |
+| lose_continue_icon_watch_ad | res://assets/images/ui/lose_continue/icon_watch_ad.png | missing/placeholder expected | active `LoseContinuePopup` `%WatchAdIcon` square icon above the watch-ad button, target 150x150 (Stage 65.17, resized in 65.18) |
+| lose_continue_icon_buy_moves | res://assets/images/ui/lose_continue/icon_buy_moves.png | missing/placeholder expected | active `LoseContinuePopup` `%BuyMovesIcon` square icon above the gem-continue button, target 150x150 (Stage 65.17, resized in 65.18) |
+| lose_continue_icon_close | res://assets/images/ui/lose_continue/icon_close.png | missing/placeholder expected | active `LoseContinuePopup` `%CloseIcon` square icon above the close button, target 150x150 (Stage 65.17, resized in 65.18) |
 | ui_level_select_background | res://assets/images/ui/level_select/background.png | missing/placeholder expected | active LevelSelect background FallbackImageSlot |
 | ui_level_select_panel | res://assets/images/ui/level_select_panel.png | missing/placeholder expected | active LevelSelect panel binding |
 | ui_zone_selector_panel | res://assets/images/ui/zone_selector_panel.png | missing/placeholder expected | active zone selector binding |

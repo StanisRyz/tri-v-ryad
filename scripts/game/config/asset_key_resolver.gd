@@ -143,6 +143,15 @@ const UI_ASSET_KEYS := {
 	"booster_button_ready": "ui_booster_button_ready",
 	"booster_button_disabled": "ui_booster_button_disabled",
 	"booster_button_selected": "ui_booster_button_selected",
+	"lose_continue_window": "ui_lose_continue_window",
+}
+
+## Stage 65.17 v0.1: one square icon per LoseContinuePopup button, shown
+## above the button itself (170x170, matching the button's 170px width).
+const LOSE_CONTINUE_ICON_ASSET_KEYS := {
+	"watch_ad": "lose_continue_icon_watch_ad",
+	"buy_moves": "lose_continue_icon_buy_moves",
+	"close": "lose_continue_icon_close",
 }
 
 const BOOSTER_ASSET_KEYS := {
@@ -294,3 +303,7 @@ static func get_main_menu_background_asset_key() -> String:
 static func get_main_menu_button_asset_key(button_id: String, state: String) -> String:
 	var entry: Dictionary = MAIN_MENU_BUTTON_ASSET_KEYS.get(button_id, {})
 	return entry.get(state, "")
+
+
+static func get_lose_continue_icon_asset_key(icon_id: String) -> String:
+	return LOSE_CONTINUE_ICON_ASSET_KEYS.get(icon_id, "")

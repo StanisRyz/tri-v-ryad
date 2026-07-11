@@ -12,6 +12,7 @@
 [ext_resource type="Texture2D" uid="uid://c06ua0pjgbjwj" path="res://assets/images/ui/shared/buttons/back_default.png" id="10_back_n"]
 [ext_resource type="Texture2D" uid="uid://8dpiq5nunba1" path="res://assets/images/ui/shared/buttons/back_pressed.png" id="11_back_p"]
 [ext_resource type="Script" uid="uid://b0dlqhi1wwh6t" path="res://scripts/ui/fallback_image_slot.gd" id="12_fbimg"]
+[ext_resource type="PackedScene" path="res://scenes/ui/LoseContinuePopup.tscn" id="13_losecontinue"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_2xe0f"]
 
@@ -218,4 +219,7 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="BattleResultOverlay" parent="." instance=ExtResource("6_mdu30")]
+unique_name_in_owner = true
+
+[node name="LoseContinuePopup" parent="." instance=ExtResource("13_losecontinue")]
 unique_name_in_owner = true

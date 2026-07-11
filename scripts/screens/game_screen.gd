@@ -37,6 +37,7 @@ const LANDSCAPE_BOARD_SIZE := 320.0
 @onready var hero_party_panel: HBoxContainer = %HeroPartyPanel
 @onready var booster_panel = %BoosterPanel
 @onready var result_overlay: BattleResultOverlay = %BattleResultOverlay
+@onready var lose_continue_popup: LoseContinuePopup = %LoseContinuePopup
 @onready var background_slot: ImageSlot = %Background
 @onready var round_modifier_panel: PanelContainer = %RoundModifierPanel
 @onready var round_modifier_background: FallbackImageSlot = %RoundModifierBackground
@@ -98,9 +99,12 @@ func _ready() -> void:
 
 ## Stage 64.16 v0.1: developer-only debug hotkeys, fully gated behind
 ## FeatureFlags.DEBUG_MODE_ENABLED so they are inert in production builds.
-## F12 toggles developer mode; F1/F2 only do anything once developer mode is
-## active. Echoed (auto-repeat) key events are ignored so holding a key down
-## doesn't spam grants or repeatedly trigger a win.
+## F12 toggles developer mode; F1/F2/F3 only do anything once developer mode
+## is active. Echoed (auto-repeat) key events are ignored so holding a key
+## down doesn't spam grants or repeatedly trigger a win/loss.
+## Stage 64.12 v0.1: added F3, an instant-loss hotkey that mirrors F2's win
+## path (same guards, same _show_battle_result() routing) so a defeat can be
+## triggered on demand to exercise LoseContinuePopup.
 func _unhandled_input(event: InputEvent) -> void:
 	if not FeatureFlags.DEBUG_MODE_ENABLED:
 		return
@@ -119,6 +123,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		_debug_grant_boosters()
 	elif event.keycode == KEY_F2:
 		_debug_complete_level()
+	elif event.keycode == KEY_F3:
+		_debug_trigger_defeat()
 
 
 ## Stage 64.16 v0.1: grants +10 of every catalog booster through the same
@@ -158,6 +164,31 @@ func _debug_complete_level() -> void:
 	_pending_battle_status = _presenter.state.status
 	_feedback_active = false
 	print_debug("Developer mode: instant level win triggered")
+	_show_battle_result(_pending_battle_status)
+
+
+## Stage 64.12 v0.1: forces the current battle to a defeat by zeroing
+## moves_left and re-deriving status through BattleState.update_status(),
+## then routes through the normal _show_battle_result() path so
+## LoseContinuePopup, defeat audio/status and the result overlay all behave
+## exactly as a real loss would. Mirrors _debug_complete_level()'s guards:
+## no-ops before a battle exists, after the battle already finished, or
+## while the result overlay/lose-continue popup is already on screen.
+func _debug_trigger_defeat() -> void:
+	if _presenter == null or _presenter.state == null:
+		return
+	if _presenter.is_battle_finished():
+		return
+	if result_overlay != null and result_overlay.visible:
+		return
+	if lose_continue_popup != null and lose_continue_popup.visible:
+		return
+
+	_presenter.state.moves_left = 0
+	_presenter.state.update_status()
+	_pending_battle_status = _presenter.state.status
+	_feedback_active = false
+	print_debug("Developer mode: instant level loss triggered")
 	_show_battle_result(_pending_battle_status)
 
 
@@ -275,6 +306,11 @@ func _setup_playable_battle() -> void:
 	result_overlay.restart_pressed.connect(_on_restart_pressed)
 	result_overlay.next_level_pressed.connect(_on_next_level_pressed)
 	result_overlay.menu_pressed.connect(_on_menu_button_pressed)
+
+	lose_continue_popup.watch_ad_pressed.connect(_on_lose_continue_watch_ad_pressed)
+	lose_continue_popup.buy_moves_pressed.connect(_on_lose_continue_buy_moves_pressed)
+	lose_continue_popup.close_pressed.connect(_on_lose_continue_close_pressed)
+
 	_start_new_battle()
 
 
@@ -290,6 +326,7 @@ func _start_new_battle() -> void:
 	_shuffle_count = 0
 	_last_shuffle_debug_info = {}
 	result_overlay.hide_result()
+	lose_continue_popup.hide_popup()
 	_set_input_mode("normal", "")
 	_input_controller.set_input_enabled(true)
 	_set_status("Select a tile")
@@ -470,10 +507,97 @@ func _show_battle_result(status: int) -> void:
 		_force_cleanup_visual_state()
 		result_overlay.show_victory_result(_last_victory_result_data)
 	elif status == BattleState.Status.DEFEAT:
-		_play_defeat()
+		_show_lose_continue_or_defeat()
+
+
+## Stage 64.12 v0.1: LoseContinuePopup is offered once per defeat event before
+## falling through to the normal 0-star result. Guarded against duplicates:
+## if either the popup or the result overlay is already visible, a repeated
+## defeat trigger (e.g. a stray battle_finished re-emit) is ignored rather
+## than reopening/stacking UI.
+func _show_lose_continue_or_defeat() -> void:
+	if result_overlay != null and result_overlay.visible:
+		return
+	if lose_continue_popup != null and lose_continue_popup.visible:
+		return
+
+	_force_cleanup_visual_state()
+	if lose_continue_popup != null:
 		_set_status(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_defeat_message())
-		_force_cleanup_visual_state()
-		result_overlay.show_defeat_result(_build_defeat_result_data())
+		lose_continue_popup.show_popup()
+	else:
+		_finalize_defeat_result()
+
+
+func _finalize_defeat_result() -> void:
+	_play_defeat()
+	_set_status(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_defeat_message())
+	_force_cleanup_visual_state()
+	result_overlay.show_defeat_result(_build_defeat_result_data())
+
+
+func _on_lose_continue_watch_ad_pressed() -> void:
+	_play_button_click()
+	_try_continue_with_ad()
+
+
+func _on_lose_continue_buy_moves_pressed() -> void:
+	_play_button_click()
+	_try_continue_with_gems()
+
+
+func _on_lose_continue_close_pressed() -> void:
+	_play_button_click()
+	lose_continue_popup.hide_popup()
+	_finalize_defeat_result()
+
+
+## Stage 64.12 v0.1: placeholder rewarded-ad gateway. No real ad SDK is wired
+## up yet, so this grants the continue reward directly through the local
+## flow below. Kept as its own method so a real rewarded-ad callback can
+## replace the body later without touching callers or the popup.
+func _try_continue_with_ad() -> void:
+	_grant_continue_moves(3)
+	lose_continue_popup.hide_popup()
+	_resume_after_continue()
+
+
+## Stage 64.12 v0.1: gem-purchased continue. Spends through the existing
+## ProgressManager currency APIs (same save path as every other spend), and
+## keeps the popup open with an inline message if the player can't afford it
+## rather than silently falling through to the defeat result.
+func _try_continue_with_gems() -> void:
+	const CONTINUE_GEM_COST := 5
+	if _progress_manager == null or not _progress_manager.can_spend_currency(CurrencyType.GEMS, CONTINUE_GEM_COST):
+		lose_continue_popup.show_feedback("Недостаточно гемов")
+		return
+
+	if not _progress_manager.spend_currency(CurrencyType.GEMS, CONTINUE_GEM_COST):
+		lose_continue_popup.show_feedback("Недостаточно гемов")
+		return
+
+	_grant_continue_moves(5)
+	lose_continue_popup.hide_popup()
+	_resume_after_continue()
+
+
+## Stage 64.12 v0.1: adds moves to the live BattleState and re-derives status
+## through the same BattleState.update_status() every other status change
+## uses, so a battle that was DEFEAT (moves_left <= 0) returns to IN_PROGRESS
+## without resetting the board, enemy HP, modifiers, or booster state.
+func _grant_continue_moves(amount: int) -> void:
+	if _presenter == null or _presenter.state == null:
+		return
+
+	_presenter.state.moves_left += amount
+	_presenter.state.update_status()
+	_pending_battle_status = -1
+	_on_battle_state_changed(_presenter.state)
+
+
+func _resume_after_continue() -> void:
+	_set_input_mode("normal", "")
+	_set_status("Select a tile")
 
 
 func _grant_victory_reward_once() -> void:

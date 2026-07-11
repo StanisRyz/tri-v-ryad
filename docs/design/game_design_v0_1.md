@@ -1939,3 +1939,45 @@ Stage 65.1 is a UI layout polish patch for the Stage 63.3 shop item tiles (`Shop
 - **Tile sizes unchanged.** `ShopBoosterTile` stays 176x190, `ShopProductTile` stays 260x200 — the expand flag alone was enough to reclaim the dead space, no size increase was needed. `ShopWindow` size/position, `BoostersContent`'s 2x3 rows, `GemsContent`/`BundlesContent`'s 2x2 rows, and `OffersContent`'s placeholder are all untouched.
 - **Purchase/data/behavior untouched.** `ShopCatalog` item ids/prices/rewards, `ShopPurchaseResolver`, `ProgressManager` currency/booster APIs, `QuantitySpin` min/max/value and price recalculation, `buy_pressed(item_id, quantity)`/`buy_pressed(item_id)` signals, `BuyButton` text behavior, and icon/fallback assignment are all identical to before — this stage only repositions/reflows existing controls.
 - **No automated tests were added, updated, touched, or run.** Manual verification in the Godot editor is expected for this stage.
+
+## Stage 65.16: Lose Continue Modal + Debug Lose Hotkey v0.1
+
+Stage 65.16 (requested by the user as "Stage 64.12" — relabeled since that number already denotes Crystal Burst Destruction Effect in this project; `65.16` is the next free slot) adds a lose-continue modal shown before the normal 0-star defeat result, plus a developer-only F3 hotkey that triggers an instant defeat. No victory flow, star calculation, reward granting, economy, board/match/cascade/gravity/hole/ice/no-move-shuffle logic, booster logic, enemy HP, modifiers, `LevelSelectScreen`, `MainMenuScreen`, `SettingsScreen`, or `ShopScreen` behavior changed.
+
+- **New `LoseContinuePopup` scene/script.** `scenes/ui/LoseContinuePopup.tscn` (`scripts/ui/lose_continue_popup.gd`) is a simple modal in the same visual family as `BattleResultOverlay` (`Scrim` + a window + `PressableTextureButton`s falling back to a solid placeholder color when no texture is assigned). It exposes `watch_ad_pressed`/`buy_moves_pressed`/`close_pressed` signals from `WatchAdButton` ("Реклама +3 хода"), `BuyMovesButton` ("+5 ходов за 5 гемов"), and `CloseButton` ("Закрыть"), plus a title/description label and `show_feedback(message)` for inline messages like insufficient gems.
+- **Inserted before the 0-star result.** `GameScreen._show_battle_result()`'s `DEFEAT` branch calls new `_show_lose_continue_or_defeat()` instead of going straight to `result_overlay.show_defeat_result(...)`. It shows `LoseContinuePopup` (board input is already disabled by the existing `_input_controller.set_input_enabled(false)` in `_on_battle_finished()`); only if the popup is closed does new `_finalize_defeat_result()` run the exact same defeat sequence as before this stage.
+- **Watch-ad +3 moves (placeholder gateway).** New `_try_continue_with_ad()` is an isolated placeholder — no real ad SDK is wired up yet — that directly grants the reward via `_grant_continue_moves(3)`, hides the popup, and resumes input. It is the single spot to swap in a real rewarded-ad callback later.
+- **Gem continue: 5 gems for +5 moves.** New `_try_continue_with_gems()` checks `ProgressManager.can_spend_currency(CurrencyType.GEMS, 5)`, spends via the existing `ProgressManager.spend_currency(...)` (same save path as every other spend), then calls `_grant_continue_moves(5)`. If unaffordable, the popup stays open and shows "Недостаточно гемов" instead of falling through to defeat.
+- **`_grant_continue_moves(amount)` resumes without resetting anything.** Adds `amount` to the live `_presenter.state.moves_left`, re-derives status through the existing `BattleState.update_status()`, clears `_pending_battle_status`, and reuses `_on_battle_state_changed(state)` to refresh `BattleHud`'s moves label. Board, enemy HP, modifiers, and booster state are never touched.
+- **Duplicate-popup guards.** `_show_lose_continue_or_defeat()` returns immediately if `result_overlay` or `lose_continue_popup` is already visible, so a repeated defeat trigger can't stack or reopen the popup; the popup is allowed to reappear on every subsequent defeat event, with no added per-run limit.
+- **F3 debug hotkey: instant defeat.** `GameScreen._unhandled_input()` gained `KEY_F3` (only active while `FeatureFlags.DEBUG_MODE_ENABLED` and developer mode are both on). New `_debug_trigger_defeat()` mirrors `_debug_complete_level()`'s guards, zeroes `_presenter.state.moves_left`, and routes through the real `_show_battle_result(BattleState.Status.DEFEAT)` — so F3 shows `LoseContinuePopup` first, exactly like a real loss.
+- **F12/F1/F2 unchanged.**
+- **No automated tests were added, updated, touched, or run.** Manual verification in the Godot editor is expected for this stage.
+
+## Stage 65.17: Lose Continue Popup Layout — 600x320 Window, Icon Row, Horizontal Buttons v0.1
+
+Stage 65.17 reworks `LoseContinuePopup`'s (Stage 65.16) layout per follow-up request: a fixed 600x320 backdrop (resized down from an initial 600x600 pass per a further follow-up), three horizontally-arranged buttons each with a square icon above it, and a single "Проигрыш" title at the top. No signals, gameplay wiring, continue logic (ad/gems), duplicate guards, or the F3 debug hotkey from Stage 65.16 changed — layout/asset-binding only.
+
+- **Fixed 600x320 window, centered.** `%Window` is a `FallbackImageSlot`-scripted `Control` anchored to screen center, offsets `left/right -300..+300`, `top/bottom -160..+160`, always exactly 600x320. Binds new asset key `ui_lose_continue_window` (`res://assets/images/ui/lose_continue/window.png`), falling back to a solid placeholder color when missing. All other popup nodes are now children of `%Window`, positioned in its local 0-600 x 0-320 coordinate space.
+- **Title-only header.** The description label was removed; `%TitleLabel` shows only `"Проигрыш"` (shrunk to font 20, y=10-40, to fit the shorter window). `%FeedbackLabel` shrunk to font 11, y=42-58.
+- **Three square icon slots.** `%WatchAdIcon`/`%BuyMovesIcon`/`%CloseIcon` (`FallbackImageSlot`s, 170x170, row at x=15/215/415, y=62-232) sit above their matching buttons, bound to new asset keys `lose_continue_icon_watch_ad`/`_buy_moves`/`_close` via new `AssetKeyResolver.LOSE_CONTINUE_ICON_ASSET_KEYS`/`get_lose_continue_icon_asset_key()`.
+- **Horizontal button row, 170px wide.** Buttons moved from a vertical stack to a row (same x as their icons, y=236-295); height (59px) matches the shared button texture's real 260x90 aspect ratio at 170px width. Icon/button sizes are unchanged from the original request — only surrounding window/label sizing was compressed to fit the 320px height.
+- **`docs/ASSET_MAP.md` updated** with the 4 new asset-key rows.
+- **No automated tests were added, updated, touched, or run.** Manual verification in the Godot editor is expected for this stage.
+
+## Stage 65.18: Lose Continue Popup Icons/Buttons Resized to 150px v0.1
+
+Stage 65.18 shrinks `LoseContinuePopup`'s (Stage 65.17) icons and buttons per follow-up request: icon squares and button width both `170`->`150`px. No window size, signals, gameplay wiring, continue logic, or duplicate guards changed — sizing/positioning only.
+
+- **Icons 150x150**, row at x=45/225/405 (45px margins, 30px gaps), y=62-212.
+- **Buttons 150px wide**, same x positions, y=216-268, height recalculated to 52px to match the shared button texture's real aspect ratio.
+- **`docs/ASSET_MAP.md` updated** — icon rows now target 150x150.
+- **No automated tests were added, updated, touched, or run.** Manual verification in the Godot editor is expected for this stage.
+
+## Stage 65.19: Lose Continue Popup Icon/Button Row Shifted Down (20px Bottom Gap) v0.1
+
+Stage 65.19 shifts `LoseContinuePopup`'s (Stage 65.18) icon and button row down by 32px per follow-up request, so buttons sit exactly 20px above the window's bottom edge. No window size, icon/button dimensions, signals, gameplay wiring, continue logic, or duplicate guards changed — vertical repositioning only.
+
+- **Icons:** y=62-212 -> y=94-244 (still 150x150, x=45/225/405 unchanged).
+- **Buttons:** y=216-268 -> y=248-300 (still 150x52, x=45/225/405 unchanged); `button_bottom (300) = window_height (320) - 20px`.
+- **No automated tests were added, updated, touched, or run.** Manual verification in the Godot editor is expected for this stage.
