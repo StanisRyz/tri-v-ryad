@@ -8,7 +8,6 @@ const SHOP_PURCHASE_RESOLVER_SCRIPT := preload("res://scripts/game/shop/shop_pur
 const SHOP_PURCHASE_FORMATTER_SCRIPT := preload("res://scripts/game/shop/shop_purchase_formatter.gd")
 const SHOP_REWARD_TYPE_SCRIPT := preload("res://scripts/game/shop/shop_reward_type.gd")
 const SHOP_PURCHASE_KIND_SCRIPT := preload("res://scripts/game/shop/shop_purchase_kind.gd")
-const SHOP_PLATFORM_PURCHASE_HANDLER_SCRIPT := preload("res://scripts/game/shop/shop_platform_purchase_handler.gd")
 const CURRENCY_TYPE_SCRIPT := preload("res://scripts/game/economy/currency_type.gd")
 const BOOSTER_CATALOG_SCRIPT := preload("res://scripts/game/config/booster_catalog.gd")
 const ASSET_KEY_RESOLVER_SCRIPT := preload("res://scripts/game/config/asset_key_resolver.gd")
@@ -53,7 +52,7 @@ var _ad_offer_tile: ShopProductTile
 var _shop_ad_active := false
 var _shop_ad_rewarded := false
 var _shop_ad_item_id := ""
-var _shop_platform_purchase_handler
+var _purchase_coordinator
 var _payment_tiles: Dictionary = {}
 var _payment_catalog: Dictionary = {}
 var _payment_catalog_ready := false
@@ -63,7 +62,6 @@ var _pending_payment_product_id := ""
 
 func _ready() -> void:
 	_shop_catalog = SHOP_CATALOG_SCRIPT.new(get_node_or_null("/root/LocalizationManager"))
-	_shop_platform_purchase_handler = SHOP_PLATFORM_PURCHASE_HANDLER_SCRIPT.new(_shop_catalog, _progress_manager)
 	_bind_static_ui_assets()
 	back_button.delayed_pressed.connect(_on_back_button_delayed_pressed)
 	boosters_tab_button.pressed.connect(_on_boosters_tab_pressed)
@@ -117,10 +115,17 @@ func _apply_text_styles() -> void:
 
 func set_progress_manager(progress_manager) -> void:
 	_progress_manager = progress_manager
-	if _shop_platform_purchase_handler != null:
-		_shop_platform_purchase_handler.set_progress_manager(progress_manager)
 	if is_inside_tree():
 		_refresh_wallet()
+
+
+## Stage 69.3.1: PlatformPurchaseCoordinator is the single owner of the
+## payment_purchase_success/cancelled/error and payment_consume_success/error
+## lifecycle — ShopScreen only starts a purchase and reacts to the
+## coordinator's UI-facing signals (see _connect_purchase_coordinator_signals()).
+func set_purchase_coordinator(purchase_coordinator) -> void:
+	_purchase_coordinator = purchase_coordinator
+	_connect_purchase_coordinator_signals()
 
 
 func refresh_progress_state() -> void:
@@ -438,11 +443,14 @@ func _localized_ad_feedback(key: String, fallback_text: String) -> String:
 	return localization_manager.tr_key(key)
 
 
-## Stage 69.3: connects Platform's payment catalog/purchase signals and
-## kicks off a catalog load. Must run after _build_offers_content() etc. so
-## _payment_tiles is already populated — LocalDebugPlatform/YandexBridge can
-## both emit payment_catalog_loaded synchronously from inside
+## Stage 69.3: connects Platform's payment catalog/purchase-started signals
+## and kicks off a catalog load. Must run after _build_offers_content() etc.
+## so _payment_tiles is already populated — LocalDebugPlatform/YandexBridge
+## can both emit payment_catalog_loaded synchronously from inside
 ## load_payment_catalog(), so the signal has to already be connected first.
+## Stage 69.3.1: payment_purchase_success/cancelled/error are no longer
+## connected here — PlatformPurchaseCoordinator owns those (and the
+## grant/consume logic behind them); see _connect_purchase_coordinator_signals().
 func _connect_platform_payment_signals() -> void:
 	var platform := get_node_or_null("/root/Platform")
 	if platform == null:
@@ -453,12 +461,6 @@ func _connect_platform_payment_signals() -> void:
 		platform.payment_catalog_error.connect(_on_platform_payment_catalog_error)
 	if not platform.payment_purchase_started.is_connected(_on_platform_payment_purchase_started):
 		platform.payment_purchase_started.connect(_on_platform_payment_purchase_started)
-	if not platform.payment_purchase_success.is_connected(_on_platform_payment_purchase_success):
-		platform.payment_purchase_success.connect(_on_platform_payment_purchase_success)
-	if not platform.payment_purchase_cancelled.is_connected(_on_platform_payment_purchase_cancelled):
-		platform.payment_purchase_cancelled.connect(_on_platform_payment_purchase_cancelled)
-	if not platform.payment_purchase_error.is_connected(_on_platform_payment_purchase_error):
-		platform.payment_purchase_error.connect(_on_platform_payment_purchase_error)
 	platform.load_payment_catalog()
 
 
@@ -513,9 +515,10 @@ func _refresh_payment_tile(item_id: String) -> void:
 	tile.set_buy_enabled(true)
 
 
-## Stage 69.3 v0.1: routes an external-payment tile's buy press to
-## Platform.purchase_product(). Rewards are only ever granted from
-## _on_platform_payment_purchase_success(), never from here.
+## Stage 69.3.1 v0.1: routes an external-payment tile's buy press to
+## Platform.purchase_product(), after telling the coordinator this item_id is
+## the one whose UI-facing signals should fire. Rewards are only ever
+## granted inside PlatformPurchaseCoordinator/ProgressManager, never here.
 func _start_payment_purchase(item_id: String) -> void:
 	var item = _shop_catalog.get_item(item_id) if _shop_catalog != null else null
 	if item == null:
@@ -534,6 +537,8 @@ func _start_payment_purchase(item_id: String) -> void:
 
 	_pending_payment_item_id = item_id
 	_pending_payment_product_id = platform_product_id
+	if _purchase_coordinator != null:
+		_purchase_coordinator.start_foreground_purchase(item_id)
 	platform.purchase_product(platform_product_id, item_id)
 
 
@@ -544,69 +549,75 @@ func _on_platform_payment_purchase_started(product_id: String) -> void:
 	feedback_label.text = _localized_payment_feedback("ui.shop.feedback.purchase_started", "Purchase started")
 
 
-## Grant order per Stage 69.3: purchase success -> grant rewards -> save
-## progress -> consume purchase. ShopPlatformPurchaseHandler.grant_purchase()
-## does the grant+save (through the existing ProgressManager APIs) and marks
-## the token processed; consume_purchase() is only called after that
-## succeeds, and never at all if it fails, so a failed grant leaves the
-## purchase unconsumed and recoverable via check_unprocessed_purchases().
-func _on_platform_payment_purchase_success(product_id: String, purchase_token: String) -> void:
-	var item_id := _pending_payment_item_id if product_id == _pending_payment_product_id else _find_item_id_by_platform_product_id(product_id)
-	_clear_pending_payment()
-
-	if item_id == "":
+## Stage 69.3.1: connects to PlatformPurchaseCoordinator's UI-facing signals
+## instead of Platform's raw payment_purchase_success/cancelled/error — the
+## coordinator already filtered these to "belongs to the item this screen is
+## actively waiting on" (see start_foreground_purchase() above), so no
+## product_id matching is needed here anymore.
+func _connect_purchase_coordinator_signals() -> void:
+	if _purchase_coordinator == null:
 		return
+	if not _purchase_coordinator.purchase_reward_granted.is_connected(_on_purchase_reward_granted):
+		_purchase_coordinator.purchase_reward_granted.connect(_on_purchase_reward_granted)
+	if not _purchase_coordinator.purchase_already_granted.is_connected(_on_purchase_already_granted):
+		_purchase_coordinator.purchase_already_granted.connect(_on_purchase_already_granted)
+	if not _purchase_coordinator.purchase_consume_pending.is_connected(_on_purchase_consume_pending):
+		_purchase_coordinator.purchase_consume_pending.connect(_on_purchase_consume_pending)
+	if not _purchase_coordinator.purchase_completed.is_connected(_on_purchase_completed):
+		_purchase_coordinator.purchase_completed.connect(_on_purchase_completed)
+	if not _purchase_coordinator.purchase_cancelled.is_connected(_on_purchase_cancelled):
+		_purchase_coordinator.purchase_cancelled.connect(_on_purchase_cancelled)
+	if not _purchase_coordinator.purchase_failed.is_connected(_on_purchase_failed):
+		_purchase_coordinator.purchase_failed.connect(_on_purchase_failed)
 
-	if _shop_platform_purchase_handler == null:
-		feedback_label.text = _localized_payment_feedback("ui.shop.feedback.purchase_error", "Purchase error")
-		_set_payment_tile_enabled(item_id, true)
+
+func _on_purchase_reward_granted(item_id: String) -> void:
+	if item_id != _pending_payment_item_id:
 		return
-
-	if _progress_manager != null and _progress_manager.has_processed_purchase_token(purchase_token):
-		_set_payment_tile_enabled(item_id, true)
-		return
-
-	var granted: bool = _shop_platform_purchase_handler.grant_purchase(item_id, purchase_token)
-	if not granted:
-		feedback_label.text = _localized_payment_feedback("ui.shop.feedback.purchase_error", "Purchase error")
-		_set_payment_tile_enabled(item_id, true)
-		return
-
 	_refresh_wallet()
 	_play_purchase_result_sfx(true)
 	feedback_label.text = _localized_payment_feedback("ui.shop.feedback.purchase_success", "Purchased!")
+
+
+func _on_purchase_already_granted(item_id: String) -> void:
+	if item_id != _pending_payment_item_id:
+		return
+	_refresh_wallet()
+	feedback_label.text = _localized_payment_feedback("ui.shop.feedback.purchase_restored", "Purchase restored")
+
+
+## The reward is already granted and saved by the time this fires (see
+## PlatformPurchaseCoordinator._handle_grant_result()) — consuming the
+## purchase with the SDK is a background bookkeeping step from here on, so
+## the tile unlocks now rather than waiting for purchase_completed, which may
+## not arrive this session if consume fails (it gets retried on next launch).
+func _on_purchase_consume_pending(item_id: String) -> void:
+	if item_id != _pending_payment_item_id:
+		return
+	_clear_pending_payment()
 	_set_payment_tile_enabled(item_id, true)
 
-	var platform := get_node_or_null("/root/Platform")
-	if platform != null:
-		platform.consume_purchase(purchase_token)
+
+func _on_purchase_completed(_item_id: String) -> void:
+	pass
 
 
-func _on_platform_payment_purchase_cancelled(product_id: String) -> void:
-	if product_id != _pending_payment_product_id:
+func _on_purchase_cancelled(item_id: String) -> void:
+	if item_id != _pending_payment_item_id:
 		return
-	var item_id := _pending_payment_item_id
 	_clear_pending_payment()
 	_set_payment_tile_enabled(item_id, true)
 	feedback_label.text = _localized_payment_feedback("ui.shop.feedback.purchase_cancelled", "Purchase cancelled")
 	_play_purchase_result_sfx(false)
 
 
-func _on_platform_payment_purchase_error(product_id: String, _message: String) -> void:
-	if product_id != _pending_payment_product_id:
+func _on_purchase_failed(item_id: String, _message: String) -> void:
+	if item_id != _pending_payment_item_id:
 		return
-	var item_id := _pending_payment_item_id
 	_clear_pending_payment()
 	_set_payment_tile_enabled(item_id, true)
 	feedback_label.text = _localized_payment_feedback("ui.shop.feedback.purchase_error", "Purchase error")
 	_play_purchase_result_sfx(false)
-
-
-func _find_item_id_by_platform_product_id(platform_product_id: String) -> String:
-	if _shop_catalog == null:
-		return ""
-	var item = _shop_catalog.get_item_by_platform_product_id(PLATFORM_KEY_YANDEX, platform_product_id)
-	return item.item_id if item != null else ""
 
 
 func _clear_pending_payment() -> void:

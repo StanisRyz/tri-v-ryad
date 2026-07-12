@@ -20,6 +20,7 @@ var gold := 0
 var gems := 0
 var booster_inventory: Dictionary = {}
 var processed_purchase_tokens: Dictionary = {}
+var pending_consume_tokens: Dictionary = {}
 
 ## Stage 69.3: caps how many processed Yandex purchase tokens are kept, so
 ## save data can't grow unbounded over a long play history. Oldest tokens
@@ -200,6 +201,43 @@ func mark_processed_purchase_token(token: String) -> void:
 		processed_purchase_tokens.erase(processed_purchase_tokens.keys()[0])
 
 
+## Stage 69.3.1: tokens whose reward has already been granted/saved but whose
+## Platform.consume_purchase() has not yet succeeded. Never capped/trimmed —
+## unlike processed_purchase_tokens, losing one of these would leave a real
+## purchase permanently unconfirmed with the Yandex SDK.
+func has_pending_consume_token(token: String) -> bool:
+	if token == "":
+		return false
+	return pending_consume_tokens.has(token)
+
+
+func add_pending_consume_token(token: String, product_id: String, item_id: String) -> void:
+	if token == "":
+		return
+	pending_consume_tokens[token] = {"product_id": product_id, "item_id": item_id}
+
+
+func remove_pending_consume_token(token: String) -> void:
+	if token == "":
+		return
+	pending_consume_tokens.erase(token)
+
+
+func get_pending_consume_tokens() -> Dictionary:
+	return pending_consume_tokens.duplicate(true)
+
+
+## Stage 69.3.1: an isolated, fully independent copy for atomic transactions
+## (see ProgressManager.apply_platform_purchase_atomic()) — mutating the
+## copy and only replacing the live progress after a successful save can
+## never leave a partially-applied purchase behind. Routed through
+## to_dictionary()/from_dictionary() (rather than a manual field-by-field
+## copy) so every nested Dictionary/Array/state object is freshly
+## reconstructed, not shared by reference with the original.
+func duplicate_progress() -> PlayerProgress:
+	return load(SCRIPT_PATH).from_dictionary(to_dictionary())
+
+
 func get_economy_debug_summary() -> String:
 	var parts: Array[String] = []
 	parts.append("gold=%d" % gold)
@@ -237,6 +275,7 @@ func to_dictionary() -> Dictionary:
 		},
 		"booster_inventory": booster_inventory.duplicate(),
 		"processed_purchase_tokens": processed_purchase_tokens.keys(),
+		"pending_consume_tokens": pending_consume_tokens.duplicate(true),
 	}
 
 
@@ -297,6 +336,18 @@ static func from_dictionary(data: Dictionary) -> PlayerProgress:
 			var token_string := str(token)
 			if token_string != "":
 				progress.processed_purchase_tokens[token_string] = true
+
+	progress.pending_consume_tokens = {}
+	var raw_pending_tokens = data.get("pending_consume_tokens", {})
+	if raw_pending_tokens is Dictionary:
+		for token in raw_pending_tokens.keys():
+			var token_string := str(token)
+			var entry = raw_pending_tokens[token]
+			if token_string != "" and entry is Dictionary:
+				progress.pending_consume_tokens[token_string] = {
+					"product_id": str(entry.get("product_id", "")),
+					"item_id": str(entry.get("item_id", "")),
+				}
 
 	return progress
 

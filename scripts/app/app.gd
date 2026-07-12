@@ -12,8 +12,7 @@ const SETTINGS_MANAGER_SCRIPT := preload("res://scripts/game/settings/settings_m
 const LEVEL_CATALOG_SCRIPT := preload("res://scripts/game/config/level_catalog.gd")
 const PLAY_LEVEL_RESOLVER_SCRIPT := preload("res://scripts/game/progression/play_level_resolver.gd")
 const SHOP_CATALOG_SCRIPT := preload("res://scripts/game/shop/shop_catalog.gd")
-const SHOP_PLATFORM_PURCHASE_HANDLER_SCRIPT := preload("res://scripts/game/shop/shop_platform_purchase_handler.gd")
-const PLATFORM_KEY_YANDEX := "yandex"
+const PLATFORM_PURCHASE_COORDINATOR_SCRIPT := preload("res://scripts/game/shop/platform_purchase_coordinator.gd")
 
 @onready var screen_host: Control = %ScreenHost
 
@@ -24,7 +23,7 @@ var _level_catalog
 var _play_level_resolver
 var _settings_return_screen := "main_menu"
 var _shop_catalog
-var _shop_platform_purchase_handler
+var _purchase_coordinator
 
 
 func _ready() -> void:
@@ -36,7 +35,7 @@ func _ready() -> void:
 	_level_catalog = LEVEL_CATALOG_SCRIPT.new()
 	_play_level_resolver = PLAY_LEVEL_RESOLVER_SCRIPT.new()
 	_shop_catalog = SHOP_CATALOG_SCRIPT.new(get_node_or_null("/root/LocalizationManager"))
-	_shop_platform_purchase_handler = SHOP_PLATFORM_PURCHASE_HANDLER_SCRIPT.new(_shop_catalog, _progress_manager)
+	_purchase_coordinator = PLATFORM_PURCHASE_COORDINATOR_SCRIPT.new(_shop_catalog, _progress_manager)
 	_apply_audio_settings()
 	_show_main_menu()
 	_bootstrap_platform()
@@ -48,45 +47,21 @@ func _ready() -> void:
 ## first screen is up. Platform itself re-syncs the language whenever the
 ## Yandex SDK becomes ready, since its language is only known once
 ## window.ysdk.environment exists.
-## Stage 69.3: also wires up unprocessed-purchase restoration (see
-## _connect_unprocessed_purchase_signals()) so a purchase completed but never
-## consumed (app closed mid-flow, ShopScreen never reopened, etc.) is still
-## granted and consumed even if the player never opens the shop again.
+## Stage 69.3.1: connects PlatformPurchaseCoordinator to Platform once (it
+## owns payment_purchase_success/cancelled/error, payment_consume_success/
+## error, and unprocessed_purchase_found — App no longer contains any direct
+## reward/consume logic), starts the unprocessed-purchase check, and retries
+## any purchase token still recorded as granted-but-unconfirmed from a
+## previous session.
 func _bootstrap_platform() -> void:
 	var platform := get_node_or_null("/root/Platform")
 	if platform == null:
 		return
 	platform.sync_language_to_localization()
 	platform.game_ready()
-	_connect_unprocessed_purchase_signals(platform)
+	_purchase_coordinator.connect_platform(platform)
 	platform.check_unprocessed_purchases()
-
-
-func _connect_unprocessed_purchase_signals(platform) -> void:
-	if not platform.unprocessed_purchase_found.is_connected(_on_unprocessed_purchase_found):
-		platform.unprocessed_purchase_found.connect(_on_unprocessed_purchase_found)
-
-
-## Grant order matches ShopScreen's foreground flow: grant rewards + save
-## progress (ShopPlatformPurchaseHandler.grant_purchase(), which also skips
-## an already-processed token) before consuming the token, and never
-## consumes at all if the grant fails. No UI feedback here by design — this
-## runs whether or not the player ever opens the shop.
-func _on_unprocessed_purchase_found(product_id: String, purchase_token: String) -> void:
-	if _shop_catalog == null or _shop_platform_purchase_handler == null:
-		return
-
-	var item = _shop_catalog.get_item_by_platform_product_id(PLATFORM_KEY_YANDEX, product_id)
-	if item == null:
-		return
-
-	var granted: bool = _shop_platform_purchase_handler.grant_purchase(item.item_id, purchase_token)
-	if not granted:
-		return
-
-	var platform := get_node_or_null("/root/Platform")
-	if platform != null:
-		platform.consume_purchase(purchase_token)
+	_purchase_coordinator.retry_pending_consume_tokens()
 
 
 func _show_main_menu() -> void:
@@ -119,6 +94,8 @@ func _show_shop_screen() -> void:
 	var screen := _router.change_screen(SHOP_SCREEN)
 	if screen.has_method("set_progress_manager"):
 		screen.set_progress_manager(_progress_manager)
+	if screen.has_method("set_purchase_coordinator"):
+		screen.set_purchase_coordinator(_purchase_coordinator)
 	if screen.has_method("refresh_progress_state"):
 		screen.refresh_progress_state()
 	screen.back_pressed.connect(_on_shop_back_pressed)

@@ -10,6 +10,15 @@ const HERO_CATALOG_SCRIPT := preload("res://scripts/game/config/hero_catalog.gd"
 const TEAM_SELECTION_RESOLVER_SCRIPT := preload("res://scripts/game/progression/team_selection_resolver.gd")
 const TEAM_SELECTION_STATE_SCRIPT := preload("res://scripts/game/progression/team_selection_state.gd")
 const LEVEL_LABEL_FORMATTER_SCRIPT := preload("res://scripts/game/config/level_label_formatter.gd")
+const SHOP_REWARD_TYPE_SCRIPT := preload("res://scripts/game/shop/shop_reward_type.gd")
+
+## Stage 69.3.1: apply_platform_purchase_atomic() result statuses.
+const PURCHASE_STATUS_GRANTED := "granted"
+const PURCHASE_STATUS_ALREADY_GRANTED := "already_granted"
+const PURCHASE_STATUS_INVALID_TOKEN := "invalid_token"
+const PURCHASE_STATUS_INVALID_ITEM := "invalid_item"
+const PURCHASE_STATUS_INVALID_REWARD := "invalid_reward"
+const PURCHASE_STATUS_SAVE_FAILED := "save_failed"
 
 var save_manager
 var progress
@@ -295,6 +304,84 @@ func mark_processed_purchase_token(token: String) -> void:
 		return
 	progress.mark_processed_purchase_token(token)
 	save()
+
+
+func get_pending_consume_tokens() -> Dictionary:
+	return progress.get_pending_consume_tokens() if progress != null else {}
+
+
+## Stage 69.3.1: removes a token once Platform.consume_purchase() actually
+## succeeded for it (the caller, PlatformPurchaseCoordinator, is responsible
+## for only calling this after payment_consume_success). Saves once.
+func remove_pending_consume_token(token: String) -> bool:
+	if progress == null or not progress.has_pending_consume_token(token):
+		return false
+	progress.remove_pending_consume_token(token)
+	return save()
+
+
+## Stage 69.3.1: the single entry point for granting a paid shop item's
+## rewards. Either everything (every reward + processed-token mark +
+## pending-consume record) lands in one save(), or nothing changes at all —
+## see PlayerProgress.duplicate_progress(). Never uses add_currency()/
+## add_booster() here, since those each save independently and could leave a
+## purchase half-applied if a later reward or the save itself failed.
+##
+## Returns {"status", "item_id", "purchase_token", "platform_product_id"}.
+## Callers (PlatformPurchaseCoordinator) must only request
+## Platform.consume_purchase() when status is "granted" or "already_granted".
+func apply_platform_purchase_atomic(item, purchase_token: String, platform_product_id: String) -> Dictionary:
+	var result := {
+		"status": PURCHASE_STATUS_INVALID_ITEM,
+		"item_id": item.item_id if item != null else "",
+		"purchase_token": purchase_token,
+		"platform_product_id": platform_product_id,
+	}
+
+	if item == null or progress == null:
+		result["status"] = PURCHASE_STATUS_INVALID_ITEM
+		return result
+
+	if purchase_token == "":
+		result["status"] = PURCHASE_STATUS_INVALID_TOKEN
+		return result
+
+	if progress.has_processed_purchase_token(purchase_token):
+		# Already granted earlier. Keep it tracked for a consume retry in case
+		# the original attempt recorded the grant but never got a consume
+		# success (e.g. app closed between the atomic save and the consume
+		# call finishing) — never re-applies any reward.
+		if not progress.has_pending_consume_token(purchase_token):
+			progress.add_pending_consume_token(purchase_token, platform_product_id, item.item_id)
+			save()
+		result["status"] = PURCHASE_STATUS_ALREADY_GRANTED
+		return result
+
+	if item.rewards.is_empty():
+		result["status"] = PURCHASE_STATUS_INVALID_REWARD
+		return result
+	for reward in item.rewards:
+		if not SHOP_REWARD_TYPE_SCRIPT.is_valid(reward):
+			result["status"] = PURCHASE_STATUS_INVALID_REWARD
+			return result
+
+	var candidate: PlayerProgress = progress.duplicate_progress()
+	for reward in item.rewards:
+		match str(reward.get("type", "")):
+			SHOP_REWARD_TYPE_SCRIPT.CURRENCY:
+				candidate.add_currency(str(reward.get("currency_id", "")), int(reward.get("amount", 0)))
+			SHOP_REWARD_TYPE_SCRIPT.BOOSTER:
+				candidate.add_booster(str(reward.get("booster_id", "")), int(reward.get("amount", 0)))
+	candidate.mark_processed_purchase_token(purchase_token)
+	candidate.add_pending_consume_token(purchase_token, platform_product_id, item.item_id)
+
+	if not save_manager.save_progress(candidate):
+		result["status"] = PURCHASE_STATUS_SAVE_FAILED
+		return result
+
+	progress = candidate
+	result["status"] = PURCHASE_STATUS_GRANTED
+	return result
 
 
 func get_economy_debug_summary() -> String:

@@ -212,6 +212,8 @@ Signals: `payment_purchase_started(product_id)`,
 `payment_purchase_success(product_id, purchase_token)`,
 `payment_purchase_cancelled(product_id)`,
 `payment_purchase_error(product_id, message)`,
+`payment_consume_success(purchase_token)` (Stage 69.3.1),
+`payment_consume_error(purchase_token, message)` (Stage 69.3.1),
 `payment_catalog_loaded(products)`, `payment_catalog_error(message)`,
 `unprocessed_purchase_found(product_id, purchase_token)`,
 `unprocessed_purchase_check_completed`,
@@ -276,56 +278,144 @@ only ever shows text that came from the catalog.
 `YandexBridge`/`JavaScriptBridge` directly. `payment_purchase_started`
 locks that tile's button and shows localized "purchase started" feedback.
 
-**Grant order on `payment_purchase_success(product_id, purchase_token)`:**
-grant rewards → save progress → consume purchase — enforced by new
-`res://scripts/game/shop/shop_platform_purchase_handler.gd`
-(`ShopPlatformPurchaseHandler`, deliberately independent of `ShopScreen`'s
-UI so `App` can reuse it too). Its `grant_purchase(item_id, purchase_token)`
-looks up the local item, applies every currency/booster reward through the
-existing `ProgressManager.add_currency()`/`add_booster()` APIs (which each
-save), marks the token processed, and returns `true` only if it actually
-granted something. `ShopScreen` calls `Platform.consume_purchase()` **only**
-if `grant_purchase()` returned `true` — a failed grant leaves the token
-unconsumed so it can be recovered later via `check_unprocessed_purchases()`,
-and shows "purchase error" feedback instead. Success shows localized
-"Purchased!" feedback, refreshes the wallet, and plays the existing
-purchase-success sound.
-
-**Duplicate-grant protection.** `PlayerProgress` gained a
-`processed_purchase_tokens` set (capped at 500 oldest-first, persisted in
-the save file) with `has_processed_purchase_token(token)`/
-`mark_processed_purchase_token(token)`, wrapped on `ProgressManager`.
-`grant_purchase()` checks this before granting anything, so the same
-`purchase_token` can never grant twice — whether it arrives twice from a
-live `payment_purchase_success`, or once live and once later from an
-unprocessed-purchase restore.
-
-**Cancel/error handling.** `payment_purchase_cancelled`/`payment_purchase_error`
-never grant anything or consume anything; they just re-enable the tile and
-show localized "cancelled"/"error" feedback. All four purchase-lifecycle
-handlers ignore a `product_id` that doesn't match the screen's own pending
-purchase, the same no-cross-leakage pattern Stage 69.2 established for ads.
-
-**Unprocessed purchase restoration.** `app.gd` now builds its own
-`ShopCatalog`/`ShopPlatformPurchaseHandler` pair at startup, connects
-`Platform.unprocessed_purchase_found`, and calls
-`Platform.check_unprocessed_purchases()` right after `game_ready()` — so a
-purchase that completed but was never consumed (app closed mid-flow,
-`ShopScreen` never reopened) still gets granted, saved, and consumed the
-next time the app starts, with no shop UI involved and no noisy feedback.
+**Grant/consume orchestration** for `payment_purchase_success` and
+`unprocessed_purchase_found` was fully reworked in Stage 69.3.1 (below) —
+see that section for the current atomic grant, consume-tracking, and
+retry design. The original Stage 69.3 implementation (a `ShopPlatformPurchaseHandler`
+calling `ProgressManager.add_currency()`/`add_booster()` per-reward, each
+saving independently) has been replaced.
 
 **Local booster purchases are completely untouched** — they still go
 through `ShopPurchaseResolver`/`CURRENCY` purchase kind, no `Platform` call,
 no catalog dependency, no platform product id.
 
-**`LocalDebugPlatform`** exposes a small `MOCK_CATALOG_PRODUCT_IDS` mock
-catalog (placeholder `"Debug"` price text, never real money) that only
-populates when `debug_purchases_enabled` is explicitly set to `true` on the
-instance; with it `false` (the default), every external-payment tile stays
-disabled/"not available" exactly like before this stage. When enabled,
-`purchase_product()` still emits the same `payment_purchase_started`/
-`payment_purchase_success` signals a real Yandex purchase would, so it
-exercises the exact same grant → save → consume path as a real purchase.
+## Payment reliability and atomic grant (Stage 69.3.1)
+
+Stage 69.3 could, in principle, leave a purchase half-applied: a bundle's
+five rewards were each granted (and saved) through separate
+`ProgressManager.add_currency()`/`add_booster()` calls, and the processed-token
+mark was a further save after that — an interrupted app or a mid-sequence
+save failure could grant some rewards but not others, or grant rewards
+without ever marking the token processed (risking a duplicate grant later).
+Stage 69.3.1 makes the whole grant atomic and makes consume failures
+recoverable without ever re-granting.
+
+**Atomic grant: candidate copy, one save, replace-on-success.** New
+`ProgressManager.apply_platform_purchase_atomic(item, purchase_token,
+platform_product_id) -> Dictionary` is now the single entry point for
+granting a paid item's rewards:
+
+1. Validate the item, token, and every reward *before* touching anything.
+2. If the token is already processed, just make sure it's tracked in
+   `pending_consume_tokens` (for a consume retry) and return
+   `"already_granted"` — no reward is ever re-applied.
+3. Otherwise, build an isolated copy of the live progress
+   (`PlayerProgress.duplicate_progress()`, routed through
+   `to_dictionary()`/`from_dictionary()` so nothing is shared by reference
+   with the original), apply every reward to *that copy*, mark the token
+   processed on the copy, and record it in the copy's
+   `pending_consume_tokens`.
+4. Save the copy once (`SaveManager.save_progress()`). Only if that save
+   succeeds does `progress = candidate` replace the live progress. If it
+   fails, the live progress is completely untouched and the result status
+   is `"save_failed"`.
+
+Result statuses: `granted`, `already_granted`, `invalid_token`,
+`invalid_item`, `invalid_reward`, `save_failed`. A paid item's rewards can
+never be partially saved — either the whole candidate (every reward +
+processed mark + pending-consume record) commits in one `save()`, or the
+live progress doesn't change at all.
+
+**Processed vs. pending-consume token state.** `PlayerProgress` now tracks
+two related but distinct token sets:
+
+- `processed_purchase_tokens` (unchanged from Stage 69.3, capped at 500
+  oldest-first) — "this token's reward has been granted, ever."
+- `pending_consume_tokens: Dictionary` (token → `{"product_id", "item_id"}`,
+  **never capped** — losing an entry here would leave a real purchase
+  permanently unconfirmed with the SDK) — "this token's reward was granted
+  but `Platform.consume_purchase()` hasn't succeeded for it yet." New
+  `PlayerProgress`/`ProgressManager` methods: `has_pending_consume_token()`,
+  `add_pending_consume_token()`, `remove_pending_consume_token()`,
+  `get_pending_consume_tokens()`. Both sets serialize into the save file;
+  an old save without `pending_consume_tokens` loads with an empty
+  Dictionary — no version bump needed, matching how `processed_purchase_tokens`
+  was added in Stage 69.3.
+
+**`payment_consume_success(purchase_token)`/`payment_consume_error(purchase_token,
+message)`** are new signals on `PlatformServices`/`Platform`/`WebYandexPlatform`/
+`LocalDebugPlatform`/`YandexBridge`. `YandexBridge.consume_purchase()` now
+keeps JS callbacks referenced, calls `payments.consumePurchase(token)`, and
+only emits success once the promise actually resolves — a rejection (or a
+thrown/missing `getPayments()`) emits `payment_consume_error` with the
+underlying message instead of being silently swallowed; an empty token is
+rejected immediately with `"invalid_token"`. `LocalDebugPlatform.consume_purchase()`
+simulates success by default, with an opt-in `debug_consume_should_fail`
+flag (default `false`) for manually exercising the retry path.
+
+**New `res://scripts/game/shop/platform_purchase_coordinator.gd`
+(`PlatformPurchaseCoordinator`)** is now the single owner of
+`payment_purchase_success`/`cancelled`/`error`, `payment_consume_success`/`error`,
+and `unprocessed_purchase_found`. Neither `ShopScreen` nor `App` grant
+rewards, mark tokens, or call `Platform.consume_purchase()` directly
+anymore — `ShopPlatformPurchaseHandler` was deleted.
+
+- **Live purchase** (`payment_purchase_success`): resolves the local item
+  via `ShopCatalog.get_item_by_platform_product_id("yandex", product_id)`,
+  calls `apply_platform_purchase_atomic()`, and on `granted`/`already_granted`
+  requests `Platform.consume_purchase(token)` — never on any other status.
+- **Restored purchase** (`unprocessed_purchase_found`): identical atomic-grant
+  call. An unknown product id (no local item maps to it) is never granted or
+  consumed — it's simply ignored.
+- **Already-granted retry:** when `apply_platform_purchase_atomic()` returns
+  `"already_granted"` (the token was processed by an earlier attempt whose
+  consume never confirmed), the coordinator requests consume again but
+  applies zero rewards — an already-granted purchase can never grant twice,
+  only its consume gets retried.
+- **UI-facing signals** (`purchase_reward_granted`, `purchase_already_granted`,
+  `purchase_cancelled`, `purchase_failed`, `purchase_consume_pending`,
+  `purchase_completed`) only fire for the item a screen marked via
+  `start_foreground_purchase(item_id)` right before calling
+  `Platform.purchase_product()` — a restored/background purchase (or one for
+  a different item) never surfaces UI feedback, matching "ShopScreen shows
+  feedback only for active foreground purchases."
+
+**Retry rules.** `App._bootstrap_platform()` calls
+`PlatformPurchaseCoordinator.retry_pending_consume_tokens()` once, right
+after `Platform.check_unprocessed_purchases()`, attempting every token still
+in `pending_consume_tokens` from a previous session. A `_consume_in_flight`
+set dedupes concurrent requests for the same token within one session (so
+neither the startup retry nor a same-session `unprocessed_purchase_found`
+for the same token can double-request consume); on `payment_consume_error`
+the token simply stays pending, picked up again on the next launch or the
+next `check_unprocessed_purchases()` scan. On `payment_consume_success` the
+token is removed from `pending_consume_tokens` (one `save()`), and
+`purchase_completed(item_id)` fires if that purchase still belongs to the
+active foreground item.
+
+**`ShopScreen` simplification.** It now only: loads/displays the payment
+catalog, starts a purchase (`Platform.purchase_product()`, after telling the
+coordinator which item is foreground), locks/unlocks the clicked tile, shows
+localized feedback, refreshes the wallet, and plays purchase audio — driven
+entirely by `PlatformPurchaseCoordinator`'s signals via a `set_purchase_coordinator()`
+setter (`App` passes its one coordinator instance in when showing the shop
+screen). It never applies rewards, marks tokens, or calls
+`Platform.consume_purchase()`.
+
+**`App` simplification.** Builds one `ShopCatalog`/`PlatformPurchaseCoordinator`
+pair at startup, calls `coordinator.connect_platform(platform)` once in
+`_bootstrap_platform()`, then `Platform.check_unprocessed_purchases()` and
+`coordinator.retry_pending_consume_tokens()`. `App` no longer contains any
+reward-granting or consume logic itself.
+
+**New localization keys** (en/ru): `ui.shop.feedback.purchase_finalizing`,
+`ui.shop.feedback.purchase_pending_confirmation`,
+`ui.shop.feedback.purchase_retry_later` (the existing `ui.shop.feedback.consume_error`
+from Stage 69.3 covers the same "could not finalize" state) — regenerated
+into `localization_data.gd`.
+
+Cloud save remains unimplemented — this stage is purely about local-save
+purchase reliability.
 
 ## Web SDK shell requirements
 
@@ -356,7 +446,7 @@ up to 20 seconds after its own `_ready()`, so the SDK script tag should be
 loaded as early as possible in the page, ahead of the Godot canvas/engine
 script.
 
-## What is explicitly NOT done as of Stage 69.3
+## What is explicitly NOT done as of Stage 69.3.1
 
 - No cloud save flow — only placeholder signals/methods exist on
   `PlatformServices` for a future stage to implement.

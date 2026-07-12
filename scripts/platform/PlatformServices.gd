@@ -24,6 +24,8 @@ signal payment_purchase_started(product_id: String)
 signal payment_purchase_success(product_id: String, purchase_token: String)
 signal payment_purchase_cancelled(product_id: String)
 signal payment_purchase_error(product_id: String, message: String)
+signal payment_consume_success(purchase_token: String)
+signal payment_consume_error(purchase_token: String, message: String)
 signal payment_catalog_loaded(products: Array)
 signal payment_catalog_error(message: String)
 signal unprocessed_purchase_found(product_id: String, purchase_token: String)
@@ -75,8 +77,8 @@ func purchase_product(platform_product_id: String, _local_product_id: String = "
 	payment_purchase_error.emit(platform_product_id, "not_supported")
 
 
-func consume_purchase(_purchase_token: String) -> void:
-	pass
+func consume_purchase(purchase_token: String) -> void:
+	payment_consume_error.emit(purchase_token, "not_supported")
 
 
 func check_unprocessed_purchases() -> void:

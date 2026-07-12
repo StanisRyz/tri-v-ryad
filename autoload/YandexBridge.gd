@@ -24,6 +24,8 @@ signal payment_purchase_started(product_id: String)
 signal payment_purchase_success(product_id: String, purchase_token: String)
 signal payment_purchase_cancelled(product_id: String)
 signal payment_purchase_error(product_id: String, message: String)
+signal payment_consume_success(purchase_token: String)
+signal payment_consume_error(purchase_token: String, message: String)
 signal payment_catalog_loaded(products: Array)
 signal payment_catalog_error(message: String)
 signal unprocessed_purchase_found(product_id: String, purchase_token: String)
@@ -60,6 +62,8 @@ var _cb_fullscreen_close: JavaScriptObject
 var _cb_fullscreen_error: JavaScriptObject
 var _cb_purchase_success: JavaScriptObject
 var _cb_purchase_error: JavaScriptObject
+var _cb_consume_success: JavaScriptObject
+var _cb_consume_error: JavaScriptObject
 var _cb_catalog_success: JavaScriptObject
 var _cb_catalog_error: JavaScriptObject
 var _cb_unprocessed_found: JavaScriptObject
@@ -363,11 +367,31 @@ func _on_purchase_error(args: Array) -> void:
 
 
 func consume_purchase(purchase_token: String) -> void:
-	if not _is_web or not _sdk_ready or purchase_token == "":
+	if purchase_token == "":
+		payment_consume_error.emit(purchase_token, "invalid_token")
 		return
+	if not _is_web or not _sdk_ready:
+		payment_consume_error.emit(purchase_token, "sdk_not_ready")
+		return
+	_cb_consume_success = JavaScriptBridge.create_callback(_on_consume_success)
+	_cb_consume_error = JavaScriptBridge.create_callback(_on_consume_error)
+	var window := JavaScriptBridge.get_interface("window")
+	window.__godot_consume_success = _cb_consume_success
+	window.__godot_consume_error = _cb_consume_error
 	var escaped_token := purchase_token.replace("'", "")
-	var js := "try { window.ysdk.getPayments().then(function(payments){ payments.consumePurchase('%s'); }).catch(function(e){}); } catch (e) {}" % [escaped_token]
+	var js := "try { window.ysdk.getPayments().then(function(payments){ return payments.consumePurchase('%s'); }).then(function(){ window.__godot_consume_success('%s'); }).catch(function(e){ window.__godot_consume_error('%s', String(e)); }); } catch (e) { window.__godot_consume_error('%s', String(e)); }" % [escaped_token, escaped_token, escaped_token, escaped_token]
 	_eval_js(js)
+
+
+func _on_consume_success(args: Array) -> void:
+	var token := _to_string_safe(args[0]) if args.size() > 0 else ""
+	payment_consume_success.emit(token)
+
+
+func _on_consume_error(args: Array) -> void:
+	var token := _to_string_safe(args[0]) if args.size() > 0 else ""
+	var message := _to_string_safe(args[1]) if args.size() > 1 else "unknown_error"
+	payment_consume_error.emit(token, message)
 
 
 func check_unprocessed_purchases() -> void:

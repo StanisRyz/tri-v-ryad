@@ -2341,3 +2341,17 @@ Stage 69.3 connects real Yandex in-app purchases to `ShopScreen` through the `Pl
 - **Not implemented:** fullscreen ads and cloud save.
 - **Preserved:** local booster purchases, the rewarded-ad offer, shop layout, economy/rewards, portrait-only policy, localization, text styles, `AudioManager`, gameplay, debug hotkeys, and save/load.
 - **No automated tests were added, updated, touched, or run.** Manual verification in the Godot editor is expected for this stage.
+
+## Stage 69.3.1: Payment Reliability and Atomic Grant v0.1
+
+Stage 69.3.1 makes the Stage 69.3 payment flow atomic, idempotent, and recoverable, and centralizes its orchestration in one coordinator. Full design in `docs/YANDEX_PLATFORM.md`'s "Payment reliability and atomic grant (Stage 69.3.1)" section.
+
+- **Atomic grant:** new `ProgressManager.apply_platform_purchase_atomic(item, purchase_token, platform_product_id)` validates first, applies every reward + processed-token mark + pending-consume record to an isolated copy (new `PlayerProgress.duplicate_progress()`), saves once, and only replaces live progress on success — never partially saved.
+- **Token states:** new `PlayerProgress.pending_consume_tokens` (never capped) tracks a granted-but-unconfirmed purchase alongside the existing capped `processed_purchase_tokens`; both persist, old saves load with an empty pending set.
+- **Consume signals:** new `payment_consume_success`/`payment_consume_error` across `Platform`/`YandexBridge`; `YandexBridge.consume_purchase()` now reports the SDK promise's real outcome instead of swallowing errors.
+- **`PlatformPurchaseCoordinator`** (`res://scripts/game/shop/platform_purchase_coordinator.gd`) replaces the deleted `ShopPlatformPurchaseHandler` as the single owner of purchase-success/cancel/error and consume-success/error and unprocessed-purchase handling. Consume is only requested on `granted`/`already_granted`; an `already_granted` result grants nothing and only retries consume, so a token can never grant twice. UI-facing signals only fire for a screen's active foreground purchase.
+- **Startup retry:** `App` retries every pending consume token once after bootstrap; failures stay pending for the next launch/scan.
+- **`ShopScreen`/`App` simplified:** neither grants rewards, marks tokens, or calls `consume_purchase()` directly anymore.
+- **Preserved:** local booster purchases, the rewarded-ad offer, catalog price display, item ids/rewards/economy values, portrait-only policy, audio, gameplay, localization, text styles, debug hotkeys, and the local save path.
+- **Cloud save remains unimplemented.**
+- **No automated tests were added, updated, touched, or run.** Manual verification in the Godot editor is expected for this stage.

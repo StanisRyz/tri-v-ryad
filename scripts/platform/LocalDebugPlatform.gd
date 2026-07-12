@@ -22,6 +22,11 @@ var _ad_in_progress := false
 var debug_purchases_enabled := false
 var _mock_payment_catalog: Dictionary = {}
 
+## Stage 69.3.1: consume_purchase() simulates success by default. Set true
+## (manual/ad-hoc editor testing only) to exercise the pending-consume retry
+## path instead.
+var debug_consume_should_fail := false
+
 
 func game_ready() -> void:
 	pass
@@ -106,8 +111,14 @@ func purchase_product(platform_product_id: String, _local_product_id: String = "
 	payment_purchase_success.emit(platform_product_id, "debug_token_%s" % platform_product_id)
 
 
-func consume_purchase(_purchase_token: String) -> void:
-	pass
+func consume_purchase(purchase_token: String) -> void:
+	if purchase_token == "":
+		payment_consume_error.emit(purchase_token, "invalid_token")
+		return
+	if debug_consume_should_fail:
+		payment_consume_error.emit(purchase_token, "debug_consume_failure")
+		return
+	payment_consume_success.emit(purchase_token)
 
 
 func check_unprocessed_purchases() -> void:

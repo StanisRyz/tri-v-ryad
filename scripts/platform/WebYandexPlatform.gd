@@ -23,6 +23,8 @@ func _init() -> void:
 	_bridge.payment_purchase_success.connect(func(product_id, token): payment_purchase_success.emit(product_id, token))
 	_bridge.payment_purchase_cancelled.connect(func(product_id): payment_purchase_cancelled.emit(product_id))
 	_bridge.payment_purchase_error.connect(func(product_id, message): payment_purchase_error.emit(product_id, message))
+	_bridge.payment_consume_success.connect(func(purchase_token): payment_consume_success.emit(purchase_token))
+	_bridge.payment_consume_error.connect(func(purchase_token, message): payment_consume_error.emit(purchase_token, message))
 	_bridge.payment_catalog_loaded.connect(func(products): payment_catalog_loaded.emit(products))
 	_bridge.payment_catalog_error.connect(func(message): payment_catalog_error.emit(message))
 	_bridge.unprocessed_purchase_found.connect(func(product_id, token): unprocessed_purchase_found.emit(product_id, token))
@@ -81,6 +83,8 @@ func purchase_product(platform_product_id: String, local_product_id: String = ""
 func consume_purchase(purchase_token: String) -> void:
 	if _bridge != null:
 		_bridge.consume_purchase(purchase_token)
+	else:
+		payment_consume_error.emit(purchase_token, "bridge_unavailable")
 
 
 func check_unprocessed_purchases() -> void:
