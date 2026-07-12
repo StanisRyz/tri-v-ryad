@@ -78,6 +78,7 @@ func _play_requests_async(requests: Array, board_view: Control, finished_callbac
 
 
 func _play_request(request, board_view: Control, effective_duration: float) -> void:
+	_play_request_audio(request, board_view)
 	match request.animation_type:
 		REQUEST_SCRIPT.TYPE_SWAP:
 			_play_swap_request(request, board_view, effective_duration)
@@ -113,6 +114,50 @@ func _play_request(request, board_view: Control, effective_duration: float) -> v
 		_:
 			if board_view.has_method("flash_cells"):
 				board_view.flash_cells(request.cells, effective_duration)
+
+
+## Stage 68.1 hotfix: audio now fires from the same place each animation
+## request actually plays, in real time, instead of after the whole
+## swap/clear/gravity/cascade sequence finishes. Previously GameScreen played
+## every sound for a turn from _play_turn_audio() once turn_presentation_ready
+## fired, which — for animated turns — only happens once AnimatedTurnFlow has
+## already awaited the full sequence (see animated_turn_flow.gd's
+## start_swap_turn()/start_booster_clear()), so every sound landed bunched up
+## after the visuals instead of in sync with them. board_view is a live
+## in-tree Control for every real call site, so /root/AudioManager is reached
+## through it rather than needing this RefCounted class to be a Node itself.
+func _play_request_audio(request, board_view: Control) -> void:
+	if board_view == null:
+		return
+	var audio_manager := board_view.get_node_or_null("/root/AudioManager")
+	if audio_manager == null:
+		return
+
+	match request.animation_type:
+		REQUEST_SCRIPT.TYPE_SWAP:
+			audio_manager.play_tile_swap()
+		REQUEST_SCRIPT.TYPE_INVALID_SWAP:
+			audio_manager.play_invalid_swap()
+		REQUEST_SCRIPT.TYPE_MATCH_CLEAR, REQUEST_SCRIPT.TYPE_SPECIAL_CLEAR, REQUEST_SCRIPT.TYPE_BOOSTER_CLEAR:
+			# One crystal-burst sound per destroyed crystal, not one per clear
+			# request — a 3-match bursts 3 times, a 5-match bursts 5 times. The
+			# 16-player SFX pool lets these overlap freely.
+			for _cleared_cell in request.cells:
+				audio_manager.play_crystal_burst()
+		REQUEST_SCRIPT.TYPE_SPECIAL_ACTIVATION:
+			audio_manager.play_special_crystal()
+		REQUEST_SCRIPT.TYPE_BOOSTER_ACTIVATION:
+			_play_booster_activation_audio(request, audio_manager)
+
+
+func _play_booster_activation_audio(request, audio_manager) -> void:
+	match String(request.payload.get("booster_id", "")):
+		"hammer":
+			audio_manager.play_booster_hammer()
+		"rocket_barrage":
+			audio_manager.play_booster_rocket_barrage()
+		"freeze_time":
+			audio_manager.play_booster_freeze_time()
 
 
 func _play_swap_request(request, board_view: Control, effective_duration: float) -> void:

@@ -41,13 +41,21 @@ func cap_events(events: Array) -> Array:
 
 
 func play_damage_particles(events: Array, board_view: BoardView, enemy_panel: Control, effect_layer: Control, finished_callback: Callable = Callable()) -> void:
-	if not _animations_enabled or events.is_empty():
+	if events.is_empty():
 		_call_finished(finished_callback)
 		return
-	if board_view == null or enemy_panel == null or effect_layer == null:
-		_call_finished(finished_callback)
-		return
-	if effect_layer.get_tree() == null:
+
+	## Stage 68.1 hotfix: the hit sound fires from here — the moment the
+	## particles are launched, at the very start of their flight, not when
+	## they land — so it reads as the crystals firing at the enemy rather than
+	## a delayed impact cue. Plays exactly once per call regardless of caller
+	## (a normal turn or a booster clear) or animation state: with nothing to
+	## animate (animations off, or a missing board_view/enemy_panel/
+	## effect_layer) the hit still logically happened, so the sound still
+	## plays immediately — only the flying-particle/flash visuals are skipped.
+	_play_enemy_hit_audio(enemy_panel)
+
+	if not _animations_enabled or board_view == null or enemy_panel == null or effect_layer == null or effect_layer.get_tree() == null:
 		_call_finished(finished_callback)
 		return
 
@@ -70,6 +78,15 @@ func play_damage_particles(events: Array, board_view: BoardView, enemy_panel: Co
 	_playing = false
 	_trigger_hit_feedback(events, enemy_panel)
 	_call_finished(finished_callback)
+
+
+func _play_enemy_hit_audio(enemy_panel: Control) -> void:
+	if enemy_panel == null:
+		return
+	var audio_manager := enemy_panel.get_node_or_null("/root/AudioManager")
+	if audio_manager == null:
+		return
+	audio_manager.play_enemy_hit()
 
 
 func _spawn_particle(event: Dictionary, index: int, stagger: float, travel_duration: float, board_view: BoardView, enemy_panel: Control, effect_layer: Control) -> void:

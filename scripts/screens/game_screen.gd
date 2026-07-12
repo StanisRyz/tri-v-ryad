@@ -481,7 +481,16 @@ func _on_battle_finished(status: int) -> void:
 
 
 func _on_turn_presentation_ready(data) -> void:
-	_play_turn_audio(data)
+	# Stage 68.1 hotfix: when animations are on, every sound for this turn
+	# already played live from BoardAnimationController as each animation
+	# request ran (see board_animation_controller.gd._play_request_audio()),
+	# in sync with the visuals. Calling _play_turn_audio() here too — after
+	# the whole sequence has already finished — would just replay every
+	# sound a second time, bunched up at the end. With animations off there
+	# is no per-request playback to sync to, so this remains the only place
+	# turn audio fires.
+	if not _animations_enabled:
+		_play_turn_audio(data)
 	_feedback_active = true
 
 	if not data.is_valid:
@@ -570,6 +579,7 @@ func _show_lose_continue_or_defeat() -> void:
 	_force_cleanup_visual_state()
 	if lose_continue_popup != null:
 		_set_status(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_defeat_message(get_node_or_null("/root/LocalizationManager")))
+		_play_lose_continue()
 		lose_continue_popup.show_popup()
 	else:
 		_finalize_defeat_result()
@@ -828,7 +838,7 @@ func _on_booster_pressed(booster_id: String) -> void:
 			_set_status("Rocket: tap a crystal to preview, tap again to use.")
 		return
 
-	_play_special_activate()
+	_play_booster_sfx(booster_id)
 	_play_booster_button_feedback(booster_id)
 	_clear_booster_target_preview()
 	_input_controller.set_input_enabled(false)
@@ -896,13 +906,24 @@ func _after_booster_board_animation(result) -> void:
 	_play_damage_particles(events, Callable(self, "_finish_booster_resolution").bind(result))
 
 
+## Stage 68.1 hotfix: Hammer/Rocket Barrage (targeted, animated) already play
+## their booster sound and crystal-burst live from BoardAnimationController
+## as the TYPE_BOOSTER_ACTIVATION/TYPE_BOOSTER_CLEAR requests run (see
+## board_animation_controller.gd._play_request_audio()); calling
+## _play_booster_sfx()/_play_crystal_burst() here too would replay them late,
+## a second time. With animations off, request_targeted_booster() never runs
+## AnimatedTurnFlow at all, so nothing has played yet and this remains the
+## only place those sounds fire. Time Freeze (freeze_turns_added > 0) never
+## animates a clear either way — its sound already played immediately in
+## _on_booster_pressed()'s non-targeted branch, so it's explicitly skipped
+## here to avoid a second, duplicate Time Freeze sound.
 func _finish_booster_resolution(result) -> void:
-	if result.freeze_turns_added > 0:
-		_play_special_activate()
-		_play_booster_button_feedback(result.booster_id)
-	else:
-		_play_special_activate()
-		_play_booster_button_feedback(result.booster_id)
+	_play_booster_button_feedback(result.booster_id)
+	if result.freeze_turns_added <= 0:
+		if not _animations_enabled:
+			_play_booster_sfx(result.booster_id)
+			for _cleared_cell in result.cleared_cells:
+				_play_crystal_burst()
 		if result.damage_to_enemy > 0:
 			_play_enemy_damage()
 
@@ -1240,8 +1261,25 @@ func _play_turn_audio(data) -> void:
 	if not data.activated_special_tiles.is_empty():
 		_play_special_activate()
 
-	if data.total_damage_to_enemy > 0:
-		_play_match()
+	# One burst per destroyed crystal, matching the animated (BoardAnimationController)
+	# path's per-cell playback.
+	for _cleared_tile in range(data.total_tiles_cleared):
+		_play_crystal_burst()
+
+
+## Maps a booster id to its dedicated SFX (hammer/rocket_barrage/freeze_time),
+## matching BoosterCatalog.HAMMER/FREEZE_TIME/ROCKET_BARRAGE ids exactly.
+func _play_booster_sfx(booster_id: String) -> void:
+	var audio_manager = _get_audio_manager()
+	if audio_manager == null:
+		return
+	match booster_id:
+		"hammer":
+			audio_manager.play_booster_hammer()
+		"rocket_barrage":
+			audio_manager.play_booster_rocket_barrage()
+		"freeze_time":
+			audio_manager.play_booster_freeze_time()
 
 
 func _get_audio_manager():
@@ -1278,10 +1316,12 @@ func _play_special_activate() -> void:
 		audio_manager.play_special_activate()
 
 
+## Stage 68.1 hotfix: the hit sound itself now plays from
+## BattleEffectController._play_enemy_hit_audio(), right when the damage
+## particles actually land (see battle_effect_controller.gd), so it stays in
+## sync regardless of caller. This only drives the separate damaged-sprite
+## texture swap.
 func _play_enemy_damage() -> void:
-	var audio_manager = _get_audio_manager()
-	if audio_manager != null:
-		audio_manager.play_enemy_damage()
 	if enemy_panel != null and enemy_panel.has_method("play_damage_feedback"):
 		enemy_panel.play_damage_feedback()
 
@@ -1296,3 +1336,15 @@ func _play_defeat() -> void:
 	var audio_manager = _get_audio_manager()
 	if audio_manager != null:
 		audio_manager.play_defeat()
+
+
+func _play_lose_continue() -> void:
+	var audio_manager = _get_audio_manager()
+	if audio_manager != null:
+		audio_manager.play_lose_continue()
+
+
+func _play_crystal_burst() -> void:
+	var audio_manager = _get_audio_manager()
+	if audio_manager != null:
+		audio_manager.play_crystal_burst()

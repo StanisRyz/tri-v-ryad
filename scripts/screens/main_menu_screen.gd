@@ -41,6 +41,13 @@ func _ready() -> void:
 	if localization_manager != null:
 		localization_manager.language_changed.connect(_localize_ui)
 
+	## Stage 68.1: MainMenu buttons had no click-sound wiring at all, so
+	## auto-binding the whole tree is safe here (no manual play_button_click
+	## calls exist to double up with).
+	var audio_manager := get_node_or_null("/root/AudioManager")
+	if audio_manager != null:
+		audio_manager.bind_buttons_in_tree(self)
+
 
 func set_progress_manager(progress_manager) -> void:
 	_progress_manager = progress_manager

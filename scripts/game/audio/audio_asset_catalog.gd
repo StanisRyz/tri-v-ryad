@@ -1,17 +1,31 @@
 extends RefCounted
 class_name AudioAssetCatalog
 
+## Stage 68.1: kept as a compatibility layer for any caller that still looks
+## audio up by key (AudioManager.play_sfx(key)/play_music(key)). New paths
+## come from AudioConfig so there is one source of truth for real file
+## locations; legacy keys (sfx_match, sfx_special_activate) are aliased onto
+## the new crystal-burst/special-crystal files rather than removed.
 const AUDIO_MAP := {
-	"music_main": "res://assets/audio/music/main_theme.ogg",
-	"sfx_button_click": "res://assets/audio/sfx/button_click.wav",
+	"music_main": AudioConfig.MUSIC_TRACK_PATHS[0],
+	"sfx_button_click": AudioConfig.SFX_BUTTON_CLICK,
 	"sfx_level_select": "res://assets/audio/sfx/level_select.wav",
-	"sfx_tile_swap": "res://assets/audio/sfx/tile_swap.wav",
-	"sfx_match": "res://assets/audio/sfx/match.wav",
-	"sfx_invalid_swap": "res://assets/audio/sfx/invalid_swap.wav",
-	"sfx_special_activate": "res://assets/audio/sfx/special_activate.wav",
-	"sfx_enemy_damage": "res://assets/audio/sfx/enemy_damage.wav",
-	"sfx_victory": "res://assets/audio/sfx/victory.wav",
-	"sfx_defeat": "res://assets/audio/sfx/defeat.wav",
+	"sfx_tile_swap": AudioConfig.SFX_TILE_SWAP,
+	"sfx_crystal_burst": AudioConfig.SFX_CRYSTAL_BURST,
+	"sfx_match": AudioConfig.SFX_CRYSTAL_BURST,
+	"sfx_invalid_swap": AudioConfig.SFX_INVALID_SWAP,
+	"sfx_special_crystal": AudioConfig.SFX_SPECIAL_CRYSTAL,
+	"sfx_special_activate": AudioConfig.SFX_SPECIAL_CRYSTAL,
+	"sfx_booster_hammer": AudioConfig.SFX_BOOSTER_HAMMER,
+	"sfx_booster_rocket_barrage": AudioConfig.SFX_BOOSTER_ROCKET_BARRAGE,
+	"sfx_booster_freeze_time": AudioConfig.SFX_BOOSTER_FREEZE_TIME,
+	"sfx_enemy_hit": AudioConfig.SFX_ENEMY_HIT,
+	"sfx_enemy_damage": AudioConfig.SFX_ENEMY_HIT,
+	"sfx_victory": AudioConfig.SFX_VICTORY,
+	"sfx_defeat": AudioConfig.SFX_DEFEAT,
+	"sfx_lose_continue": AudioConfig.SFX_LOSE_CONTINUE,
+	"sfx_purchase_success": AudioConfig.SFX_PURCHASE_SUCCESS,
+	"sfx_purchase_error": AudioConfig.SFX_PURCHASE_ERROR,
 }
 
 static var _stream_cache: Dictionary = {}

@@ -52,11 +52,11 @@ This stage includes:
 - LevelSelect, Settings, battle HUD/status/result panels, and RoundModifierPanel now carry stable reserved UI asset keys for later texture art.
 - `BoosterPanel` (Stage 64.2, fixed into editor-visible scene nodes in Stage 64.3) uses square, texture-based `BoosterTextureButton` controls for Hammer, Time Freeze, and Rocket Barrage in active combat, reusing the existing Shop booster icon asset keys, with selected/disabled states and a bottom-center `CountLabel` overlay (e.g. `"x3"`). When an icon texture is assigned, selected/disabled tint is applied via `ButtonTexture.modulate` rather than a full-rect color filter, so transparent icon padding stays transparent (Stage 64.3.1); the full-rect filter is now used only behind the `Fallback` placeholder when no icon texture is assigned.
 - Empty asset folders under `assets/images/backgrounds/`, `assets/images/enemies/`, `assets/images/tiles/`, `assets/images/ui/`, `assets/images/boosters/`, and `assets/images/heroes/` for later real images.
-- `AudioAssetCatalog` maps reserved audio keys to future `res://assets/audio/` paths and loads optional streams safely with a small cache for loaded and missing audio.
-- `AudioManager` is registered as an autoload singleton, owns one music player and an 8-player SFX pool, and safely no-ops when audio files are missing.
-- Empty asset folders under `assets/audio/music/` and `assets/audio/sfx/` for later real audio.
-- Music and Sound Effects settings now drive `AudioManager` immediately, while existing settings persistence remains unchanged.
-- Minimal UI/battle audio hooks are present for buttons, level select, swap, invalid swap, match, special activation, enemy damage, victory, and defeat.
+- `AudioAssetCatalog` maps reserved audio keys to `res://assets/audio/` paths (sourced from `AudioConfig`) and loads optional streams safely with a small cache for loaded and missing audio.
+- `AudioManager` is registered as an autoload singleton and, as of Stage 68.1, owns one shared shuffled 5-track music playlist (common across the whole app, not per-screen) and a 16-player pooled SFX system with recursive button-click auto-binding; it safely no-ops when audio files are missing. See `docs/AUDIO.md` for the full method/hook reference.
+- Empty asset folders under `assets/audio/music/` and `assets/audio/sfx/{ui,game,boosters,result,shop}/` for later real audio; no real audio binaries are in the repo yet.
+- Music and Sound Effects settings drive `AudioManager` immediately (Music also starts/stops the shared playlist), while existing settings persistence remains unchanged.
+- UI/battle audio hooks cover buttons (auto-bound where no manual click sound already existed, otherwise manually wired), level select, swap, invalid swap, crystal-burst clears (throttled), special-crystal activation, booster use (Hammer/Rocket Barrage/Time Freeze, each with its own sound), enemy damage, victory, defeat, lose-continue, and shop purchase success/error.
 - A lightweight `LayoutManager` for UI-only portrait and landscape layout decisions.
 - UI-independent board generation, match detection, swap validation, gravity/refill, and cascade resolution under `scripts/game/board/`.
 - Special tile board logic under `scripts/game/board/`: `SpecialTileType`, `SpecialTileData`, and `SpecialTileResolver`.

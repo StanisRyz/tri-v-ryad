@@ -183,3 +183,4 @@ func _apply_audio_settings() -> void:
 		return
 	audio_manager.set_music_enabled(settings.music_enabled)
 	audio_manager.set_sound_effects_enabled(settings.sound_effects_enabled)
+	audio_manager.play_main_music()

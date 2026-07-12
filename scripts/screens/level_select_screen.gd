@@ -57,6 +57,24 @@ func _ready() -> void:
 	if localization_manager != null:
 		localization_manager.language_changed.connect(_on_language_changed)
 
+	_bind_button_click_sounds()
+
+
+## Stage 68.1: back_button/popup_start_button/popup_back_button already play
+## their own sound (plain click, or the distinct sfx_level_select on Start)
+## from their delayed_pressed handlers below, so they're tagged audio_skip to
+## avoid a double sound. The five level map buttons and the zone dropdown had
+## no click sound at all, so the tree-wide auto-bind picks those up.
+func _bind_button_click_sounds() -> void:
+	var audio_manager := get_node_or_null("/root/AudioManager")
+	if audio_manager == null:
+		return
+
+	back_button.set_meta("audio_skip", true)
+	popup_start_button.set_meta("audio_skip", true)
+	popup_back_button.set_meta("audio_skip", true)
+	audio_manager.bind_buttons_in_tree(self)
+
 
 func _localize_ui() -> void:
 	var localization_manager := get_node_or_null("/root/LocalizationManager")

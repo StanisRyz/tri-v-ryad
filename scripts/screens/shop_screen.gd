@@ -296,7 +296,18 @@ func _resolve_purchase(item_id: String, quantity: int) -> void:
 	var result: Dictionary = _purchase_resolver.purchase(item_id, _progress_manager, _shop_catalog, quantity)
 	var localization_manager := get_node_or_null("/root/LocalizationManager")
 	feedback_label.text = SHOP_PURCHASE_FORMATTER_SCRIPT.format_purchase_result(result, localization_manager)
+	_play_purchase_result_sfx(bool(result.get("accepted", false)))
 	_refresh_wallet()
+
+
+func _play_purchase_result_sfx(accepted: bool) -> void:
+	var audio_manager := get_node_or_null("/root/AudioManager")
+	if audio_manager == null:
+		return
+	if accepted:
+		audio_manager.play_purchase_success()
+	else:
+		audio_manager.play_purchase_error()
 
 
 func _on_back_button_delayed_pressed() -> void:
