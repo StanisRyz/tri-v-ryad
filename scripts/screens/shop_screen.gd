@@ -7,6 +7,8 @@ const SHOP_ITEM_CATEGORY_SCRIPT := preload("res://scripts/game/shop/shop_item_ca
 const SHOP_PURCHASE_RESOLVER_SCRIPT := preload("res://scripts/game/shop/shop_purchase_resolver.gd")
 const SHOP_PURCHASE_FORMATTER_SCRIPT := preload("res://scripts/game/shop/shop_purchase_formatter.gd")
 const SHOP_REWARD_TYPE_SCRIPT := preload("res://scripts/game/shop/shop_reward_type.gd")
+const SHOP_PURCHASE_KIND_SCRIPT := preload("res://scripts/game/shop/shop_purchase_kind.gd")
+const SHOP_PLATFORM_PURCHASE_HANDLER_SCRIPT := preload("res://scripts/game/shop/shop_platform_purchase_handler.gd")
 const CURRENCY_TYPE_SCRIPT := preload("res://scripts/game/economy/currency_type.gd")
 const BOOSTER_CATALOG_SCRIPT := preload("res://scripts/game/config/booster_catalog.gd")
 const ASSET_KEY_RESOLVER_SCRIPT := preload("res://scripts/game/config/asset_key_resolver.gd")
@@ -26,6 +28,7 @@ const BUNDLE_IDS := ["bundle_small", "bundle_medium", "bundle_large", "bundle_me
 const OFFER_IDS := ["offer_watch_ad", "offer_gems", "offer_mega_gems", "offer_boosters"]
 const AD_OFFER_ITEM_ID := "offer_watch_ad"
 const REWARDED_AD_PLACEMENT_SHOP_OFFER_GEMS := "shop_offer_gems_3"
+const PLATFORM_KEY_YANDEX := "yandex"
 
 @onready var background_rect: FallbackImageSlot = %Background
 @onready var shop_window_visual: FallbackImageSlot = %WindowVisual
@@ -50,10 +53,17 @@ var _ad_offer_tile: ShopProductTile
 var _shop_ad_active := false
 var _shop_ad_rewarded := false
 var _shop_ad_item_id := ""
+var _shop_platform_purchase_handler
+var _payment_tiles: Dictionary = {}
+var _payment_catalog: Dictionary = {}
+var _payment_catalog_ready := false
+var _pending_payment_item_id := ""
+var _pending_payment_product_id := ""
 
 
 func _ready() -> void:
 	_shop_catalog = SHOP_CATALOG_SCRIPT.new(get_node_or_null("/root/LocalizationManager"))
+	_shop_platform_purchase_handler = SHOP_PLATFORM_PURCHASE_HANDLER_SCRIPT.new(_shop_catalog, _progress_manager)
 	_bind_static_ui_assets()
 	back_button.delayed_pressed.connect(_on_back_button_delayed_pressed)
 	boosters_tab_button.pressed.connect(_on_boosters_tab_pressed)
@@ -73,6 +83,7 @@ func _ready() -> void:
 	if localization_manager != null:
 		localization_manager.language_changed.connect(_localize_ui)
 	_connect_platform_rewarded_ad_signals()
+	_connect_platform_payment_signals()
 
 
 ## Stage 69.2: Offers tab "+3 Gems watch AD" routes through
@@ -106,6 +117,8 @@ func _apply_text_styles() -> void:
 
 func set_progress_manager(progress_manager) -> void:
 	_progress_manager = progress_manager
+	if _shop_platform_purchase_handler != null:
+		_shop_platform_purchase_handler.set_progress_manager(progress_manager)
 	if is_inside_tree():
 		_refresh_wallet()
 
@@ -288,6 +301,10 @@ func _add_product_tile(row: Node, item_id: String, icon_asset_key: String) -> vo
 	tile.buy_pressed.connect(_on_product_buy_pressed)
 	if item_id == AD_OFFER_ITEM_ID:
 		_ad_offer_tile = tile
+	elif item.purchase_kind == SHOP_PURCHASE_KIND_SCRIPT.EXTERNAL_PAYMENT:
+		_payment_tiles[item_id] = tile
+		tile.set_buy_enabled(false)
+		tile.set_price_text(_localized_payment_feedback("ui.shop.price.loading", "..."))
 
 
 func _on_boosters_tab_pressed() -> void:
@@ -319,6 +336,10 @@ func _on_product_buy_pressed(item_id: String) -> void:
 	_play_button_click()
 	if item_id == AD_OFFER_ITEM_ID:
 		_start_shop_rewarded_ad(item_id)
+		return
+	var item = _shop_catalog.get_item(item_id) if _shop_catalog != null else null
+	if item != null and item.purchase_kind == SHOP_PURCHASE_KIND_SCRIPT.EXTERNAL_PAYMENT:
+		_start_payment_purchase(item_id)
 		return
 	_resolve_purchase(item_id, 1)
 
@@ -411,6 +432,195 @@ func _set_ad_offer_enabled(enabled: bool) -> void:
 
 
 func _localized_ad_feedback(key: String, fallback_text: String) -> String:
+	var localization_manager := get_node_or_null("/root/LocalizationManager")
+	if localization_manager == null:
+		return fallback_text
+	return localization_manager.tr_key(key)
+
+
+## Stage 69.3: connects Platform's payment catalog/purchase signals and
+## kicks off a catalog load. Must run after _build_offers_content() etc. so
+## _payment_tiles is already populated — LocalDebugPlatform/YandexBridge can
+## both emit payment_catalog_loaded synchronously from inside
+## load_payment_catalog(), so the signal has to already be connected first.
+func _connect_platform_payment_signals() -> void:
+	var platform := get_node_or_null("/root/Platform")
+	if platform == null:
+		return
+	if not platform.payment_catalog_loaded.is_connected(_on_platform_payment_catalog_loaded):
+		platform.payment_catalog_loaded.connect(_on_platform_payment_catalog_loaded)
+	if not platform.payment_catalog_error.is_connected(_on_platform_payment_catalog_error):
+		platform.payment_catalog_error.connect(_on_platform_payment_catalog_error)
+	if not platform.payment_purchase_started.is_connected(_on_platform_payment_purchase_started):
+		platform.payment_purchase_started.connect(_on_platform_payment_purchase_started)
+	if not platform.payment_purchase_success.is_connected(_on_platform_payment_purchase_success):
+		platform.payment_purchase_success.connect(_on_platform_payment_purchase_success)
+	if not platform.payment_purchase_cancelled.is_connected(_on_platform_payment_purchase_cancelled):
+		platform.payment_purchase_cancelled.connect(_on_platform_payment_purchase_cancelled)
+	if not platform.payment_purchase_error.is_connected(_on_platform_payment_purchase_error):
+		platform.payment_purchase_error.connect(_on_platform_payment_purchase_error)
+	platform.load_payment_catalog()
+
+
+func _on_platform_payment_catalog_loaded(_products: Array) -> void:
+	_payment_catalog_ready = true
+	var platform := get_node_or_null("/root/Platform")
+	_payment_catalog = platform.get_cached_payment_catalog() if platform != null else {}
+	_refresh_payment_tiles()
+
+
+func _on_platform_payment_catalog_error(_message: String) -> void:
+	_payment_catalog_ready = true
+	_payment_catalog = {}
+	_refresh_payment_tiles()
+
+
+func _refresh_payment_tiles() -> void:
+	for item_id in _payment_tiles.keys():
+		_refresh_payment_tile(item_id)
+
+
+## Shows the catalog price (or loading/unavailable text) and enables the buy
+## button only for a product actually present in the loaded catalog. Skips a
+## tile with a purchase currently pending so a mid-flight catalog refresh
+## can't re-enable a button the player already tapped.
+func _refresh_payment_tile(item_id: String) -> void:
+	if item_id == _pending_payment_item_id:
+		return
+
+	var tile: ShopProductTile = _payment_tiles.get(item_id)
+	if tile == null or not is_instance_valid(tile):
+		return
+
+	var item = _shop_catalog.get_item(item_id) if _shop_catalog != null else null
+	if item == null:
+		return
+
+	if not _payment_catalog_ready:
+		tile.set_price_text(_localized_payment_feedback("ui.shop.price.loading", "..."))
+		tile.set_buy_enabled(false)
+		return
+
+	var platform_product_id: String = item.get_platform_product_id(PLATFORM_KEY_YANDEX)
+	var product: Dictionary = _payment_catalog.get(platform_product_id, {}) if platform_product_id != "" else {}
+	if product.is_empty():
+		tile.set_price_text(_localized_payment_feedback("ui.shop.price.unavailable", "Not available"))
+		tile.set_buy_enabled(false)
+		return
+
+	var price_text := str(product.get("price", ""))
+	tile.set_price_text(price_text if price_text != "" else _localized_payment_feedback("ui.shop.price.unavailable", "Not available"))
+	tile.set_buy_enabled(true)
+
+
+## Stage 69.3 v0.1: routes an external-payment tile's buy press to
+## Platform.purchase_product(). Rewards are only ever granted from
+## _on_platform_payment_purchase_success(), never from here.
+func _start_payment_purchase(item_id: String) -> void:
+	var item = _shop_catalog.get_item(item_id) if _shop_catalog != null else null
+	if item == null:
+		feedback_label.text = _localized_payment_feedback("ui.shop.feedback.purchase_unavailable", "Purchase unavailable")
+		return
+
+	var platform_product_id: String = item.get_platform_product_id(PLATFORM_KEY_YANDEX)
+	if platform_product_id == "" or not _payment_catalog.has(platform_product_id):
+		feedback_label.text = _localized_payment_feedback("ui.shop.feedback.purchase_unavailable", "Purchase unavailable")
+		return
+
+	var platform := get_node_or_null("/root/Platform")
+	if platform == null:
+		feedback_label.text = _localized_payment_feedback("ui.shop.feedback.purchase_unavailable", "Purchase unavailable")
+		return
+
+	_pending_payment_item_id = item_id
+	_pending_payment_product_id = platform_product_id
+	platform.purchase_product(platform_product_id, item_id)
+
+
+func _on_platform_payment_purchase_started(product_id: String) -> void:
+	if product_id != _pending_payment_product_id:
+		return
+	_set_payment_tile_enabled(_pending_payment_item_id, false)
+	feedback_label.text = _localized_payment_feedback("ui.shop.feedback.purchase_started", "Purchase started")
+
+
+## Grant order per Stage 69.3: purchase success -> grant rewards -> save
+## progress -> consume purchase. ShopPlatformPurchaseHandler.grant_purchase()
+## does the grant+save (through the existing ProgressManager APIs) and marks
+## the token processed; consume_purchase() is only called after that
+## succeeds, and never at all if it fails, so a failed grant leaves the
+## purchase unconsumed and recoverable via check_unprocessed_purchases().
+func _on_platform_payment_purchase_success(product_id: String, purchase_token: String) -> void:
+	var item_id := _pending_payment_item_id if product_id == _pending_payment_product_id else _find_item_id_by_platform_product_id(product_id)
+	_clear_pending_payment()
+
+	if item_id == "":
+		return
+
+	if _shop_platform_purchase_handler == null:
+		feedback_label.text = _localized_payment_feedback("ui.shop.feedback.purchase_error", "Purchase error")
+		_set_payment_tile_enabled(item_id, true)
+		return
+
+	if _progress_manager != null and _progress_manager.has_processed_purchase_token(purchase_token):
+		_set_payment_tile_enabled(item_id, true)
+		return
+
+	var granted: bool = _shop_platform_purchase_handler.grant_purchase(item_id, purchase_token)
+	if not granted:
+		feedback_label.text = _localized_payment_feedback("ui.shop.feedback.purchase_error", "Purchase error")
+		_set_payment_tile_enabled(item_id, true)
+		return
+
+	_refresh_wallet()
+	_play_purchase_result_sfx(true)
+	feedback_label.text = _localized_payment_feedback("ui.shop.feedback.purchase_success", "Purchased!")
+	_set_payment_tile_enabled(item_id, true)
+
+	var platform := get_node_or_null("/root/Platform")
+	if platform != null:
+		platform.consume_purchase(purchase_token)
+
+
+func _on_platform_payment_purchase_cancelled(product_id: String) -> void:
+	if product_id != _pending_payment_product_id:
+		return
+	var item_id := _pending_payment_item_id
+	_clear_pending_payment()
+	_set_payment_tile_enabled(item_id, true)
+	feedback_label.text = _localized_payment_feedback("ui.shop.feedback.purchase_cancelled", "Purchase cancelled")
+	_play_purchase_result_sfx(false)
+
+
+func _on_platform_payment_purchase_error(product_id: String, _message: String) -> void:
+	if product_id != _pending_payment_product_id:
+		return
+	var item_id := _pending_payment_item_id
+	_clear_pending_payment()
+	_set_payment_tile_enabled(item_id, true)
+	feedback_label.text = _localized_payment_feedback("ui.shop.feedback.purchase_error", "Purchase error")
+	_play_purchase_result_sfx(false)
+
+
+func _find_item_id_by_platform_product_id(platform_product_id: String) -> String:
+	if _shop_catalog == null:
+		return ""
+	var item = _shop_catalog.get_item_by_platform_product_id(PLATFORM_KEY_YANDEX, platform_product_id)
+	return item.item_id if item != null else ""
+
+
+func _clear_pending_payment() -> void:
+	_pending_payment_item_id = ""
+	_pending_payment_product_id = ""
+
+
+func _set_payment_tile_enabled(item_id: String, enabled: bool) -> void:
+	var tile: ShopProductTile = _payment_tiles.get(item_id)
+	if tile != null and is_instance_valid(tile):
+		tile.set_buy_enabled(enabled)
+
+
+func _localized_payment_feedback(key: String, fallback_text: String) -> String:
 	var localization_manager := get_node_or_null("/root/LocalizationManager")
 	if localization_manager == null:
 		return fallback_text

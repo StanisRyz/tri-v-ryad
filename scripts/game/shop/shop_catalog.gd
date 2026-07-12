@@ -8,6 +8,8 @@ const SHOP_REWARD_TYPE_SCRIPT := preload("res://scripts/game/shop/shop_reward_ty
 const CURRENCY_TYPE_SCRIPT := preload("res://scripts/game/economy/currency_type.gd")
 const BOOSTER_CATALOG_SCRIPT := preload("res://scripts/game/config/booster_catalog.gd")
 
+const PLATFORM_KEY_YANDEX := "yandex"
+
 var _items: Dictionary = {}
 var _item_order: Array[String] = []
 var _localization_manager = null
@@ -57,6 +59,21 @@ func get_item(item_id: String):
 
 func has_item(item_id: String) -> bool:
 	return _items.has(item_id)
+
+
+## Stage 69.3: reverse lookup used when a Platform payment signal only carries
+## the platform's product id (e.g. an unprocessed purchase found at startup,
+## before any screen requested one). Ignores items with no mapping for
+## platform_key (e.g. offer_watch_ad, which is rewarded-ad based and never
+## gets a payment product id), so a coincidental id match can't happen.
+func get_item_by_platform_product_id(platform_key: String, platform_product_id: String):
+	if platform_product_id == "":
+		return null
+	for item_id in _item_order:
+		var item = _items[item_id]
+		if item.has_platform_product_id(platform_key) and item.get_platform_product_id(platform_key) == platform_product_id:
+			return item
+	return null
 
 
 func _register_items() -> void:
@@ -120,7 +137,9 @@ func _register_gem_items() -> void:
 			SHOP_PURCHASE_KIND_SCRIPT.EXTERNAL_PAYMENT,
 			"",
 			0,
-			[SHOP_REWARD_TYPE_SCRIPT.make_currency_reward(CURRENCY_TYPE_SCRIPT.GEMS, gem_amount)]
+			[SHOP_REWARD_TYPE_SCRIPT.make_currency_reward(CURRENCY_TYPE_SCRIPT.GEMS, gem_amount)],
+			true,
+			{PLATFORM_KEY_YANDEX: product_id}
 		))
 
 
@@ -159,7 +178,9 @@ func _register_bundle_items() -> void:
 			SHOP_PURCHASE_KIND_SCRIPT.EXTERNAL_PAYMENT,
 			"",
 			0,
-			rewards
+			rewards,
+			true,
+			{PLATFORM_KEY_YANDEX: bundle_id}
 		))
 
 
@@ -188,7 +209,9 @@ func _register_offer_items() -> void:
 		SHOP_PURCHASE_KIND_SCRIPT.EXTERNAL_PAYMENT,
 		"",
 		0,
-		[SHOP_REWARD_TYPE_SCRIPT.make_currency_reward(CURRENCY_TYPE_SCRIPT.GEMS, 1000)]
+		[SHOP_REWARD_TYPE_SCRIPT.make_currency_reward(CURRENCY_TYPE_SCRIPT.GEMS, 1000)],
+		true,
+		{PLATFORM_KEY_YANDEX: "offer_gems"}
 	))
 
 	_add_item(SHOP_ITEM_CONFIG_SCRIPT.new(
@@ -199,7 +222,9 @@ func _register_offer_items() -> void:
 		SHOP_PURCHASE_KIND_SCRIPT.EXTERNAL_PAYMENT,
 		"",
 		0,
-		[SHOP_REWARD_TYPE_SCRIPT.make_currency_reward(CURRENCY_TYPE_SCRIPT.GEMS, 2500)]
+		[SHOP_REWARD_TYPE_SCRIPT.make_currency_reward(CURRENCY_TYPE_SCRIPT.GEMS, 2500)],
+		true,
+		{PLATFORM_KEY_YANDEX: "offer_mega_gems"}
 	))
 
 	_add_item(SHOP_ITEM_CONFIG_SCRIPT.new(
@@ -214,7 +239,9 @@ func _register_offer_items() -> void:
 			SHOP_REWARD_TYPE_SCRIPT.make_booster_reward(BOOSTER_CATALOG_SCRIPT.HAMMER, 25),
 			SHOP_REWARD_TYPE_SCRIPT.make_booster_reward(BOOSTER_CATALOG_SCRIPT.FREEZE_TIME, 25),
 			SHOP_REWARD_TYPE_SCRIPT.make_booster_reward(BOOSTER_CATALOG_SCRIPT.ROCKET_BARRAGE, 25),
-		]
+		],
+		true,
+		{PLATFORM_KEY_YANDEX: "offer_boosters"}
 	))
 
 

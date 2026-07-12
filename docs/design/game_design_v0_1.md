@@ -2324,3 +2324,20 @@ Stage 69.2 connects rewarded ads through the Stage 69.1 `Platform` foundation fo
 - **Not implemented:** fullscreen ads and Yandex payments remain foundation-only; Stage 69.3 will connect `ShopScreen`'s remaining `external_payment` items.
 - **Preserved:** gem-continue, the LoseContinue close→defeat-result path, the F3 debug-loss hotkey, `ShopScreen` purchase/tab/navigation behavior, portrait-only policy, localization, text styles, `AudioManager` settings, gameplay, economy, rewards, debug hotkeys, and save/load.
 - **No automated tests were added, updated, touched, or run.** Manual verification in the Godot editor is expected for this stage.
+
+## Stage 69.3: Yandex Payments Integration v0.1
+
+Stage 69.3 connects real Yandex in-app purchases to `ShopScreen` through the `Platform` foundation, for every `external_payment` item except the rewarded-ad offer. Full design in `docs/YANDEX_PLATFORM.md`'s "Yandex payments integration (Stage 69.3)" section.
+
+- **Client-side payments mode:** `YandexBridge`'s `getPayments()` calls now omit `{ signed: true }` (no receipt-verification server exists), returning usable `productID`/`purchaseToken` directly.
+- **Product id mapping:** new `ShopItemConfig.platform_product_ids` with `get_platform_product_id()`/`has_platform_product_id()`. `ShopCatalog` maps gems (`gems_50`/`150`/`250`/`500`), bundles (`bundle_small`/`medium`/`large`/`mega`), and paid offers (`offer_gems`/`offer_mega_gems`/`offer_boosters`) to their own item id as the Yandex product id; `offer_watch_ad` gets none and stays rewarded-ad based.
+- **Catalog and price display:** `ShopScreen` calls `Platform.load_payment_catalog()` after building tiles; each external-payment `ShopProductTile` shows loading text (new `set_price_text()`/`%PriceLabel`) then the real catalog price string once found, or localized "not available" — never a hardcoded price.
+- **Purchase flow:** an enabled tile calls `Platform.purchase_product(platform_product_id, item_id)`, never `YandexBridge`/`JavaScriptBridge` directly.
+- **Grant order:** `payment_purchase_success` → grant rewards → save progress → `Platform.consume_purchase()`, via new `ShopPlatformPurchaseHandler` (shared by `ShopScreen` and `App`); consume only fires if the grant succeeded.
+- **Duplicate protection:** new `PlayerProgress.processed_purchase_tokens` (capped, persisted) blocks the same `purchase_token` from granting twice.
+- **Cancel/error:** grant/consume nothing, re-enable the tile, show localized feedback; handlers ignore a `product_id` that isn't the screen's own pending purchase.
+- **Unprocessed purchase restoration:** `app.gd` builds its own `ShopCatalog`/`ShopPlatformPurchaseHandler`, connects `Platform.unprocessed_purchase_found`, and calls `Platform.check_unprocessed_purchases()` at startup — no shop UI required.
+- **`LocalDebugPlatform`:** small mock catalog (placeholder text) populates only when `debug_purchases_enabled` is `true`; its purchases follow the same grant/save/consume path as real ones.
+- **Not implemented:** fullscreen ads and cloud save.
+- **Preserved:** local booster purchases, the rewarded-ad offer, shop layout, economy/rewards, portrait-only policy, localization, text styles, `AudioManager`, gameplay, debug hotkeys, and save/load.
+- **No automated tests were added, updated, touched, or run.** Manual verification in the Godot editor is expected for this stage.

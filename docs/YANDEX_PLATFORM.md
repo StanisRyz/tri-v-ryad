@@ -206,7 +206,7 @@ in the editor with no Yandex SDK.
 
 Fullscreen ads remain foundation-only — no placement was added this stage.
 
-## Payment foundation (Stage 69.1 only)
+## Payment foundation (Stage 69.1)
 
 Signals: `payment_purchase_started(product_id)`,
 `payment_purchase_success(product_id, purchase_token)`,
@@ -227,16 +227,105 @@ local_product_id = "")`, `consume_purchase(purchase_token)`,
 and `priceCurrencyImage` when the SDK provides them. A failed or timed-out
 catalog load emits `payment_catalog_error` and leaves the cache empty.
 
-`check_unprocessed_purchases()` calls `payments.getPurchases()` when the SDK
-is ready; each found purchase emits `unprocessed_purchase_found`, and the
-scan finishes with `unprocessed_purchase_check_completed`. **No reward is
-granted for unprocessed purchases yet** — reward processing is deferred to
-the payments integration stage.
+## Client-side payments mode (Stage 69.3)
 
-**`ShopScreen`'s existing `external_payment` behavior is untouched.** Gem/
-bundle/offer products are still listed but not purchasable through a real
-SDK. Wiring `Platform.purchase_product()`/`consume_purchase()` into
-`shop_purchase_resolver.gd` is Stage 69.3 work.
+Every `getPayments()` call in `YandexBridge` (purchase, consume,
+`getPurchases`, `getCatalog`) intentionally omits `{ signed: true }`.
+Signed mode is for server-side purchase-receipt verification; this project
+has no verification server, so it stays in plain client-side mode, which
+returns directly usable `productID`/`purchaseToken` fields to
+`purchase()`/`getPurchases()` callers without needing a signature to be
+checked anywhere.
+
+## Yandex payments integration (Stage 69.3)
+
+Real purchases are wired into `ShopScreen` for every `EXTERNAL_PAYMENT`
+shop item except the rewarded-ad offer.
+
+**Local item id → Yandex product id mapping.** `ShopItemConfig` gained a
+`platform_product_ids: Dictionary` field (e.g. `{"yandex": "gems_50"}`)
+with `get_platform_product_id(platform_key)`/`has_platform_product_id(platform_key)`
+helpers. `ShopCatalog` sets this mapping for every gem product
+(`gems_50`/`150`/`250`/`500`), bundle (`bundle_small`/`medium`/`large`/`mega`),
+and paid offer (`offer_gems`, `offer_mega_gems`, `offer_boosters`) — each
+item's own `item_id` doubles as its Yandex product id in this project.
+`offer_watch_ad` explicitly gets **no** mapping and stays `AD_WATCH`/rewarded-ad
+based (placement `"shop_offer_gems_3"`, unchanged from Stage 69.2).
+`ShopCatalog.get_item_by_platform_product_id("yandex", platform_product_id)`
+is the reverse lookup, used whenever a Platform signal only carries the
+platform's product id (e.g. an unprocessed purchase).
+
+**Payment catalog loading and price display.** `ShopScreen` connects
+`Platform`'s payment signals and calls `Platform.load_payment_catalog()` in
+`_ready()`, after building every tile (so `payment_catalog_loaded` — which
+can fire synchronously from `LocalDebugPlatform`/`YandexBridge` — always has
+a listener and populated `_payment_tiles` to react against). Every
+external-payment `ShopProductTile` starts locked with `"..."` loading text
+(new `ShopProductTile.set_price_text()`/small `%PriceLabel`, hidden by
+default so the untouched rewarded-ad tile looks exactly as before). On
+`payment_catalog_loaded`, each tile looks up its Yandex product id in
+`Platform.get_cached_payment_catalog()`: a match shows that product's
+catalog `price` string and enables the buy button; no match (or
+`payment_catalog_error`) shows a localized "not available" state and keeps
+the button disabled. Real money prices are **never hardcoded** — the label
+only ever shows text that came from the catalog.
+
+**Purchase flow.** Clicking an enabled external-payment tile calls
+`shop_screen.gd._start_payment_purchase()`, which calls
+`Platform.purchase_product(platform_product_id, item_id)` — never
+`YandexBridge`/`JavaScriptBridge` directly. `payment_purchase_started`
+locks that tile's button and shows localized "purchase started" feedback.
+
+**Grant order on `payment_purchase_success(product_id, purchase_token)`:**
+grant rewards → save progress → consume purchase — enforced by new
+`res://scripts/game/shop/shop_platform_purchase_handler.gd`
+(`ShopPlatformPurchaseHandler`, deliberately independent of `ShopScreen`'s
+UI so `App` can reuse it too). Its `grant_purchase(item_id, purchase_token)`
+looks up the local item, applies every currency/booster reward through the
+existing `ProgressManager.add_currency()`/`add_booster()` APIs (which each
+save), marks the token processed, and returns `true` only if it actually
+granted something. `ShopScreen` calls `Platform.consume_purchase()` **only**
+if `grant_purchase()` returned `true` — a failed grant leaves the token
+unconsumed so it can be recovered later via `check_unprocessed_purchases()`,
+and shows "purchase error" feedback instead. Success shows localized
+"Purchased!" feedback, refreshes the wallet, and plays the existing
+purchase-success sound.
+
+**Duplicate-grant protection.** `PlayerProgress` gained a
+`processed_purchase_tokens` set (capped at 500 oldest-first, persisted in
+the save file) with `has_processed_purchase_token(token)`/
+`mark_processed_purchase_token(token)`, wrapped on `ProgressManager`.
+`grant_purchase()` checks this before granting anything, so the same
+`purchase_token` can never grant twice — whether it arrives twice from a
+live `payment_purchase_success`, or once live and once later from an
+unprocessed-purchase restore.
+
+**Cancel/error handling.** `payment_purchase_cancelled`/`payment_purchase_error`
+never grant anything or consume anything; they just re-enable the tile and
+show localized "cancelled"/"error" feedback. All four purchase-lifecycle
+handlers ignore a `product_id` that doesn't match the screen's own pending
+purchase, the same no-cross-leakage pattern Stage 69.2 established for ads.
+
+**Unprocessed purchase restoration.** `app.gd` now builds its own
+`ShopCatalog`/`ShopPlatformPurchaseHandler` pair at startup, connects
+`Platform.unprocessed_purchase_found`, and calls
+`Platform.check_unprocessed_purchases()` right after `game_ready()` — so a
+purchase that completed but was never consumed (app closed mid-flow,
+`ShopScreen` never reopened) still gets granted, saved, and consumed the
+next time the app starts, with no shop UI involved and no noisy feedback.
+
+**Local booster purchases are completely untouched** — they still go
+through `ShopPurchaseResolver`/`CURRENCY` purchase kind, no `Platform` call,
+no catalog dependency, no platform product id.
+
+**`LocalDebugPlatform`** exposes a small `MOCK_CATALOG_PRODUCT_IDS` mock
+catalog (placeholder `"Debug"` price text, never real money) that only
+populates when `debug_purchases_enabled` is explicitly set to `true` on the
+instance; with it `false` (the default), every external-payment tile stays
+disabled/"not available" exactly like before this stage. When enabled,
+`purchase_product()` still emits the same `payment_purchase_started`/
+`payment_purchase_success` signals a real Yandex purchase would, so it
+exercises the exact same grant → save → consume path as a real purchase.
 
 ## Web SDK shell requirements
 
@@ -267,15 +356,11 @@ up to 20 seconds after its own `_ready()`, so the SDK script tag should be
 loaded as early as possible in the page, ahead of the Godot canvas/engine
 script.
 
-## What is explicitly NOT done as of Stage 69.2
+## What is explicitly NOT done as of Stage 69.3
 
-- No real shop payment integration — `ShopScreen`'s `external_payment`
-  behavior (gem/bundle products, the other three Offers-tab items) is
-  untouched. Payments are Stage 69.3.
-- No fullscreen (interstitial) ad placements were added.
 - No cloud save flow — only placeholder signals/methods exist on
   `PlatformServices` for a future stage to implement.
-- No unprocessed-purchase reward granting.
+- No fullscreen (interstitial) ad placements were added.
 - No Web export preset or custom HTML shell file was added — only this
   documentation.
 - Tests were not added, updated, touched, or run for this stage.

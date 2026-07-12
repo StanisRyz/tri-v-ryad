@@ -324,6 +324,12 @@ func _stop_fullscreen_timeout() -> void:
 # Payments
 # ---------------------------------------------------------------------------
 
+## Stage 69.3: every getPayments() call below intentionally omits
+## `{ signed: true }`. Signed mode is for server-side purchase verification;
+## this project has no purchase-verification server, so it stays in plain
+## client-side mode, which is what returns usable `productID`/`purchaseToken`
+## fields directly to `purchase()`/`getPurchases()` callers here.
+
 
 func purchase_product(platform_product_id: String, _local_product_id: String = "") -> void:
 	if not _is_web or not _sdk_ready:
@@ -337,7 +343,7 @@ func purchase_product(platform_product_id: String, _local_product_id: String = "
 	window.__godot_purchase_success = _cb_purchase_success
 	window.__godot_purchase_error = _cb_purchase_error
 	var escaped_id := platform_product_id.replace("'", "")
-	var js := "try { window.ysdk.getPayments({ signed: true }).then(function(payments){ return payments.purchase({ id: '%s' }); }).then(function(purchase){ window.__godot_purchase_success(purchase.productID || '%s', purchase.purchaseToken || ''); }).catch(function(e){ var msg = (e && e.code === 'PURCHASE_CANCELED') ? 'cancelled' : String(e); window.__godot_purchase_error('%s', msg); }); } catch (e) { window.__godot_purchase_error('%s', String(e)); }" % [escaped_id, escaped_id, escaped_id, escaped_id]
+	var js := "try { window.ysdk.getPayments().then(function(payments){ return payments.purchase({ id: '%s' }); }).then(function(purchase){ window.__godot_purchase_success(purchase.productID || '%s', purchase.purchaseToken || ''); }).catch(function(e){ var msg = (e && e.code === 'PURCHASE_CANCELED') ? 'cancelled' : String(e); window.__godot_purchase_error('%s', msg); }); } catch (e) { window.__godot_purchase_error('%s', String(e)); }" % [escaped_id, escaped_id, escaped_id, escaped_id]
 	_eval_js(js)
 
 
@@ -360,7 +366,7 @@ func consume_purchase(purchase_token: String) -> void:
 	if not _is_web or not _sdk_ready or purchase_token == "":
 		return
 	var escaped_token := purchase_token.replace("'", "")
-	var js := "try { window.ysdk.getPayments({ signed: true }).then(function(payments){ payments.consumePurchase('%s'); }).catch(function(e){}); } catch (e) {}" % [escaped_token]
+	var js := "try { window.ysdk.getPayments().then(function(payments){ payments.consumePurchase('%s'); }).catch(function(e){}); } catch (e) {}" % [escaped_token]
 	_eval_js(js)
 
 
@@ -377,7 +383,7 @@ func check_unprocessed_purchases() -> void:
 	window.__godot_unprocessed_error = _cb_unprocessed_error
 	_eval_js("""
 		try {
-			window.ysdk.getPayments({ signed: true }).then(function(payments){
+			window.ysdk.getPayments().then(function(payments){
 				return payments.getPurchases();
 			}).then(function(purchases){
 				(purchases || []).forEach(function(p){
@@ -419,7 +425,7 @@ func load_payment_catalog() -> void:
 	window.__godot_catalog_error = _cb_catalog_error
 	_eval_js("""
 		try {
-			window.ysdk.getPayments({ signed: true }).then(function(payments){
+			window.ysdk.getPayments().then(function(payments){
 				return payments.getCatalog();
 			}).then(function(products){
 				window.__godot_catalog_success(JSON.stringify(products || []));

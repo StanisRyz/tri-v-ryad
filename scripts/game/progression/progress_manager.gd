@@ -283,6 +283,20 @@ func spend_booster(booster_id: String, amount: int = 1) -> bool:
 	return spent
 
 
+## Stage 69.3: guards a Yandex purchase token from granting its reward twice
+## (once from a live payment_purchase_success, once from a later
+## check_unprocessed_purchases() restore of the same purchase).
+func has_processed_purchase_token(token: String) -> bool:
+	return progress.has_processed_purchase_token(token) if progress != null else false
+
+
+func mark_processed_purchase_token(token: String) -> void:
+	if progress == null:
+		return
+	progress.mark_processed_purchase_token(token)
+	save()
+
+
 func get_economy_debug_summary() -> String:
 	return progress.get_economy_debug_summary() if progress != null else ""
 

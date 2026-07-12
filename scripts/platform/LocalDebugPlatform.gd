@@ -7,8 +7,20 @@ extends PlatformServices
 const DEBUG_AD_OPEN_DELAY := 0.3
 const DEBUG_AD_RESULT_DELAY := 0.6
 
+## Stage 69.3: mock catalog product ids, matching ShopCatalog's Yandex
+## product id mapping (see shop_catalog.gd), so debug_purchases_enabled can
+## exercise the full ShopScreen purchase flow (catalog -> buy -> success ->
+## grant -> consume) end-to-end with no Yandex SDK. Prices are placeholder
+## text only, never real money.
+const MOCK_CATALOG_PRODUCT_IDS := [
+	"gems_50", "gems_150", "gems_250", "gems_500",
+	"bundle_small", "bundle_medium", "bundle_large", "bundle_mega",
+	"offer_gems", "offer_mega_gems", "offer_boosters",
+]
+
 var _ad_in_progress := false
 var debug_purchases_enabled := false
+var _mock_payment_catalog: Dictionary = {}
 
 
 func game_ready() -> void:
@@ -103,15 +115,34 @@ func check_unprocessed_purchases() -> void:
 
 
 func load_payment_catalog() -> void:
-	payment_catalog_loaded.emit([])
+	if debug_purchases_enabled:
+		_mock_payment_catalog = _build_mock_payment_catalog()
+	else:
+		_mock_payment_catalog = {}
+	payment_catalog_loaded.emit(_mock_payment_catalog.values())
+
+
+func _build_mock_payment_catalog() -> Dictionary:
+	var catalog := {}
+	for product_id in MOCK_CATALOG_PRODUCT_IDS:
+		catalog[product_id] = {
+			"id": product_id,
+			"title": product_id,
+			"description": "",
+			"price": "Debug",
+			"priceValue": "0",
+			"priceCurrencyCode": "",
+			"priceCurrencyImage": {},
+		}
+	return catalog
 
 
 func get_cached_payment_catalog() -> Dictionary:
-	return {}
+	return _mock_payment_catalog.duplicate(true)
 
 
-func get_catalog_product(_local_product_id: String) -> Dictionary:
-	return {}
+func get_catalog_product(local_product_id: String) -> Dictionary:
+	return _mock_payment_catalog.get(local_product_id, {})
 
 
 func is_ad_in_progress() -> bool:

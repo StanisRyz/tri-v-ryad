@@ -15,6 +15,7 @@ var price_currency_id := ""
 var price_amount := 0
 var rewards: Array[Dictionary] = []
 var is_available := true
+var platform_product_ids: Dictionary = {}
 
 
 func _init(
@@ -26,7 +27,8 @@ func _init(
 	config_price_currency_id: String = "",
 	config_price_amount: int = 0,
 	config_rewards: Array[Dictionary] = [],
-	config_is_available: bool = true
+	config_is_available: bool = true,
+	config_platform_product_ids: Dictionary = {}
 ) -> void:
 	item_id = config_item_id
 	category = config_category
@@ -37,6 +39,18 @@ func _init(
 	price_amount = config_price_amount
 	rewards = config_rewards
 	is_available = config_is_available
+	platform_product_ids = config_platform_product_ids
+
+
+## Stage 69.3: local item id -> platform product id mapping, e.g.
+## {"yandex": "gems_50"}. Keeps ShopCatalog/ShopScreen from ever needing
+## item_id and the platform's product id to be the same string.
+func get_platform_product_id(platform_key: String) -> String:
+	return str(platform_product_ids.get(platform_key, ""))
+
+
+func has_platform_product_id(platform_key: String) -> bool:
+	return get_platform_product_id(platform_key) != ""
 
 
 func is_valid() -> bool:

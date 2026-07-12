@@ -42,6 +42,7 @@ const STYLES := {
 	"shop.tile_quantity": {"font_size": 18, "outline_size": 3},
 	"shop.tile_price_button": {"font_size": 28, "outline_size": 5},
 	"shop.tile_product_button": {"font_size": 28, "outline_size": 5},
+	"shop.tile_product_price": {"font_size": 18, "outline_size": 3},
 	"shop.feedback": {"font_size": 22, "outline_size": 5},
 	"shop.offer_placeholder": {"font_size": 18, "outline_size": 3},
 

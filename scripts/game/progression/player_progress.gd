@@ -19,6 +19,15 @@ var team_selection: TeamSelectionState
 var gold := 0
 var gems := 0
 var booster_inventory: Dictionary = {}
+var processed_purchase_tokens: Dictionary = {}
+
+## Stage 69.3: caps how many processed Yandex purchase tokens are kept, so
+## save data can't grow unbounded over a long play history. Oldest tokens
+## (Dictionary preserves insertion order) are dropped first once the cap is
+## exceeded — a dropped token would only re-grant if that same purchase were
+## somehow re-delivered by the SDK long after being consumed, which is not a
+## realistic scenario.
+const MAX_PROCESSED_PURCHASE_TOKENS := 500
 
 
 static func create_default() -> PlayerProgress:
@@ -177,6 +186,20 @@ func spend_booster(booster_id: String, amount: int = 1) -> bool:
 	return true
 
 
+func has_processed_purchase_token(token: String) -> bool:
+	if token == "":
+		return false
+	return bool(processed_purchase_tokens.get(token, false))
+
+
+func mark_processed_purchase_token(token: String) -> void:
+	if token == "" or has_processed_purchase_token(token):
+		return
+	processed_purchase_tokens[token] = true
+	while processed_purchase_tokens.size() > MAX_PROCESSED_PURCHASE_TOKENS:
+		processed_purchase_tokens.erase(processed_purchase_tokens.keys()[0])
+
+
 func get_economy_debug_summary() -> String:
 	var parts: Array[String] = []
 	parts.append("gold=%d" % gold)
@@ -213,6 +236,7 @@ func to_dictionary() -> Dictionary:
 			"gems": gems,
 		},
 		"booster_inventory": booster_inventory.duplicate(),
+		"processed_purchase_tokens": processed_purchase_tokens.keys(),
 	}
 
 
@@ -265,6 +289,14 @@ static func from_dictionary(data: Dictionary) -> PlayerProgress:
 		for booster_id in raw_booster_inventory.keys():
 			progress.booster_inventory[str(booster_id)] = _sanitize_non_negative_int(raw_booster_inventory[booster_id])
 	progress.ensure_booster_inventory()
+
+	progress.processed_purchase_tokens = {}
+	var raw_processed_tokens = data.get("processed_purchase_tokens", [])
+	if raw_processed_tokens is Array:
+		for token in raw_processed_tokens:
+			var token_string := str(token)
+			if token_string != "":
+				progress.processed_purchase_tokens[token_string] = true
 
 	return progress
 

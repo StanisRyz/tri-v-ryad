@@ -13,6 +13,7 @@ const TEXT_STYLE_APPLIER_SCRIPT := preload("res://scripts/ui/text/text_style_app
 
 @onready var _icon_slot: FallbackImageSlot = %IconSlot
 @onready var _buy_button: PressableTextureButton = %BuyButton
+@onready var _price_label: Label = %PriceLabel
 
 var _item_id := ""
 
@@ -22,6 +23,7 @@ func _ready() -> void:
 		_buy_button.delayed_pressed.connect(_on_buy_pressed)
 	_bind_buy_button_textures()
 	TEXT_STYLE_APPLIER_SCRIPT.apply_to_child_label(_buy_button, "TextMargin/Label", "shop.tile_product_button")
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_label(_price_label, "shop.tile_product_price")
 
 
 ## Target height for the buy button; its width is derived from this and the
@@ -75,6 +77,17 @@ func set_item(item, icon: Texture2D) -> void:
 func set_buy_enabled(enabled: bool) -> void:
 	if _buy_button != null:
 		_buy_button.disabled = not enabled
+
+
+## Stage 69.3: Yandex payment catalog price / loading / unavailable text for
+## external-payment products. Hidden (rather than shown empty) whenever no
+## text is set, so tiles that never call this (the rewarded-ad offer) look
+## exactly as they did before this stage.
+func set_price_text(text: String) -> void:
+	if _price_label == null:
+		return
+	_price_label.text = text
+	_price_label.visible = text != ""
 
 
 func _on_buy_pressed() -> void:
