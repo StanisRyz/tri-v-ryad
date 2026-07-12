@@ -32,6 +32,21 @@ func _ready() -> void:
 	_play_level_resolver = PLAY_LEVEL_RESOLVER_SCRIPT.new()
 	_apply_audio_settings()
 	_show_main_menu()
+	_bootstrap_platform()
+
+
+## Stage 69.1: platform foundation bootstrap. Syncs LocalizationManager to
+## the platform's reported language (falls back to LocalizationManager's own
+## default when the platform has none yet) and signals the platform that the
+## first screen is up. Platform itself re-syncs the language whenever the
+## Yandex SDK becomes ready, since its language is only known once
+## window.ysdk.environment exists.
+func _bootstrap_platform() -> void:
+	var platform := get_node_or_null("/root/Platform")
+	if platform == null:
+		return
+	platform.sync_language_to_localization()
+	platform.game_ready()
 
 
 func _show_main_menu() -> void:

@@ -19,6 +19,8 @@ config/icon="res://icon.svg"
 
 AudioManager="*res://autoload/AudioManager.gd"
 LocalizationManager="*res://scripts/game/localization/localization_manager.gd"
+YandexBridge="*res://autoload/YandexBridge.gd"
+Platform="*res://autoload/Platform.gd"
 
 [display]
 

@@ -377,6 +377,9 @@ func _start_new_battle() -> void:
 	_input_controller.set_input_enabled(true)
 	_set_status("Select a tile")
 	_presenter.start_level(_current_level_id)
+	var platform := get_node_or_null("/root/Platform")
+	if platform != null:
+		platform.gameplay_start()
 
 
 func _on_board_changed(board: BoardModel) -> void:
@@ -553,6 +556,9 @@ func _on_feedback_finished() -> void:
 
 func _show_battle_result(status: int) -> void:
 	_input_controller.set_input_enabled(false)
+	var platform := get_node_or_null("/root/Platform")
+	if platform != null:
+		platform.gameplay_stop()
 	if status == BattleState.Status.VICTORY:
 		_play_victory()
 		_grant_victory_reward_once()
