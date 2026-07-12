@@ -85,6 +85,10 @@ var _shuffle_count := 0
 var _last_shuffle_debug_info: Dictionary = {}
 var _last_booster_spend_failed := false
 var _developer_mode_active: bool = false
+var _lose_continue_ad_active := false
+var _lose_continue_ad_rewarded := false
+
+const REWARDED_AD_PLACEMENT_LOSE_CONTINUE := "lose_continue"
 
 func _ready() -> void:
 	if not menu_button.delayed_pressed.is_connected(_on_menu_button_pressed):
@@ -101,6 +105,27 @@ func _ready() -> void:
 	var localization_manager := get_node_or_null("/root/LocalizationManager")
 	if localization_manager != null:
 		localization_manager.language_changed.connect(_localize_ui)
+	_connect_platform_rewarded_ad_signals()
+
+
+## Stage 69.2: LoseContinuePopup's "Watch Ad" continue routes through
+## Platform.show_rewarded_ad(REWARDED_AD_PLACEMENT_LOSE_CONTINUE) instead of
+## granting moves directly. These connections live for the lifetime of the
+## screen; ScreenRouter.change_screen() frees the previous screen on
+## navigation, which auto-disconnects these the same way, so a signal from
+## an ad requested by this screen can never be picked up by a different one.
+func _connect_platform_rewarded_ad_signals() -> void:
+	var platform := get_node_or_null("/root/Platform")
+	if platform == null:
+		return
+	if not platform.rewarded_ad_opened.is_connected(_on_platform_rewarded_ad_opened):
+		platform.rewarded_ad_opened.connect(_on_platform_rewarded_ad_opened)
+	if not platform.rewarded_ad_rewarded.is_connected(_on_platform_rewarded_ad_rewarded):
+		platform.rewarded_ad_rewarded.connect(_on_platform_rewarded_ad_rewarded)
+	if not platform.rewarded_ad_closed.is_connected(_on_platform_rewarded_ad_closed):
+		platform.rewarded_ad_closed.connect(_on_platform_rewarded_ad_closed)
+	if not platform.rewarded_ad_error.is_connected(_on_platform_rewarded_ad_error):
+		platform.rewarded_ad_error.connect(_on_platform_rewarded_ad_error)
 
 
 ## Stage 64.16 v0.1: developer-only debug hotkeys, fully gated behind
@@ -614,14 +639,80 @@ func _on_lose_continue_close_pressed() -> void:
 	_finalize_defeat_result()
 
 
-## Stage 64.12 v0.1: placeholder rewarded-ad gateway. No real ad SDK is wired
-## up yet, so this grants the continue reward directly through the local
-## flow below. Kept as its own method so a real rewarded-ad callback can
-## replace the body later without touching callers or the popup.
+## Stage 69.2 v0.1: routes the Watch Ad continue option through
+## Platform.show_rewarded_ad() instead of granting the reward directly.
+## +3 moves are only granted from _on_platform_rewarded_ad_rewarded(), never
+## from here, and the popup stays open (actions locked) until the ad's
+## terminal signal (closed/error) arrives.
 func _try_continue_with_ad() -> void:
+	var platform := get_node_or_null("/root/Platform")
+	if platform == null:
+		lose_continue_popup.show_feedback(_localized_ad_feedback("ui.rewarded_ad.unavailable", "Ad unavailable"))
+		return
+
+	_lose_continue_ad_active = true
+	_lose_continue_ad_rewarded = false
+	lose_continue_popup.set_actions_enabled(false)
+	lose_continue_popup.show_feedback(_localized_ad_feedback("ui.rewarded_ad.loading", "Loading ad..."))
+	platform.show_rewarded_ad(REWARDED_AD_PLACEMENT_LOSE_CONTINUE)
+
+
+func _on_platform_rewarded_ad_opened() -> void:
+	if not _lose_continue_ad_active:
+		return
+	var audio_manager = _get_audio_manager()
+	if audio_manager != null:
+		audio_manager.pause_for_ad()
+
+
+## Grants the reward as soon as the platform confirms it was earned — closing
+## the ad view (_on_platform_rewarded_ad_closed) is a separate later signal
+## and only handles hiding the popup/resuming play, never the grant itself,
+## so the reward can never be granted twice for one ad attempt.
+func _on_platform_rewarded_ad_rewarded() -> void:
+	if not _lose_continue_ad_active or _lose_continue_ad_rewarded:
+		return
+	_lose_continue_ad_rewarded = true
 	_grant_continue_moves(3)
-	lose_continue_popup.hide_popup()
-	_resume_after_continue()
+
+
+func _on_platform_rewarded_ad_closed(_was_shown: bool) -> void:
+	if not _lose_continue_ad_active:
+		return
+	_lose_continue_ad_active = false
+	var audio_manager = _get_audio_manager()
+	if audio_manager != null:
+		audio_manager.resume_after_ad()
+
+	if _lose_continue_ad_rewarded:
+		_lose_continue_ad_rewarded = false
+		lose_continue_popup.hide_popup()
+		_resume_after_continue()
+		var platform := get_node_or_null("/root/Platform")
+		if platform != null:
+			platform.gameplay_start()
+	else:
+		lose_continue_popup.set_actions_enabled(true)
+		lose_continue_popup.show_feedback(_localized_ad_feedback("ui.rewarded_ad.cancelled", "Reward was not granted"))
+
+
+func _on_platform_rewarded_ad_error(_message: String) -> void:
+	if not _lose_continue_ad_active:
+		return
+	_lose_continue_ad_active = false
+	_lose_continue_ad_rewarded = false
+	var audio_manager = _get_audio_manager()
+	if audio_manager != null:
+		audio_manager.resume_after_ad()
+	lose_continue_popup.set_actions_enabled(true)
+	lose_continue_popup.show_feedback(_localized_ad_feedback("ui.rewarded_ad.error", "Ad error"))
+
+
+func _localized_ad_feedback(key: String, fallback_text: String) -> String:
+	var localization_manager := get_node_or_null("/root/LocalizationManager")
+	if localization_manager == null:
+		return fallback_text
+	return localization_manager.tr_key(key)
 
 
 ## Stage 64.12 v0.1: gem-purchased continue. Spends through the existing

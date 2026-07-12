@@ -6,6 +6,7 @@ const SHOP_CATALOG_SCRIPT := preload("res://scripts/game/shop/shop_catalog.gd")
 const SHOP_ITEM_CATEGORY_SCRIPT := preload("res://scripts/game/shop/shop_item_category.gd")
 const SHOP_PURCHASE_RESOLVER_SCRIPT := preload("res://scripts/game/shop/shop_purchase_resolver.gd")
 const SHOP_PURCHASE_FORMATTER_SCRIPT := preload("res://scripts/game/shop/shop_purchase_formatter.gd")
+const SHOP_REWARD_TYPE_SCRIPT := preload("res://scripts/game/shop/shop_reward_type.gd")
 const CURRENCY_TYPE_SCRIPT := preload("res://scripts/game/economy/currency_type.gd")
 const BOOSTER_CATALOG_SCRIPT := preload("res://scripts/game/config/booster_catalog.gd")
 const ASSET_KEY_RESOLVER_SCRIPT := preload("res://scripts/game/config/asset_key_resolver.gd")
@@ -23,6 +24,8 @@ const BOOSTER_IDS := [
 const GEM_PRODUCT_IDS := ["gems_50", "gems_150", "gems_250", "gems_500"]
 const BUNDLE_IDS := ["bundle_small", "bundle_medium", "bundle_large", "bundle_mega"]
 const OFFER_IDS := ["offer_watch_ad", "offer_gems", "offer_mega_gems", "offer_boosters"]
+const AD_OFFER_ITEM_ID := "offer_watch_ad"
+const REWARDED_AD_PLACEMENT_SHOP_OFFER_GEMS := "shop_offer_gems_3"
 
 @onready var background_rect: FallbackImageSlot = %Background
 @onready var shop_window_visual: FallbackImageSlot = %WindowVisual
@@ -43,6 +46,10 @@ var _progress_manager
 var _shop_catalog
 var _purchase_resolver = SHOP_PURCHASE_RESOLVER_SCRIPT.new()
 var _selected_category := SHOP_ITEM_CATEGORY_SCRIPT.BOOSTERS
+var _ad_offer_tile: ShopProductTile
+var _shop_ad_active := false
+var _shop_ad_rewarded := false
+var _shop_ad_item_id := ""
 
 
 func _ready() -> void:
@@ -65,6 +72,25 @@ func _ready() -> void:
 	var localization_manager := get_node_or_null("/root/LocalizationManager")
 	if localization_manager != null:
 		localization_manager.language_changed.connect(_localize_ui)
+	_connect_platform_rewarded_ad_signals()
+
+
+## Stage 69.2: Offers tab "+3 Gems watch AD" routes through
+## Platform.show_rewarded_ad(REWARDED_AD_PLACEMENT_SHOP_OFFER_GEMS). Same
+## auto-disconnect-on-screen-change reasoning as GameScreen's identical
+## helper — see game_screen.gd._connect_platform_rewarded_ad_signals().
+func _connect_platform_rewarded_ad_signals() -> void:
+	var platform := get_node_or_null("/root/Platform")
+	if platform == null:
+		return
+	if not platform.rewarded_ad_opened.is_connected(_on_platform_rewarded_ad_opened):
+		platform.rewarded_ad_opened.connect(_on_platform_rewarded_ad_opened)
+	if not platform.rewarded_ad_rewarded.is_connected(_on_platform_rewarded_ad_rewarded):
+		platform.rewarded_ad_rewarded.connect(_on_platform_rewarded_ad_rewarded)
+	if not platform.rewarded_ad_closed.is_connected(_on_platform_rewarded_ad_closed):
+		platform.rewarded_ad_closed.connect(_on_platform_rewarded_ad_closed)
+	if not platform.rewarded_ad_error.is_connected(_on_platform_rewarded_ad_error):
+		platform.rewarded_ad_error.connect(_on_platform_rewarded_ad_error)
 
 
 func _apply_text_styles() -> void:
@@ -260,6 +286,8 @@ func _add_product_tile(row: Node, item_id: String, icon_asset_key: String) -> vo
 	var icon := GAME_ASSET_CATALOG.try_load_texture_cached(icon_asset_key)
 	tile.set_item(item, icon)
 	tile.buy_pressed.connect(_on_product_buy_pressed)
+	if item_id == AD_OFFER_ITEM_ID:
+		_ad_offer_tile = tile
 
 
 func _on_boosters_tab_pressed() -> void:
@@ -289,7 +317,104 @@ func _on_booster_buy_pressed(item_id: String, quantity: int) -> void:
 
 func _on_product_buy_pressed(item_id: String) -> void:
 	_play_button_click()
+	if item_id == AD_OFFER_ITEM_ID:
+		_start_shop_rewarded_ad(item_id)
+		return
 	_resolve_purchase(item_id, 1)
+
+
+## Stage 69.2 v0.1: "+3 Gems watch AD" offer. Gems are only granted from
+## _on_platform_rewarded_ad_rewarded(), never from here — this only starts
+## the ad attempt and locks the offer button/shows loading feedback.
+func _start_shop_rewarded_ad(item_id: String) -> void:
+	var platform := get_node_or_null("/root/Platform")
+	if platform == null:
+		feedback_label.text = _localized_ad_feedback("ui.rewarded_ad.unavailable", "Ad unavailable")
+		return
+
+	_shop_ad_active = true
+	_shop_ad_rewarded = false
+	_shop_ad_item_id = item_id
+	_set_ad_offer_enabled(false)
+	feedback_label.text = _localized_ad_feedback("ui.rewarded_ad.loading", "Loading ad...")
+	platform.show_rewarded_ad(REWARDED_AD_PLACEMENT_SHOP_OFFER_GEMS)
+
+
+func _on_platform_rewarded_ad_opened() -> void:
+	if not _shop_ad_active:
+		return
+	var audio_manager := get_node_or_null("/root/AudioManager")
+	if audio_manager != null:
+		audio_manager.pause_for_ad()
+
+
+func _on_platform_rewarded_ad_rewarded() -> void:
+	if not _shop_ad_active or _shop_ad_rewarded:
+		return
+	_shop_ad_rewarded = true
+	_grant_shop_ad_reward(_shop_ad_item_id)
+
+
+func _grant_shop_ad_reward(item_id: String) -> void:
+	if _progress_manager == null or _shop_catalog == null:
+		feedback_label.text = _localized_ad_feedback("ui.rewarded_ad.error", "Ad error")
+		return
+
+	var item = _shop_catalog.get_item(item_id)
+	if item == null:
+		return
+
+	for reward in item.rewards:
+		if str(reward.get("type", "")) == SHOP_REWARD_TYPE_SCRIPT.CURRENCY:
+			var currency_id := str(reward.get("currency_id", ""))
+			var amount := int(reward.get("amount", 0))
+			_progress_manager.add_currency(currency_id, amount)
+
+	_refresh_wallet()
+
+
+func _on_platform_rewarded_ad_closed(_was_shown: bool) -> void:
+	if not _shop_ad_active:
+		return
+	_shop_ad_active = false
+	var audio_manager := get_node_or_null("/root/AudioManager")
+	if audio_manager != null:
+		audio_manager.resume_after_ad()
+	_set_ad_offer_enabled(true)
+
+	if _shop_ad_rewarded:
+		_shop_ad_rewarded = false
+		feedback_label.text = _localized_ad_feedback("ui.shop.feedback.ad_reward_gems", "+3 gems received")
+		_play_purchase_result_sfx(true)
+	else:
+		feedback_label.text = _localized_ad_feedback("ui.rewarded_ad.cancelled", "Reward was not granted")
+	_shop_ad_item_id = ""
+
+
+func _on_platform_rewarded_ad_error(_message: String) -> void:
+	if not _shop_ad_active:
+		return
+	_shop_ad_active = false
+	_shop_ad_rewarded = false
+	_shop_ad_item_id = ""
+	var audio_manager := get_node_or_null("/root/AudioManager")
+	if audio_manager != null:
+		audio_manager.resume_after_ad()
+	_set_ad_offer_enabled(true)
+	feedback_label.text = _localized_ad_feedback("ui.rewarded_ad.error", "Ad error")
+	_play_purchase_result_sfx(false)
+
+
+func _set_ad_offer_enabled(enabled: bool) -> void:
+	if _ad_offer_tile != null and is_instance_valid(_ad_offer_tile):
+		_ad_offer_tile.set_buy_enabled(enabled)
+
+
+func _localized_ad_feedback(key: String, fallback_text: String) -> String:
+	var localization_manager := get_node_or_null("/root/LocalizationManager")
+	if localization_manager == null:
+		return fallback_text
+	return localization_manager.tr_key(key)
 
 
 func _resolve_purchase(item_id: String, quantity: int) -> void:

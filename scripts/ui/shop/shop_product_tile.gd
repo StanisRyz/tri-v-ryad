@@ -70,5 +70,12 @@ func set_item(item, icon: Texture2D) -> void:
 		_buy_button.set_button_text(item.display_name)
 
 
+## Stage 69.2: lets ShopScreen lock the buy button while a rewarded-ad
+## attempt for this tile's item is in flight.
+func set_buy_enabled(enabled: bool) -> void:
+	if _buy_button != null:
+		_buy_button.disabled = not enabled
+
+
 func _on_buy_pressed() -> void:
 	buy_pressed.emit(_item_id)

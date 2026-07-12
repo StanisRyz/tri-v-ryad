@@ -149,18 +149,62 @@ The "continue after defeat" flow (`_grant_continue_moves` /
 if a later stage wants `GameplayAPI` to track continued play as part of the
 same session, wire it there.
 
-## Ad foundation (Stage 69.1 only)
+## Ad foundation (Stage 69.1)
 
 Signals available on both `YandexBridge` and `Platform`:
 `rewarded_ad_opened`, `rewarded_ad_rewarded`, `rewarded_ad_closed(was_shown)`,
 `rewarded_ad_error(message)`, `fullscreen_ad_opened`,
 `fullscreen_ad_closed(was_shown)`, `fullscreen_ad_error(message)`.
 
-**`LoseContinuePopup`'s existing placeholder behavior is untouched.**
-`game_screen.gd._try_continue_with_ad()` still grants the continue reward
-directly, with no real ad shown. Wiring `Platform.show_rewarded_ad()` into
-that flow (and only granting the reward on `rewarded_ad_rewarded`) is
-Stage 69.2 work.
+## Rewarded ads (Stage 69.2)
+
+Two placements now call `Platform.show_rewarded_ad(placement_id)`:
+
+- `"lose_continue"` — `LoseContinuePopup`'s Watch Ad button, wired from
+  `game_screen.gd._try_continue_with_ad()`.
+- `"shop_offer_gems_3"` — the Offers tab's "+3 Gems watch AD" tile
+  (`offer_watch_ad`), wired from `shop_screen.gd._start_shop_rewarded_ad()`.
+
+Neither `GameScreen` nor `ShopScreen` calls `YandexBridge` or
+`JavaScriptBridge` — both go through `Platform` only, per the platform
+boundary rule.
+
+**Reward gating.** The reward (+3 continue moves / +3 gems) is granted
+exactly once, from each screen's `_on_platform_rewarded_ad_rewarded()`
+handler — never from the button-press handler and never from the
+`rewarded_ad_closed` handler. A local `_..._ad_rewarded` flag on each screen
+guards against a duplicate `rewarded_ad_rewarded` signal granting twice.
+`rewarded_ad_closed`/`rewarded_ad_error` only ever unlock the UI again and,
+for a successful reward, hide the popup / resume play (`GameScreen`) or show
+the success message and refresh the wallet (`ShopScreen`) — they never grant
+anything themselves.
+
+**No cross-screen leakage.** Each screen only reacts to `Platform`'s
+rewarded-ad signals while its own `_..._ad_active` flag is `true` (set right
+before calling `show_rewarded_ad()`, cleared on `closed`/`error`). Since
+`ScreenRouter.change_screen()` frees the previous screen — which Godot
+auto-disconnects signals from — `GameScreen` and `ShopScreen` are never both
+listening at once, so a signal from one screen's ad attempt cannot be
+picked up by the other.
+
+**UI locking during an attempt.** `LoseContinuePopup.set_actions_enabled()`
+disables Watch Ad/Buy Moves/Close; `ShopProductTile.set_buy_enabled()`
+disables just the ad-offer tile's buy button. Both re-enable on
+`rewarded_ad_closed` (without reward) or `rewarded_ad_error`; on a
+successful `lose_continue` reward the popup is hidden instead of
+re-enabled.
+
+**Audio.** `AudioManager.pause_for_ad()`/`resume_after_ad()` mute the
+Music/SFX buses around an ad without touching the player's Music/Sound
+Effects settings toggles — `resume_after_ad()` never restarts music the
+player had turned off, since it only unmutes the bus rather than calling
+`play_main_music()`.
+
+**`LocalDebugPlatform` simulates the whole flow** (open → rewarded → closed,
+always succeeding on a short timer), so both placements are fully testable
+in the editor with no Yandex SDK.
+
+Fullscreen ads remain foundation-only — no placement was added this stage.
 
 ## Payment foundation (Stage 69.1 only)
 
@@ -223,12 +267,12 @@ up to 20 seconds after its own `_ready()`, so the SDK script tag should be
 loaded as early as possible in the page, ahead of the Godot canvas/engine
 script.
 
-## What is explicitly NOT done in Stage 69.1
+## What is explicitly NOT done as of Stage 69.2
 
-- No real rewarded-ad gameplay integration — `LoseContinuePopup`'s
-  placeholder flow is untouched.
 - No real shop payment integration — `ShopScreen`'s `external_payment`
-  behavior is untouched.
+  behavior (gem/bundle products, the other three Offers-tab items) is
+  untouched. Payments are Stage 69.3.
+- No fullscreen (interstitial) ad placements were added.
 - No cloud save flow — only placeholder signals/methods exist on
   `PlatformServices` for a future stage to implement.
 - No unprocessed-purchase reward granting.

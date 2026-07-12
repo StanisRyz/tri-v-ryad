@@ -21,6 +21,7 @@ var _sound_effects_enabled := true
 var _music_player: AudioStreamPlayer
 var _sfx_players: Array[AudioStreamPlayer] = []
 var _next_sfx_player_index := 0
+var _ad_audio_paused := false
 
 var _music_paths_loaded := false
 var _music_stream_paths: Array[String] = []
@@ -209,6 +210,32 @@ func play_purchase_success() -> void:
 
 func play_purchase_error() -> void:
 	play_sfx("sfx_purchase_error")
+
+
+## Stage 69.2: mutes Music/SFX bus output for the duration of a rewarded ad
+## without touching `_music_enabled`/`_sound_effects_enabled` — the player's
+## actual Settings toggles are never overwritten, so resume_after_ad() never
+## re-starts music the player had turned off.
+func pause_for_ad() -> void:
+	if _ad_audio_paused:
+		return
+	_ad_audio_paused = true
+	_set_bus_mute(MUSIC_BUS_NAME, true)
+	_set_bus_mute(SFX_BUS_NAME, true)
+
+
+func resume_after_ad() -> void:
+	if not _ad_audio_paused:
+		return
+	_ad_audio_paused = false
+	_set_bus_mute(MUSIC_BUS_NAME, false)
+	_set_bus_mute(SFX_BUS_NAME, false)
+
+
+func _set_bus_mute(bus_name: String, muted: bool) -> void:
+	var bus_index := AudioServer.get_bus_index(bus_name)
+	if bus_index >= 0:
+		AudioServer.set_bus_mute(bus_index, muted)
 
 
 ## Recursively binds every BaseButton under root_node to play_button_click()

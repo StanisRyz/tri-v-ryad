@@ -2308,3 +2308,19 @@ Stage 69.1 adds a safe platform foundation for future Yandex SDK integration —
 - **No Web export preset or custom HTML shell exists yet.** `docs/YANDEX_PLATFORM.md` documents the required shell flow (`sdk.js`, `YaGames.init()`, `window.ysdk`/`window.ysdkReady`) a future Web shell must implement.
 - **Preserved:** portrait-only orientation policy, `PortraitOrientationGuard`, localization, text styles, `AudioManager`, MainMenu, Settings, Shop behavior, LoseContinuePopup behavior, LevelSelect, gameplay, result flow, economy, rewards, debug hotkeys, and save/load.
 - **No automated tests were added, updated, touched, or run.** Manual verification in the Godot editor is expected for this stage.
+
+## Stage 69.2: Rewarded Ads Integration v0.1
+
+Stage 69.2 connects rewarded ads through the Stage 69.1 `Platform` foundation for two placements, replacing the direct-grant placeholders. Full design in `docs/YANDEX_PLATFORM.md`'s "Rewarded ads (Stage 69.2)" section.
+
+- **`LoseContinuePopup` Watch Ad** (`game_screen.gd._try_continue_with_ad()`) calls `Platform.show_rewarded_ad("lose_continue")` instead of granting `+3` moves directly; loading feedback shows and Watch Ad/Buy Moves/Close lock (new `LoseContinuePopup.set_actions_enabled()`) until the ad's terminal signal arrives.
+- **Shop Offers "+3 Gems watch AD"** (`offer_watch_ad`) calls `Platform.show_rewarded_ad("shop_offer_gems_3")` from new `shop_screen.gd._start_shop_rewarded_ad()` instead of going through `ShopPurchaseResolver`; the tile's buy button locks during the attempt (new `ShopProductTile.set_buy_enabled()`). Every other shop item is unchanged.
+- **Reward gating:** `+3` moves / `+3` gems are granted exactly once, only from each screen's `_on_platform_rewarded_ad_rewarded()` handler — never on button press or on `rewarded_ad_closed`. A local `_..._ad_rewarded` flag per screen blocks a duplicate signal from granting twice.
+- **Close/cancel/error grant nothing** — the locked UI re-enables with localized "not granted"/"ad error" feedback instead. A successful `lose_continue` reward hides the popup, calls `_resume_after_continue()`, and calls `Platform.gameplay_start()` (board/enemy HP/modifiers/boosters/level/reward-state untouched); a successful shop reward refreshes the wallet with localized "+3 gems received" feedback.
+- **No cross-screen leakage:** each screen only reacts to `Platform`'s rewarded-ad signals while its own local "ad active" flag is set. `ScreenRouter.change_screen()` frees the previous screen on navigation (auto-disconnecting its signals), so `GameScreen`/`ShopScreen` are never both listening at once.
+- **Audio pause/resume:** new `AudioManager.pause_for_ad()`/`resume_after_ad()` mute the Music/SFX buses via `AudioServer.set_bus_mute()` around an ad, without touching the player's Music/Sound Effects settings.
+- **New localization keys** (en/ru): `ui.rewarded_ad.loading`/`unavailable`/`cancelled`/`error`/`reward_granted`, `ui.shop.feedback.ad_reward_gems`.
+- **`LocalDebugPlatform`** drives both placements end-to-end (open → rewarded → closed) for manual editor testing with no Yandex SDK.
+- **Not implemented:** fullscreen ads and Yandex payments remain foundation-only; Stage 69.3 will connect `ShopScreen`'s remaining `external_payment` items.
+- **Preserved:** gem-continue, the LoseContinue close→defeat-result path, the F3 debug-loss hotkey, `ShopScreen` purchase/tab/navigation behavior, portrait-only policy, localization, text styles, `AudioManager` settings, gameplay, economy, rewards, debug hotkeys, and save/load.
+- **No automated tests were added, updated, touched, or run.** Manual verification in the Godot editor is expected for this stage.

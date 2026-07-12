@@ -74,6 +74,7 @@ func _localize_ui() -> void:
 
 func show_popup() -> void:
 	feedback_label.text = ""
+	set_actions_enabled(true)
 	visible = true
 
 
@@ -83,6 +84,15 @@ func hide_popup() -> void:
 
 func show_feedback(message: String) -> void:
 	feedback_label.text = message
+
+
+## Stage 69.2: disables Watch Ad/Buy Moves/Close while a rewarded-ad attempt
+## for "lose_continue" is in flight, so the player can't start a second ad,
+## spend gems, or close out from underneath an in-progress ad callback.
+func set_actions_enabled(enabled: bool) -> void:
+	watch_ad_button.disabled = not enabled
+	buy_moves_button.disabled = not enabled
+	close_button.disabled = not enabled
 
 
 func _bind_window_texture() -> void:
