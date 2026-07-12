@@ -83,6 +83,9 @@ const STYLES := {
 	# Debug/dev
 	"debug.message": {"font_size": 16, "outline_size": 2},
 	"debug.small": {"font_size": 12, "outline_size": 1},
+
+	# Stage 69.0: rotate-device overlay
+	"orientation_guard.message": {"font_size": 36, "outline_size": 5},
 }
 
 

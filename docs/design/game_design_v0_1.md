@@ -17,6 +17,7 @@ The project was previously through Stage 57.5: Cell-Anchored Ice Overlays and Pe
 - Renderer: Compatibility / `gl_compatibility`.
 - Main orientation: vertical 9:16 portrait.
 - Base resolution: 720x1280.
+- Orientation policy (Stage 69.0): portrait-only. Landscape layout is unsupported; a landscape viewport shows the global `PortraitOrientationGuard` rotate-device overlay, which blocks input while visible.
 - Main mechanic planned for later: Hero Lanes on a 9x9 match-3 board.
 
 ## Hero Lanes
@@ -2275,4 +2276,18 @@ Stage 67.4 replaces `SettingsScreen`'s `CheckButton` slider toggles (Animations,
 - **`settings_screen.gd`** reworked around toggle ids (`"animations"`, `"reduced_motion"`, `"music"`, `"sound_effects"`, `"debug_labels"`) with new `_get_toggle_value`/`_set_toggle_value`/`_toggle_setting`/`_refresh_toggle_button` helpers, still calling the same `SettingsManager` setters (`set_animations_enabled`, etc.) and `_apply_audio_manager_settings()` for Music/Sound Effects. Each button uses `PressableTextureButton.delayed_pressed` (same flow as `%BackButton`) instead of `CheckButton.toggled`.
 - **Fallback:** when `toggle_on.png`/`toggle_off.png` aren't loaded, the button shows its built-in placeholder color plus a localized "On"/"Off" label (new `ui.common.on`/`ui.common.off` keys) and stays clickable.
 - **Preserved:** setting labels/localization keys, text styles, `SettingsWindow` layout, `BackButton` behavior, save/load, `AudioManager` behavior, debug-labels wiring.
+- **No automated tests were added, updated, touched, or run.** Manual verification in the Godot editor is expected for this stage.
+
+## Stage 69.0: Portrait Only Orientation Lock v0.1
+
+Stage 69.0 locks the game's orientation policy to portrait-only ahead of Yandex SDK/ads/payments integration. The game orientation policy is portrait-only; base resolution is 720x1280; landscape layout is unsupported. `project.godot`'s `[display]` block was audited and already matched the expected portrait baseline (`window/size/viewport_width=720`, `window/size/viewport_height=1280`, `window/stretch/mode="canvas_items"`, `window/stretch/aspect="expand"`, `window/handheld/orientation=1` i.e. portrait) — no changes were needed there, and no setting implying landscape support was present.
+
+- **New `PortraitOrientationGuard`** (`scenes/ui/PortraitOrientationGuard.tscn` + `scripts/ui/orientation/portrait_orientation_guard.gd`): a `Control` (full-screen anchors) with a `DimBackground` (`ColorRect`) and centered `MessageLabel` (`Label`). Hidden while the viewport is portrait; becomes visible whenever `viewport width > viewport height`, checked on `_ready()` and on every `Viewport.size_changed`.
+- **Global overlay.** Connected in `App.tscn` as a sibling of `ScreenHost`, instanced after it so it renders above every screen — MainMenu, Settings, Shop, LevelSelect, GameScreen, Result UI, LoseContinuePopup, and future Yandex ad/payment flows are all covered by this single overlay, no per-screen wiring needed.
+- **Blocks input while visible.** The guard's `mouse_filter` switches to `STOP` only while the overlay is shown (and `IGNORE` while hidden), so the player cannot press gameplay/UI buttons, buy items, start a level, spend boosters, close popups, or trigger continue actions behind it while a landscape viewport is detected.
+- **Localized rotate-device message.** New key `ui.orientation.rotate_device` (en: "Please rotate your device", ru: "Поверните устройство") added to `localization/game_text.csv` and the generated `scripts/game/localization/localization_data.gd` fallback. The guard reads it via `LocalizationManager.tr_key()` on `_ready()` and refreshes on `language_changed`.
+- **New text style** `orientation_guard.message` (font size 36, outline size 5) added to `TextStyleCatalog` and applied to `MessageLabel` via the existing `TextStyleApplier`.
+- **Landscape layout branch audit.** Searched the project for `landscape`/`is_landscape`/`orientation`/viewport-width-vs-height logic. `GameScreen`'s pre-existing `LayoutManager`-driven `_apply_landscape_layout()`/`_apply_portrait_layout()` HUD-sizing pair (`scripts/screens/game_screen.gd`, `scripts/app/layout_manager.gd`) was reviewed and intentionally left in place: it is internal HUD sizing bookkeeping, not user-facing landscape support, and is now unreachable in practice since `PortraitOrientationGuard` covers and blocks the screen the moment the viewport goes landscape. Removing it would be a `GameScreen` layout redesign (explicitly out of scope for this stage) and would break `navigation_flow_test.gd`'s existing assertions against `_apply_landscape_layout()` (left untouched per this stage's test-freeze scope). The only new landscape-viewport check added by this stage lives in `PortraitOrientationGuard`. Future UI patches should not add new landscape layout branches — viewport landscape checks belong only in `PortraitOrientationGuard`.
+- **No Yandex SDK, ads, payments, or cloud save were added in this patch.**
+- **Preserved:** MainMenu, Settings, Shop, LevelSelect, GameScreen, Result UI, LoseContinuePopup, localization behavior, text style behavior, `AudioManager` behavior, gameplay, economy, rewards, debug hotkeys, and save/load.
 - **No automated tests were added, updated, touched, or run.** Manual verification in the Godot editor is expected for this stage.

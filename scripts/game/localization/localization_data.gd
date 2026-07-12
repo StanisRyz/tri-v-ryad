@@ -140,6 +140,7 @@ static func get_translations() -> Dictionary:
 			"battle.special.line": "Line special",
 			"battle.special.bomb": "Color bomb",
 			"battle.special.generic": "Special tile",
+			"ui.orientation.rotate_device": "Please rotate your device",
 		},
 		"ru": {
 			"ui.common.back": "Назад",
@@ -273,5 +274,6 @@ static func get_translations() -> Dictionary:
 			"battle.special.line": "Линейная спецплитка",
 			"battle.special.bomb": "Цветовая бомба",
 			"battle.special.generic": "Спецплитка",
+			"ui.orientation.rotate_device": "Поверните устройство",
 		},
 	}

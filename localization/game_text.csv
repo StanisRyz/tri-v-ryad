@@ -132,3 +132,4 @@ battle.result.defeat,"Defeat: use boosted colors, special tiles, and better matc
 battle.special.line,Line special,Линейная спецплитка,BattleMessageFormatter special tile type label,
 battle.special.bomb,Color bomb,Цветовая бомба,BattleMessageFormatter special tile type label,
 battle.special.generic,Special tile,Спецплитка,BattleMessageFormatter special tile type label,
+ui.orientation.rotate_device,Please rotate your device,Поверните устройство,PortraitOrientationGuard rotate-device message,
