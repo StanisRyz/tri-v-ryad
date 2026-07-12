@@ -2265,3 +2265,14 @@ Stage 67.3 extends Stage 67.2's inline-currency-icon pattern to `ShopBoosterTile
 - Removed the `currency.gold`/`currency.gems` word lookup from this one call site only; those keys are untouched and still used elsewhere.
 - **Preserved:** tile size, icon area, buy-button sizing, purchase/price/reward logic, `shop.tile_price_button` text style.
 - **No automated tests were added, updated, touched, or run.** Manual verification in the Godot editor is expected for this stage.
+
+## Stage 67.4: Settings Texture Toggle Buttons v0.1
+
+Stage 67.4 replaces `SettingsScreen`'s `CheckButton` slider toggles (Animations, Reduced Motion, Music, Sound Effects, hidden Debug Labels) with texture-based On/Off buttons using the existing `PressableTextureButton` script, matching the rest of the UI's texture-button pattern.
+
+- **`SettingsScreen.tscn`**: each toggle changed from `CheckButton` to `Button` + `pressable_texture_button.gd`, with `Placeholder`/`ButtonTexture`/`TextMargin/Label` children for fallback rendering. Node names, `unique_name_in_owner`, and row layout unchanged.
+- **Asset keys reused:** `toggle_on`/`toggle_off` → `ui_toggle_on`/`ui_toggle_off` → `res://assets/images/ui/toggle_on.png` / `toggle_off.png`, already present in `AssetKeyResolver`/`GameAssetCatalog` from an earlier stage; this stage binds them to a real control for the first time. PNGs are not yet in the repo, so the fallback path renders today.
+- **`settings_screen.gd`** reworked around toggle ids (`"animations"`, `"reduced_motion"`, `"music"`, `"sound_effects"`, `"debug_labels"`) with new `_get_toggle_value`/`_set_toggle_value`/`_toggle_setting`/`_refresh_toggle_button` helpers, still calling the same `SettingsManager` setters (`set_animations_enabled`, etc.) and `_apply_audio_manager_settings()` for Music/Sound Effects. Each button uses `PressableTextureButton.delayed_pressed` (same flow as `%BackButton`) instead of `CheckButton.toggled`.
+- **Fallback:** when `toggle_on.png`/`toggle_off.png` aren't loaded, the button shows its built-in placeholder color plus a localized "On"/"Off" label (new `ui.common.on`/`ui.common.off` keys) and stays clickable.
+- **Preserved:** setting labels/localization keys, text styles, `SettingsWindow` layout, `BackButton` behavior, save/load, `AudioManager` behavior, debug-labels wiring.
+- **No automated tests were added, updated, touched, or run.** Manual verification in the Godot editor is expected for this stage.

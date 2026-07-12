@@ -9,11 +9,11 @@ const GAME_ASSET_CATALOG := preload("res://scripts/game/config/game_asset_catalo
 const TEXT_STYLE_APPLIER_SCRIPT := preload("res://scripts/ui/text/text_style_applier.gd")
 
 @onready var back_button: PressableTextureButton = %BackButton
-@onready var animations_toggle: CheckButton = %AnimationsToggle
-@onready var reduced_motion_toggle: CheckButton = %ReducedMotionToggle
-@onready var debug_labels_toggle: CheckButton = get_node_or_null("%DebugLabelsToggle")
-@onready var music_toggle: CheckButton = %MusicToggle
-@onready var sound_effects_toggle: CheckButton = %SoundEffectsToggle
+@onready var animations_toggle: PressableTextureButton = %AnimationsToggle
+@onready var reduced_motion_toggle: PressableTextureButton = %ReducedMotionToggle
+@onready var debug_labels_toggle: PressableTextureButton = get_node_or_null("%DebugLabelsToggle")
+@onready var music_toggle: PressableTextureButton = %MusicToggle
+@onready var sound_effects_toggle: PressableTextureButton = %SoundEffectsToggle
 @onready var background_rect: TextureRect = %Background
 @onready var settings_window_rect: TextureRect = %SettingsWindow
 @onready var title_label: Label = %TitleLabel
@@ -23,18 +23,17 @@ const TEXT_STYLE_APPLIER_SCRIPT := preload("res://scripts/ui/text/text_style_app
 @onready var sound_effects_label: Label = %SoundEffectsLabel
 
 var _settings_manager
-var _is_refreshing := false
 
 
 func _ready() -> void:
-	_bind_static_ui_assets()
 	back_button.delayed_pressed.connect(_on_back_button_delayed_pressed)
-	animations_toggle.toggled.connect(_on_animations_toggled)
-	reduced_motion_toggle.toggled.connect(_on_reduced_motion_toggled)
+	animations_toggle.delayed_pressed.connect(_on_toggle_delayed_pressed.bind("animations"))
+	reduced_motion_toggle.delayed_pressed.connect(_on_toggle_delayed_pressed.bind("reduced_motion"))
 	if debug_labels_toggle != null:
-		debug_labels_toggle.toggled.connect(_on_debug_labels_toggled)
-	music_toggle.toggled.connect(_on_music_toggled)
-	sound_effects_toggle.toggled.connect(_on_sound_effects_toggled)
+		debug_labels_toggle.delayed_pressed.connect(_on_toggle_delayed_pressed.bind("debug_labels"))
+	music_toggle.delayed_pressed.connect(_on_toggle_delayed_pressed.bind("music"))
+	sound_effects_toggle.delayed_pressed.connect(_on_toggle_delayed_pressed.bind("sound_effects"))
+	_bind_static_ui_assets()
 	_refresh_from_settings()
 	_localize_ui()
 	_apply_text_styles()
@@ -50,6 +49,8 @@ func _apply_text_styles() -> void:
 	TEXT_STYLE_APPLIER_SCRIPT.apply_to_label(music_label, "settings.option_label")
 	TEXT_STYLE_APPLIER_SCRIPT.apply_to_label(sound_effects_label, "settings.option_label")
 	TEXT_STYLE_APPLIER_SCRIPT.apply_to_child_label(back_button, "TextMargin/Label", "settings.button")
+	for toggle in _visible_toggles():
+		TEXT_STYLE_APPLIER_SCRIPT.apply_to_child_label(toggle, "TextMargin/Label", "settings.option_value")
 
 
 func _localize_ui() -> void:
@@ -62,14 +63,14 @@ func _localize_ui() -> void:
 	music_label.text = localization_manager.tr_key("ui.settings.music")
 	sound_effects_label.text = localization_manager.tr_key("ui.settings.sound_effects")
 	back_button.button_text = localization_manager.tr_key("ui.common.back")
+	for toggle in _visible_toggles():
+		_refresh_toggle_fallback_text(toggle)
 
 
 func _bind_static_ui_assets() -> void:
 	_apply_background_texture()
 	_apply_settings_window_texture()
 	_bind_back_button_textures()
-	for toggle in _visible_toggles():
-		_bind_toggle_asset_key(toggle)
 
 
 func _apply_background_texture() -> void:
@@ -115,54 +116,59 @@ func _refresh_from_settings() -> void:
 	if _settings_manager == null:
 		return
 
-	var settings: PlayerSettings = _settings_manager.get_settings()
-	_is_refreshing = true
-	animations_toggle.button_pressed = settings.animations_enabled
-	reduced_motion_toggle.button_pressed = settings.reduced_motion_enabled
-	if debug_labels_toggle != null:
-		debug_labels_toggle.button_pressed = settings.debug_labels_enabled
-	music_toggle.button_pressed = settings.music_enabled
-	sound_effects_toggle.button_pressed = settings.sound_effects_enabled
 	for toggle in _visible_toggles():
-		_bind_toggle_asset_key(toggle)
-	_is_refreshing = false
+		_refresh_toggle_button(toggle, _get_toggle_value(_toggle_id_for_button(toggle)))
 
 
-func _on_animations_toggled(value: bool) -> void:
-	if _is_refreshing or _settings_manager == null:
+## Maps a toggle_id to its PlayerSettings field so save/load stays wired
+## through the same SettingsManager API the CheckButton version used.
+func _get_toggle_value(toggle_id: String) -> bool:
+	if _settings_manager == null:
+		return false
+	var settings: PlayerSettings = _settings_manager.get_settings()
+	match toggle_id:
+		"animations":
+			return settings.animations_enabled
+		"reduced_motion":
+			return settings.reduced_motion_enabled
+		"music":
+			return settings.music_enabled
+		"sound_effects":
+			return settings.sound_effects_enabled
+		"debug_labels":
+			return settings.debug_labels_enabled
+	return false
+
+
+func _set_toggle_value(toggle_id: String, value: bool) -> void:
+	if _settings_manager == null:
 		return
-	_settings_manager.set_animations_enabled(value)
-	_bind_toggle_asset_key(animations_toggle)
+	match toggle_id:
+		"animations":
+			_settings_manager.set_animations_enabled(value)
+		"reduced_motion":
+			_settings_manager.set_reduced_motion_enabled(value)
+		"music":
+			_settings_manager.set_music_enabled(value)
+			_apply_audio_manager_settings()
+		"sound_effects":
+			_settings_manager.set_sound_effects_enabled(value)
+			_apply_audio_manager_settings()
+		"debug_labels":
+			_settings_manager.set_debug_labels_enabled(value)
 
 
-func _on_reduced_motion_toggled(value: bool) -> void:
-	if _is_refreshing or _settings_manager == null:
+func _toggle_setting(button_id: String) -> void:
+	if _settings_manager == null:
 		return
-	_settings_manager.set_reduced_motion_enabled(value)
-	_bind_toggle_asset_key(reduced_motion_toggle)
+	var new_value := not _get_toggle_value(button_id)
+	_set_toggle_value(button_id, new_value)
+	_refresh_toggle_button(_button_for_toggle_id(button_id), new_value)
 
 
-func _on_debug_labels_toggled(value: bool) -> void:
-	if _is_refreshing or _settings_manager == null:
-		return
-	_settings_manager.set_debug_labels_enabled(value)
-	_bind_toggle_asset_key(debug_labels_toggle)
-
-
-func _on_music_toggled(value: bool) -> void:
-	if _is_refreshing or _settings_manager == null:
-		return
-	_settings_manager.set_music_enabled(value)
-	_bind_toggle_asset_key(music_toggle)
-	_apply_audio_manager_settings()
-
-
-func _on_sound_effects_toggled(value: bool) -> void:
-	if _is_refreshing or _settings_manager == null:
-		return
-	_settings_manager.set_sound_effects_enabled(value)
-	_bind_toggle_asset_key(sound_effects_toggle)
-	_apply_audio_manager_settings()
+func _on_toggle_delayed_pressed(toggle_id: String) -> void:
+	_play_button_click()
+	_toggle_setting(toggle_id)
 
 
 func _visible_toggles() -> Array:
@@ -172,12 +178,64 @@ func _visible_toggles() -> Array:
 	return toggles
 
 
-func _bind_toggle_asset_key(toggle: CheckButton) -> void:
-	if toggle == null:
+func _toggle_id_for_button(toggle: PressableTextureButton) -> String:
+	if toggle == animations_toggle:
+		return "animations"
+	if toggle == reduced_motion_toggle:
+		return "reduced_motion"
+	if toggle == music_toggle:
+		return "music"
+	if toggle == sound_effects_toggle:
+		return "sound_effects"
+	if toggle == debug_labels_toggle:
+		return "debug_labels"
+	return ""
+
+
+func _button_for_toggle_id(toggle_id: String) -> PressableTextureButton:
+	match toggle_id:
+		"animations":
+			return animations_toggle
+		"reduced_motion":
+			return reduced_motion_toggle
+		"music":
+			return music_toggle
+		"sound_effects":
+			return sound_effects_toggle
+		"debug_labels":
+			return debug_labels_toggle
+	return null
+
+
+## Sets the button's texture to match the given value and falls back to an
+## "On"/"Off" label when toggle_on.png / toggle_off.png are not present,
+## so the control stays legible even without art.
+func _refresh_toggle_button(button: PressableTextureButton, value: bool) -> void:
+	if button == null:
 		return
 
-	var ui_id := "toggle_on" if toggle.button_pressed else "toggle_off"
-	UI_ASSET_BINDING_SCRIPT.bind_asset_key(toggle, ASSET_KEY_RESOLVER_SCRIPT.get_ui_asset_key(ui_id), ui_id)
+	var ui_id := "toggle_on" if value else "toggle_off"
+	var asset_key := ASSET_KEY_RESOLVER_SCRIPT.get_ui_asset_key(ui_id)
+	var texture := UI_ASSET_BINDING_SCRIPT.bind_asset_key(button, asset_key, ui_id)
+	button.set_normal_texture(texture)
+	button.set_meta("toggle_value", value)
+	_refresh_toggle_fallback_text(button)
+
+
+func _refresh_toggle_fallback_text(button: PressableTextureButton) -> void:
+	if button == null:
+		return
+
+	if button.normal_texture != null:
+		button.set_button_text("")
+		return
+
+	var value: bool = button.get_meta("toggle_value", false)
+	var localization_manager := get_node_or_null("/root/LocalizationManager")
+	if localization_manager != null:
+		button.set_button_text(localization_manager.tr_key("ui.common.on" if value else "ui.common.off"))
+	else:
+		button.set_button_text("On" if value else "Off")
 
 
 func _on_back_button_delayed_pressed() -> void:

@@ -71,7 +71,7 @@ A few ids are defined but currently unused because no matching UI node exists ye
 ## What received style blocks
 
 - **MainMenu** (`main_menu_screen.gd`): Play/Level Select/Shop/Settings button labels (`main_menu.button`), gold/gems labels (`main_menu.currency`).
-- **Settings** (`settings_screen.gd`): title (`settings.title`), the 4 toggle row labels (`settings.option_label`), back button (`settings.button`).
+- **Settings** (`settings_screen.gd`): title (`settings.title`), the toggle row labels (`settings.option_label`), back button (`settings.button`); Stage 67.4 gave the toggle buttons' fallback "On"/"Off" text (`TextMargin/Label`, shown only when `toggle_on.png`/`toggle_off.png` are missing) the previously-unused `settings.option_value` style id.
 - **Shop** (`shop_screen.gd`, `shop_booster_tile.gd`, `shop_product_tile.gd`): wallet labels (`shop.wallet`), tab labels (`shop.tab`), feedback label (`shop.feedback`), back button (`global.button`), booster tile buy buttons (`shop.tile_price_button`), gem/bundle/offer tile buy buttons (`shop.tile_product_button`).
 - **Level Select** (`level_select_screen.gd`): zone dropdown (`level_select.zone_dropdown`), the 5 level button labels (`level_select.level_button`), back button (`level_select.back_button`), `LevelInfoPopup` title (`level_select.popup_title`) and Start/Back buttons (`level_select.popup_button`).
 - **Game HUD** (`battle_hud.gd`, `enemy_panel.gd`, `game_screen.gd`, `booster_texture_button.gd`): level/moves labels (`game_hud.level`/`game_hud.moves`), Menu button (`game_hud.menu_button`), enemy HP value (`game_hud.hp`), round modifier description (`game_hud.modifier`), booster count labels (`game_hud.booster_count`).

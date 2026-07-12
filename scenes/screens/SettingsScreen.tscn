@@ -64,61 +64,293 @@ theme_override_constants/separation = 24
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="AnimationsLabel" type="Label" parent="SettingsWindow/SettingsContent/AnimationsRow"]
-unique_name_in_owner = true
+[node name="AnimationsLabelMargin" type="MarginContainer" parent="SettingsWindow/SettingsContent/AnimationsRow"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_constants/margin_top = -5
+
+[node name="AnimationsLabel" type="Label" parent="SettingsWindow/SettingsContent/AnimationsRow/AnimationsLabelMargin"]
+unique_name_in_owner = true
+layout_mode = 2
 theme_override_font_sizes/font_size = 22
 text = "Animations"
 
-[node name="AnimationsToggle" type="CheckButton" parent="SettingsWindow/SettingsContent/AnimationsRow"]
+[node name="AnimationsToggle" type="Button" parent="SettingsWindow/SettingsContent/AnimationsRow"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 48)
 layout_mode = 2
+size_flags_horizontal = 0
+focus_mode = 0
+theme_override_colors/font_color = Color(0, 0, 0, 0)
+theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
+theme_override_styles/normal = SubResource("StyleBoxEmpty_b8k66")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_b8k66")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_b8k66")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_b8k66")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_b8k66")
+flat = true
+script = ExtResource("2_btn")
+press_duration = 0.12
+
+[node name="Placeholder" type="ColorRect" parent="SettingsWindow/SettingsContent/AnimationsRow/AnimationsToggle"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.22, 0.24, 0.32, 1)
+
+[node name="ButtonTexture" type="TextureRect" parent="SettingsWindow/SettingsContent/AnimationsRow/AnimationsToggle"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 4
+
+[node name="TextMargin" type="MarginContainer" parent="SettingsWindow/SettingsContent/AnimationsRow/AnimationsToggle"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="SettingsWindow/SettingsContent/AnimationsRow/AnimationsToggle/TextMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 20
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="ReducedMotionRow" type="HBoxContainer" parent="SettingsWindow/SettingsContent"]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="ReducedMotionLabel" type="Label" parent="SettingsWindow/SettingsContent/ReducedMotionRow"]
-unique_name_in_owner = true
+[node name="ReducedMotionLabelMargin" type="MarginContainer" parent="SettingsWindow/SettingsContent/ReducedMotionRow"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_constants/margin_top = -5
+
+[node name="ReducedMotionLabel" type="Label" parent="SettingsWindow/SettingsContent/ReducedMotionRow/ReducedMotionLabelMargin"]
+unique_name_in_owner = true
+layout_mode = 2
 theme_override_font_sizes/font_size = 22
 text = "Reduced Motion"
 
-[node name="ReducedMotionToggle" type="CheckButton" parent="SettingsWindow/SettingsContent/ReducedMotionRow"]
+[node name="ReducedMotionToggle" type="Button" parent="SettingsWindow/SettingsContent/ReducedMotionRow"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 48)
 layout_mode = 2
+size_flags_horizontal = 0
+focus_mode = 0
+theme_override_colors/font_color = Color(0, 0, 0, 0)
+theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
+theme_override_styles/normal = SubResource("StyleBoxEmpty_b8k66")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_b8k66")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_b8k66")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_b8k66")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_b8k66")
+flat = true
+script = ExtResource("2_btn")
+press_duration = 0.12
+
+[node name="Placeholder" type="ColorRect" parent="SettingsWindow/SettingsContent/ReducedMotionRow/ReducedMotionToggle"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.22, 0.24, 0.32, 1)
+
+[node name="ButtonTexture" type="TextureRect" parent="SettingsWindow/SettingsContent/ReducedMotionRow/ReducedMotionToggle"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 4
+
+[node name="TextMargin" type="MarginContainer" parent="SettingsWindow/SettingsContent/ReducedMotionRow/ReducedMotionToggle"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="SettingsWindow/SettingsContent/ReducedMotionRow/ReducedMotionToggle/TextMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 20
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="MusicRow" type="HBoxContainer" parent="SettingsWindow/SettingsContent"]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="MusicLabel" type="Label" parent="SettingsWindow/SettingsContent/MusicRow"]
-unique_name_in_owner = true
+[node name="MusicLabelMargin" type="MarginContainer" parent="SettingsWindow/SettingsContent/MusicRow"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_constants/margin_top = -5
+
+[node name="MusicLabel" type="Label" parent="SettingsWindow/SettingsContent/MusicRow/MusicLabelMargin"]
+unique_name_in_owner = true
+layout_mode = 2
 theme_override_font_sizes/font_size = 22
 text = "Music"
 
-[node name="MusicToggle" type="CheckButton" parent="SettingsWindow/SettingsContent/MusicRow"]
+[node name="MusicToggle" type="Button" parent="SettingsWindow/SettingsContent/MusicRow"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 48)
 layout_mode = 2
+size_flags_horizontal = 0
+focus_mode = 0
+theme_override_colors/font_color = Color(0, 0, 0, 0)
+theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
+theme_override_styles/normal = SubResource("StyleBoxEmpty_b8k66")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_b8k66")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_b8k66")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_b8k66")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_b8k66")
+flat = true
+script = ExtResource("2_btn")
+press_duration = 0.12
+
+[node name="Placeholder" type="ColorRect" parent="SettingsWindow/SettingsContent/MusicRow/MusicToggle"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.22, 0.24, 0.32, 1)
+
+[node name="ButtonTexture" type="TextureRect" parent="SettingsWindow/SettingsContent/MusicRow/MusicToggle"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 4
+
+[node name="TextMargin" type="MarginContainer" parent="SettingsWindow/SettingsContent/MusicRow/MusicToggle"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="SettingsWindow/SettingsContent/MusicRow/MusicToggle/TextMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 20
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="SoundEffectsRow" type="HBoxContainer" parent="SettingsWindow/SettingsContent"]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="SoundEffectsLabel" type="Label" parent="SettingsWindow/SettingsContent/SoundEffectsRow"]
-unique_name_in_owner = true
+[node name="SoundEffectsLabelMargin" type="MarginContainer" parent="SettingsWindow/SettingsContent/SoundEffectsRow"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_constants/margin_top = -5
+
+[node name="SoundEffectsLabel" type="Label" parent="SettingsWindow/SettingsContent/SoundEffectsRow/SoundEffectsLabelMargin"]
+unique_name_in_owner = true
+layout_mode = 2
 theme_override_font_sizes/font_size = 22
 text = "Sound Effects"
 
-[node name="SoundEffectsToggle" type="CheckButton" parent="SettingsWindow/SettingsContent/SoundEffectsRow"]
+[node name="SoundEffectsToggle" type="Button" parent="SettingsWindow/SettingsContent/SoundEffectsRow"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 48)
 layout_mode = 2
+size_flags_horizontal = 0
+focus_mode = 0
+theme_override_colors/font_color = Color(0, 0, 0, 0)
+theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
+theme_override_styles/normal = SubResource("StyleBoxEmpty_b8k66")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_b8k66")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_b8k66")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_b8k66")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_b8k66")
+flat = true
+script = ExtResource("2_btn")
+press_duration = 0.12
+
+[node name="Placeholder" type="ColorRect" parent="SettingsWindow/SettingsContent/SoundEffectsRow/SoundEffectsToggle"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.22, 0.24, 0.32, 1)
+
+[node name="ButtonTexture" type="TextureRect" parent="SettingsWindow/SettingsContent/SoundEffectsRow/SoundEffectsToggle"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 4
+
+[node name="TextMargin" type="MarginContainer" parent="SettingsWindow/SettingsContent/SoundEffectsRow/SoundEffectsToggle"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="SettingsWindow/SettingsContent/SoundEffectsRow/SoundEffectsToggle/TextMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 20
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="DebugLabelsRow" type="HBoxContainer" parent="SettingsWindow/SettingsContent"]
 visible = false
@@ -131,9 +363,63 @@ size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 22
 text = "Debug Labels"
 
-[node name="DebugLabelsToggle" type="CheckButton" parent="SettingsWindow/SettingsContent/DebugLabelsRow"]
+[node name="DebugLabelsToggle" type="Button" parent="SettingsWindow/SettingsContent/DebugLabelsRow"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 48)
 layout_mode = 2
+size_flags_horizontal = 0
+focus_mode = 0
+theme_override_colors/font_color = Color(0, 0, 0, 0)
+theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
+theme_override_styles/normal = SubResource("StyleBoxEmpty_b8k66")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_b8k66")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_b8k66")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_b8k66")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_b8k66")
+flat = true
+script = ExtResource("2_btn")
+press_duration = 0.12
+
+[node name="Placeholder" type="ColorRect" parent="SettingsWindow/SettingsContent/DebugLabelsRow/DebugLabelsToggle"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.22, 0.24, 0.32, 1)
+
+[node name="ButtonTexture" type="TextureRect" parent="SettingsWindow/SettingsContent/DebugLabelsRow/DebugLabelsToggle"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 4
+
+[node name="TextMargin" type="MarginContainer" parent="SettingsWindow/SettingsContent/DebugLabelsRow/DebugLabelsToggle"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="SettingsWindow/SettingsContent/DebugLabelsRow/DebugLabelsToggle/TextMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 20
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="BackButton" type="Button" parent="SettingsWindow"]
 unique_name_in_owner = true

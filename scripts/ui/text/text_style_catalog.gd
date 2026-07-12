@@ -32,8 +32,8 @@ const STYLES := {
 
 	# Settings
 	"settings.title": {"font_size": 50, "outline_size": 7},
-	"settings.option_label": {"font_size": 50, "outline_size": 7},
-	"settings.option_value": {"font_size": 50, "outline_size": 7},
+	"settings.option_label": {"font_size": 40, "outline_size": 7},
+	"settings.option_value": {"font_size": 40, "outline_size": 7},
 	"settings.button": {"font_size": 50, "outline_size": 7},
 
 	# Shop
