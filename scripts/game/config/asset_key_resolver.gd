@@ -154,6 +154,15 @@ const LOSE_CONTINUE_ICON_ASSET_KEYS := {
 	"close": "lose_continue_icon_close",
 }
 
+## Stage 67.2 v0.1: small inline currency icons shown next to a standalone
+## gold/gems amount (e.g. LoseContinuePopup's gem cost, BattleResultOverlay's
+## gold reward line) — distinct from the larger per-item shop icons above.
+## Keyed by CurrencyType.GOLD/GEMS ("gold"/"gems") string ids.
+const CURRENCY_ICON_ASSET_KEYS := {
+	"gold": "currency_icon_gold",
+	"gems": "currency_icon_gems",
+}
+
 const BOOSTER_ASSET_KEYS := {
 	"hammer": "booster_hammer",
 	"freeze_time": "booster_freeze_time",
@@ -307,3 +316,7 @@ static func get_main_menu_button_asset_key(button_id: String, state: String) -> 
 
 static func get_lose_continue_icon_asset_key(icon_id: String) -> String:
 	return LOSE_CONTINUE_ICON_ASSET_KEYS.get(icon_id, "")
+
+
+static func get_currency_icon_asset_key(currency_id: String) -> String:
+	return CURRENCY_ICON_ASSET_KEYS.get(currency_id, "")

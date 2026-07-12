@@ -5,6 +5,8 @@ All Stage 39 entries are reserved placeholders. Current status is `missing/place
 | asset_key | expected path | status | usage |
 |---|---|---|---|
 | background_1 | res://assets/images/backgrounds/background_1.png | missing/placeholder expected | active single game field background (GameScreen `%Background`), target 720x1280 (Stage 64.3.3) |
+| currency_icon_gold | res://assets/images/ui/currency/gold_icon.png | missing/placeholder expected | active small inline gold icon: `BattleResultOverlay` `%GoldRewardIcon` (next to the "+10" gold reward line), 28x28 (Stage 67.2) |
+| currency_icon_gems | res://assets/images/ui/currency/gems_icon.png | missing/placeholder expected | active small inline gems icon: `LoseContinuePopup` `%GemCostIcon` (next to the "5" gem-continue cost), 24x24 (Stage 67.2) |
 | shop_booster_tile_icon_hammer | res://assets/images/ui/shop/boosters/hammer.png | missing/placeholder expected | active `ShopBoosterTile` `%IconSlot` icon for booster id "hammer" (Shop tab only — separate from `shop_icon_booster_hammer`, which `BoosterPanel`'s in-game buttons still use), target 256x256 to match `IconArea`'s 138x138 square (Stage 65.13) |
 | shop_booster_tile_icon_freeze_time | res://assets/images/ui/shop/boosters/freeze_time.png | missing/placeholder expected | active `ShopBoosterTile` `%IconSlot` icon for booster id "freeze_time" (Stage 65.13) |
 | shop_booster_tile_icon_rocket_barrage | res://assets/images/ui/shop/boosters/rocket_barrage.png | missing/placeholder expected | active `ShopBoosterTile` `%IconSlot` icon for booster id "rocket_barrage" (Stage 65.13) |

@@ -1,14 +1,18 @@
-[gd_scene load_steps=5 format=3 uid="uid://bx5ox10ddo3mg"]
+[gd_scene load_steps=7 format=3 uid="uid://bx5ox10ddo3mg"]
 
-[ext_resource type="Script" path="res://scripts/ui/battle_result_overlay.gd" id="1_yr18t"]
-[ext_resource type="Script" path="res://scripts/ui/fallback_image_slot.gd" id="2_slot"]
-[ext_resource type="Script" path="res://scripts/ui/pressable_texture_button.gd" id="3_btn"]
+[ext_resource type="Script" uid="uid://oc3finr6aykb" path="res://scripts/ui/battle_result_overlay.gd" id="1_yr18t"]
+[ext_resource type="Script" uid="uid://b0dlqhi1wwh6t" path="res://scripts/ui/fallback_image_slot.gd" id="2_slot"]
+[ext_resource type="Script" uid="uid://bxwkgbqyalc6e" path="res://scripts/ui/pressable_texture_button.gd" id="3_btn"]
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_btn"]
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_e53j4"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_2dkct"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_4mnhr"]
 
 [node name="BattleResultOverlay" type="Control"]
 visible = false
-layout_mode = 1
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -59,23 +63,75 @@ mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="TopLabel" type="Label" parent="."]
+[node name="RewardBlock" type="VBoxContainer" parent="."]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 0
 offset_left = 140.0
 offset_top = 478.0
 offset_right = 580.0
-offset_bottom = 588.0
+offset_bottom = 550.0
+mouse_filter = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="TopLabel" type="Label" parent="RewardBlock"]
+unique_name_in_owner = true
+layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Проигрыш"
 horizontal_alignment = 1
 autowrap_mode = 2
 
+[node name="GoldRewardRow" type="HBoxContainer" parent="RewardBlock"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="GoldRewardLabel" type="Label" parent="RewardBlock/GoldRewardRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 7
+theme_override_font_sizes/font_size = 25
+text = "+10"
+vertical_alignment = 1
+
+[node name="GoldRewardIcon" type="Control" parent="RewardBlock/GoldRewardRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+script = ExtResource("2_slot")
+placeholder_color = Color(0.85, 0.65, 0.15, 1)
+
+[node name="Fallback" type="ColorRect" parent="RewardBlock/GoldRewardRow/GoldRewardIcon"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.85, 0.65, 0.15, 1)
+
+[node name="TextureDisplay" type="TextureRect" parent="RewardBlock/GoldRewardRow/GoldRewardIcon"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
 [node name="RetryButton" type="Button" parent="."]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 0
 offset_left = 201.0
 offset_top = 746.0
 offset_right = 351.0
@@ -86,11 +142,11 @@ theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
 theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
 theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
 theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
-theme_override_styles/normal = SubResource("StyleBoxEmpty_btn")
-theme_override_styles/pressed = SubResource("StyleBoxEmpty_btn")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_btn")
-theme_override_styles/disabled = SubResource("StyleBoxEmpty_btn")
-theme_override_styles/focus = SubResource("StyleBoxEmpty_btn")
+theme_override_styles/normal = SubResource("StyleBoxEmpty_e53j4")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_e53j4")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_e53j4")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_e53j4")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_e53j4")
 flat = true
 script = ExtResource("3_btn")
 button_text = "Заново"
@@ -134,7 +190,7 @@ size_flags_vertical = 3
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 30
 text = "Заново"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -142,7 +198,6 @@ vertical_alignment = 1
 [node name="NextButton" type="Button" parent="."]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 0
 offset_left = 367.0
 offset_top = 746.0
 offset_right = 517.0
@@ -153,11 +208,11 @@ theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
 theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
 theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
 theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
-theme_override_styles/normal = SubResource("StyleBoxEmpty_btn")
-theme_override_styles/pressed = SubResource("StyleBoxEmpty_btn")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_btn")
-theme_override_styles/disabled = SubResource("StyleBoxEmpty_btn")
-theme_override_styles/focus = SubResource("StyleBoxEmpty_btn")
+theme_override_styles/normal = SubResource("StyleBoxEmpty_2dkct")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_2dkct")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_2dkct")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_2dkct")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_2dkct")
 flat = true
 script = ExtResource("3_btn")
 button_text = "Дальше"
@@ -201,7 +256,7 @@ size_flags_vertical = 3
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 30
 text = "Дальше"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -209,7 +264,6 @@ vertical_alignment = 1
 [node name="MenuButton" type="Button" parent="."]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 0
 offset_left = 367.0
 offset_top = 746.0
 offset_right = 517.0
@@ -220,11 +274,11 @@ theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
 theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
 theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
 theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
-theme_override_styles/normal = SubResource("StyleBoxEmpty_btn")
-theme_override_styles/pressed = SubResource("StyleBoxEmpty_btn")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_btn")
-theme_override_styles/disabled = SubResource("StyleBoxEmpty_btn")
-theme_override_styles/focus = SubResource("StyleBoxEmpty_btn")
+theme_override_styles/normal = SubResource("StyleBoxEmpty_4mnhr")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_4mnhr")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_4mnhr")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_4mnhr")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_4mnhr")
 flat = true
 script = ExtResource("3_btn")
 button_text = "Меню"
@@ -268,7 +322,7 @@ size_flags_vertical = 3
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 30
 text = "Меню"
 horizontal_alignment = 1
 vertical_alignment = 1

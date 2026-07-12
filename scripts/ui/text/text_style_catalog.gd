@@ -64,6 +64,7 @@ const STYLES := {
 	# Result UI
 	"result.title": {"font_size": 32, "outline_size": 5},
 	"result.reward": {"font_size": 25, "outline_size": 7},
+	"result.reward_gold": {"font_size": 25, "outline_size": 7},
 	"result.button": {"font_size": 35, "outline_size": 7},
 
 	# Lose continue popup
@@ -71,6 +72,13 @@ const STYLES := {
 	"lose_continue.description": {"font_size": 16, "outline_size": 2},
 	"lose_continue.button": {"font_size": 30, "outline_size": 5},
 	"lose_continue.feedback": {"font_size": 30, "outline_size": 5},
+	"lose_continue.gem_cost": {"font_size": 30, "outline_size": 5},
+
+	# Stage 67.2: shared inline currency-amount styles (icon + number pairs),
+	# reused wherever a standalone gold/gems amount needs its own font size
+	# independent of the surrounding label.
+	"currency.inline_gold": {"font_size": 25, "outline_size": 7},
+	"currency.inline_gems": {"font_size": 30, "outline_size": 5},
 
 	# Debug/dev
 	"debug.message": {"font_size": 16, "outline_size": 2},

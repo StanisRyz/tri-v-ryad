@@ -78,6 +78,8 @@ const ASSET_MAP := {
 	"lose_continue_icon_watch_ad": "res://assets/images/ui/lose_continue/icon_watch_ad.png",
 	"lose_continue_icon_buy_moves": "res://assets/images/ui/lose_continue/icon_buy_moves.png",
 	"lose_continue_icon_close": "res://assets/images/ui/lose_continue/icon_close.png",
+	"currency_icon_gold": "res://assets/images/ui/currency/gold_icon.png",
+	"currency_icon_gems": "res://assets/images/ui/currency/gems_icon.png",
 	"ui_round_modifier_panel": "res://assets/images/ui/round_modifier_panel.png",
 	"ui_status_panel": "res://assets/images/ui/status_panel.png",
 	"ui_settings_background": "res://assets/images/ui/settings_background.png",

@@ -7,7 +7,6 @@ class_name ShopBoosterTile
 
 signal buy_pressed(item_id: String, quantity: int)
 
-const CURRENCY_TYPE_SCRIPT := preload("res://scripts/game/economy/currency_type.gd")
 const GAME_ASSET_CATALOG_SCRIPT := preload("res://scripts/game/config/game_asset_catalog.gd")
 const ASSET_KEY_RESOLVER_SCRIPT := preload("res://scripts/game/config/asset_key_resolver.gd")
 const TEXT_STYLE_APPLIER_SCRIPT := preload("res://scripts/ui/text/text_style_applier.gd")
@@ -19,6 +18,8 @@ const BUY_BUTTON_HEIGHT := 46.0
 
 @onready var _icon_slot: FallbackImageSlot = %IconSlot
 @onready var _buy_button: PressableTextureButton = %BuyButton
+@onready var _price_label: Label = %PriceLabel
+@onready var _price_icon: FallbackImageSlot = %PriceIcon
 
 var _item_id := ""
 var _unit_price := 0
@@ -30,7 +31,7 @@ func _ready() -> void:
 		_buy_button.delayed_pressed.connect(_on_buy_pressed)
 	_bind_buy_button_textures()
 	_update_price_label()
-	TEXT_STYLE_APPLIER_SCRIPT.apply_to_child_label(_buy_button, "TextMargin/Label", "shop.tile_price_button")
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_label(_price_label, "shop.tile_price_button")
 
 
 ## Reuses the shared back-button plaque art (same as `ShopProductTile`'s buy
@@ -76,13 +77,24 @@ func set_item(item, icon: Texture2D) -> void:
 	_update_price_label()
 
 
+## Stage 67.4 v0.1: mirrors LoseContinuePopup's gem-cost button — amount text
+## plus an inline currency icon (no spelled-out currency word), sized/centered
+## as a pair via PriceRow/PriceContent so the icon always sits right next to
+## the digits regardless of how many there are, instead of the button's own
+## managed (fixed-width) text.
 func _update_price_label() -> void:
-	if _buy_button == null:
+	if _price_label == null:
 		return
-	var localization_manager := get_node_or_null("/root/LocalizationManager")
-	var currency_key := "currency.gold" if _currency_id == CURRENCY_TYPE_SCRIPT.GOLD else "currency.gems"
-	var currency_label: String = localization_manager.tr_key(currency_key) if localization_manager != null else ("Gold" if _currency_id == CURRENCY_TYPE_SCRIPT.GOLD else "Gems")
-	_buy_button.set_button_text("%d %s" % [_unit_price, currency_label])
+	_price_label.text = str(_unit_price)
+	_bind_price_icon_texture()
+
+
+func _bind_price_icon_texture() -> void:
+	if _price_icon == null:
+		return
+	_price_icon.set_texture(GAME_ASSET_CATALOG_SCRIPT.try_load_texture_cached(
+		ASSET_KEY_RESOLVER_SCRIPT.get_currency_icon_asset_key(_currency_id)
+	))
 
 
 func _on_buy_pressed() -> void:

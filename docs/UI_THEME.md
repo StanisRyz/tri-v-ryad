@@ -42,11 +42,12 @@ Stage 66.2: UI Font Theme and Text Style Blocks v0.1. This patch only affects ty
 | Shop | `shop.wallet`, `shop.tab`, `shop.tile_quantity`, `shop.tile_price_button`, `shop.tile_product_button`, `shop.feedback`, `shop.offer_placeholder` |
 | Level select | `level_select.zone_dropdown`, `level_select.level_button`, `level_select.back_button`, `level_select.popup_title`, `level_select.popup_stars`, `level_select.popup_button` |
 | Game HUD | `game_hud.level`, `game_hud.moves`, `game_hud.menu_button`, `game_hud.hp`, `game_hud.modifier`, `game_hud.booster_count` |
-| Result UI | `result.title`, `result.reward`, `result.button` |
-| Lose continue popup | `lose_continue.title`, `lose_continue.description`, `lose_continue.button`, `lose_continue.feedback` |
+| Result UI | `result.title`, `result.reward`, `result.reward_gold`, `result.button` |
+| Lose continue popup | `lose_continue.title`, `lose_continue.description`, `lose_continue.button`, `lose_continue.feedback`, `lose_continue.gem_cost` |
+| Currency (Stage 67.2) | `currency.inline_gold`, `currency.inline_gems` |
 | Debug/dev | `debug.message`, `debug.small` |
 
-A few ids are defined but currently unused because no matching UI node exists yet in the live scenes (`shop.tile_quantity` — booster tiles have no quantity control; `shop.offer_placeholder` — Offers tab is fully populated with real tiles, not placeholder text; `level_select.popup_stars` — stars are conveyed via the popup window texture, not text; `main_menu.title`/`settings.option_value` — no such label exists yet; `lose_continue.description` — no separate description label exists). They're kept in the catalog so a future node can adopt them without inventing a new id.
+A few ids are defined but currently unused because no matching UI node exists yet in the live scenes (`shop.tile_quantity` — booster tiles have no quantity control; `shop.offer_placeholder` — Offers tab is fully populated with real tiles, not placeholder text; `level_select.popup_stars` — stars are conveyed via the popup window texture, not text; `main_menu.title`/`settings.option_value` — no such label exists yet; `lose_continue.description` — no separate description label exists; `currency.inline_gold`/`currency.inline_gems` — generic ids kept for future standalone currency amounts elsewhere, not wired to any node yet since `result.reward_gold`/`lose_continue.gem_cost` cover the two Stage 67.2 usages directly). They're kept in the catalog so a future node can adopt them without inventing a new id.
 
 ## Text style applier
 
@@ -74,8 +75,16 @@ A few ids are defined but currently unused because no matching UI node exists ye
 - **Shop** (`shop_screen.gd`, `shop_booster_tile.gd`, `shop_product_tile.gd`): wallet labels (`shop.wallet`), tab labels (`shop.tab`), feedback label (`shop.feedback`), back button (`global.button`), booster tile buy buttons (`shop.tile_price_button`), gem/bundle/offer tile buy buttons (`shop.tile_product_button`).
 - **Level Select** (`level_select_screen.gd`): zone dropdown (`level_select.zone_dropdown`), the 5 level button labels (`level_select.level_button`), back button (`level_select.back_button`), `LevelInfoPopup` title (`level_select.popup_title`) and Start/Back buttons (`level_select.popup_button`).
 - **Game HUD** (`battle_hud.gd`, `enemy_panel.gd`, `game_screen.gd`, `booster_texture_button.gd`): level/moves labels (`game_hud.level`/`game_hud.moves`), Menu button (`game_hud.menu_button`), enemy HP value (`game_hud.hp`), round modifier description (`game_hud.modifier`), booster count labels (`game_hud.booster_count`).
-- **Result UI** (`battle_result_overlay.gd`): top label used for both the defeat title and victory reward lines (`result.title`), Retry/Next/Menu buttons (`result.button`).
-- **Lose continue popup** (`lose_continue_popup.gd`): title (`lose_continue.title`), feedback/"not enough gems" label (`lose_continue.feedback`), the 3 action buttons (`lose_continue.button`).
+- **Result UI** (`battle_result_overlay.gd`): top label used for both the defeat title and victory reward lines (`result.reward`), Retry/Next/Menu buttons (`result.button`); Stage 67.2 added the dedicated gold reward row's `%GoldRewardLabel` (`result.reward_gold`, font size 25).
+- **Lose continue popup** (`lose_continue_popup.gd`): title (`lose_continue.title`), feedback/"not enough gems" label (`lose_continue.feedback`), the watch-ad and close buttons (`lose_continue.button`); Stage 67.2 gave the gem-cost buy-moves button its own style id (`lose_continue.gem_cost`, font size 30 — same value as `lose_continue.button`, kept separate so cost text can diverge from the other two buttons later).
+
+## Inline currency icons (Stage 67.2)
+
+Small inline gold/gems icons, distinct from the larger per-item shop icons (`shop_icon_gems_50`, etc.):
+
+- **Asset keys** (`AssetKeyResolver.CURRENCY_ICON_ASSET_KEYS`/`get_currency_icon_asset_key(currency_id)`, `CurrencyType.GOLD`/`GEMS` keyed): `currency_icon_gold` -> `res://assets/images/ui/currency/gold_icon.png`, `currency_icon_gems` -> `res://assets/images/ui/currency/gems_icon.png`. Both are safe placeholders — missing files fall back to a solid-color `FallbackImageSlot` rect, never a crash or broken reference.
+- **Used in:** `LoseContinuePopup`'s gem-continue button (`%GemCostIcon`, 24x24, next to the "5" cost text, `lose_continue.gem_cost` style, font size 30) and `BattleResultOverlay`'s gold reward row (`%GoldRewardIcon`, 28x28, next to the "+10" text, `result.reward_gold` style, font size 25).
+- **Rule:** icons are only added next to a *standalone* currency amount with no icon already nearby. Wallet displays that already read from a background/texture with a built-in icon (e.g. `MainMenuScreen`/`ShopScreen` gold/gems labels) are left untouched — no duplicate icon was added there.
 
 ## Not styled (deliberately out of scope)
 
