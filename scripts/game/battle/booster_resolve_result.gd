@@ -16,6 +16,15 @@ var fall_movements: Array[Dictionary] = []
 var refill_cells: Array[Dictionary] = []
 var cascade_steps: Array[Dictionary] = []
 var ice_events: Array[Dictionary] = []
+## Stage 67.1 v0.1: populated when a booster's clear area hits a pre-existing
+## special crystal, which now activates through the same
+## SpecialTileResolver.resolve_special_activation_chain() queue used by match
+## resolution (see booster_resolver.gd). activated_special_tiles mirrors
+## BoardResolveStep's shape ({"cell","special_type","affected_cells",
+## "base_tile_type"}); special_cleared_cells is the cell set those
+## activations swept up beyond the booster's own target area.
+var activated_special_tiles: Array[Dictionary] = []
+var special_cleared_cells: Array[Vector2i] = []
 
 
 func to_dictionary() -> Dictionary:
@@ -35,4 +44,6 @@ func to_dictionary() -> Dictionary:
 		"ice_events": ice_events.duplicate(true),
 		"ice_damaged_cells": ICE_DAMAGE_RESOLVER_SCRIPT.extract_damaged_cells(ice_events),
 		"ice_broken_cells": ICE_DAMAGE_RESOLVER_SCRIPT.extract_broken_cells(ice_events),
+		"activated_special_tiles": activated_special_tiles.duplicate(true),
+		"special_cleared_cells": special_cleared_cells.duplicate(),
 	}

@@ -100,3 +100,108 @@ func collect_special_activation_cells(board: BoardModel, clear_cells: Array[Vect
 			activation_cells.append(cell)
 
 	return activation_cells
+
+
+## Stage 67.1 v0.1: canonical special-activation chain resolver, shared by
+## BoardResolver, StepwiseBoardResolver, and BoosterResolver so every clear
+## path (match cascade, line/color-bomb blast, or booster clear) triggers
+## specials the same way.
+##
+## initial_cells is the set of cells already being cleared this step (a
+## match, a booster's target area, or another special's blast). Any of those
+## cells that already carry a pre-existing special tile is queued for
+## activation. protected_cells (typically the cell(s) a special was *just*
+## created on this same step) are never cleared and never activated - this is
+## what keeps a freshly created special from instantly detonating itself.
+##
+## Activating a special clears its line/color-bomb cells, which are folded
+## into the returned cleared_cells; if one of those newly-cleared cells also
+## carries a pre-existing special tile, it is queued too, so chains of
+## special-triggers-special keep resolving until the queue is empty. Each
+## cell activates at most once (processed set), which also bounds the loop.
+##
+## Returns {"cleared_cells", "activated_special_tiles", "special_cleared_cells"}.
+func resolve_special_activation_chain(board: BoardModel, initial_cells: Array[Vector2i], protected_cells: Dictionary = {}) -> Dictionary:
+	var cleared_cells: Array[Vector2i] = []
+	var clear_seen := {}
+	if board != null:
+		for cell in initial_cells:
+			if protected_cells.has(cell):
+				continue
+			_add_unique_cell(cleared_cells, clear_seen, cell)
+
+	var activated_special_tiles: Array[Dictionary] = []
+	var special_cleared_cells: Array[Vector2i] = []
+	var special_cleared_seen := {}
+
+	if board == null:
+		return {
+			"cleared_cells": cleared_cells,
+			"activated_special_tiles": activated_special_tiles,
+			"special_cleared_cells": special_cleared_cells,
+		}
+
+	var processed := {}
+	var queued := {}
+	var queue: Array[Vector2i] = []
+
+	for cell in cleared_cells:
+		_enqueue_special(board, cell, protected_cells, processed, queued, queue)
+
+	while not queue.is_empty():
+		var activation_cell: Vector2i = queue.pop_front()
+		if processed.has(activation_cell):
+			continue
+		processed[activation_cell] = true
+
+		var special_data = board.get_special_tile(activation_cell)
+		if special_data == null:
+			continue
+
+		activated_special_tiles.append({
+			"cell": activation_cell,
+			"special_type": special_data.special_type,
+		})
+
+		var special_cells: Array[Vector2i] = []
+		var base_tile_type := BoardModel.EMPTY
+		if special_data.is_color_bomb():
+			base_tile_type = board.get_tile(activation_cell)
+			special_cells = get_color_bomb_clear_cells(board, activation_cell, special_data)
+		else:
+			special_cells = get_line_clear_cells(board, activation_cell, special_data)
+
+		var affected_cells: Array[Vector2i] = []
+		for special_cell in special_cells:
+			if protected_cells.has(special_cell):
+				continue
+			affected_cells.append(special_cell)
+			_add_unique_cell(cleared_cells, clear_seen, special_cell)
+			_add_unique_cell(special_cleared_cells, special_cleared_seen, special_cell)
+			_enqueue_special(board, special_cell, protected_cells, processed, queued, queue)
+
+		var activation_data: Dictionary = activated_special_tiles[activated_special_tiles.size() - 1]
+		activation_data["affected_cells"] = affected_cells.duplicate()
+		activation_data["base_tile_type"] = base_tile_type
+
+	return {
+		"cleared_cells": cleared_cells,
+		"activated_special_tiles": activated_special_tiles,
+		"special_cleared_cells": special_cleared_cells,
+	}
+
+
+func _enqueue_special(board: BoardModel, cell: Vector2i, protected_cells: Dictionary, processed: Dictionary, queued: Dictionary, queue: Array[Vector2i]) -> void:
+	if protected_cells.has(cell) or processed.has(cell) or queued.has(cell):
+		return
+	if not board.is_playable_cell(cell) or not board.has_special_tile(cell):
+		return
+	queued[cell] = true
+	queue.append(cell)
+
+
+func _add_unique_cell(cells: Array[Vector2i], seen: Dictionary, cell: Vector2i) -> void:
+	if seen.has(cell):
+		return
+	seen[cell] = true
+	cells.append(cell)

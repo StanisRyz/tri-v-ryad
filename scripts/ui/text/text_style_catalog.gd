@@ -67,10 +67,10 @@ const STYLES := {
 	"result.button": {"font_size": 35, "outline_size": 7},
 
 	# Lose continue popup
-	"lose_continue.title": {"font_size": 24, "outline_size": 4},
+	"lose_continue.title": {"font_size": 35, "outline_size": 7},
 	"lose_continue.description": {"font_size": 16, "outline_size": 2},
-	"lose_continue.button": {"font_size": 15, "outline_size": 3},
-	"lose_continue.feedback": {"font_size": 14, "outline_size": 2},
+	"lose_continue.button": {"font_size": 30, "outline_size": 5},
+	"lose_continue.feedback": {"font_size": 30, "outline_size": 5},
 
 	# Debug/dev
 	"debug.message": {"font_size": 16, "outline_size": 2},

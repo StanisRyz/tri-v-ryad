@@ -10,6 +10,21 @@ const UI_ASSET_BINDING_SCRIPT := preload("res://scripts/ui/ui_asset_binding.gd")
 const BUTTON_SIZE_MARGIN := 8.0
 const MIN_BUTTON_SIZE := 48.0
 
+## Stage 65.21 v0.1: BoosterConfig.display_name/description (booster_catalog.gd)
+## are English-only gameplay data, not display text, so the tooltip is built
+## from these localization keys instead — the only place those two fields are
+## ever shown to the player.
+const TOOLTIP_NAME_KEYS := {
+	"hammer": "shop.item.hammer",
+	"freeze_time": "shop.item.time_freeze",
+	"rocket_barrage": "shop.item.rocket_barrage",
+}
+const TOOLTIP_DESC_KEYS := {
+	"hammer": "booster.desc.hammer",
+	"freeze_time": "booster.desc.freeze_time",
+	"rocket_barrage": "booster.desc.rocket_barrage",
+}
+
 @onready var panel_background: FallbackImageSlot = %PanelBackground
 @onready var button_row: HBoxContainer = %ButtonRow
 @onready var hammer_button: BoosterTextureButton = %HammerButton
@@ -125,13 +140,23 @@ func _apply_tooltips() -> void:
 	if _catalog == null:
 		return
 
+	var localization_manager := get_node_or_null("/root/LocalizationManager")
 	for booster_id in _buttons.keys():
 		var button: BoosterTextureButton = _buttons[booster_id]
 		if button == null:
 			continue
 		var config = _catalog.get_booster(booster_id)
-		if config != null:
-			button.tooltip_text = "%s\n%s" % [config.display_name, config.description]
+		if config == null:
+			continue
+		button.tooltip_text = _format_tooltip(booster_id, config, localization_manager)
+
+
+func _format_tooltip(booster_id: String, config, localization_manager) -> String:
+	if localization_manager != null and TOOLTIP_NAME_KEYS.has(booster_id):
+		var name_text: String = localization_manager.tr_key(TOOLTIP_NAME_KEYS[booster_id])
+		var desc_text: String = localization_manager.tr_key(TOOLTIP_DESC_KEYS[booster_id])
+		return "%s\n%s" % [name_text, desc_text]
+	return "%s\n%s" % [config.display_name, config.description]
 
 
 func _apply_button_square_size() -> void:

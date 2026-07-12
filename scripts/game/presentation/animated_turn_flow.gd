@@ -74,7 +74,8 @@ func start_swap_turn(board: BoardModel, presenter, from_cell: Vector2i, to_cell:
 			step.created_special_tiles,
 			step.activated_special_tiles,
 			step.special_cleared_cells,
-			step.ice_events
+			step.ice_events,
+			step.matched_cells
 		)
 
 		cascade_index += 1
@@ -88,7 +89,7 @@ func start_swap_turn(board: BoardModel, presenter, from_cell: Vector2i, to_cell:
 func start_booster_clear(board: BoardModel, presenter, result) -> void:
 	var generation := _begin()
 
-	await _play_sequence(_sequence_builder.build_booster_activation_and_clear_sequence(result.cleared_cells, result.booster_id, result.target_cell, result.damage_to_enemy, result.affected_tile_types, result.ice_events))
+	await _play_sequence(_sequence_builder.build_booster_activation_and_clear_sequence(result.cleared_cells, result.booster_id, result.target_cell, result.damage_to_enemy, result.affected_tile_types, result.ice_events, result.activated_special_tiles, result.special_cleared_cells))
 	if not _is_current(generation):
 		return
 
@@ -98,6 +99,8 @@ func start_booster_clear(board: BoardModel, presenter, result) -> void:
 
 	var cascade_index := 0
 	var extra_cleared: Array[Vector2i] = []
+	var extra_damage_cells: Array[Vector2i] = []
+	var extra_damage_seen := {}
 	var extra_fall_movements: Array[Dictionary] = []
 	var extra_refill_cells: Array[Dictionary] = []
 	var extra_cascade_steps: Array[Dictionary] = []
@@ -117,6 +120,15 @@ func start_booster_clear(board: BoardModel, presenter, result) -> void:
 			return
 
 		extra_cleared.append_array(step.cleared_cells)
+		# Stage 67.1 v0.1: damage_counted_cells (not cleared_cells) also folds
+		# back in any cell that became a special crystal and stayed on the
+		# board, so a match-4/match-5 cascade triggered by a booster still
+		# deals full original-match-size damage, matching the swap-turn path.
+		for cell in step.damage_counted_cells:
+			if extra_damage_seen.has(cell):
+				continue
+			extra_damage_seen[cell] = true
+			extra_damage_cells.append(cell)
 		extra_fall_movements.append_array(step.fall_movements)
 		extra_refill_cells.append_array(step.refill_cells)
 		merged_tile_types.merge(step.damage_tile_types)
@@ -134,14 +146,14 @@ func start_booster_clear(board: BoardModel, presenter, result) -> void:
 		current_matches = _stepwise_resolver.find_current_matches(board)
 
 	if not extra_cleared.is_empty():
-		_apply_cascade_damage(presenter, result, extra_cleared, extra_fall_movements, extra_refill_cells, extra_cascade_steps, merged_tile_types)
+		_apply_cascade_damage(presenter, result, extra_cleared, extra_damage_cells, extra_fall_movements, extra_refill_cells, extra_cascade_steps, merged_tile_types)
 
 	_end(generation)
 	presenter.finalize_booster_turn(result)
 
 
-func _apply_cascade_damage(presenter, result, extra_cleared: Array[Vector2i], extra_fall_movements: Array[Dictionary], extra_refill_cells: Array[Dictionary], extra_cascade_steps: Array[Dictionary], merged_tile_types: Dictionary) -> void:
-	var damage_info := _direct_damage_resolver.calculate_damage_for_typed_cells(extra_cleared, merged_tile_types, null, presenter.get_current_level_boost())
+func _apply_cascade_damage(presenter, result, extra_cleared: Array[Vector2i], extra_damage_cells: Array[Vector2i], extra_fall_movements: Array[Dictionary], extra_refill_cells: Array[Dictionary], extra_cascade_steps: Array[Dictionary], merged_tile_types: Dictionary) -> void:
+	var damage_info := _direct_damage_resolver.calculate_damage_for_typed_cells(extra_damage_cells, merged_tile_types, null, presenter.get_current_level_boost())
 	var extra_damage := int(damage_info.get("total_damage", 0))
 
 	if extra_damage > 0 and presenter.state != null and presenter.state.enemy != null:

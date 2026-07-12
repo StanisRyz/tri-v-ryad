@@ -44,6 +44,8 @@ func calculate_damage_from_turn_result(turn_result, round_modifier = null, level
 
 	if "total_cleared" in turn_result:
 		if round_modifier == null and level_boost == null:
+			if "total_damage_counted" in turn_result:
+				return int(turn_result.total_damage_counted)
 			return int(turn_result.total_cleared)
 		return calculate_damage_for_board_result(turn_result, round_modifier, level_boost)
 
@@ -120,6 +122,8 @@ func calculate_damage_for_board_result(board_result, round_modifier = null, leve
 	if board_result == null:
 		return 0
 	if round_modifier == null and level_boost == null:
+		if "total_damage_counted" in board_result:
+			return int(board_result.total_damage_counted)
 		return int(board_result.total_cleared)
 
 	var seen := {}
@@ -127,8 +131,8 @@ func calculate_damage_for_board_result(board_result, round_modifier = null, leve
 
 	for step in board_result.steps:
 		var match_context := _match_context_for_step(step)
-		var cleared_cells: Array = step.get("cleared_cells", [])
-		for cell in cleared_cells:
+		var damage_cells := _damage_counted_cells_for_step(step)
+		for cell in damage_cells:
 			if seen.has(cell):
 				continue
 			seen[cell] = true
@@ -159,8 +163,8 @@ func _breakdown_for_board_result(board_result, round_modifier, level_boost) -> A
 
 	for step in board_result.steps:
 		var match_context := _match_context_for_step(step)
-		var cleared_cells: Array = step.get("cleared_cells", [])
-		for cell in cleared_cells:
+		var damage_cells := _damage_counted_cells_for_step(step)
+		for cell in damage_cells:
 			if seen.has(cell):
 				continue
 			seen[cell] = true
@@ -188,6 +192,17 @@ func _breakdown_for_board_result(board_result, round_modifier, level_boost) -> A
 		})
 
 	return breakdown
+
+
+## Stage 67.1 v0.1: the canonical per-step damage cell set - matched_cells
+## (the full original match, including a cell that became a special crystal
+## and stayed on the board) unioned with any special-triggered clears. Falls
+## back to "cleared_cells" for older/foreign step dicts that predate Stage
+## 67.1 and never populated "damage_counted_cells".
+func _damage_counted_cells_for_step(step: Dictionary) -> Array:
+	if step.has("damage_counted_cells"):
+		return step.get("damage_counted_cells", [])
+	return step.get("cleared_cells", [])
 
 
 func _match_context_for_step(step: Dictionary) -> Dictionary:

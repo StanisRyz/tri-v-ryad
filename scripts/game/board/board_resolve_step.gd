@@ -17,6 +17,12 @@ var special_cleared_cells: Array[Vector2i] = []
 var created_special_tiles: Array[Dictionary] = []
 var activated_special_tiles: Array[Dictionary] = []
 var cleared_cells: Array[Vector2i] = []
+## Stage 67.1 v0.1: matched_cells unioned with special_cleared_cells, deduped -
+## the canonical cell set DirectMatchDamageResolver sums damage over. Unlike
+## cleared_cells, this still includes a cell that became a special crystal and
+## so stayed on the board, so a match-4/match-5 that creates a special still
+## deals full original-match-size damage.
+var damage_counted_cells: Array[Vector2i] = []
 var fall_movements: Array[Dictionary] = []
 var refill_cells: Array[Dictionary] = []
 var damage_tile_types: Dictionary = {}
@@ -53,6 +59,7 @@ func to_dictionary() -> Dictionary:
 		"created_special_tiles": created_special_tiles.duplicate(true),
 		"activated_special_tiles": activated_special_tiles.duplicate(true),
 		"cleared_cells": cleared_cells.duplicate(),
+		"damage_counted_cells": damage_counted_cells.duplicate(),
 		"fall_movements": fall_movements.duplicate(true),
 		"refill_cells": refill_cells.duplicate(true),
 		"damage_tile_types": damage_tile_types.duplicate(),
@@ -61,4 +68,20 @@ func to_dictionary() -> Dictionary:
 		"ice_broken_cells": get_ice_broken_cells(),
 		"is_stable": is_stable,
 		"message": message,
+	}
+
+
+## Stage 67.1 v0.1: debug-only trace helper (not player-facing). Callers that
+## want a quick readable summary of what this step did - e.g. a developer
+## console or a push_error() diagnostic - can use this instead of hand-rolling
+## the same counts from the raw arrays above.
+func get_debug_summary() -> Dictionary:
+	return {
+		"cascade_index": cascade_index,
+		"matched_count": matched_cells.size(),
+		"removed_count": cleared_cells.size(),
+		"damage_counted": damage_counted_cells.size(),
+		"created_special": created_special_tiles.size(),
+		"queued_specials": activated_special_tiles.size(),
+		"resolved_specials": activated_special_tiles.size(),
 	}

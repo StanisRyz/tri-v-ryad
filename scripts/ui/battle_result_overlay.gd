@@ -16,8 +16,6 @@ const ASSET_KEY_RESOLVER_SCRIPT := preload("res://scripts/game/config/asset_key_
 const GAME_ASSET_CATALOG_SCRIPT := preload("res://scripts/game/config/game_asset_catalog.gd")
 const TEXT_STYLE_APPLIER_SCRIPT := preload("res://scripts/ui/text/text_style_applier.gd")
 
-const DEFEAT_TITLE_TEXT := "Проигрыш"
-
 @onready var top_label: Label = %TopLabel
 @onready var result_window: FallbackImageSlot = %ResultWindow
 @onready var retry_button: PressableTextureButton = %RetryButton
@@ -73,8 +71,7 @@ func show_victory_result(data: Dictionary) -> void:
 
 func show_defeat_result(_data: Dictionary) -> void:
 	_apply_result_window_texture(0)
-	var localization_manager := get_node_or_null("/root/LocalizationManager")
-	top_label.text = localization_manager.tr_key("ui.result.lose") if localization_manager != null else DEFEAT_TITLE_TEXT
+	top_label.text = ""
 	retry_button.visible = true
 	next_button.visible = false
 	next_button.disabled = true
@@ -89,10 +86,7 @@ func hide_result() -> void:
 
 func _format_victory_top_text(milestone_rewards: Array) -> String:
 	var localization_manager := get_node_or_null("/root/LocalizationManager")
-	var lines := LEVEL_REWARD_FORMATTER_SCRIPT.format_rewards(milestone_rewards, localization_manager)
-	if lines.is_empty():
-		return LEVEL_REWARD_FORMATTER_SCRIPT.NO_REWARDS_TEXT
-	return "\n".join(lines)
+	return LEVEL_REWARD_FORMATTER_SCRIPT.format_rewards_text(milestone_rewards, localization_manager)
 
 
 ## Mirrors LevelSelectScreen._get_popup_window_asset_id()/_apply_popup_window_texture()

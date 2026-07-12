@@ -38,7 +38,8 @@ func resolve_board(board: BoardModel) -> BoardResolveResult:
 			_to_dictionary_array(step_data.get("created_special_tiles", [])),
 			_to_dictionary_array(step_data.get("activated_special_tiles", [])),
 			_to_vector2i_array(step_data.get("special_cleared_cells", [])),
-			ice_events
+			ice_events,
+			_to_vector2i_array(step_data.get("matched_cells", []))
 		)
 
 	if board.has_empty_cells():
@@ -50,10 +51,21 @@ func resolve_board(board: BoardModel) -> BoardResolveResult:
 	return result
 
 
+## Stage 67.1 v0.1: canonical damage rule support. matched_cells is the full
+## original match set (every cell in every MatchResult this step, including
+## the cell that becomes a special crystal and therefore stays on the board);
+## cleared_cells is the actually-removed set (matched_cells minus the special
+## creation cell, plus whatever a chained special activation swept up).
+## DirectMatchDamageResolver counts matched_cells + special_cleared_cells for
+## damage, not cleared_cells, so a match that creates a special still deals
+## full original-match-size damage. See special_tile_resolver.gd's
+## resolve_special_activation_chain() for the special-triggers-special queue.
 func _build_clear_step_data(board: BoardModel, matches: Array[MatchResult]) -> Dictionary:
 	var clear_seen := {}
+	var matched_seen := {}
 	var protected_special_cells := {}
 	var cleared_cells: Array[Vector2i] = []
+	var matched_cells: Array[Vector2i] = []
 	var created_special_tiles: Array[Dictionary] = []
 
 	for match_result in matches:
@@ -70,50 +82,20 @@ func _build_clear_step_data(board: BoardModel, matches: Array[MatchResult]) -> D
 				})
 
 		for cell in match_result.cells:
+			_add_unique_cell(matched_cells, matched_seen, cell)
 			if protected_special_cells.has(cell):
 				continue
 			_add_unique_cell(cleared_cells, clear_seen, cell)
 
-	var activation_cells := _special_tile_resolver.collect_special_activation_cells(board, cleared_cells)
-	var activated_special_tiles: Array[Dictionary] = []
-	var special_cleared_seen := {}
-	var special_cleared_cells: Array[Vector2i] = []
-
-	for activation_cell in activation_cells:
-		var special_data = board.get_special_tile(activation_cell)
-		if special_data == null:
-			continue
-
-		activated_special_tiles.append({
-			"cell": activation_cell,
-			"special_type": special_data.special_type,
-		})
-		var special_cells: Array[Vector2i] = []
-		var base_tile_type := BoardModel.EMPTY
-		if special_data.is_color_bomb():
-			base_tile_type = board.get_tile(activation_cell)
-			special_cells = _special_tile_resolver.get_color_bomb_clear_cells(board, activation_cell, special_data)
-		else:
-			special_cells = _special_tile_resolver.get_line_clear_cells(board, activation_cell, special_data)
-
-		var affected_cells: Array[Vector2i] = []
-
-		for special_cell in special_cells:
-			if protected_special_cells.has(special_cell):
-				continue
-			affected_cells.append(special_cell)
-			_add_unique_cell(cleared_cells, clear_seen, special_cell)
-			_add_unique_cell(special_cleared_cells, special_cleared_seen, special_cell)
-
-		var activation_data: Dictionary = activated_special_tiles[activated_special_tiles.size() - 1]
-		activation_data["affected_cells"] = affected_cells.duplicate()
-		activation_data["base_tile_type"] = base_tile_type
+	var chain: Dictionary = _special_tile_resolver.resolve_special_activation_chain(board, cleared_cells, protected_special_cells)
+	cleared_cells = chain.get("cleared_cells", cleared_cells)
 
 	return {
 		"cleared_cells": cleared_cells,
+		"matched_cells": matched_cells,
 		"created_special_tiles": created_special_tiles,
-		"activated_special_tiles": activated_special_tiles,
-		"special_cleared_cells": special_cleared_cells,
+		"activated_special_tiles": chain.get("activated_special_tiles", []),
+		"special_cleared_cells": chain.get("special_cleared_cells", []),
 	}
 
 

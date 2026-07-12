@@ -4,12 +4,14 @@ class_name BoosterResolver
 const BOOSTER_CATALOG_SCRIPT := preload("res://scripts/game/config/booster_catalog.gd")
 const BOOSTER_RESULT_SCRIPT := preload("res://scripts/game/battle/booster_resolve_result.gd")
 const ICE_DAMAGE_RESOLVER_SCRIPT := preload("res://scripts/game/board/ice_damage_resolver.gd")
+const SPECIAL_TILE_RESOLVER_SCRIPT := preload("res://scripts/game/board/special_tile_resolver.gd")
 
 const FREEZE_TURNS := 3
 
 var _gravity_resolver := GravityResolver.new()
 var _direct_damage_resolver := DirectMatchDamageResolver.new()
 var _ice_damage_resolver := ICE_DAMAGE_RESOLVER_SCRIPT.new()
+var _special_tile_resolver := SPECIAL_TILE_RESOLVER_SCRIPT.new()
 
 
 func can_use_booster(battle_state: BattleState, booster_id: String) -> bool:
@@ -71,11 +73,21 @@ func resolve_targeted_booster(battle_state: BattleState, booster_id: String, tar
 		result.message = "No crystals cleared."
 		return result
 
-	var tile_types := _read_tile_types(board, cells)
-	var damage_info := _direct_damage_resolver.calculate_damage_for_typed_cells(cells, tile_types, round_modifier, level_boost)
+	# Stage 67.1 v0.1: a Hammer/Rocket clear that lands on a pre-existing
+	# special crystal now activates it through the same queue-based chain
+	# match resolution uses, instead of silently wiping the special tile with
+	# no effect. Boosters never create specials themselves, so there are no
+	# protected_cells to exclude.
+	var chain: Dictionary = _special_tile_resolver.resolve_special_activation_chain(board, cells)
+	var all_cleared_cells: Array[Vector2i] = chain.get("cleared_cells", cells)
+	var activated_special_tiles: Array[Dictionary] = chain.get("activated_special_tiles", [])
+	var special_cleared_cells: Array[Vector2i] = chain.get("special_cleared_cells", [])
+
+	var tile_types := _read_tile_types(board, all_cleared_cells)
+	var damage_info := _direct_damage_resolver.calculate_damage_for_typed_cells(all_cleared_cells, tile_types, round_modifier, level_boost)
 	var damage: int = damage_info.get("total_damage", 0)
-	board.clear_cells(cells)
-	var ice_events := _ice_damage_resolver.apply_ice_damage(board, cells)
+	board.clear_cells(all_cleared_cells)
+	var ice_events := _ice_damage_resolver.apply_ice_damage(board, all_cleared_cells)
 	var gravity_result: Dictionary = _gravity_resolver.apply_gravity_and_refill(board)
 	var booster_state = battle_state.get("booster_state")
 	booster_state.consume_use(booster_id)
@@ -85,12 +97,14 @@ func resolve_targeted_booster(battle_state: BattleState, booster_id: String, tar
 
 	result.is_valid = true
 	result.target_cell = target_cell
-	result.cleared_cells = cells.duplicate()
+	result.cleared_cells = all_cleared_cells.duplicate()
 	result.ice_events = ice_events
 	result.damage_to_enemy = damage
 	result.affected_tile_types = _unique_tile_types(tile_types)
 	result.cleared_cell_tile_types = tile_types.duplicate()
-	result.message = _build_message(booster_id, cells.size(), damage, target_cell, tile_types)
+	result.activated_special_tiles = activated_special_tiles
+	result.special_cleared_cells = special_cleared_cells
+	result.message = _build_message(booster_id, all_cleared_cells.size(), damage, target_cell, tile_types)
 	result.fall_movements = (gravity_result.get("fall_movements", []) as Array).duplicate(true)
 	result.refill_cells = (gravity_result.get("refill_cells", []) as Array).duplicate(true)
 	return result

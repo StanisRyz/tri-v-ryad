@@ -56,38 +56,17 @@ func build_clear_step(board: BoardModel, matches: Array[MatchResult], cascade_in
 				continue
 			_add_unique_cell(step.cleared_cells, clear_seen, cell)
 
-	var activation_cells := _special_tile_resolver.collect_special_activation_cells(board, step.cleared_cells)
-	var special_cleared_seen := {}
-
-	for activation_cell in activation_cells:
-		var special_data = board.get_special_tile(activation_cell)
-		if special_data == null:
-			continue
-
-		step.activated_special_tiles.append({
-			"cell": activation_cell,
-			"special_type": special_data.special_type,
-		})
-		var special_cells: Array[Vector2i] = []
-		var base_tile_type := BoardModel.EMPTY
-		if special_data.is_color_bomb():
-			base_tile_type = board.get_tile(activation_cell)
-			special_cells = _special_tile_resolver.get_color_bomb_clear_cells(board, activation_cell, special_data)
-		else:
-			special_cells = _special_tile_resolver.get_line_clear_cells(board, activation_cell, special_data)
-
-		var affected_cells: Array[Vector2i] = []
-
-		for special_cell in special_cells:
-			if protected_special_cells.has(special_cell):
-				continue
-			affected_cells.append(special_cell)
-			_add_unique_cell(step.cleared_cells, clear_seen, special_cell)
-			_add_unique_cell(step.special_cleared_cells, special_cleared_seen, special_cell)
-
-		var activation_data: Dictionary = step.activated_special_tiles[step.activated_special_tiles.size() - 1]
-		activation_data["affected_cells"] = affected_cells.duplicate()
-		activation_data["base_tile_type"] = base_tile_type
+	## Stage 67.1 v0.1: resolve_special_activation_chain() replaces a single
+	## activation pass with a queue that keeps draining as long as a special's
+	## blast sweeps up another pre-existing special tile, so chains like
+	## "line special hits color bomb hits line special" fully resolve within
+	## this one clear step instead of silently clearing the later specials
+	## without triggering them.
+	var chain: Dictionary = _special_tile_resolver.resolve_special_activation_chain(board, step.cleared_cells, protected_special_cells)
+	step.cleared_cells = chain.get("cleared_cells", step.cleared_cells)
+	step.activated_special_tiles = chain.get("activated_special_tiles", [])
+	step.special_cleared_cells = chain.get("special_cleared_cells", [])
+	step.damage_counted_cells = _union_cells(step.matched_cells, step.special_cleared_cells)
 
 	## Preview only: the board hasn't been mutated by this step yet, so this
 	## reads pre-clear obstacle state to predict what apply_clear_step() will
@@ -125,6 +104,22 @@ func _add_unique_cell(cells: Array[Vector2i], seen: Dictionary, cell: Vector2i) 
 
 	seen[cell] = true
 	cells.append(cell)
+
+
+func _union_cells(a: Array[Vector2i], b: Array[Vector2i]) -> Array[Vector2i]:
+	var seen := {}
+	var result: Array[Vector2i] = []
+	for cell in a:
+		if seen.has(cell):
+			continue
+		seen[cell] = true
+		result.append(cell)
+	for cell in b:
+		if seen.has(cell):
+			continue
+		seen[cell] = true
+		result.append(cell)
+	return result
 
 
 func _to_dictionary_array(values: Array) -> Array[Dictionary]:

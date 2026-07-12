@@ -187,7 +187,14 @@ func build_booster_clear_sequence(cleared_cells: Array[Vector2i], booster_id: St
 	return sequence
 
 
-func build_booster_activation_and_clear_sequence(cleared_cells: Array[Vector2i], booster_id: String, target_cell: Vector2i, damage_to_enemy: int, affected_tile_types: Array, ice_events: Array = []):
+## activated_special_tiles/special_cleared_cells (Stage 67.1 v0.1) reflect any
+## pre-existing special crystal the booster's clear area triggered through
+## SpecialTileResolver.resolve_special_activation_chain(); when non-empty they
+## get the same TYPE_SPECIAL_ACTIVATION/TYPE_SPECIAL_CLEAR requests a match
+## resolution step would, so a Hammer/Rocket that sets off a line blast or
+## color bomb still plays that special's own effect instead of just the
+## generic booster clear.
+func build_booster_activation_and_clear_sequence(cleared_cells: Array[Vector2i], booster_id: String, target_cell: Vector2i, damage_to_enemy: int, affected_tile_types: Array, ice_events: Array = [], activated_special_tiles: Array = [], special_cleared_cells: Array[Vector2i] = []):
 	var sequence := SEQUENCE_SCRIPT.new()
 	if cleared_cells.is_empty():
 		return sequence
@@ -202,6 +209,18 @@ func build_booster_activation_and_clear_sequence(cleared_cells: Array[Vector2i],
 			"damage_to_enemy": damage_to_enemy,
 			"affected_tile_types": affected_tile_types.duplicate(),
 		}))
+
+	if not special_cleared_cells.is_empty():
+		_add_special_activation_requests(sequence, activated_special_tiles, special_cleared_cells, "booster", 0)
+		sequence.add_request(REQUEST_SCRIPT.new_request(REQUEST_SCRIPT.TYPE_SPECIAL_CLEAR)
+			.with_cells(special_cleared_cells)
+			.with_duration(0.18)
+			.with_payload({
+				"source": "booster",
+				"activated_special_tiles": (activated_special_tiles as Array).duplicate(true),
+				"cells_count": special_cleared_cells.size(),
+			}))
+
 	return sequence
 
 
