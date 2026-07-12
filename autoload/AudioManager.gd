@@ -21,7 +21,9 @@ var _sound_effects_enabled := true
 var _music_player: AudioStreamPlayer
 var _sfx_players: Array[AudioStreamPlayer] = []
 var _next_sfx_player_index := 0
-var _ad_audio_paused := false
+## Stage 69.5: bus muting is reason-based so an ad close cannot unmute audio
+## while the Yandex Game API (or browser focus) still has the game paused.
+var _audio_pause_reasons: Dictionary = {}
 
 var _music_paths_loaded := false
 var _music_stream_paths: Array[String] = []
@@ -217,19 +219,41 @@ func play_purchase_error() -> void:
 ## actual Settings toggles are never overwritten, so resume_after_ad() never
 ## re-starts music the player had turned off.
 func pause_for_ad() -> void:
-	if _ad_audio_paused:
-		return
-	_ad_audio_paused = true
-	_set_bus_mute(MUSIC_BUS_NAME, true)
-	_set_bus_mute(SFX_BUS_NAME, true)
+	pause_audio("rewarded_ad")
 
 
 func resume_after_ad() -> void:
-	if not _ad_audio_paused:
+	resume_audio("rewarded_ad")
+
+
+func pause_audio(reason: String) -> void:
+	if reason == "" or _audio_pause_reasons.has(reason):
 		return
-	_ad_audio_paused = false
-	_set_bus_mute(MUSIC_BUS_NAME, false)
-	_set_bus_mute(SFX_BUS_NAME, false)
+	var was_paused := not _audio_pause_reasons.is_empty()
+	_audio_pause_reasons[reason] = true
+	if not was_paused:
+		_set_bus_mute(MUSIC_BUS_NAME, true)
+		_set_bus_mute(SFX_BUS_NAME, true)
+
+
+func resume_audio(reason: String) -> void:
+	if reason == "" or not _audio_pause_reasons.has(reason):
+		return
+	_audio_pause_reasons.erase(reason)
+	if _audio_pause_reasons.is_empty():
+		_set_bus_mute(MUSIC_BUS_NAME, false)
+		_set_bus_mute(SFX_BUS_NAME, false)
+
+
+func is_audio_paused() -> bool:
+	return not _audio_pause_reasons.is_empty()
+
+
+func get_audio_pause_reasons() -> Array[String]:
+	var reasons: Array[String] = []
+	for reason in _audio_pause_reasons:
+		reasons.append(str(reason))
+	return reasons
 
 
 func _set_bus_mute(bus_name: String, muted: bool) -> void:

@@ -1,5 +1,7 @@
 # Agent Guidelines
 
+Stage 69.5: retain the Yandex Web export boundaries. `YandexBridge` is the sole JavaScript bridge owner; `CloudSaveCoordinator` owns the bounded Web readiness wait; `PlatformRuntimeCoordinator` owns combined Yandex/browser pause reasons without globally pausing SceneTree; AudioManager muting is reason-based. Keep generated `builds/yandex/` and the release ZIP untracked, preserve existing ads/payments/cloud/local saves/gameplay/localization/audio preferences/portrait/debug behavior, and do not add products, authorization, leaderboards, or tests. See `docs/YANDEX_WEB_EXPORT.md`.
+
 This is a Godot match-3 battle project intended for Yandex Games. The default layout is vertical 9:16 portrait with a 720x1280 base resolution.
 
 

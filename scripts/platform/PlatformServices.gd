@@ -8,8 +8,13 @@ extends RefCounted
 ## safely everywhere so callers never need to null-check or branch on which
 ## platform implementation is active.
 
+## This is a signal-only interface: concrete platform adapters emit or relay
+## the signals, while the base type deliberately declares the common contract.
+@warning_ignore_start("unused_signal")
 signal sdk_ready
 signal platform_language_changed(language_code: String)
+signal platform_pause_requested(reason: String)
+signal platform_resume_requested(reason: String)
 
 signal rewarded_ad_opened
 signal rewarded_ad_rewarded
@@ -38,6 +43,7 @@ signal cloud_save_loaded(data: Dictionary)
 signal cloud_save_load_error(message: String)
 signal cloud_save_completed
 signal cloud_save_error(message: String)
+@warning_ignore_restore("unused_signal")
 
 
 func game_ready() -> void:
@@ -53,6 +59,10 @@ func gameplay_stop() -> void:
 
 
 func refresh_platform_ready() -> bool:
+	return false
+
+
+func is_sdk_ready() -> bool:
 	return false
 
 

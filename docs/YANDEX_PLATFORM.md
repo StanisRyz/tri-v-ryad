@@ -451,12 +451,25 @@ up to 20 seconds after its own `_ready()`, so the SDK script tag should be
 loaded as early as possible in the page, ahead of the Godot canvas/engine
 script.
 
-## What is explicitly NOT done as of Stage 69.4
+## Stage 69.5 Web bootstrap and lifecycle
+
+The **Yandex Web** export preset uses the standard Godot shell's
+`html/head_include` for `/sdk.js` and `YaGames.init()`. `YandexBridge` queues
+`LoadingAPI.ready()` until SDK readiness and sends it once, then applies only
+the latest requested GameplayAPI state.
+
+Yandex Game API and browser focus pause reasons flow through `YandexBridge`,
+`PlatformServices`, `WebYandexPlatform`, and `Platform`. The application-wide
+`PlatformRuntimeCoordinator` only resumes an active GameScreen, never menus,
+Shop, Settings, LevelSelect, results, or LoseContinue. See
+`YANDEX_WEB_EXPORT.md`.
+
+## What is explicitly NOT done as of Stage 69.5
 
 - No fullscreen (interstitial) ad placements were added.
-- No Web export preset or custom HTML shell file was added — only this
-  documentation.
-- No release/store submission audit.
+- No new fullscreen placement, banners, authorization UI, leaderboards, or
+  products were added.
+- Yandex-draft validation and submission remain Stage 69.6.
 - Tests were not added, updated, touched, or run for this stage.
 
 See `docs/CLOUD_SAVE.md` for the full Stage 69.4 cloud save design.

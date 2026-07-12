@@ -20,3 +20,7 @@
 # not part of the localization system, and shouldn't be committed.
 /localization/*.translation
 /localization/*.csv.import
+
+# Stage 69.5: generated Yandex Web exports and release archives.
+/builds/yandex/
+/builds/yandex_release.zip

@@ -8,6 +8,8 @@ extends Node
 
 signal sdk_ready
 signal platform_language_changed(language_code: String)
+signal platform_pause_requested(reason: String)
+signal platform_resume_requested(reason: String)
 
 signal rewarded_ad_opened
 signal rewarded_ad_rewarded
@@ -42,9 +44,14 @@ var _impl: PlatformServices
 
 
 func _ready() -> void:
-	_impl = WEB_YANDEX_PLATFORM_SCRIPT.new() if OS.has_feature("web") else LOCAL_DEBUG_PLATFORM_SCRIPT.new()
+	if OS.has_feature("web"):
+		_impl = WEB_YANDEX_PLATFORM_SCRIPT.new()
+	else:
+		_impl = LOCAL_DEBUG_PLATFORM_SCRIPT.new()
 	_impl.sdk_ready.connect(func(): sdk_ready.emit())
 	_impl.sdk_ready.connect(sync_language_to_localization)
+	_impl.platform_pause_requested.connect(func(reason): platform_pause_requested.emit(reason))
+	_impl.platform_resume_requested.connect(func(reason): platform_resume_requested.emit(reason))
 	_impl.rewarded_ad_opened.connect(func(): rewarded_ad_opened.emit())
 	_impl.rewarded_ad_rewarded.connect(func(): rewarded_ad_rewarded.emit())
 	_impl.rewarded_ad_closed.connect(func(was_shown): rewarded_ad_closed.emit(was_shown))
@@ -83,6 +90,10 @@ func gameplay_stop() -> void:
 
 func refresh_platform_ready() -> bool:
 	return _impl.refresh_platform_ready()
+
+
+func is_sdk_ready() -> bool:
+	return _impl.is_sdk_ready()
 
 
 func get_platform_key() -> String:

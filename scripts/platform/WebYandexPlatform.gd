@@ -12,6 +12,8 @@ func _init() -> void:
 	if _bridge == null:
 		return
 	_bridge.yandex_sdk_ready.connect(func(): sdk_ready.emit())
+	_bridge.platform_pause_requested.connect(func(reason): platform_pause_requested.emit(reason))
+	_bridge.platform_resume_requested.connect(func(reason): platform_resume_requested.emit(reason))
 	_bridge.rewarded_ad_opened.connect(func(): rewarded_ad_opened.emit())
 	_bridge.rewarded_ad_rewarded.connect(func(): rewarded_ad_rewarded.emit())
 	_bridge.rewarded_ad_closed.connect(func(was_shown): rewarded_ad_closed.emit(was_shown))
@@ -53,6 +55,10 @@ func gameplay_stop() -> void:
 
 func refresh_platform_ready() -> bool:
 	return _bridge.refresh_yandex_sdk_ready() if _bridge != null else false
+
+
+func is_sdk_ready() -> bool:
+	return _bridge.is_sdk_ready() if _bridge != null else false
 
 
 func get_platform_key() -> String:

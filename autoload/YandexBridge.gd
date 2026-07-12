@@ -10,6 +10,8 @@ extends Node
 ## See docs/YANDEX_PLATFORM.md for the exact shell requirements.
 
 signal yandex_sdk_ready
+signal platform_pause_requested(reason: String)
+signal platform_resume_requested(reason: String)
 
 signal rewarded_ad_opened
 signal rewarded_ad_rewarded
@@ -53,6 +55,11 @@ const CLOUD_KEY := "save_v1"
 
 var _is_web := false
 var _sdk_ready := false
+var _game_ready_requested := false
+var _game_ready_sent := false
+var _desired_gameplay_state := ""
+var _platform_paused := false
+var _platform_events_bound := false
 var _ad_in_progress := false
 var _payment_catalog_cache: Dictionary = {}
 var _purchase_platform_id := ""
@@ -88,6 +95,8 @@ var _cb_cloud_load_success: JavaScriptObject
 var _cb_cloud_load_error: JavaScriptObject
 var _cb_cloud_save_success: JavaScriptObject
 var _cb_cloud_save_error: JavaScriptObject
+var _cb_platform_pause: JavaScriptObject
+var _cb_platform_resume: JavaScriptObject
 
 
 func _ready() -> void:
@@ -102,6 +111,11 @@ func get_debug_state() -> Dictionary:
 	return {
 		"is_web": _is_web,
 		"sdk_ready": _sdk_ready,
+		"game_ready_requested": _game_ready_requested,
+		"game_ready_sent": _game_ready_sent,
+		"desired_gameplay_state": _desired_gameplay_state,
+		"platform_paused": _platform_paused,
+		"cloud_available": is_cloud_save_available(),
 		"ad_in_progress": _ad_in_progress,
 		"catalog_product_count": _payment_catalog_cache.size(),
 	}
@@ -127,6 +141,10 @@ func refresh_yandex_sdk_ready() -> bool:
 	if _to_bool(result) and not _sdk_ready:
 		_sdk_ready = true
 		yandex_sdk_ready.emit()
+		_bind_platform_events()
+		_send_game_ready_if_requested()
+		_apply_desired_gameplay_state()
+		_debug_log("SDK ready")
 	return _sdk_ready
 
 
@@ -162,21 +180,63 @@ func get_yandex_language() -> String:
 
 
 func game_ready() -> void:
-	if not _is_web or not _sdk_ready:
-		return
-	_eval_js("try { window.ysdk.features.LoadingAPI.ready(); } catch(e) {}")
+	_game_ready_requested = true
+	_send_game_ready_if_requested()
 
 
 func gameplay_start(_attempt: int = 0) -> void:
-	if not _is_web or not _sdk_ready:
-		return
-	_eval_js("try { window.ysdk.features.GameplayAPI.start(); } catch(e) {}")
+	_desired_gameplay_state = "active"
+	_apply_desired_gameplay_state()
 
 
 func gameplay_stop() -> void:
-	if not _is_web or not _sdk_ready:
+	_desired_gameplay_state = "stopped"
+	_apply_desired_gameplay_state()
+
+
+func _send_game_ready_if_requested() -> void:
+	if not _is_web or not _sdk_ready or not _game_ready_requested or _game_ready_sent:
 		return
-	_eval_js("try { window.ysdk.features.GameplayAPI.stop(); } catch(e) {}")
+	_eval_js("try { window.ysdk.features.LoadingAPI.ready(); } catch(e) {}")
+	_game_ready_sent = true
+	_debug_log("LoadingAPI.ready sent")
+
+
+func _apply_desired_gameplay_state() -> void:
+	if not _is_web or not _sdk_ready or _desired_gameplay_state == "":
+		return
+	var method := "start" if _desired_gameplay_state == "active" else "stop"
+	_eval_js("try { window.ysdk.features.GameplayAPI.%s(); } catch(e) {}" % method)
+	_debug_log("GameplayAPI %s applied" % _desired_gameplay_state)
+
+
+func _bind_platform_events() -> void:
+	if _platform_events_bound or not _is_web or not _sdk_ready:
+		return
+	_platform_events_bound = true
+	_cb_platform_pause = JavaScriptBridge.create_callback(_on_platform_pause)
+	_cb_platform_resume = JavaScriptBridge.create_callback(_on_platform_resume)
+	var window := JavaScriptBridge.get_interface("window")
+	window.__godot_platform_pause = _cb_platform_pause
+	window.__godot_platform_resume = _cb_platform_resume
+	_eval_js("try { if (window.ysdk && window.ysdk.on) { window.ysdk.on('game_api_pause', function(){ window.__godot_platform_pause(); }); window.ysdk.on('game_api_resume', function(){ window.__godot_platform_resume(); }); } } catch(e) {}")
+
+
+func _on_platform_pause(_args: Array) -> void:
+	_platform_paused = true
+	platform_pause_requested.emit("yandex_game_api")
+	_debug_log("Platform pause received")
+
+
+func _on_platform_resume(_args: Array) -> void:
+	_platform_paused = false
+	platform_resume_requested.emit("yandex_game_api")
+	_debug_log("Platform resume received")
+
+
+func _debug_log(message: String) -> void:
+	if OS.is_debug_build():
+		print_debug("YandexBridge: %s" % message)
 
 
 # ---------------------------------------------------------------------------

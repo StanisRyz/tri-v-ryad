@@ -224,11 +224,18 @@ prevent entering MainMenu, opening Shop, starting a level, local rewards,
 local saves, rewarded ads, or purchases. No mandatory cloud loading screen
 was added.
 
-## What is explicitly NOT done in Stage 69.4
+## Stage 69.5 Web readiness guard
 
-- No Web export preset or custom HTML shell — still documented only in
-  `docs/YANDEX_PLATFORM.md`, unchanged from Stage 69.1.
-- No release/store submission audit.
+`LocalDebugPlatform` reconciles immediately. `WebYandexPlatform` now waits
+for `Platform.sdk_ready` while the SDK initializes, with one bounded timeout
+owned by `CloudSaveCoordinator`. SDK readiness begins normal cloud loading;
+timeout completes with local progress exactly once. A late cloud snapshot is
+ignored after completion, so active gameplay is never replaced. Purchase
+recovery still begins only after reconciliation.
+
+## What is explicitly NOT done in Stage 69.5
+
+- No Yandex-draft validation or submission audit; that is Stage 69.6.
 - Tests were not added, updated, touched, or run for this stage. Manual
   validation will be performed in Godot, and later in a real Yandex draft
   build.

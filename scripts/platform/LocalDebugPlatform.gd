@@ -44,6 +44,10 @@ func refresh_platform_ready() -> bool:
 	return true
 
 
+func is_sdk_ready() -> bool:
+	return true
+
+
 func get_platform_key() -> String:
 	return "debug"
 

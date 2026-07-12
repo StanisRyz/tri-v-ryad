@@ -22,12 +22,15 @@ const RESULT_UNAVAILABLE := "unavailable"
 ## booster mutations (e.g. a bundle purchase's several rewards) into one
 ## upload, without meaningfully delaying an eventual cloud mirror.
 const NORMAL_UPLOAD_DEBOUNCE_SECONDS := 15.0
+const SDK_READY_TIMEOUT_SECONDS := 12.0
 
 var _progress_manager
 var _platform
 
 var _reconciliation_started := false
 var _reconciliation_completed := false
+var _waiting_for_sdk := false
+var _sdk_ready_timeout_timer: Timer
 
 var _upload_in_flight := false
 var _debounce_pending := false
@@ -60,6 +63,8 @@ func connect_platform(platform) -> void:
 		platform.cloud_save_completed.connect(_on_cloud_save_completed)
 	if not platform.cloud_save_error.is_connected(_on_cloud_save_error):
 		platform.cloud_save_error.connect(_on_cloud_save_error)
+	if not platform.sdk_ready.is_connected(_on_platform_sdk_ready):
+		platform.sdk_ready.connect(_on_platform_sdk_ready)
 
 
 ## Kicks off the one-time initial reconciliation: requests the cloud
@@ -72,11 +77,13 @@ func start_initial_reconciliation() -> void:
 		return
 	_reconciliation_started = true
 
-	if _platform == null or not _platform.is_cloud_save_available():
+	if _platform == null:
 		_finish_initial_reconciliation(RESULT_UNAVAILABLE)
 		return
-
-	_platform.load_cloud_save()
+	if _platform.get_platform_key() == "yandex" and not _platform.is_sdk_ready():
+		_wait_for_sdk_ready()
+		return
+	_begin_cloud_loading()
 
 
 func is_initial_reconciliation_completed() -> bool:
@@ -95,6 +102,54 @@ func _on_cloud_save_load_error(_message: String) -> void:
 	if _reconciliation_completed:
 		return
 	_finish_initial_reconciliation(RESULT_LOCAL)
+
+
+func _wait_for_sdk_ready() -> void:
+	if _waiting_for_sdk:
+		return
+	_waiting_for_sdk = true
+	var tree := _get_scene_tree()
+	if tree == null:
+		_finish_initial_reconciliation(RESULT_UNAVAILABLE)
+		return
+	_sdk_ready_timeout_timer = Timer.new()
+	_sdk_ready_timeout_timer.wait_time = SDK_READY_TIMEOUT_SECONDS
+	_sdk_ready_timeout_timer.one_shot = true
+	tree.root.add_child(_sdk_ready_timeout_timer)
+	_sdk_ready_timeout_timer.timeout.connect(_on_sdk_ready_timeout)
+	_sdk_ready_timeout_timer.start()
+
+
+func _on_platform_sdk_ready() -> void:
+	if not _waiting_for_sdk or _reconciliation_completed:
+		return
+	_stop_sdk_ready_timeout()
+	_waiting_for_sdk = false
+	_begin_cloud_loading()
+
+
+func _on_sdk_ready_timeout() -> void:
+	if not _waiting_for_sdk or _reconciliation_completed:
+		return
+	_waiting_for_sdk = false
+	_stop_sdk_ready_timeout()
+	_finish_initial_reconciliation(RESULT_UNAVAILABLE)
+
+
+func _stop_sdk_ready_timeout() -> void:
+	if _sdk_ready_timeout_timer != null:
+		_sdk_ready_timeout_timer.stop()
+		_sdk_ready_timeout_timer.queue_free()
+		_sdk_ready_timeout_timer = null
+
+
+func _begin_cloud_loading() -> void:
+	if _reconciliation_completed:
+		return
+	if not _platform.is_cloud_save_available():
+		_finish_initial_reconciliation(RESULT_UNAVAILABLE)
+		return
+	_platform.load_cloud_save()
 
 
 func _reconcile(cloud_envelope: Dictionary) -> void:
@@ -122,6 +177,7 @@ func _finish_initial_reconciliation(result: String) -> void:
 	if _reconciliation_completed:
 		return
 	_reconciliation_completed = true
+	_stop_sdk_ready_timeout()
 	initial_reconciliation_completed.emit(result)
 
 	if _queued_snapshot.is_empty():

@@ -1,5 +1,9 @@
 # Tri V Ryad
 
+## Stage 69.5: Yandex Web Export, SDK Bootstrap and Browser Lifecycle v0.1
+
+The Yandex Web preset exports `builds/yandex/index.html` using `/sdk.js` and `YaGames.init()` in the standard shell head include. SDK lifecycle calls are readiness-safe, cloud reconciliation has one bounded Web wait, and platform/browser pause reasons block only active GameScreen interaction while AudioManager tracks independent mute reasons. `tools/package_yandex_web.py` creates a flat validated release ZIP. Existing platform, economy, gameplay, save, localization, audio, portrait-only, and debug behavior remains unchanged; no new placements, authorization, leaderboards, or products were added. Tests were not touched or run; Yandex-draft validation is Stage 69.6.
+
 Tri V Ryad is a Godot 4.x match-3 battle game intended for Yandex Games and Web-first release targets.
 
 The project is currently through Stage 61: Main Menu Restoration v0.1. `MainMenuScreen` is restored as the app's startup screen and top-level hub: App startup now shows MainMenu first instead of jumping straight to LevelSelect. MainMenu has four primary buttons — Играть (Play), Выбрать уровень (Level Select), Магазин (Shop), and Настройки (Settings) — plus the existing hidden Heroes entry (still gated by `FeatureFlags.HERO_SYSTEMS_ENABLED`). Играть resolves the highest currently-unlocked level via a new `PlayLevelResolver` and opens `GameScreen` directly; Выбрать уровень opens `LevelSelectScreen`, which now has a Back button returning to MainMenu; Магазин opens a new placeholder `ShopPlaceholderScreen` ("Магазин" / "Скоро будет доступно" / "Назад", no economy logic); Настройки opens the existing `SettingsScreen`, whose Back button now returns to whichever screen opened it (MainMenu or LevelSelect). See the Stage 61 section below for full navigation wiring details.

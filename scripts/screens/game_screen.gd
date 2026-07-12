@@ -87,6 +87,7 @@ var _last_booster_spend_failed := false
 var _developer_mode_active: bool = false
 var _lose_continue_ad_active := false
 var _lose_continue_ad_rewarded := false
+var _platform_paused := false
 
 const REWARDED_AD_PLACEMENT_LOSE_CONTINUE := "lose_continue"
 
@@ -399,7 +400,7 @@ func _start_new_battle() -> void:
 	result_overlay.hide_result()
 	lose_continue_popup.hide_popup()
 	_set_input_mode("normal", "")
-	_input_controller.set_input_enabled(true)
+	_input_controller.set_input_enabled(not _platform_paused)
 	_set_status("Select a tile")
 	_presenter.start_level(_current_level_id)
 	var platform := get_node_or_null("/root/Platform")
@@ -574,7 +575,7 @@ func _on_feedback_finished() -> void:
 
 	if not _presenter.is_battle_finished():
 		await _maybe_resolve_no_move_shuffle()
-		_input_controller.set_input_enabled(true)
+		_input_controller.set_input_enabled(not _platform_paused)
 		if _input_mode == "booster_targeting":
 			_input_controller.set_input_enabled(false)
 
@@ -867,7 +868,7 @@ func _on_invalid_input(reason: String) -> void:
 
 
 func _on_swap_requested(from_cell: Vector2i, to_cell: Vector2i) -> void:
-	if _input_mode != "normal":
+	if _platform_paused or _input_mode != "normal":
 		return
 	_input_controller.set_input_enabled(false)
 	_begin_animated_turn()
@@ -886,6 +887,8 @@ func _on_swap_accepted(from_cell: Vector2i, to_cell: Vector2i, matches: Array) -
 
 
 func _on_ability_requested(lane_index: int) -> void:
+	if _platform_paused:
+		return
 	_input_controller.set_input_enabled(false)
 	board_view.clear_lane_highlights()
 	board_view.clear_cell_highlights()
@@ -901,7 +904,7 @@ func _on_booster_state_changed(booster_state) -> void:
 
 
 func _on_booster_pressed(booster_id: String) -> void:
-	if _presenter == null or _presenter.state == null or _presenter.is_battle_finished():
+	if _platform_paused or _presenter == null or _presenter.state == null or _presenter.is_battle_finished():
 		return
 
 	var config = _presenter.get_booster_catalog().get_booster(booster_id)
@@ -980,7 +983,7 @@ func _on_booster_resolved(result) -> void:
 		_apply_pending_board_for_animation()
 		_play_invalid_swap()
 		_set_status(result.message)
-		_input_controller.set_input_enabled(true)
+		_input_controller.set_input_enabled(not _platform_paused)
 		return
 
 	# Stage 62.2 v0.1: exactly one global booster is spent here, the single
@@ -1037,7 +1040,7 @@ func _finish_booster_resolution(result) -> void:
 
 	if not _presenter.is_battle_finished():
 		await _maybe_resolve_no_move_shuffle()
-		_input_controller.set_input_enabled(true)
+		_input_controller.set_input_enabled(not _platform_paused)
 
 
 func _on_restart_pressed() -> void:
@@ -1072,7 +1075,32 @@ func _set_input_mode(mode: String, booster_id: String) -> void:
 	if booster_panel != null:
 		booster_panel.set_selected_booster(booster_id)
 	if _input_controller != null:
-		_input_controller.set_input_enabled(mode == "normal")
+		_input_controller.set_input_enabled(mode == "normal" and not _platform_paused)
+
+
+## Stage 69.5: keeps battle state intact while a Yandex/browser pause is
+## active. Input re-enables only for a still-active, normal battle state.
+func set_platform_paused(paused: bool) -> void:
+	if _platform_paused == paused:
+		return
+	_platform_paused = paused
+	if _input_controller == null:
+		return
+	if paused:
+		_input_controller.set_input_enabled(false)
+		return
+	if is_platform_gameplay_active():
+		_input_controller.set_input_enabled(_input_mode == "normal" and not _feedback_active)
+
+
+func is_platform_gameplay_active() -> bool:
+	if _presenter == null or _presenter.state == null or _presenter.is_battle_finished():
+		return false
+	if result_overlay != null and result_overlay.visible:
+		return false
+	if lose_continue_popup != null and lose_continue_popup.visible:
+		return false
+	return true
 
 
 func _enter_booster_targeting(booster_id: String) -> void:

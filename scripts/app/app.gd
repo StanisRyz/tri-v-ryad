@@ -14,6 +14,7 @@ const PLAY_LEVEL_RESOLVER_SCRIPT := preload("res://scripts/game/progression/play
 const SHOP_CATALOG_SCRIPT := preload("res://scripts/game/shop/shop_catalog.gd")
 const PLATFORM_PURCHASE_COORDINATOR_SCRIPT := preload("res://scripts/game/shop/platform_purchase_coordinator.gd")
 const CLOUD_SAVE_COORDINATOR_SCRIPT := preload("res://scripts/game/save/cloud_save_coordinator.gd")
+const PLATFORM_RUNTIME_COORDINATOR_SCRIPT := preload("res://scripts/platform/platform_runtime_coordinator.gd")
 
 @onready var screen_host: Control = %ScreenHost
 
@@ -26,6 +27,7 @@ var _settings_return_screen := "main_menu"
 var _shop_catalog
 var _purchase_coordinator
 var _cloud_save_coordinator
+var _platform_runtime_coordinator
 
 
 ## Stage 69.4: startup order matters here — local progress loads and the
@@ -44,6 +46,9 @@ func _ready() -> void:
 	_shop_catalog = SHOP_CATALOG_SCRIPT.new(get_node_or_null("/root/LocalizationManager"))
 	_purchase_coordinator = PLATFORM_PURCHASE_COORDINATOR_SCRIPT.new(_shop_catalog, _progress_manager)
 	_apply_audio_settings()
+	_platform_runtime_coordinator = PLATFORM_RUNTIME_COORDINATOR_SCRIPT.new()
+	add_child(_platform_runtime_coordinator)
+	_platform_runtime_coordinator.setup(get_node_or_null("/root/Platform"))
 	_show_main_menu()
 	_bootstrap_platform()
 
@@ -104,6 +109,7 @@ func _on_initial_cloud_reconciliation_completed(result: String) -> void:
 
 func _show_main_menu() -> void:
 	var screen := _router.change_screen(MAIN_MENU_SCREEN)
+	_platform_runtime_coordinator.set_current_screen(screen)
 	if screen.has_method("set_progress_manager"):
 		screen.set_progress_manager(_progress_manager)
 	if screen.has_method("refresh_progress_state"):
@@ -117,6 +123,7 @@ func _show_main_menu() -> void:
 
 func _show_level_select() -> void:
 	var screen := _router.change_screen(LEVEL_SELECT_SCREEN)
+	_platform_runtime_coordinator.set_current_screen(screen)
 	if screen.has_method("set_progress_manager"):
 		screen.set_progress_manager(_progress_manager)
 	if screen.has_method("set_settings_manager"):
@@ -130,6 +137,7 @@ func _show_level_select() -> void:
 
 func _show_shop_screen() -> void:
 	var screen := _router.change_screen(SHOP_SCREEN)
+	_platform_runtime_coordinator.set_current_screen(screen)
 	if screen.has_method("set_progress_manager"):
 		screen.set_progress_manager(_progress_manager)
 	if screen.has_method("set_purchase_coordinator"):
@@ -141,6 +149,7 @@ func _show_shop_screen() -> void:
 
 func _show_game_screen(level_id: String) -> void:
 	var screen := _router.change_screen(GAME_SCREEN)
+	_platform_runtime_coordinator.set_current_screen(screen)
 	if screen.has_method("set_progress_manager"):
 		screen.set_progress_manager(_progress_manager)
 	if screen.has_method("set_settings_manager"):
@@ -153,6 +162,7 @@ func _show_game_screen(level_id: String) -> void:
 
 func _show_upgrade_screen() -> void:
 	var screen := _router.change_screen(UPGRADE_SCREEN)
+	_platform_runtime_coordinator.set_current_screen(screen)
 	if screen.has_method("set_progress_manager"):
 		screen.set_progress_manager(_progress_manager)
 	if screen.has_method("set_settings_manager"):
@@ -162,6 +172,7 @@ func _show_upgrade_screen() -> void:
 
 func _show_team_select_screen(level_id: String) -> void:
 	var screen := _router.change_screen(TEAM_SELECT_SCREEN)
+	_platform_runtime_coordinator.set_current_screen(screen)
 	if screen.has_method("set_progress_manager"):
 		screen.set_progress_manager(_progress_manager)
 	if screen.has_method("set_settings_manager"):
@@ -174,6 +185,7 @@ func _show_team_select_screen(level_id: String) -> void:
 
 func _show_settings_screen() -> void:
 	var screen := _router.change_screen(SETTINGS_SCREEN)
+	_platform_runtime_coordinator.set_current_screen(screen)
 	if screen.has_method("set_settings_manager"):
 		screen.set_settings_manager(_settings_manager)
 	screen.back_pressed.connect(_on_settings_back_pressed)
