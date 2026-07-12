@@ -158,3 +158,65 @@ func get_catalog_product(local_product_id: String) -> Dictionary:
 
 func is_ad_in_progress() -> bool:
 	return _ad_in_progress
+
+
+# ---------------------------------------------------------------------------
+# Cloud save (debug backend)
+# ---------------------------------------------------------------------------
+
+## Stage 69.4: a separate file from the real local save (user://save_v1.json)
+## so debug cloud testing never touches actual progress. Manual editor
+## testing scenarios: delete this file for "no cloud save"; hand-edit its
+## save_revision/last_save_unix_time to be higher/lower/equal to the local
+## save's for "cloud newer"/"local newer"/"equal snapshots"; write invalid
+## JSON into it for "malformed cloud JSON"; flip the debug flags below for
+## "cloud unavailable" or simulated load/save failure.
+const DEBUG_CLOUD_SAVE_PATH := "user://debug_cloud_save_v1.json"
+
+var debug_cloud_available_override := true
+var debug_cloud_load_should_fail := false
+var debug_cloud_save_should_fail := false
+
+
+func is_cloud_save_available() -> bool:
+	return debug_cloud_available_override
+
+
+func load_cloud_save() -> void:
+	if debug_cloud_load_should_fail:
+		cloud_save_load_error.emit("debug_cloud_load_failure")
+		return
+
+	if not FileAccess.file_exists(DEBUG_CLOUD_SAVE_PATH):
+		cloud_save_loaded.emit({})
+		return
+
+	var file := FileAccess.open(DEBUG_CLOUD_SAVE_PATH, FileAccess.READ)
+	if file == null:
+		cloud_save_loaded.emit({})
+		return
+
+	var json_text := file.get_as_text()
+	var parser := JSON.new()
+	if parser.parse(json_text) != OK:
+		cloud_save_load_error.emit("malformed_cloud_json")
+		return
+
+	var parsed = parser.data
+	cloud_save_loaded.emit(parsed if parsed is Dictionary else {})
+
+
+func save_cloud_save(data: Dictionary, _flush: bool = false) -> void:
+	if debug_cloud_save_should_fail:
+		cloud_save_error.emit("debug_cloud_save_failure")
+		return
+
+	var file := FileAccess.open(DEBUG_CLOUD_SAVE_PATH, FileAccess.WRITE)
+	if file == null:
+		cloud_save_error.emit("file_open_failed")
+		return
+
+	file.store_string(JSON.stringify(data, "\t"))
+	file.flush()
+	file.close()
+	cloud_save_completed.emit()

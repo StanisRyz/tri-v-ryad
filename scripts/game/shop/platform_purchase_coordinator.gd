@@ -29,6 +29,17 @@ var _active_foreground_item_id := ""
 ## spin on a request that's already in flight.
 var _consume_in_flight: Dictionary = {}
 
+## Stage 69.4: tokens whose purchase was foreground (a screen was actively
+## waiting on it) at the moment consume was requested, kept until that
+## token's consume reaches a terminal signal — independent of
+## _active_foreground_item_id, which is cleared immediately after starting
+## consume so the UI can unlock right away. Without this separate record,
+## LocalDebugPlatform's synchronous consume (which resolves before
+## _active_foreground_item_id is cleared) could emit purchase_completed,
+## while a real Yandex async consume (which always resolves after) never
+## could — this makes both paths behave the same.
+var _foreground_consume_tokens: Dictionary = {}
+
 
 func _init(shop_catalog = null, progress_manager = null) -> void:
 	_shop_catalog = shop_catalog
@@ -120,14 +131,19 @@ func _on_payment_purchase_error(product_id: String, message: String) -> void:
 
 func _on_payment_consume_success(purchase_token: String) -> void:
 	_consume_in_flight.erase(purchase_token)
+	var was_foreground := _foreground_consume_tokens.has(purchase_token)
+	_foreground_consume_tokens.erase(purchase_token)
 	if _progress_manager == null:
 		return
 	var entry: Dictionary = _progress_manager.get_pending_consume_tokens().get(purchase_token, {})
 	var item_id := str(entry.get("item_id", ""))
 	_progress_manager.remove_pending_consume_token(purchase_token)
-	if item_id != "" and item_id == _active_foreground_item_id:
+	# was_foreground records that some screen was actively waiting on this
+	# purchase when consume started; if that screen has since closed, its
+	# signal connections were freed with it (ScreenRouter.change_screen()),
+	# so emitting here is safe even with nothing left listening.
+	if item_id != "" and was_foreground:
 		purchase_completed.emit(item_id)
-	_clear_foreground_if_matches(item_id)
 
 
 ## Consume failed — the token stays in pending_consume_tokens (nothing to
@@ -136,16 +152,16 @@ func _on_payment_consume_success(purchase_token: String) -> void:
 ## reported by check_unprocessed_purchases().
 func _on_payment_consume_error(purchase_token: String, _message: String) -> void:
 	_consume_in_flight.erase(purchase_token)
+	_foreground_consume_tokens.erase(purchase_token)
 
 
 ## Note on ordering: _request_consume() can — for LocalDebugPlatform, which
 ## resolves synchronously — trigger _on_payment_consume_success() before
-## this function returns. Every "will be foreground" signal is therefore
-## emitted BEFORE _request_consume() is called, and _active_foreground_item_id
-## is only cleared AFTER it returns, so a synchronous consume still correctly
-## sees itself as the foreground purchase and can emit purchase_completed in
-## the right order: reward_granted/already_granted -> consume_pending ->
-## (sync or later async) completed.
+## this function returns. Every "will be foreground" signal, and recording
+## the token into _foreground_consume_tokens, therefore happens BEFORE
+## _request_consume() is called, so both a synchronous and an async consume
+## resolve to the same signal order: reward_granted/already_granted ->
+## consume_pending -> (sync or later async) completed.
 func _handle_grant_result(result: Dictionary, item_id: String, purchase_token: String) -> void:
 	var status := str(result.get("status", ""))
 	var is_foreground := item_id == _active_foreground_item_id
@@ -154,12 +170,14 @@ func _handle_grant_result(result: Dictionary, item_id: String, purchase_token: S
 			if is_foreground:
 				purchase_reward_granted.emit(item_id)
 				purchase_consume_pending.emit(item_id)
+				_foreground_consume_tokens[purchase_token] = item_id
 			_request_consume(purchase_token)
 			_clear_foreground_if_matches(item_id)
 		"already_granted":
 			if is_foreground:
 				purchase_already_granted.emit(item_id)
 				purchase_consume_pending.emit(item_id)
+				_foreground_consume_tokens[purchase_token] = item_id
 			_request_consume(purchase_token)
 			_clear_foreground_if_matches(item_id)
 		_:

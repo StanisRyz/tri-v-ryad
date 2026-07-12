@@ -2355,3 +2355,22 @@ Stage 69.3.1 makes the Stage 69.3 payment flow atomic, idempotent, and recoverab
 - **Preserved:** local booster purchases, the rewarded-ad offer, catalog price display, item ids/rewards/economy values, portrait-only policy, audio, gameplay, localization, text styles, debug hotkeys, and the local save path.
 - **Cloud save remains unimplemented.**
 - **No automated tests were added, updated, touched, or run.** Manual verification in the Godot editor is expected for this stage.
+
+## Stage 69.4: Yandex Cloud Save Foundation v0.1
+
+Stage 69.4 adds Yandex cloud synchronization for `PlayerProgress` with local save as the mandatory primary and cloud sync fully asynchronous/non-blocking. Full design in `docs/CLOUD_SAVE.md`.
+
+- **Payment reliability polish first:** the `already_granted` branch of `apply_platform_purchase_atomic()` now uses an isolated candidate snapshot; `PlatformPurchaseCoordinator` tracks foreground-consume context independently of the transient foreground marker so `purchase_completed` fires consistently for both synchronous debug and asynchronous real consume.
+- **Cloud methods/signals** (`is_cloud_save_available()`, `load_cloud_save()`, `save_cloud_save(data, flush)`, `cloud_save_loaded`/`load_error`/`completed`/`error`) added across `PlatformServices`/`Platform`/`WebYandexPlatform`/`LocalDebugPlatform`/`YandexBridge`.
+- **`YandexBridge`** uses `ysdk.getPlayer()`/`getData(['save_v1'])`/`setData(...)`, converting payloads safely.
+- **`CloudSaveEnvelope`** (schema version 1, `cloud_schema_version`/`save_revision`/`saved_at_unix`/`progress`) validates and never truncates; oversized payloads (>190000 bytes) are rejected.
+- **`save_revision`/`last_save_unix_time`** bump only on a real local write, never on load/duplicate/cloud-apply.
+- **`CloudSaveConflictResolver`** picks one authoritative snapshot (newer timestamp, then higher revision, then local) — no field-by-field merge.
+- **`CloudSaveCoordinator`** reconciles once at startup, then debounces (15s) normal uploads and submits critical ones immediately, one upload in flight at a time, no automatic retry within a session.
+- **`App` startup reordered:** local load → screen shown → Platform bootstrap → cloud reconciliation (awaited) → purchase recovery.
+- **Screen refresh, not recreation**, after reconciliation replaces progress; an active level (`GameScreen`) is left alone.
+- **`LocalDebugPlatform`** cloud backend uses a separate debug file with flags for manual failure/unavailable testing.
+- **Purchase ledgers preserved** through the cloud envelope; no double-grants, unknown product ids never granted/consumed.
+- **Cloud errors never block gameplay;** no mandatory cloud loading screen.
+- **Preserved:** rewarded ads, payments/catalog prices, atomic grants, local booster purchases, shop layout/economy, gameplay, portrait-only policy, localization, text styles, audio, debug hotkeys.
+- **No automated tests were added, updated, touched, or run.** Manual verification in the Godot editor is expected for this stage.

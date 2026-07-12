@@ -9,6 +9,12 @@ func _init(host: Control) -> void:
 	_host = host
 
 
+## Stage 69.4: lets App refresh whichever screen is currently visible (e.g.
+## after cloud reconciliation replaces local progress) without recreating it.
+func get_current_screen() -> Node:
+	return _current_screen if _current_screen != null and is_instance_valid(_current_screen) else null
+
+
 func change_screen(screen_scene: PackedScene) -> Node:
 	if _current_screen != null and is_instance_valid(_current_screen):
 		_current_screen.queue_free()

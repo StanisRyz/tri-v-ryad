@@ -30,6 +30,11 @@ signal unprocessed_purchase_found(product_id: String, purchase_token: String)
 signal unprocessed_purchase_check_completed
 signal unprocessed_purchase_check_error(message: String)
 
+signal cloud_save_loaded(data: Dictionary)
+signal cloud_save_load_error(message: String)
+signal cloud_save_completed
+signal cloud_save_error(message: String)
+
 const WEB_YANDEX_PLATFORM_SCRIPT := preload("res://scripts/platform/WebYandexPlatform.gd")
 const LOCAL_DEBUG_PLATFORM_SCRIPT := preload("res://scripts/platform/LocalDebugPlatform.gd")
 
@@ -58,6 +63,10 @@ func _ready() -> void:
 	_impl.unprocessed_purchase_found.connect(func(product_id, token): unprocessed_purchase_found.emit(product_id, token))
 	_impl.unprocessed_purchase_check_completed.connect(func(): unprocessed_purchase_check_completed.emit())
 	_impl.unprocessed_purchase_check_error.connect(func(message): unprocessed_purchase_check_error.emit(message))
+	_impl.cloud_save_loaded.connect(func(data): cloud_save_loaded.emit(data))
+	_impl.cloud_save_load_error.connect(func(message): cloud_save_load_error.emit(message))
+	_impl.cloud_save_completed.connect(func(): cloud_save_completed.emit())
+	_impl.cloud_save_error.connect(func(message): cloud_save_error.emit(message))
 
 
 func game_ready() -> void:
@@ -118,6 +127,18 @@ func get_catalog_product(local_product_id: String) -> Dictionary:
 
 func is_ad_in_progress() -> bool:
 	return _impl.is_ad_in_progress()
+
+
+func is_cloud_save_available() -> bool:
+	return _impl.is_cloud_save_available()
+
+
+func load_cloud_save() -> void:
+	_impl.load_cloud_save()
+
+
+func save_cloud_save(data: Dictionary, flush: bool = false) -> void:
+	_impl.save_cloud_save(data, flush)
 
 
 ## Stage 69.1: refreshes Platform's language from the active implementation

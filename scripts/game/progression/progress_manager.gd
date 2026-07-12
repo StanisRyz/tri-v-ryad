@@ -20,6 +20,16 @@ const PURCHASE_STATUS_INVALID_ITEM := "invalid_item"
 const PURCHASE_STATUS_INVALID_REWARD := "invalid_reward"
 const PURCHASE_STATUS_SAVE_FAILED := "save_failed"
 
+## Stage 69.4: emitted only after SaveManager successfully writes progress to
+## disk. CloudSaveCoordinator listens to this instead of being called from
+## every gameplay method — "critical" saves (paid purchase reward granted,
+## pending-consume state changed, level completion, explicit reset) request
+## an immediate cloud upload; "normal" saves go through the debounce queue.
+signal local_save_completed(snapshot: Dictionary, importance: String)
+
+const IMPORTANCE_NORMAL := "normal"
+const IMPORTANCE_CRITICAL := "critical"
+
 var save_manager
 var progress
 var upgrade_resolver
@@ -46,8 +56,11 @@ func load() -> void:
 	_normalize_loaded_team_selection()
 
 
-func save() -> bool:
-	return save_manager.save_progress(progress)
+func save(importance: String = IMPORTANCE_NORMAL) -> bool:
+	var success: bool = save_manager.save_progress(progress)
+	if success:
+		local_save_completed.emit(progress.to_dictionary(), importance)
+	return success
 
 
 func get_progress():
@@ -113,7 +126,7 @@ func complete_level(level_config, moves_left: int):
 		return null
 
 	var state = level_completion_resolver.apply_victory_result(progress, level_config, moves_left)
-	save()
+	save(IMPORTANCE_CRITICAL)
 	return state
 
 
@@ -165,7 +178,7 @@ func complete_level_with_rewards(level_config, moves_left: int, level_catalog) -
 				progress.add_booster(booster_id, int(reward.get("amount", 0)))
 				booster_awarded = booster_id
 
-	save()
+	save(IMPORTANCE_CRITICAL)
 
 	result["level_progress_state"] = state
 	result["previous_stars"] = previous_stars
@@ -303,7 +316,7 @@ func mark_processed_purchase_token(token: String) -> void:
 	if progress == null:
 		return
 	progress.mark_processed_purchase_token(token)
-	save()
+	save(IMPORTANCE_CRITICAL)
 
 
 func get_pending_consume_tokens() -> Dictionary:
@@ -317,7 +330,7 @@ func remove_pending_consume_token(token: String) -> bool:
 	if progress == null or not progress.has_pending_consume_token(token):
 		return false
 	progress.remove_pending_consume_token(token)
-	return save()
+	return save(IMPORTANCE_CRITICAL)
 
 
 ## Stage 69.3.1: the single entry point for granting a paid shop item's
@@ -350,10 +363,18 @@ func apply_platform_purchase_atomic(item, purchase_token: String, platform_produ
 		# Already granted earlier. Keep it tracked for a consume retry in case
 		# the original attempt recorded the grant but never got a consume
 		# success (e.g. app closed between the atomic save and the consume
-		# call finishing) — never re-applies any reward.
+		# call finishing) — never re-applies any reward. Stage 69.4: this
+		# still goes through an isolated candidate snapshot (never mutates
+		# the live `progress` directly), same one-save-or-nothing guarantee
+		# as the "granted" branch below.
 		if not progress.has_pending_consume_token(purchase_token):
-			progress.add_pending_consume_token(purchase_token, platform_product_id, item.item_id)
-			save()
+			var pending_candidate: PlayerProgress = progress.duplicate_progress()
+			pending_candidate.add_pending_consume_token(purchase_token, platform_product_id, item.item_id)
+			if not save_manager.save_progress(pending_candidate):
+				result["status"] = PURCHASE_STATUS_SAVE_FAILED
+				return result
+			progress = pending_candidate
+			local_save_completed.emit(progress.to_dictionary(), IMPORTANCE_CRITICAL)
 		result["status"] = PURCHASE_STATUS_ALREADY_GRANTED
 		return result
 
@@ -380,6 +401,7 @@ func apply_platform_purchase_atomic(item, purchase_token: String, platform_produ
 		return result
 
 	progress = candidate
+	local_save_completed.emit(progress.to_dictionary(), IMPORTANCE_CRITICAL)
 	result["status"] = PURCHASE_STATUS_GRANTED
 	return result
 
@@ -390,7 +412,35 @@ func get_economy_debug_summary() -> String:
 
 func reset_progress() -> void:
 	progress = save_manager.reset_progress()
+	local_save_completed.emit(progress.to_dictionary(), IMPORTANCE_CRITICAL)
 	_normalize_loaded_team_selection()
+
+
+## Stage 69.4: applies an authoritative cloud snapshot locally. Parses
+## through PlayerProgress.from_dictionary() (always returns a sane object —
+## unknown/missing fields fall back to defaults), saves it to the local file
+## FIRST, and only replaces the live `progress` if that save succeeds — a
+## corrupt/oversized cloud payload or a local write failure never disturbs
+## the existing local progress. Saved with bump_metadata = false: this is a
+## passive sync of already-authoritative data, not a new local mutation, so
+## it intentionally does not bump save_revision or emit local_save_completed
+## (which would otherwise immediately re-queue the same snapshot for upload).
+## Purchase token ledgers (processed_purchase_tokens/pending_consume_tokens)
+## come through unchanged since they're part of the same to_dictionary()/
+## from_dictionary() round trip as everything else.
+func replace_progress_from_cloud(progress_data: Dictionary) -> bool:
+	if progress_data.is_empty():
+		return false
+
+	var candidate: PlayerProgress = PLAYER_PROGRESS_SCRIPT.from_dictionary(progress_data)
+	if candidate == null:
+		return false
+
+	if not save_manager.save_progress(candidate, false):
+		return false
+
+	progress = candidate
+	return true
 
 
 func _normalize_loaded_team_selection() -> void:

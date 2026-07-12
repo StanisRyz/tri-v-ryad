@@ -32,9 +32,8 @@ signal unprocessed_purchase_found(product_id: String, purchase_token: String)
 signal unprocessed_purchase_check_completed
 signal unprocessed_purchase_check_error(message: String)
 
-## Optional cloud save placeholders. No stage currently implements cloud
-## save; these signals exist so future stages have a stable place to hook
-## into without another autoload/interface change.
+## Stage 69.4: Yandex Player Data cloud save. cloud_save_loaded fires with an
+## empty Dictionary when the player has no cloud save yet (not an error).
 signal cloud_save_loaded(data: Dictionary)
 signal cloud_save_load_error(message: String)
 signal cloud_save_completed
@@ -101,10 +100,13 @@ func is_ad_in_progress() -> bool:
 	return false
 
 
-## Optional cloud save placeholders (not implemented by any subclass yet).
+func is_cloud_save_available() -> bool:
+	return false
+
+
 func load_cloud_save() -> void:
 	cloud_save_load_error.emit("not_supported")
 
 
-func save_cloud_save(_data: Dictionary) -> void:
+func save_cloud_save(_data: Dictionary, _flush: bool = false) -> void:
 	cloud_save_error.emit("not_supported")

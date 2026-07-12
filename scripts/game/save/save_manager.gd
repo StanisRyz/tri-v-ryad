@@ -34,9 +34,19 @@ func load_progress():
 	return PLAYER_PROGRESS_SCRIPT.from_dictionary(parsed)
 
 
-func save_progress(progress) -> bool:
+## Stage 69.4: bump_metadata increments PlayerProgress.save_revision and
+## refreshes last_save_unix_time right before writing — every real save goes
+## through this, so those two fields are the single source of truth
+## CloudSaveConflictResolver uses to pick the newer of a local/cloud
+## snapshot. Callers applying an already-authoritative snapshot as-is (see
+## ProgressManager.replace_progress_from_cloud()) pass false so a passive
+## sync doesn't get treated as a brand new local mutation.
+func save_progress(progress, bump_metadata: bool = true) -> bool:
 	if progress == null:
 		return false
+
+	if bump_metadata and progress.has_method("bump_save_metadata"):
+		progress.bump_save_metadata()
 
 	var file := FileAccess.open(temp_save_path, FileAccess.WRITE)
 	if file == null:

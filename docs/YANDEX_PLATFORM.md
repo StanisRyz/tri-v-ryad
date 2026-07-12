@@ -414,8 +414,13 @@ reward-granting or consume logic itself.
 from Stage 69.3 covers the same "could not finalize" state) — regenerated
 into `localization_data.gd`.
 
-Cloud save remains unimplemented — this stage is purely about local-save
-purchase reliability.
+Cloud save was still unimplemented as of Stage 69.3.1 — that stage was
+purely about local-save purchase reliability. **Stage 69.4 adds the Yandex
+cloud save foundation; see `docs/CLOUD_SAVE.md` for the full design** (local-first
+policy, Player Data API flow, cloud envelope format, revision/timestamp
+metadata, conflict resolution, initial reconciliation order, upload
+debounce/critical uploads, 200 KB payload protection, and the
+`LocalDebugPlatform` cloud backend for manual testing).
 
 ## Web SDK shell requirements
 
@@ -446,11 +451,12 @@ up to 20 seconds after its own `_ready()`, so the SDK script tag should be
 loaded as early as possible in the page, ahead of the Godot canvas/engine
 script.
 
-## What is explicitly NOT done as of Stage 69.3.1
+## What is explicitly NOT done as of Stage 69.4
 
-- No cloud save flow — only placeholder signals/methods exist on
-  `PlatformServices` for a future stage to implement.
 - No fullscreen (interstitial) ad placements were added.
 - No Web export preset or custom HTML shell file was added — only this
   documentation.
+- No release/store submission audit.
 - Tests were not added, updated, touched, or run for this stage.
+
+See `docs/CLOUD_SAVE.md` for the full Stage 69.4 cloud save design.

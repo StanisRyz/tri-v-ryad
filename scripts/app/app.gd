@@ -13,6 +13,7 @@ const LEVEL_CATALOG_SCRIPT := preload("res://scripts/game/config/level_catalog.g
 const PLAY_LEVEL_RESOLVER_SCRIPT := preload("res://scripts/game/progression/play_level_resolver.gd")
 const SHOP_CATALOG_SCRIPT := preload("res://scripts/game/shop/shop_catalog.gd")
 const PLATFORM_PURCHASE_COORDINATOR_SCRIPT := preload("res://scripts/game/shop/platform_purchase_coordinator.gd")
+const CLOUD_SAVE_COORDINATOR_SCRIPT := preload("res://scripts/game/save/cloud_save_coordinator.gd")
 
 @onready var screen_host: Control = %ScreenHost
 
@@ -24,8 +25,14 @@ var _play_level_resolver
 var _settings_return_screen := "main_menu"
 var _shop_catalog
 var _purchase_coordinator
+var _cloud_save_coordinator
 
 
+## Stage 69.4: startup order matters here — local progress loads and the
+## first screen shows before Platform/cloud is touched at all, so a slow or
+## unavailable network never delays getting into the game. See
+## _bootstrap_platform() for the cloud-reconciliation-then-purchase-recovery
+## ordering that follows.
 func _ready() -> void:
 	_router = ScreenRouter.new(screen_host)
 	_progress_manager = PROGRESS_MANAGER_SCRIPT.new()
@@ -47,21 +54,52 @@ func _ready() -> void:
 ## first screen is up. Platform itself re-syncs the language whenever the
 ## Yandex SDK becomes ready, since its language is only known once
 ## window.ysdk.environment exists.
-## Stage 69.3.1: connects PlatformPurchaseCoordinator to Platform once (it
-## owns payment_purchase_success/cancelled/error, payment_consume_success/
-## error, and unprocessed_purchase_found — App no longer contains any direct
-## reward/consume logic), starts the unprocessed-purchase check, and retries
-## any purchase token still recorded as granted-but-unconfirmed from a
-## previous session.
+##
+## Stage 69.4: cloud reconciliation now runs before purchase recovery.
+## CloudSaveCoordinator may apply a cloud snapshot that replaces local
+## progress (including its purchase-token ledgers), so starting
+## PlatformPurchaseCoordinator's unprocessed-purchase/consume-retry recovery
+## before that finishes could recover purchases against a progress snapshot
+## that's about to be discarded. `await`s the coordinator's own signal
+## rather than blocking _ready() itself — this whole function is fire-and-
+## forget from _ready()'s point of view, so a slow/unavailable network only
+## delays purchase recovery and the cloud mirror, never entering the game.
 func _bootstrap_platform() -> void:
 	var platform := get_node_or_null("/root/Platform")
 	if platform == null:
 		return
 	platform.sync_language_to_localization()
 	platform.game_ready()
+
+	_cloud_save_coordinator = CLOUD_SAVE_COORDINATOR_SCRIPT.new(_progress_manager, platform)
+	_cloud_save_coordinator.initial_reconciliation_completed.connect(_on_initial_cloud_reconciliation_completed)
+	_cloud_save_coordinator.start_initial_reconciliation()
+	# LocalDebugPlatform (and an unavailable/null platform) can finish
+	# reconciliation synchronously inside start_initial_reconciliation()
+	# above, before this line runs — awaiting the signal unconditionally in
+	# that case would hang forever, since `await` only ever catches a
+	# *future* emission.
+	if not _cloud_save_coordinator.is_initial_reconciliation_completed():
+		await _cloud_save_coordinator.initial_reconciliation_completed
+
 	_purchase_coordinator.connect_platform(platform)
 	platform.check_unprocessed_purchases()
 	_purchase_coordinator.retry_pending_consume_tokens()
+
+
+## Stage 69.4: only "cloud" means local progress was actually replaced.
+## Refreshes whichever screen is currently visible through its existing
+## refresh_progress_state() API rather than recreating it — GameScreen has
+## no such method, so an active level is left completely alone by this
+## has_method() gate; the reconciled progress still applies the moment the
+## player next saves or opens a screen that does refresh (LevelSelect, Shop,
+## MainMenu, results).
+func _on_initial_cloud_reconciliation_completed(result: String) -> void:
+	if result != "cloud":
+		return
+	var screen := _router.get_current_screen()
+	if screen != null and screen.has_method("refresh_progress_state"):
+		screen.refresh_progress_state()
 
 
 func _show_main_menu() -> void:

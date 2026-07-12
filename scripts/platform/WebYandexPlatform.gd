@@ -30,6 +30,10 @@ func _init() -> void:
 	_bridge.unprocessed_purchase_found.connect(func(product_id, token): unprocessed_purchase_found.emit(product_id, token))
 	_bridge.unprocessed_purchase_check_completed.connect(func(): unprocessed_purchase_check_completed.emit())
 	_bridge.unprocessed_purchase_check_error.connect(func(message): unprocessed_purchase_check_error.emit(message))
+	_bridge.cloud_save_loaded.connect(func(data): cloud_save_loaded.emit(data))
+	_bridge.cloud_save_load_error.connect(func(message): cloud_save_load_error.emit(message))
+	_bridge.cloud_save_completed.connect(func(): cloud_save_completed.emit())
+	_bridge.cloud_save_error.connect(func(message): cloud_save_error.emit(message))
 
 
 func game_ready() -> void:
@@ -111,3 +115,21 @@ func get_catalog_product(local_product_id: String) -> Dictionary:
 
 func is_ad_in_progress() -> bool:
 	return _bridge.is_ad_in_progress() if _bridge != null else false
+
+
+func is_cloud_save_available() -> bool:
+	return _bridge.is_cloud_save_available() if _bridge != null else false
+
+
+func load_cloud_save() -> void:
+	if _bridge != null:
+		_bridge.load_cloud_save()
+	else:
+		cloud_save_load_error.emit("bridge_unavailable")
+
+
+func save_cloud_save(data: Dictionary, flush: bool = false) -> void:
+	if _bridge != null:
+		_bridge.save_cloud_save(data, flush)
+	else:
+		cloud_save_error.emit("bridge_unavailable")

@@ -22,6 +22,14 @@ var booster_inventory: Dictionary = {}
 var processed_purchase_tokens: Dictionary = {}
 var pending_consume_tokens: Dictionary = {}
 
+## Stage 69.4: cloud-sync metadata. save_revision increments once per real
+## save (see bump_save_metadata(), called from SaveManager.save_progress());
+## last_save_unix_time is the wall-clock time of that save. Both default to
+## 0 for saves written before this stage — CloudSaveConflictResolver treats
+## a 0/0 snapshot as simply "older than anything with a real revision."
+var save_revision := 0
+var last_save_unix_time := 0
+
 ## Stage 69.3: caps how many processed Yandex purchase tokens are kept, so
 ## save data can't grow unbounded over a long play history. Oldest tokens
 ## (Dictionary preserves insertion order) are dropped first once the cap is
@@ -238,6 +246,14 @@ func duplicate_progress() -> PlayerProgress:
 	return load(SCRIPT_PATH).from_dictionary(to_dictionary())
 
 
+## Stage 69.4: called only by SaveManager.save_progress() right before an
+## actual write — never by loading, duplicating, or applying a cloud
+## snapshot as-is, so these fields only advance on a genuine new local save.
+func bump_save_metadata() -> void:
+	save_revision += 1
+	last_save_unix_time = int(Time.get_unix_time_from_system())
+
+
 func get_economy_debug_summary() -> String:
 	var parts: Array[String] = []
 	parts.append("gold=%d" % gold)
@@ -276,6 +292,8 @@ func to_dictionary() -> Dictionary:
 		"booster_inventory": booster_inventory.duplicate(),
 		"processed_purchase_tokens": processed_purchase_tokens.keys(),
 		"pending_consume_tokens": pending_consume_tokens.duplicate(true),
+		"save_revision": save_revision,
+		"last_save_unix_time": last_save_unix_time,
 	}
 
 
@@ -348,6 +366,9 @@ static func from_dictionary(data: Dictionary) -> PlayerProgress:
 					"product_id": str(entry.get("product_id", "")),
 					"item_id": str(entry.get("item_id", "")),
 				}
+
+	progress.save_revision = _sanitize_non_negative_int(data.get("save_revision", 0))
+	progress.last_save_unix_time = _sanitize_non_negative_int(data.get("last_save_unix_time", 0))
 
 	return progress
 

@@ -32,11 +32,24 @@ signal unprocessed_purchase_found(product_id: String, purchase_token: String)
 signal unprocessed_purchase_check_completed
 signal unprocessed_purchase_check_error(message: String)
 
+signal cloud_save_loaded(data: Dictionary)
+signal cloud_save_load_error(message: String)
+signal cloud_save_completed
+signal cloud_save_error(message: String)
+
 const SDK_POLL_INTERVAL := 0.5
 const SDK_POLL_TIMEOUT := 20.0
 const REWARDED_AD_TIMEOUT := 30.0
 const FULLSCREEN_AD_TIMEOUT := 20.0
 const CATALOG_LOAD_TIMEOUT := 15.0
+const CLOUD_LOAD_TIMEOUT := 15.0
+const CLOUD_SAVE_TIMEOUT := 15.0
+
+## Stage 69.4: Yandex Player Data key this project's whole PlayerProgress
+## snapshot (a CloudSaveEnvelope, see cloud_save_envelope.gd) is stored
+## under. A single key keeps the payload one atomic read/write instead of
+## many small keys that could observe each other mid-update.
+const CLOUD_KEY := "save_v1"
 
 var _is_web := false
 var _sdk_ready := false
@@ -50,6 +63,8 @@ var _rewarded_timeout_timer: Timer
 var _rewarded_was_rewarded := false
 var _fullscreen_timeout_timer: Timer
 var _catalog_timeout_timer: Timer
+var _cloud_load_timeout_timer: Timer
+var _cloud_save_timeout_timer: Timer
 
 # Kept as instance vars so the JavaScriptObject callbacks stay referenced
 # for the lifetime of the in-flight JS call.
@@ -69,6 +84,10 @@ var _cb_catalog_error: JavaScriptObject
 var _cb_unprocessed_found: JavaScriptObject
 var _cb_unprocessed_done: JavaScriptObject
 var _cb_unprocessed_error: JavaScriptObject
+var _cb_cloud_load_success: JavaScriptObject
+var _cb_cloud_load_error: JavaScriptObject
+var _cb_cloud_save_success: JavaScriptObject
+var _cb_cloud_save_error: JavaScriptObject
 
 
 func _ready() -> void:
@@ -521,6 +540,159 @@ func get_cached_payment_catalog() -> Dictionary:
 
 func get_catalog_product(local_product_id: String) -> Dictionary:
 	return _payment_catalog_cache.get(local_product_id, {})
+
+
+# ---------------------------------------------------------------------------
+# Cloud save (Yandex Player Data)
+# ---------------------------------------------------------------------------
+
+## Stage 69.4: every JS snippet below reuses window.__godot_player once
+## ysdk.getPlayer({ scopes: false }) has resolved once — this is the "cache
+## the Player object" requirement, done on the JS side so both load and save
+## share it without an extra round trip through Godot.
+
+
+func is_cloud_save_available() -> bool:
+	return _is_web and _sdk_ready
+
+
+func load_cloud_save() -> void:
+	if not _is_web or not _sdk_ready:
+		cloud_save_load_error.emit("sdk_not_ready")
+		return
+	_cb_cloud_load_success = JavaScriptBridge.create_callback(_on_cloud_load_success)
+	_cb_cloud_load_error = JavaScriptBridge.create_callback(_on_cloud_load_error)
+	var window := JavaScriptBridge.get_interface("window")
+	window.__godot_cloud_load_success = _cb_cloud_load_success
+	window.__godot_cloud_load_error = _cb_cloud_load_error
+	var js := """
+		try {
+			(window.__godot_player ? Promise.resolve(window.__godot_player) : window.ysdk.getPlayer({ scopes: false })).then(function(player){
+				window.__godot_player = player;
+				return player.getData(['%s']);
+			}).then(function(data){
+				var payload = (data && typeof data['%s'] !== 'undefined') ? data['%s'] : '';
+				window.__godot_cloud_load_success(payload);
+			}).catch(function(e){
+				window.__godot_cloud_load_error(String(e));
+			});
+		} catch (e) {
+			window.__godot_cloud_load_error(String(e));
+		}
+	""" % [CLOUD_KEY, CLOUD_KEY, CLOUD_KEY]
+	_eval_js(js)
+	_start_cloud_load_timeout()
+
+
+## An empty/missing payload means "no cloud save yet" — emits an empty
+## Dictionary rather than an error, matching PlatformServices' contract.
+## Malformed JSON (corrupted or from an incompatible older format) also
+## degrades to an empty Dictionary rather than crashing or propagating
+## garbage into CloudSaveConflictResolver.
+func _on_cloud_load_success(args: Array) -> void:
+	_stop_cloud_load_timeout()
+	var raw := _to_string_safe(args[0]) if args.size() > 0 else ""
+	if raw == "":
+		cloud_save_loaded.emit({})
+		return
+	var parsed = JSON.parse_string(raw)
+	if parsed is Dictionary:
+		cloud_save_loaded.emit(parsed)
+	else:
+		cloud_save_loaded.emit({})
+
+
+func _on_cloud_load_error(args: Array) -> void:
+	_stop_cloud_load_timeout()
+	var message := _to_string_safe(args[0]) if args.size() > 0 else "unknown_error"
+	cloud_save_load_error.emit(message)
+
+
+func _start_cloud_load_timeout() -> void:
+	_stop_cloud_load_timeout()
+	_cloud_load_timeout_timer = Timer.new()
+	_cloud_load_timeout_timer.wait_time = CLOUD_LOAD_TIMEOUT
+	_cloud_load_timeout_timer.one_shot = true
+	add_child(_cloud_load_timeout_timer)
+	_cloud_load_timeout_timer.timeout.connect(_on_cloud_load_timeout)
+	_cloud_load_timeout_timer.start()
+
+
+func _on_cloud_load_timeout() -> void:
+	cloud_save_load_error.emit("timeout")
+
+
+func _stop_cloud_load_timeout() -> void:
+	if _cloud_load_timeout_timer != null:
+		_cloud_load_timeout_timer.stop()
+		_cloud_load_timeout_timer.queue_free()
+		_cloud_load_timeout_timer = null
+
+
+## data is expected to already be a validated CloudSaveEnvelope Dictionary
+## (see cloud_save_envelope.gd) — this bridge only serializes/transports it,
+## it never validates or truncates it. flush=true asks the SDK to write
+## through immediately instead of batching, used for critical saves.
+func save_cloud_save(data: Dictionary, flush: bool = false) -> void:
+	if not _is_web or not _sdk_ready:
+		cloud_save_error.emit("sdk_not_ready")
+		return
+	var json_text := JSON.stringify(data)
+	var escaped_json := json_text.replace("\\", "\\\\").replace("'", "\\'")
+	var flush_literal := "true" if flush else "false"
+	_cb_cloud_save_success = JavaScriptBridge.create_callback(_on_cloud_save_success)
+	_cb_cloud_save_error = JavaScriptBridge.create_callback(_on_cloud_save_error)
+	var window := JavaScriptBridge.get_interface("window")
+	window.__godot_cloud_save_success = _cb_cloud_save_success
+	window.__godot_cloud_save_error = _cb_cloud_save_error
+	var js := """
+		try {
+			(window.__godot_player ? Promise.resolve(window.__godot_player) : window.ysdk.getPlayer({ scopes: false })).then(function(player){
+				window.__godot_player = player;
+				return player.setData({ '%s': '%s' }, %s);
+			}).then(function(){
+				window.__godot_cloud_save_success();
+			}).catch(function(e){
+				window.__godot_cloud_save_error(String(e));
+			});
+		} catch (e) {
+			window.__godot_cloud_save_error(String(e));
+		}
+	""" % [CLOUD_KEY, escaped_json, flush_literal]
+	_eval_js(js)
+	_start_cloud_save_timeout()
+
+
+func _on_cloud_save_success(_args: Array) -> void:
+	_stop_cloud_save_timeout()
+	cloud_save_completed.emit()
+
+
+func _on_cloud_save_error(args: Array) -> void:
+	_stop_cloud_save_timeout()
+	var message := _to_string_safe(args[0]) if args.size() > 0 else "unknown_error"
+	cloud_save_error.emit(message)
+
+
+func _start_cloud_save_timeout() -> void:
+	_stop_cloud_save_timeout()
+	_cloud_save_timeout_timer = Timer.new()
+	_cloud_save_timeout_timer.wait_time = CLOUD_SAVE_TIMEOUT
+	_cloud_save_timeout_timer.one_shot = true
+	add_child(_cloud_save_timeout_timer)
+	_cloud_save_timeout_timer.timeout.connect(_on_cloud_save_timeout)
+	_cloud_save_timeout_timer.start()
+
+
+func _on_cloud_save_timeout() -> void:
+	cloud_save_error.emit("timeout")
+
+
+func _stop_cloud_save_timeout() -> void:
+	if _cloud_save_timeout_timer != null:
+		_cloud_save_timeout_timer.stop()
+		_cloud_save_timeout_timer.queue_free()
+		_cloud_save_timeout_timer = null
 
 
 # ---------------------------------------------------------------------------
