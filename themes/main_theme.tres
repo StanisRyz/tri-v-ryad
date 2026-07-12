@@ -1,0 +1,29 @@
+[gd_resource type="Theme" load_steps=1 format=3]
+
+[resource]
+Label/colors/font_color = Color(1, 1, 1, 1)
+Label/colors/font_outline_color = Color(0, 0, 0, 1)
+Label/constants/outline_size = 4
+Label/font_sizes/font_size = 22
+Button/colors/font_color = Color(1, 1, 1, 1)
+Button/colors/font_hover_color = Color(1, 1, 1, 1)
+Button/colors/font_pressed_color = Color(1, 1, 1, 1)
+Button/colors/font_focus_color = Color(1, 1, 1, 1)
+Button/colors/font_disabled_color = Color(0.7, 0.7, 0.7, 1)
+Button/colors/font_outline_color = Color(0, 0, 0, 1)
+Button/constants/outline_size = 4
+Button/font_sizes/font_size = 24
+OptionButton/colors/font_color = Color(1, 1, 1, 1)
+OptionButton/colors/font_hover_color = Color(1, 1, 1, 1)
+OptionButton/colors/font_pressed_color = Color(1, 1, 1, 1)
+OptionButton/colors/font_focus_color = Color(1, 1, 1, 1)
+OptionButton/colors/font_disabled_color = Color(0.7, 0.7, 0.7, 1)
+OptionButton/colors/font_outline_color = Color(0, 0, 0, 1)
+OptionButton/constants/outline_size = 3
+OptionButton/font_sizes/font_size = 22
+SpinBox/colors/font_color = Color(1, 1, 1, 1)
+SpinBox/font_sizes/font_size = 20
+LineEdit/colors/font_color = Color(1, 1, 1, 1)
+LineEdit/colors/font_outline_color = Color(0, 0, 0, 1)
+LineEdit/constants/outline_size = 2
+LineEdit/font_sizes/font_size = 20

@@ -6,6 +6,7 @@ signal back_pressed
 const ASSET_KEY_RESOLVER_SCRIPT := preload("res://scripts/game/config/asset_key_resolver.gd")
 const UI_ASSET_BINDING_SCRIPT := preload("res://scripts/ui/ui_asset_binding.gd")
 const GAME_ASSET_CATALOG := preload("res://scripts/game/config/game_asset_catalog.gd")
+const TEXT_STYLE_APPLIER_SCRIPT := preload("res://scripts/ui/text/text_style_applier.gd")
 
 @onready var back_button: PressableTextureButton = %BackButton
 @onready var animations_toggle: CheckButton = %AnimationsToggle
@@ -36,9 +37,19 @@ func _ready() -> void:
 	sound_effects_toggle.toggled.connect(_on_sound_effects_toggled)
 	_refresh_from_settings()
 	_localize_ui()
+	_apply_text_styles()
 	var localization_manager := get_node_or_null("/root/LocalizationManager")
 	if localization_manager != null:
 		localization_manager.language_changed.connect(_localize_ui)
+
+
+func _apply_text_styles() -> void:
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_label(title_label, "settings.title")
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_label(animations_label, "settings.option_label")
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_label(reduced_motion_label, "settings.option_label")
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_label(music_label, "settings.option_label")
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_label(sound_effects_label, "settings.option_label")
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_child_label(back_button, "TextMargin/Label", "settings.button")
 
 
 func _localize_ui() -> void:

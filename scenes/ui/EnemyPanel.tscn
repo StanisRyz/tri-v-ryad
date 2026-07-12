@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://bfo3m71bj6cub"]
 
-[ext_resource type="Script" path="res://scripts/ui/enemy_panel.gd" id="1_5dnth"]
-[ext_resource type="Script" path="res://scripts/ui/fallback_image_slot.gd" id="2_fbimg"]
+[ext_resource type="Script" uid="uid://dd8ftsa8q0xvg" path="res://scripts/ui/enemy_panel.gd" id="1_5dnth"]
+[ext_resource type="Script" uid="uid://b0dlqhi1wwh6t" path="res://scripts/ui/fallback_image_slot.gd" id="2_fbimg"]
 
 [node name="EnemyPanel" type="PanelContainer"]
 custom_minimum_size = Vector2(0, 132)
@@ -28,23 +28,52 @@ script = ExtResource("2_fbimg")
 placeholder_color = Color(0.14, 0.16, 0.2, 1)
 stretch_mode = 6
 
+[node name="Fallback" type="ColorRect" parent="Layers/BackgroundVisual"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.14, 0.16, 0.2, 1)
+
+[node name="TextureDisplay" type="TextureRect" parent="Layers/BackgroundVisual"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 6
+
 [node name="EnemySprite" type="Control" parent="Layers"]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
-anchor_right = 0.5
 anchor_top = 1.0
+anchor_right = 0.5
 anchor_bottom = 1.0
 offset_left = -87.5
-offset_right = 87.5
 offset_top = -175.0
-offset_bottom = 0.0
+offset_right = 87.5
 grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
 script = ExtResource("2_fbimg")
 placeholder_color = Color(0.22, 0.24, 0.3, 1)
+
+[node name="Fallback" type="ColorRect" parent="Layers/EnemySprite"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.22, 0.24, 0.3, 1)
+
+[node name="TextureDisplay" type="TextureRect" parent="Layers/EnemySprite"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
 
 [node name="HpBarRoot" type="Control" parent="Layers"]
 unique_name_in_owner = true
@@ -78,7 +107,8 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 0
+offset_top = -8.0
+grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 color = Color(0.85, 0.16, 0.16, 1)
@@ -89,9 +119,10 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_top = -7.0
+offset_bottom = -3.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 2
 theme_override_font_sizes/font_size = 14
 text = "-- / --"
 horizontal_alignment = 1

@@ -7,6 +7,7 @@ const ASSET_KEY_RESOLVER_SCRIPT := preload("res://scripts/game/config/asset_key_
 const GAME_ASSET_CATALOG_SCRIPT := preload("res://scripts/game/config/game_asset_catalog.gd")
 const UI_ASSET_BINDING_SCRIPT := preload("res://scripts/ui/ui_asset_binding.gd")
 const LEVEL_MAP_BUTTON_SCRIPT := preload("res://scripts/ui/level_select/level_map_button.gd")
+const TEXT_STYLE_APPLIER_SCRIPT := preload("res://scripts/ui/text/text_style_applier.gd")
 
 signal level_selected(level_id: String)
 signal settings_pressed
@@ -50,6 +51,35 @@ func _ready() -> void:
 	popup_back_button.delayed_pressed.connect(_on_popup_back_button_pressed)
 	_style_zone_selector_popup()
 	_refresh()
+	_apply_text_styles()
+	_localize_ui()
+	var localization_manager := get_node_or_null("/root/LocalizationManager")
+	if localization_manager != null:
+		localization_manager.language_changed.connect(_on_language_changed)
+
+
+func _localize_ui() -> void:
+	var localization_manager := get_node_or_null("/root/LocalizationManager")
+	if localization_manager == null:
+		return
+	back_button.button_text = localization_manager.tr_key("ui.common.back")
+	popup_start_button.button_text = localization_manager.tr_key("ui.level_select.start")
+	popup_back_button.button_text = localization_manager.tr_key("ui.common.back")
+
+
+func _on_language_changed() -> void:
+	_localize_ui()
+	_build_zone_selector()
+
+
+func _apply_text_styles() -> void:
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_button(zone_selector, "level_select.zone_dropdown")
+	for button in _level_buttons:
+		TEXT_STYLE_APPLIER_SCRIPT.apply_to_child_label(button, "TextMargin/Label", "level_select.level_button")
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_child_label(back_button, "TextMargin/Label", "level_select.back_button")
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_label(popup_level_title_label, "level_select.popup_title")
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_child_label(popup_start_button, "TextMargin/Label", "level_select.popup_button")
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_child_label(popup_back_button, "TextMargin/Label", "level_select.popup_button")
 
 
 func _bind_static_ui_assets() -> void:
@@ -134,10 +164,11 @@ func _build_zone_selector() -> void:
 	if not _has_manual_zone_selection or not unlocked_zone_indices.has(_selected_zone_index):
 		_selected_zone_index = highest_unlocked_zone_index
 
+	var localization_manager := get_node_or_null("/root/LocalizationManager")
 	var selected_item_index := 0
 	for zone_index in unlocked_zone_indices:
 		var level_range: Vector2i = LEVEL_ZONE_HELPER_SCRIPT.get_level_range_for_zone(zone_index, total_levels)
-		var label: String = LEVEL_ZONE_HELPER_SCRIPT.format_zone_label(zone_index, level_range.x, level_range.y)
+		var label: String = LEVEL_ZONE_HELPER_SCRIPT.format_zone_label(zone_index, level_range.x, level_range.y, localization_manager)
 		label += " %s" % _format_zone_stars(_get_zone_rating_stars(zone_index))
 		zone_selector.add_item(label, zone_index)
 		if zone_index == _selected_zone_index:
@@ -242,7 +273,11 @@ func _show_level_info_popup(level_id: String) -> void:
 
 	var level_number := LEVEL_LABEL_FORMATTER_SCRIPT.extract_level_number(level_id)
 	var level_config = _level_catalog.get_level(level_id)
-	popup_level_title_label.text = LEVEL_LABEL_FORMATTER_SCRIPT.format_level_label(level_id, level_config.display_name) if level_number <= 0 else "Level %d" % level_number
+	var localization_manager := get_node_or_null("/root/LocalizationManager")
+	if level_number > 0 and localization_manager != null:
+		popup_level_title_label.text = localization_manager.format_key("ui.game.level", {"level": level_number})
+	else:
+		popup_level_title_label.text = LEVEL_LABEL_FORMATTER_SCRIPT.format_level_label(level_id, level_config.display_name)
 	_apply_popup_window_texture(_get_level_stars(level_id))
 
 	level_info_popup.visible = true

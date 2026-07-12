@@ -14,9 +14,9 @@ signal next_level_pressed
 const LEVEL_REWARD_FORMATTER_SCRIPT := preload("res://scripts/game/presentation/level_reward_formatter.gd")
 const ASSET_KEY_RESOLVER_SCRIPT := preload("res://scripts/game/config/asset_key_resolver.gd")
 const GAME_ASSET_CATALOG_SCRIPT := preload("res://scripts/game/config/game_asset_catalog.gd")
+const TEXT_STYLE_APPLIER_SCRIPT := preload("res://scripts/ui/text/text_style_applier.gd")
 
 const DEFEAT_TITLE_TEXT := "Проигрыш"
-const ZONE_UNLOCKED_TEXT := "Открыта новая зона"
 
 @onready var top_label: Label = %TopLabel
 @onready var result_window: FallbackImageSlot = %ResultWindow
@@ -34,9 +34,17 @@ func _ready() -> void:
 	menu_button.delayed_pressed.connect(_on_menu_button_pressed)
 	hide_result()
 	_localize_ui()
+	_apply_text_styles()
 	var localization_manager := get_node_or_null("/root/LocalizationManager")
 	if localization_manager != null:
 		localization_manager.language_changed.connect(_localize_ui)
+
+
+func _apply_text_styles() -> void:
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_label(top_label, "result.reward")
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_child_label(retry_button, "TextMargin/Label", "result.button")
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_child_label(next_button, "TextMargin/Label", "result.button")
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_child_label(menu_button, "TextMargin/Label", "result.button")
 
 
 func _localize_ui() -> void:
@@ -51,11 +59,10 @@ func _localize_ui() -> void:
 func show_victory_result(data: Dictionary) -> void:
 	var stars_earned: int = clampi(int(data.get("stars_earned", 0)), 0, 3)
 	var next_level_id := str(data.get("next_level_id", ""))
-	var new_zone_unlocked := bool(data.get("new_zone_unlocked", false))
 	var milestone_rewards: Array = data.get("milestone_rewards", [])
 
 	_apply_result_window_texture(stars_earned)
-	top_label.text = _format_victory_top_text(milestone_rewards, new_zone_unlocked)
+	top_label.text = _format_victory_top_text(milestone_rewards)
 	retry_button.visible = true
 	next_button.visible = next_level_id != ""
 	next_button.disabled = next_level_id == ""
@@ -80,11 +87,9 @@ func hide_result() -> void:
 	visible = false
 
 
-func _format_victory_top_text(milestone_rewards: Array, new_zone_unlocked: bool) -> String:
+func _format_victory_top_text(milestone_rewards: Array) -> String:
 	var localization_manager := get_node_or_null("/root/LocalizationManager")
 	var lines := LEVEL_REWARD_FORMATTER_SCRIPT.format_rewards(milestone_rewards, localization_manager)
-	if new_zone_unlocked:
-		lines.append(ZONE_UNLOCKED_TEXT)
 	if lines.is_empty():
 		return LEVEL_REWARD_FORMATTER_SCRIPT.NO_REWARDS_TEXT
 	return "\n".join(lines)

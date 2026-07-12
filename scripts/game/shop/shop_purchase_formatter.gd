@@ -24,7 +24,7 @@ static func format_purchase_result(result: Dictionary, localization_manager = nu
 		SHOP_PURCHASE_RESOLVER_SCRIPT.REASON_PAYMENT_NOT_CONNECTED:
 			return _localize(localization_manager, "ui.shop.feedback.payment_not_connected", MESSAGE_PAYMENT_NOT_CONNECTED)
 		SHOP_PURCHASE_RESOLVER_SCRIPT.REASON_AD_NOT_CONNECTED:
-			return MESSAGE_AD_NOT_CONNECTED
+			return _localize(localization_manager, "ui.shop.feedback.ad_not_connected", MESSAGE_AD_NOT_CONNECTED)
 		SHOP_PURCHASE_RESOLVER_SCRIPT.REASON_INVALID_ITEM:
 			return _localize(localization_manager, "ui.shop.feedback.item_unavailable", MESSAGE_ITEM_UNAVAILABLE)
 		_:

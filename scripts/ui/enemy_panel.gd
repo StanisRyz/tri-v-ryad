@@ -3,6 +3,7 @@ extends PanelContainer
 const ASSET_KEY_RESOLVER_SCRIPT := preload("res://scripts/game/config/asset_key_resolver.gd")
 const GAME_ASSET_CATALOG_SCRIPT := preload("res://scripts/game/config/game_asset_catalog.gd")
 const UI_ASSET_BINDING_SCRIPT := preload("res://scripts/ui/ui_asset_binding.gd")
+const TEXT_STYLE_APPLIER_SCRIPT := preload("res://scripts/ui/text/text_style_applier.gd")
 
 @onready var background_visual: FallbackImageSlot = %BackgroundVisual
 @onready var enemy_sprite: FallbackImageSlot = %EnemySprite
@@ -28,6 +29,7 @@ func _ready() -> void:
 	_background_manual_override = background_visual.has_texture()
 	if not _background_manual_override:
 		background_visual.set_texture(_pick_random_background_texture())
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_label(hp_value_label, "game_hud.hp")
 	set_hp_values(0, 0)
 
 

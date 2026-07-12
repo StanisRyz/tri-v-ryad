@@ -10,10 +10,27 @@ const BOOSTER_CATALOG_SCRIPT := preload("res://scripts/game/config/booster_catal
 
 var _items: Dictionary = {}
 var _item_order: Array[String] = []
+var _localization_manager = null
 
 
-func _init() -> void:
+func _init(localization_manager = null) -> void:
+	_localization_manager = localization_manager
 	_register_items()
+
+
+func _tr(key: String, fallback: String) -> String:
+	if _localization_manager != null:
+		return _localization_manager.tr_key(key)
+	return fallback
+
+
+func _fmt(key: String, fallback_template: String, values: Dictionary) -> String:
+	if _localization_manager != null:
+		return _localization_manager.format_key(key, values)
+	var text: String = fallback_template
+	for placeholder_key in values.keys():
+		text = text.replace("{%s}" % str(placeholder_key), str(values[placeholder_key]))
+	return text
 
 
 func get_all_items() -> Array:
@@ -51,20 +68,20 @@ func _register_items() -> void:
 
 func _register_booster_items() -> void:
 	var boosters := [
-		[BOOSTER_CATALOG_SCRIPT.HAMMER, "Hammer"],
-		[BOOSTER_CATALOG_SCRIPT.FREEZE_TIME, "Time Freeze"],
-		[BOOSTER_CATALOG_SCRIPT.ROCKET_BARRAGE, "Rocket Barrage"],
+		[BOOSTER_CATALOG_SCRIPT.HAMMER, "shop.item.hammer", "Hammer"],
+		[BOOSTER_CATALOG_SCRIPT.FREEZE_TIME, "shop.item.time_freeze", "Time Freeze"],
+		[BOOSTER_CATALOG_SCRIPT.ROCKET_BARRAGE, "shop.item.rocket_barrage", "Rocket Barrage"],
 	]
 
 	for booster in boosters:
 		var booster_id: String = booster[0]
-		var booster_name: String = booster[1]
+		var booster_name: String = _tr(booster[1], booster[2])
 
 		_add_item(SHOP_ITEM_CONFIG_SCRIPT.new(
 			"booster_%s_gold" % booster_id,
 			SHOP_ITEM_CATEGORY_SCRIPT.BOOSTERS,
 			booster_name,
-			"Buy one %s with gold." % booster_name,
+			_fmt("shop.item.booster_desc_gold", "Buy one {name} with gold.", {"name": booster_name}),
 			SHOP_PURCHASE_KIND_SCRIPT.CURRENCY,
 			CURRENCY_TYPE_SCRIPT.GOLD,
 			20,
@@ -75,7 +92,7 @@ func _register_booster_items() -> void:
 			"booster_%s_gems" % booster_id,
 			SHOP_ITEM_CATEGORY_SCRIPT.BOOSTERS,
 			booster_name,
-			"Buy one %s with gems." % booster_name,
+			_fmt("shop.item.booster_desc_gems", "Buy one {name} with gems.", {"name": booster_name}),
 			SHOP_PURCHASE_KIND_SCRIPT.CURRENCY,
 			CURRENCY_TYPE_SCRIPT.GEMS,
 			10,
@@ -98,8 +115,8 @@ func _register_gem_items() -> void:
 		_add_item(SHOP_ITEM_CONFIG_SCRIPT.new(
 			product_id,
 			SHOP_ITEM_CATEGORY_SCRIPT.GEMS,
-			"%d Gems" % gem_amount,
-			"%d gems." % gem_amount,
+			_fmt("shop.item.gems_title", "{amount} Gems", {"amount": gem_amount}),
+			_fmt("shop.item.gems_desc", "{amount} gems.", {"amount": gem_amount}),
 			SHOP_PURCHASE_KIND_SCRIPT.EXTERNAL_PAYMENT,
 			"",
 			0,
@@ -109,18 +126,18 @@ func _register_gem_items() -> void:
 
 func _register_bundle_items() -> void:
 	var bundles := [
-		["bundle_small", "Small Bundle", 50, 50, 1],
-		["bundle_medium", "Medium Bundle", 100, 100, 2],
-		["bundle_large", "Large Bundle", 200, 200, 3],
-		["bundle_mega", "Mega Bundle", 500, 500, 10],
+		["bundle_small", "shop.item.bundle_small", "Small Bundle", 50, 50, 1],
+		["bundle_medium", "shop.item.bundle_medium", "Medium Bundle", 100, 100, 2],
+		["bundle_large", "shop.item.bundle_large", "Large Bundle", 200, 200, 3],
+		["bundle_mega", "shop.item.bundle_mega", "Mega Bundle", 500, 500, 10],
 	]
 
 	for bundle in bundles:
 		var bundle_id: String = bundle[0]
-		var bundle_name: String = bundle[1]
-		var gem_amount: int = bundle[2]
-		var gold_amount: int = bundle[3]
-		var booster_amount: int = bundle[4]
+		var bundle_name: String = _tr(bundle[1], bundle[2])
+		var gem_amount: int = bundle[3]
+		var gold_amount: int = bundle[4]
+		var booster_amount: int = bundle[5]
 
 		var rewards: Array[Dictionary] = [
 			SHOP_REWARD_TYPE_SCRIPT.make_currency_reward(CURRENCY_TYPE_SCRIPT.GEMS, gem_amount),
@@ -134,7 +151,11 @@ func _register_bundle_items() -> void:
 			bundle_id,
 			SHOP_ITEM_CATEGORY_SCRIPT.BUNDLES,
 			bundle_name,
-			"%d gems, %d gold, +%d of every booster." % [gem_amount, gold_amount, booster_amount],
+			_fmt("shop.item.bundle_desc", "{gems} gems, {gold} gold, +{count} of every booster.", {
+				"gems": gem_amount,
+				"gold": gold_amount,
+				"count": booster_amount,
+			}),
 			SHOP_PURCHASE_KIND_SCRIPT.EXTERNAL_PAYMENT,
 			"",
 			0,
@@ -151,8 +172,8 @@ func _register_offer_items() -> void:
 	_add_item(SHOP_ITEM_CONFIG_SCRIPT.new(
 		"offer_watch_ad",
 		SHOP_ITEM_CATEGORY_SCRIPT.OFFERS,
-		"Реклама",
-		"Watch an ad for a free reward.",
+		_tr("shop.item.offer_watch_ad_title", "Ad"),
+		_tr("shop.item.offer_watch_ad_desc", "Watch an ad for a free reward."),
 		SHOP_PURCHASE_KIND_SCRIPT.AD_WATCH,
 		"",
 		0,
@@ -162,8 +183,8 @@ func _register_offer_items() -> void:
 	_add_item(SHOP_ITEM_CONFIG_SCRIPT.new(
 		"offer_gems",
 		SHOP_ITEM_CATEGORY_SCRIPT.OFFERS,
-		"Гемы",
-		"Limited-time bonus gem offer.",
+		_tr("shop.item.offer_gems_title", "Gems"),
+		_tr("shop.item.offer_gems_desc", "Limited-time bonus gem offer."),
 		SHOP_PURCHASE_KIND_SCRIPT.EXTERNAL_PAYMENT,
 		"",
 		0,
@@ -173,8 +194,8 @@ func _register_offer_items() -> void:
 	_add_item(SHOP_ITEM_CONFIG_SCRIPT.new(
 		"offer_mega_gems",
 		SHOP_ITEM_CATEGORY_SCRIPT.OFFERS,
-		"Мега гемы",
-		"The biggest bonus gem offer.",
+		_tr("shop.item.offer_mega_gems_title", "Mega Gems"),
+		_tr("shop.item.offer_mega_gems_desc", "The biggest bonus gem offer."),
 		SHOP_PURCHASE_KIND_SCRIPT.EXTERNAL_PAYMENT,
 		"",
 		0,
@@ -184,8 +205,8 @@ func _register_offer_items() -> void:
 	_add_item(SHOP_ITEM_CONFIG_SCRIPT.new(
 		"offer_boosters",
 		SHOP_ITEM_CATEGORY_SCRIPT.OFFERS,
-		"Бустеры",
-		"A pack of every booster.",
+		_tr("shop.item.offer_boosters_title", "Boosters"),
+		_tr("shop.item.offer_boosters_desc", "A pack of every booster."),
 		SHOP_PURCHASE_KIND_SCRIPT.EXTERNAL_PAYMENT,
 		"",
 		0,

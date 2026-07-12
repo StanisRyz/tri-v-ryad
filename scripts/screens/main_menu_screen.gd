@@ -3,6 +3,7 @@ extends Control
 const GAME_ASSET_CATALOG := preload("res://scripts/game/config/game_asset_catalog.gd")
 const ASSET_KEY_RESOLVER_SCRIPT := preload("res://scripts/game/config/asset_key_resolver.gd")
 const CURRENCY_TYPE_SCRIPT := preload("res://scripts/game/economy/currency_type.gd")
+const TEXT_STYLE_APPLIER_SCRIPT := preload("res://scripts/ui/text/text_style_applier.gd")
 
 signal play_pressed
 signal level_select_pressed
@@ -35,6 +36,7 @@ func _ready() -> void:
 
 	_refresh_wallet_labels()
 	_localize_ui()
+	_apply_text_styles()
 	var localization_manager := get_node_or_null("/root/LocalizationManager")
 	if localization_manager != null:
 		localization_manager.language_changed.connect(_localize_ui)
@@ -87,6 +89,16 @@ func _localize_ui() -> void:
 	level_select_button.button_text = localization_manager.tr_key("ui.main.level_select")
 	shop_button.button_text = localization_manager.tr_key("ui.main.shop")
 	settings_button.button_text = localization_manager.tr_key("ui.main.settings")
+
+
+func _apply_text_styles() -> void:
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_child_label(play_button, "TextMargin/Label", "main_menu.button")
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_child_label(level_select_button, "TextMargin/Label", "main_menu.button")
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_child_label(shop_button, "TextMargin/Label", "main_menu.button")
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_child_label(settings_button, "TextMargin/Label", "main_menu.button")
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_button(heroes_button, "main_menu.button")
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_label(gold_label, "main_menu.currency")
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_label(gems_label, "main_menu.currency")
 
 
 func _refresh_wallet_labels() -> void:

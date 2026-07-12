@@ -12,6 +12,8 @@ class_name BoosterTextureButton
 ## is used only alongside `Fallback`, when no active texture is available.
 ## `CountLabel` is always rendered as a bottom-center overlay.
 
+const TEXT_STYLE_APPLIER_SCRIPT := preload("res://scripts/ui/text/text_style_applier.gd")
+
 @export var booster_id: String = ""
 
 @export var default_texture: Texture2D:
@@ -97,6 +99,7 @@ func _ready() -> void:
 	focus_mode = Control.FOCUS_NONE
 	_clear_button_theme_backgrounds()
 	_ensure_children()
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_label(_count_label, "game_hud.booster_count")
 	if not mouse_entered.is_connected(_on_mouse_entered):
 		mouse_entered.connect(_on_mouse_entered)
 	if not mouse_exited.is_connected(_on_mouse_exited):

@@ -12,6 +12,7 @@ const ASSET_KEY_RESOLVER_SCRIPT := preload("res://scripts/game/config/asset_key_
 const GAME_ASSET_CATALOG := preload("res://scripts/game/config/game_asset_catalog.gd")
 const SHOP_BOOSTER_TILE_SCENE := preload("res://scenes/ui/shop/ShopBoosterTile.tscn")
 const SHOP_PRODUCT_TILE_SCENE := preload("res://scenes/ui/shop/ShopProductTile.tscn")
+const TEXT_STYLE_APPLIER_SCRIPT := preload("res://scripts/ui/text/text_style_applier.gd")
 
 const BOOSTER_IDS := [
 	BOOSTER_CATALOG_SCRIPT.HAMMER,
@@ -39,12 +40,13 @@ const OFFER_IDS := ["offer_watch_ad", "offer_gems", "offer_mega_gems", "offer_bo
 @onready var feedback_label: Label = %FeedbackLabel
 
 var _progress_manager
-var _shop_catalog = SHOP_CATALOG_SCRIPT.new()
+var _shop_catalog
 var _purchase_resolver = SHOP_PURCHASE_RESOLVER_SCRIPT.new()
 var _selected_category := SHOP_ITEM_CATEGORY_SCRIPT.BOOSTERS
 
 
 func _ready() -> void:
+	_shop_catalog = SHOP_CATALOG_SCRIPT.new(get_node_or_null("/root/LocalizationManager"))
 	_bind_static_ui_assets()
 	back_button.delayed_pressed.connect(_on_back_button_delayed_pressed)
 	boosters_tab_button.pressed.connect(_on_boosters_tab_pressed)
@@ -59,9 +61,21 @@ func _ready() -> void:
 	_refresh_wallet()
 	_show_category(_selected_category)
 	_localize_ui()
+	_apply_text_styles()
 	var localization_manager := get_node_or_null("/root/LocalizationManager")
 	if localization_manager != null:
 		localization_manager.language_changed.connect(_localize_ui)
+
+
+func _apply_text_styles() -> void:
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_label(gold_label, "shop.wallet")
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_label(gems_label, "shop.wallet")
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_label(feedback_label, "shop.feedback")
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_child_label(boosters_tab_button, "TextMargin/Label", "shop.tab")
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_child_label(gems_tab_button, "TextMargin/Label", "shop.tab")
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_child_label(bundles_tab_button, "TextMargin/Label", "shop.tab")
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_child_label(offers_tab_button, "TextMargin/Label", "shop.tab")
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_child_label(back_button, "TextMargin/Label", "global.button")
 
 
 func set_progress_manager(progress_manager) -> void:

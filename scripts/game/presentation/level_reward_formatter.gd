@@ -37,9 +37,7 @@ static func format_rewards_text(rewards: Array, localization_manager = null) -> 
 static func _format_reward(reward: Dictionary, localization_manager) -> String:
 	match str(reward.get("type", "")):
 		LEVEL_STAR_REWARD_RESOLVER_SCRIPT.REWARD_TYPE_UNLOCK_LEVEL:
-			if localization_manager != null:
-				return localization_manager.tr_key("ui.result.reward.unlocked_next_level")
-			return "Открыт следующий уровень"
+			return ""
 		LEVEL_STAR_REWARD_RESOLVER_SCRIPT.REWARD_TYPE_CURRENCY:
 			return _format_currency_reward(reward, localization_manager)
 		LEVEL_STAR_REWARD_RESOLVER_SCRIPT.REWARD_TYPE_BOOSTER:

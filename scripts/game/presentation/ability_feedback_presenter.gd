@@ -10,11 +10,16 @@ const MINIMAL_DELAY := 0.01
 
 var _animations_enabled := true
 var _debug_labels_enabled := false
+var _localization_manager = null
 
 
 func configure_settings(animations_enabled: bool, _reduced_motion_enabled: bool = false, debug_labels_enabled: bool = false) -> void:
 	_animations_enabled = animations_enabled
 	_debug_labels_enabled = debug_labels_enabled
+
+
+func set_localization_manager(localization_manager) -> void:
+	_localization_manager = localization_manager
 
 
 func play_ability_feedback(data, board_view: BoardView, status_callback: Callable) -> void:
@@ -27,17 +32,17 @@ func play_ability_feedback(data, board_view: BoardView, status_callback: Callabl
 
 
 func _play_accepted_feedback(data, board_view: BoardView, status_callback: Callable) -> void:
-	status_callback.call(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_ability_start_message(data, _debug_labels_enabled))
+	status_callback.call(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_ability_start_message(data, _debug_labels_enabled, _localization_manager))
 	await _wait(board_view, SHORT_DELAY)
 
-	var damage_message := BATTLE_MESSAGE_FORMATTER_SCRIPT.format_ability_damage_message(data, _debug_labels_enabled)
+	var damage_message := BATTLE_MESSAGE_FORMATTER_SCRIPT.format_ability_damage_message(data, _debug_labels_enabled, _localization_manager)
 	if damage_message != "":
 		status_callback.call(damage_message)
 		await _wait(board_view, MEDIUM_DELAY)
 
 
 func _play_rejected_feedback(data, board_view: BoardView, status_callback: Callable) -> void:
-	status_callback.call(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_ability_rejected_message(data.reason))
+	status_callback.call(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_ability_rejected_message(data.reason, _localization_manager))
 	await _wait(board_view, SHORT_DELAY)
 
 

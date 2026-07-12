@@ -26,16 +26,28 @@ static func format_label(boost) -> String:
 ## LevelBoostConfig.description). Kept separate from format_label() (still
 ## used for the compact debug status line) since the two audiences want
 ## different wording.
-static func format_gameplay_label(boost) -> String:
+static func format_gameplay_label(boost, localization_manager = null) -> String:
 	if boost == null or boost.is_none():
 		return ""
 
 	match boost.boost_type:
 		LevelBoostType.COLOR_DAMAGE_MULTIPLIER:
+			if localization_manager != null:
+				return localization_manager.format_key("modifier.damage_color", {
+					"multiplier": _format_multiplier(boost.color_multiplier),
+					"color": _tile_color_name(boost.tile_type, localization_manager),
+				})
 			return "x%s Damage %s" % [_format_multiplier(boost.color_multiplier), _tile_color_name(boost.tile_type)]
 		LevelBoostType.LARGE_MATCH_MULTIPLIER:
+			if localization_manager != null:
+				return localization_manager.format_key("modifier.match_size_damage", {
+					"match4": _format_multiplier(boost.match_4_multiplier),
+					"match5": _format_multiplier(boost.match_5_multiplier),
+				})
 			return "x%s Damage Match-4 + x%s Damage Match-5" % [_format_multiplier(boost.match_4_multiplier), _format_multiplier(boost.match_5_multiplier)]
 		LevelBoostType.EXTRA_MOVES:
+			if localization_manager != null:
+				return localization_manager.format_key("modifier.extra_moves", {"moves": boost.extra_moves})
 			return "+%d Moves" % boost.extra_moves
 		_:
 			return ""
@@ -77,7 +89,25 @@ static func _format_multiplier(multiplier: float) -> String:
 	return str(multiplier)
 
 
-static func _tile_color_name(tile_type: int) -> String:
+static func _tile_color_name(tile_type: int, localization_manager = null) -> String:
+	var key := ""
+	match tile_type:
+		TileType.RED:
+			key = "color.red"
+		TileType.BLUE:
+			key = "color.blue"
+		TileType.GREEN:
+			key = "color.green"
+		TileType.YELLOW:
+			key = "color.yellow"
+		TileType.PURPLE:
+			key = "color.purple"
+		_:
+			key = ""
+
+	if localization_manager != null:
+		return localization_manager.tr_key(key) if key != "" else localization_manager.tr_key("modifier.color_generic")
+
 	match tile_type:
 		TileType.RED:
 			return "Red"

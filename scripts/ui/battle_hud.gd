@@ -2,6 +2,7 @@ extends PanelContainer
 
 const ASSET_KEY_RESOLVER_SCRIPT := preload("res://scripts/game/config/asset_key_resolver.gd")
 const GAME_ASSET_CATALOG_SCRIPT := preload("res://scripts/game/config/game_asset_catalog.gd")
+const TEXT_STYLE_APPLIER_SCRIPT := preload("res://scripts/ui/text/text_style_applier.gd")
 
 @onready var background_visual: FallbackImageSlot = %BackgroundVisual
 @onready var level_label: Label = %LevelLabel
@@ -10,6 +11,8 @@ const GAME_ASSET_CATALOG_SCRIPT := preload("res://scripts/game/config/game_asset
 
 func _ready() -> void:
 	_bind_panel_background()
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_label(level_label, "game_hud.level")
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_label(moves_label, "game_hud.moves")
 	var localization_manager := get_node_or_null("/root/LocalizationManager")
 	if localization_manager != null:
 		set_placeholder_values(

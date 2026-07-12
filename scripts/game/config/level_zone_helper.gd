@@ -35,7 +35,13 @@ static func get_level_range_for_zone(zone_index: int, total_levels: int, zone_si
 	return Vector2i(start_level, end_level)
 
 
-static func format_zone_label(zone_index: int, start_level: int, end_level: int) -> String:
+static func format_zone_label(zone_index: int, start_level: int, end_level: int, localization_manager = null) -> String:
+	if localization_manager != null:
+		return localization_manager.format_key("ui.level_select.zone_label", {
+			"index": zone_index + 1,
+			"start": start_level,
+			"end": end_level,
+		})
 	return "Zone %d: Levels %d-%d" % [zone_index + 1, start_level, end_level]
 
 

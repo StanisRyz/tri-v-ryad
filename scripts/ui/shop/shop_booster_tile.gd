@@ -10,6 +10,7 @@ signal buy_pressed(item_id: String, quantity: int)
 const CURRENCY_TYPE_SCRIPT := preload("res://scripts/game/economy/currency_type.gd")
 const GAME_ASSET_CATALOG_SCRIPT := preload("res://scripts/game/config/game_asset_catalog.gd")
 const ASSET_KEY_RESOLVER_SCRIPT := preload("res://scripts/game/config/asset_key_resolver.gd")
+const TEXT_STYLE_APPLIER_SCRIPT := preload("res://scripts/ui/text/text_style_applier.gd")
 
 ## Target height for the buy button; its width is derived from this and the
 ## source texture's own aspect ratio, never the other way around, so a fixed
@@ -29,6 +30,7 @@ func _ready() -> void:
 		_buy_button.delayed_pressed.connect(_on_buy_pressed)
 	_bind_buy_button_textures()
 	_update_price_label()
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_child_label(_buy_button, "TextMargin/Label", "shop.tile_price_button")
 
 
 ## Reuses the shared back-button plaque art (same as `ShopProductTile`'s buy
@@ -77,7 +79,9 @@ func set_item(item, icon: Texture2D) -> void:
 func _update_price_label() -> void:
 	if _buy_button == null:
 		return
-	var currency_label := "Gold" if _currency_id == CURRENCY_TYPE_SCRIPT.GOLD else "Gems"
+	var localization_manager := get_node_or_null("/root/LocalizationManager")
+	var currency_key := "currency.gold" if _currency_id == CURRENCY_TYPE_SCRIPT.GOLD else "currency.gems"
+	var currency_label: String = localization_manager.tr_key(currency_key) if localization_manager != null else ("Gold" if _currency_id == CURRENCY_TYPE_SCRIPT.GOLD else "Gems")
 	_buy_button.set_button_text("%d %s" % [_unit_price, currency_label])
 
 

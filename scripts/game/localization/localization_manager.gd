@@ -45,8 +45,8 @@ func tr_key(key: String) -> String:
 func format_key(key: String, values: Dictionary = {}) -> String:
 	var text: String = tr_key(key)
 	for placeholder_key in values.keys():
-		var placeholder: String = "{%s}" % String(placeholder_key)
-		text = text.replace(placeholder, String(values[placeholder_key]))
+		var placeholder: String = "{%s}" % str(placeholder_key)
+		text = text.replace(placeholder, str(values[placeholder_key]))
 	return text
 
 

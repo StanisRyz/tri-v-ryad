@@ -13,12 +13,17 @@ const MINIMAL_DELAY := 0.01
 var _board_motion_animator := BOARD_MOTION_ANIMATOR_SCRIPT.new()
 var _animations_enabled := true
 var _debug_labels_enabled := false
+var _localization_manager = null
 
 
 func configure_settings(animations_enabled: bool, reduced_motion_enabled: bool = false, debug_labels_enabled: bool = false) -> void:
 	_animations_enabled = animations_enabled
 	_debug_labels_enabled = debug_labels_enabled
 	_board_motion_animator.configure_settings(animations_enabled, reduced_motion_enabled)
+
+
+func set_localization_manager(localization_manager) -> void:
+	_localization_manager = localization_manager
 
 
 func play_turn_feedback(data, board_view: BoardView, status_callback: Callable) -> void:
@@ -46,28 +51,28 @@ func play_turn_text_feedback_only(data, board_view: BoardView, status_callback: 
 
 func _play_valid_text_feedback(data, board_view: BoardView, status_callback: Callable) -> void:
 	board_view.highlight_lanes(data.lane_activations)
-	var lane_message := BATTLE_MESSAGE_FORMATTER_SCRIPT.format_lane_activation_message(data.lane_activations)
+	var lane_message := BATTLE_MESSAGE_FORMATTER_SCRIPT.format_lane_activation_message(data.lane_activations, _localization_manager)
 	if lane_message != "":
 		status_callback.call(lane_message)
 		await _wait(board_view, SHORT_DELAY)
 
 	if not data.special_cleared_cells.is_empty():
-		var special_message := BATTLE_MESSAGE_FORMATTER_SCRIPT.format_special_activation_message(data, _debug_labels_enabled)
+		var special_message := BATTLE_MESSAGE_FORMATTER_SCRIPT.format_special_activation_message(data, _debug_labels_enabled, _localization_manager)
 		if special_message != "":
 			status_callback.call(special_message)
 			await _wait(board_view, SHORT_DELAY)
 
 	if FeatureFlags.HERO_SYSTEMS_ENABLED:
-		status_callback.call(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_damage_message(data, _debug_labels_enabled))
+		status_callback.call(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_damage_message(data, _debug_labels_enabled, _localization_manager))
 	else:
-		status_callback.call(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_direct_damage_message(data, _debug_labels_enabled))
+		status_callback.call(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_direct_damage_message(data, _debug_labels_enabled, _localization_manager))
 	await _wait(board_view, MEDIUM_DELAY)
 
 	if data.enemy_action.get("acted", false):
-		status_callback.call(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_enemy_action_message(data.enemy_action, _debug_labels_enabled))
+		status_callback.call(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_enemy_action_message(data.enemy_action, _debug_labels_enabled, _localization_manager))
 		await _wait(board_view, LONG_DELAY)
 	elif not FeatureFlags.HERO_SYSTEMS_ENABLED and data.battle_status == BattleState.Status.VICTORY:
-		status_callback.call(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_enemy_defeated_message())
+		status_callback.call(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_enemy_defeated_message(_localization_manager))
 		await _wait(board_view, SHORT_DELAY)
 
 	board_view.clear_lane_highlights()
@@ -88,7 +93,7 @@ func _play_valid_feedback(data, board_view: BoardView, status_callback: Callable
 	await _board_motion_animator.play_match_clear_feedback(board_view, data.matched_cells)
 	if not data.special_cleared_cells.is_empty():
 		await _board_motion_animator.play_special_clear_feedback(board_view, data.special_cleared_cells, _get_activation_cells(data.activated_special_tiles))
-		var special_message := BATTLE_MESSAGE_FORMATTER_SCRIPT.format_special_activation_message(data, _debug_labels_enabled)
+		var special_message := BATTLE_MESSAGE_FORMATTER_SCRIPT.format_special_activation_message(data, _debug_labels_enabled, _localization_manager)
 		if special_message != "":
 			status_callback.call(special_message)
 			await _wait(board_view, SHORT_DELAY)
@@ -96,22 +101,22 @@ func _play_valid_feedback(data, board_view: BoardView, status_callback: Callable
 	await _board_motion_animator.play_board_refresh_feedback(board_view)
 
 	board_view.highlight_lanes(data.lane_activations)
-	var lane_message := BATTLE_MESSAGE_FORMATTER_SCRIPT.format_lane_activation_message(data.lane_activations)
+	var lane_message := BATTLE_MESSAGE_FORMATTER_SCRIPT.format_lane_activation_message(data.lane_activations, _localization_manager)
 	if lane_message != "":
 		status_callback.call(lane_message)
 	await _wait(board_view, SHORT_DELAY)
 
 	if FeatureFlags.HERO_SYSTEMS_ENABLED:
-		status_callback.call(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_damage_message(data, _debug_labels_enabled))
+		status_callback.call(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_damage_message(data, _debug_labels_enabled, _localization_manager))
 	else:
-		status_callback.call(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_direct_damage_message(data, _debug_labels_enabled))
+		status_callback.call(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_direct_damage_message(data, _debug_labels_enabled, _localization_manager))
 	await _wait(board_view, MEDIUM_DELAY)
 
 	if data.enemy_action.get("acted", false):
-		status_callback.call(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_enemy_action_message(data.enemy_action, _debug_labels_enabled))
+		status_callback.call(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_enemy_action_message(data.enemy_action, _debug_labels_enabled, _localization_manager))
 		await _wait(board_view, LONG_DELAY)
 	elif not FeatureFlags.HERO_SYSTEMS_ENABLED and data.battle_status == BattleState.Status.VICTORY:
-		status_callback.call(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_enemy_defeated_message())
+		status_callback.call(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_enemy_defeated_message(_localization_manager))
 		await _wait(board_view, SHORT_DELAY)
 
 	board_view.clear_lane_highlights()
@@ -120,7 +125,7 @@ func _play_valid_feedback(data, board_view: BoardView, status_callback: Callable
 
 func _play_invalid_feedback(data, board_view: BoardView, status_callback: Callable) -> void:
 	await _board_motion_animator.play_invalid_swap_feedback(board_view, data.swapped_from, data.swapped_to)
-	status_callback.call(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_invalid_swap_message(data.invalid_reason))
+	status_callback.call(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_invalid_swap_message(data.invalid_reason, _localization_manager))
 	await _wait(board_view, MEDIUM_DELAY)
 	board_view.clear_cell_highlights()
 

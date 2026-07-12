@@ -12,6 +12,7 @@ signal close_pressed
 
 const ASSET_KEY_RESOLVER_SCRIPT := preload("res://scripts/game/config/asset_key_resolver.gd")
 const GAME_ASSET_CATALOG_SCRIPT := preload("res://scripts/game/config/game_asset_catalog.gd")
+const TEXT_STYLE_APPLIER_SCRIPT := preload("res://scripts/ui/text/text_style_applier.gd")
 
 const TITLE_TEXT := "Проигрыш"
 
@@ -40,9 +41,18 @@ func _ready() -> void:
 	title_label.text = TITLE_TEXT
 	hide_popup()
 	_localize_ui()
+	_apply_text_styles()
 	var localization_manager := get_node_or_null("/root/LocalizationManager")
 	if localization_manager != null:
 		localization_manager.language_changed.connect(_localize_ui)
+
+
+func _apply_text_styles() -> void:
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_label(title_label, "lose_continue.title")
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_label(feedback_label, "lose_continue.feedback")
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_child_label(watch_ad_button, "TextMargin/Label", "lose_continue.button")
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_child_label(buy_moves_button, "TextMargin/Label", "lose_continue.button")
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_child_label(close_button, "TextMargin/Label", "lose_continue.button")
 
 
 func _localize_ui() -> void:

@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://dsqit1j6lh7mq"]
+[gd_scene load_steps=15 format=3 uid="uid://dsqit1j6lh7mq"]
 
 [ext_resource type="Script" uid="uid://b5wvx7fj57dsq" path="res://scripts/screens/game_screen.gd" id="1_jyptq"]
 [ext_resource type="PackedScene" uid="uid://dgyetmlb8yxxp" path="res://scenes/ui/BattleHud.tscn" id="2_2dfvm"]
@@ -12,9 +12,9 @@
 [ext_resource type="Texture2D" uid="uid://c06ua0pjgbjwj" path="res://assets/images/ui/shared/buttons/back_default.png" id="10_back_n"]
 [ext_resource type="Texture2D" uid="uid://8dpiq5nunba1" path="res://assets/images/ui/shared/buttons/back_pressed.png" id="11_back_p"]
 [ext_resource type="Script" uid="uid://b0dlqhi1wwh6t" path="res://scripts/ui/fallback_image_slot.gd" id="12_fbimg"]
-[ext_resource type="PackedScene" path="res://scenes/ui/LoseContinuePopup.tscn" id="13_losecontinue"]
+[ext_resource type="PackedScene" uid="uid://c6xw2p8m0lqty" path="res://scenes/ui/LoseContinuePopup.tscn" id="13_losecontinue"]
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_2xe0f"]
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_unmne"]
 
 [node name="GameScreen" type="Control"]
 layout_mode = 3
@@ -151,11 +151,11 @@ theme_override_colors/font_focus_color = Color(0, 0, 0, 0)
 theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
 theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
 theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
-theme_override_styles/normal = SubResource("StyleBoxEmpty_2xe0f")
-theme_override_styles/pressed = SubResource("StyleBoxEmpty_2xe0f")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_2xe0f")
-theme_override_styles/disabled = SubResource("StyleBoxEmpty_2xe0f")
-theme_override_styles/focus = SubResource("StyleBoxEmpty_2xe0f")
+theme_override_styles/normal = SubResource("StyleBoxEmpty_unmne")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_unmne")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_unmne")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_unmne")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_unmne")
 flat = true
 script = ExtResource("9_ptbtn")
 normal_texture = ExtResource("10_back_n")
@@ -188,6 +188,7 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_bottom = -8.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2

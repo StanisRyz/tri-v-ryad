@@ -23,6 +23,7 @@ const BATTLE_EFFECT_CONTROLLER_SCRIPT := preload("res://scripts/game/view/battle
 const DAMAGE_PARTICLE_EVENT_BUILDER_SCRIPT := preload("res://scripts/game/presentation/damage_particle_event_builder.gd")
 const AVAILABLE_MOVE_FINDER_SCRIPT := preload("res://scripts/game/board/available_move_finder.gd")
 const BOARD_SHUFFLE_RESOLVER_SCRIPT := preload("res://scripts/game/board/board_shuffle_resolver.gd")
+const TEXT_STYLE_APPLIER_SCRIPT := preload("res://scripts/ui/text/text_style_applier.gd")
 const PORTRAIT_CONTENT_WIDTH := 664.0
 const PORTRAIT_BOARD_SIZE := PORTRAIT_CONTENT_WIDTH
 const LANDSCAPE_CONTENT_WIDTH := 560.0
@@ -96,6 +97,7 @@ func _ready() -> void:
 	_setup_playable_battle()
 	_apply_layout(_layout_manager.get_layout_mode())
 	_localize_ui()
+	_apply_text_styles()
 	var localization_manager := get_node_or_null("/root/LocalizationManager")
 	if localization_manager != null:
 		localization_manager.language_changed.connect(_localize_ui)
@@ -220,6 +222,11 @@ func _localize_ui() -> void:
 	menu_button.button_text = localization_manager.tr_key("ui.game.menu")
 
 
+func _apply_text_styles() -> void:
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_child_label(menu_button, "TextMargin/Label", "game_hud.menu_button")
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_label(modifier_description_label, "game_hud.modifier")
+
+
 func _localized_level_label(level_id: String, fallback_display_name: String) -> String:
 	var localization_manager := get_node_or_null("/root/LocalizationManager")
 	if localization_manager == null:
@@ -294,7 +301,9 @@ func _setup_playable_battle() -> void:
 		_presenter.set_hero_catalog(_progress_manager.get_hero_catalog())
 	_input_controller = BOARD_INPUT_CONTROLLER_SCRIPT.new()
 	_turn_feedback_presenter = TURN_FEEDBACK_PRESENTER_SCRIPT.new()
+	_turn_feedback_presenter.set_localization_manager(get_node_or_null("/root/LocalizationManager"))
 	_ability_feedback_presenter = ABILITY_FEEDBACK_PRESENTER_SCRIPT.new()
+	_ability_feedback_presenter.set_localization_manager(get_node_or_null("/root/LocalizationManager"))
 	_board_animation_controller = BOARD_ANIMATION_CONTROLLER_SCRIPT.new()
 	_board_animation_sequence_builder = BOARD_ANIMATION_SEQUENCE_BUILDER_SCRIPT.new()
 	_animated_turn_flow = ANIMATED_TURN_FLOW_SCRIPT.new()
@@ -432,7 +441,7 @@ func _on_level_boost_changed(boost) -> void:
 		return
 
 	round_modifier_panel.visible = true
-	modifier_description_label.text = LEVEL_BOOST_FORMATTER_SCRIPT.format_gameplay_label(boost)
+	modifier_description_label.text = LEVEL_BOOST_FORMATTER_SCRIPT.format_gameplay_label(boost, get_node_or_null("/root/LocalizationManager"))
 
 
 func _on_level_changed(level_config) -> void:
@@ -540,7 +549,7 @@ func _show_battle_result(status: int) -> void:
 		_grant_victory_reward_once()
 		_save_victory_completion_once()
 		_refresh_booster_inventory_ui()
-		_set_status(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_victory_message(_last_reward_amount, _last_stars_earned))
+		_set_status(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_victory_message(_last_reward_amount, _last_stars_earned, get_node_or_null("/root/LocalizationManager")))
 		_force_cleanup_visual_state()
 		result_overlay.show_victory_result(_last_victory_result_data)
 	elif status == BattleState.Status.DEFEAT:
@@ -560,7 +569,7 @@ func _show_lose_continue_or_defeat() -> void:
 
 	_force_cleanup_visual_state()
 	if lose_continue_popup != null:
-		_set_status(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_defeat_message())
+		_set_status(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_defeat_message(get_node_or_null("/root/LocalizationManager")))
 		lose_continue_popup.show_popup()
 	else:
 		_finalize_defeat_result()
@@ -746,7 +755,7 @@ func _on_invalid_input(reason: String) -> void:
 	if reason == "input_locked" and (_input_mode == "booster_targeting" or _feedback_active):
 		return
 	_play_invalid_swap()
-	_set_status(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_invalid_input_message(reason))
+	_set_status(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_invalid_input_message(reason, get_node_or_null("/root/LocalizationManager")))
 
 
 func _on_swap_requested(from_cell: Vector2i, to_cell: Vector2i) -> void:

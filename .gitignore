@@ -12,3 +12,11 @@
 # not required in the repository. deterministic_level_boosts.json itself IS committed
 # (it's the boost database, loaded at runtime by LevelBoostDatabase).
 /data/levels/deterministic_level_boost_report.json
+
+# Stage 66.1/66.3: res://localization/game_text.csv is read directly via
+# FileAccess by our custom LocalizationManager, not through Godot's built-in
+# CSV Translation importer. Opening the editor still auto-generates these
+# native Translation-import artifacts alongside it; they're unused byproducts,
+# not part of the localization system, and shouldn't be committed.
+/localization/*.translation
+/localization/*.csv.import

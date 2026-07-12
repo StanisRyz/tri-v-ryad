@@ -2,6 +2,10 @@
 
 Stage 66.1: Localization Foundation v0.1. This is a foundation only — it does not integrate any platform SDK and does not add a language selector UI. Both are planned for future stages.
 
+Stage 66.3: Full Localization Coverage Pass v0.1 extended the foundation to every reachable screen and in-battle status message (LevelSelectScreen + LevelInfoPopup, the round modifier label, shop item names/descriptions, and `BattleMessageFormatter`'s ~35 status strings). `TeamSelectScreen`/`UpgradeScreen` (unreachable — hero systems frozen since Stage 32) and `ShopPlaceholderScreen`/`ShopItemFormatter`'s live usage (dead code, superseded by the real `ShopScreen`) were intentionally skipped or lower priority. `res://localization/game_text.csv` now has ~130 keys.
+
+Formatters that live outside the scene tree (`RefCounted` classes like `ShopCatalog`, `LevelZoneHelper`, `LevelBoostFormatter`, `BattleMessageFormatter`, `TurnFeedbackPresenter`, `AbilityFeedbackPresenter`) all follow the same pattern: an optional trailing `localization_manager` parameter (or a `set_localization_manager()` setter for objects constructed once and reused across many calls), defaulting to `null`, in which case they fall back to their original hardcoded English text — so existing tests that call them without a `LocalizationManager` keep passing unchanged.
+
 ## Source file
 
 - **`res://localization/game_text.csv`** is the editable source of truth for all localized UI text.

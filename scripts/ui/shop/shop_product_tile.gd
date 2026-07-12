@@ -9,6 +9,7 @@ signal buy_pressed(item_id: String)
 
 const GAME_ASSET_CATALOG_SCRIPT := preload("res://scripts/game/config/game_asset_catalog.gd")
 const ASSET_KEY_RESOLVER_SCRIPT := preload("res://scripts/game/config/asset_key_resolver.gd")
+const TEXT_STYLE_APPLIER_SCRIPT := preload("res://scripts/ui/text/text_style_applier.gd")
 
 @onready var _icon_slot: FallbackImageSlot = %IconSlot
 @onready var _buy_button: PressableTextureButton = %BuyButton
@@ -20,6 +21,7 @@ func _ready() -> void:
 	if _buy_button != null:
 		_buy_button.delayed_pressed.connect(_on_buy_pressed)
 	_bind_buy_button_textures()
+	TEXT_STYLE_APPLIER_SCRIPT.apply_to_child_label(_buy_button, "TextMargin/Label", "shop.tile_product_button")
 
 
 ## Target height for the buy button; its width is derived from this and the
