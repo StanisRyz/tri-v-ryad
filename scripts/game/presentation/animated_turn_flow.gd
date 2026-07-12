@@ -22,6 +22,7 @@ var _board_animation_controller
 var _sequence_builder
 var _generation := 0
 var _running := false
+var _runtime_paused := false
 
 
 func configure(board_view: Control, board_animation_controller, sequence_builder) -> void:
@@ -32,6 +33,14 @@ func configure(board_view: Control, board_animation_controller, sequence_builder
 
 func is_running() -> bool:
 	return _running
+
+
+func set_runtime_paused(paused: bool) -> void:
+	_runtime_paused = paused
+	if _board_animation_controller != null and _board_animation_controller.has_method("set_runtime_paused"):
+		_board_animation_controller.set_runtime_paused(paused)
+	if _board_view != null and _board_view.has_method("set_runtime_paused"):
+		_board_view.set_runtime_paused(paused)
 
 
 func cancel() -> void:

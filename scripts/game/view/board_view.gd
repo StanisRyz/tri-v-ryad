@@ -38,6 +38,7 @@ var _highlighted_cells: Array[Vector2i] = []
 var _invalid_feedback_cells: Array[Vector2i] = []
 var _hidden_animation_cells: Array[Vector2i] = []
 var _active_board_animation_tween: Tween
+var _runtime_paused := false
 var _special_activation_tweens: Array[Tween] = []
 var _overlay_mode := false
 var _overlay_ghosts: Dictionary = {}
@@ -448,6 +449,16 @@ func force_reset_animation_state() -> void:
 			continue
 		tile.reset_visual_state()
 	refresh_all_tiles()
+
+
+func set_runtime_paused(paused: bool) -> void:
+	_runtime_paused = paused
+	if _active_board_animation_tween == null:
+		return
+	if paused:
+		_active_board_animation_tween.pause()
+	else:
+		_active_board_animation_tween.play()
 
 
 func create_tile_ghost(cell: Vector2i) -> Control:

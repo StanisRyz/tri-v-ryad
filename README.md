@@ -2404,6 +2404,16 @@ Stage 69.4 adds Yandex cloud synchronization for `PlayerProgress` with local sav
 
 ## Stage 69.5: Yandex Web Export, SDK Bootstrap and Browser Lifecycle v0.1
 
+Stage 69.5.1 hardens the draft release gate: Yandex packaging now defaults to
+the 100,000,000-byte uncompressed limit and the Web preset uses
+`variant/thread_support=false`. Platform pause freezes active board/effect
+timelines without pausing SceneTree. A single fullscreen ad is requested after
+victory rewards are saved and after final LoseContinue defeat, using
+`battle_victory_result` and `battle_defeat_result`; close, skipped, timeout,
+error, or unavailable paths always show the pending result. No fullscreen is
+shown after a successful continue. Tests were not added, updated, touched, or
+run; draft validation remains Stage 69.6.
+
 The **Yandex Web** preset exports to `builds/yandex/index.html` with the
 standard Godot shell enhanced by `/sdk.js` and `YaGames.init()`. `YandexBridge`
 now queues LoadingAPI readiness once, applies only the latest desired

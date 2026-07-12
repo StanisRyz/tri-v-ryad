@@ -2,6 +2,8 @@
 
 Stage 69.5: retain the Yandex Web export boundaries. `YandexBridge` is the sole JavaScript bridge owner; `CloudSaveCoordinator` owns the bounded Web readiness wait; `PlatformRuntimeCoordinator` owns combined Yandex/browser pause reasons without globally pausing SceneTree; AudioManager muting is reason-based. Keep generated `builds/yandex/` and the release ZIP untracked, preserve existing ads/payments/cloud/local saves/gameplay/localization/audio preferences/portrait/debug behavior, and do not add products, authorization, leaderboards, or tests. See `docs/YANDEX_WEB_EXPORT.md`.
 
+Stage 69.5.1: the Web release limit is 100000000 uncompressed bytes and the preset uses `variant/thread_support=false`. GameScreen owns one terminal fullscreen gate per run: victory (`battle_victory_result`) only after rewards/save; final defeat (`battle_defeat_result`) only after LoseContinue closes. Every fullscreen terminal path must present the result. Runtime pause must freeze active gameplay timelines without `SceneTree.paused`.
+
 This is a Godot match-3 battle project intended for Yandex Games. The default layout is vertical 9:16 portrait with a 720x1280 base resolution.
 
 

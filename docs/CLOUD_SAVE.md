@@ -1,5 +1,11 @@
 # Cloud Save (Stage 69.4 Foundation)
 
+## Stage 69.5.1 runtime pause scope
+
+Platform/browser pause freezes only active battle presentation and input; it
+does not globally pause SceneTree or change local-first cloud reconciliation,
+so cloud and purchase callbacks remain live during fullscreen/browser pause.
+
 Stage 69.4 adds Yandex cloud synchronization for `PlayerProgress` on top of
 the existing local save. **Local save is always the mandatory primary** —
 every gameplay mutation still saves to `user://save_v1.json` first, exactly

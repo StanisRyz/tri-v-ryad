@@ -115,6 +115,9 @@ func get_debug_state() -> Dictionary:
 		"game_ready_sent": _game_ready_sent,
 		"desired_gameplay_state": _desired_gameplay_state,
 		"platform_paused": _platform_paused,
+		"buffered_platform_paused": _to_bool(_eval_js("(function(){ return window.__yandexPlatformPaused === true ? 1 : 0; })()")) if _is_web else false,
+		"buffered_pause_count": int(_eval_js("(function(){ return Number(window.__yandexPlatformPauseCount || 0); })()")) if _is_web else 0,
+		"buffered_resume_count": int(_eval_js("(function(){ return Number(window.__yandexPlatformResumeCount || 0); })()")) if _is_web else 0,
 		"cloud_available": is_cloud_save_available(),
 		"ad_in_progress": _ad_in_progress,
 		"catalog_product_count": _payment_catalog_cache.size(),
@@ -205,9 +208,10 @@ func _send_game_ready_if_requested() -> void:
 func _apply_desired_gameplay_state() -> void:
 	if not _is_web or not _sdk_ready or _desired_gameplay_state == "":
 		return
-	var method := "start" if _desired_gameplay_state == "active" else "stop"
+	var effective_state := "stopped" if _platform_paused else _desired_gameplay_state
+	var method := "start" if effective_state == "active" else "stop"
 	_eval_js("try { window.ysdk.features.GameplayAPI.%s(); } catch(e) {}" % method)
-	_debug_log("GameplayAPI %s applied" % _desired_gameplay_state)
+	_debug_log("GameplayAPI %s applied" % effective_state)
 
 
 func _bind_platform_events() -> void:
@@ -217,19 +221,25 @@ func _bind_platform_events() -> void:
 	_cb_platform_pause = JavaScriptBridge.create_callback(_on_platform_pause)
 	_cb_platform_resume = JavaScriptBridge.create_callback(_on_platform_resume)
 	var window := JavaScriptBridge.get_interface("window")
-	window.__godot_platform_pause = _cb_platform_pause
-	window.__godot_platform_resume = _cb_platform_resume
-	_eval_js("try { if (window.ysdk && window.ysdk.on) { window.ysdk.on('game_api_pause', function(){ window.__godot_platform_pause(); }); window.ysdk.on('game_api_resume', function(){ window.__godot_platform_resume(); }); } } catch(e) {}")
+	window.__godotPlatformPauseCallback = _cb_platform_pause
+	window.__godotPlatformResumeCallback = _cb_platform_resume
+	_eval_js("(function(){ try { if (window.__yandexPlatformEventsBound) { if (window.__yandexPlatformPaused) window.__godotPlatformPauseCallback(); return; } if (window.ysdk && window.ysdk.on) { window.__yandexPlatformEventsBound = true; window.__yandexPlatformPaused = false; window.__yandexPlatformPauseCount = window.__yandexPlatformPauseCount || 0; window.__yandexPlatformResumeCount = window.__yandexPlatformResumeCount || 0; window.ysdk.on('game_api_pause', function(){ window.__yandexPlatformPaused = true; window.__yandexPlatformPauseCount++; if (window.__godotPlatformPauseCallback) window.__godotPlatformPauseCallback(); }); window.ysdk.on('game_api_resume', function(){ window.__yandexPlatformPaused = false; window.__yandexPlatformResumeCount++; if (window.__godotPlatformResumeCallback) window.__godotPlatformResumeCallback(); }); } } catch(e) {} })()")
 
 
 func _on_platform_pause(_args: Array) -> void:
+	if _platform_paused:
+		return
 	_platform_paused = true
+	_apply_desired_gameplay_state()
 	platform_pause_requested.emit("yandex_game_api")
 	_debug_log("Platform pause received")
 
 
 func _on_platform_resume(_args: Array) -> void:
+	if not _platform_paused:
+		return
 	_platform_paused = false
+	_apply_desired_gameplay_state()
 	platform_resume_requested.emit("yandex_game_api")
 	_debug_log("Platform resume received")
 

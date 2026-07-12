@@ -12,6 +12,8 @@ var _animations_enabled := true
 var _reduced_motion_enabled := false
 var _playing := false
 var _playback_generation := 0
+var _runtime_paused := false
+var _active_tweens: Array[Tween] = []
 
 
 func configure_settings(animations_enabled: bool, reduced_motion_enabled: bool) -> void:
@@ -21,6 +23,17 @@ func configure_settings(animations_enabled: bool, reduced_motion_enabled: bool) 
 
 func is_playing() -> bool:
 	return _playing
+
+
+func set_runtime_paused(paused: bool) -> void:
+	_runtime_paused = paused
+	for tween in _active_tweens:
+		if tween == null:
+			continue
+		if paused:
+			tween.pause()
+		else:
+			tween.play()
 
 
 func clear_effects(effect_layer: Control = null) -> void:
@@ -70,7 +83,7 @@ func play_damage_particles(events: Array, board_view: BoardView, enemy_panel: Co
 		_spawn_particle(capped_events[index], index, stagger, travel_duration, board_view, enemy_panel, effect_layer)
 
 	var total_duration: float = travel_duration + stagger * maxf(capped_events.size() - 1, 0.0)
-	await effect_layer.get_tree().create_timer(total_duration).timeout
+	await _await_runtime_duration(effect_layer, total_duration)
 	if generation != _playback_generation:
 		return
 
@@ -109,10 +122,20 @@ func _spawn_particle(event: Dictionary, index: int, stagger: float, travel_durat
 
 	var target_position := target_global - effect_layer.global_position - particle.size * 0.5
 	var tween := effect_layer.create_tween()
+	_active_tweens.append(tween)
+	tween.finished.connect(func() -> void: _active_tweens.erase(tween))
 	if stagger > 0.0 and index > 0:
 		tween.tween_interval(stagger * index)
 	tween.tween_property(particle, "position", target_position, travel_duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	tween.parallel().tween_property(particle, "modulate:a", 0.15, travel_duration)
+
+
+func _await_runtime_duration(effect_layer: Control, duration: float) -> void:
+	var elapsed := 0.0
+	while elapsed < duration:
+		await effect_layer.get_tree().process_frame
+		if not _runtime_paused:
+			elapsed += effect_layer.get_process_delta_time()
 
 
 func _get_start_position(board_view: BoardView, cell: Vector2i) -> Vector2:

@@ -10,7 +10,7 @@ import zipfile
 from pathlib import Path
 
 
-DEFAULT_LIMIT_BYTES = 200 * 1024 * 1024
+DEFAULT_LIMIT_BYTES = 100_000_000
 INVALID_NAME = re.compile(r"[\s]|[^\x00-\x7f]")
 
 
@@ -23,7 +23,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Validate and package builds/yandex for Yandex Games.")
     parser.add_argument("--build-dir", type=Path, default=Path("builds/yandex"))
     parser.add_argument("--output", type=Path, default=Path("builds/yandex_release.zip"))
-    parser.add_argument("--max-size-mb", type=float, default=DEFAULT_LIMIT_BYTES / (1024 * 1024))
+    parser.add_argument("--max-size-bytes", type=int, default=DEFAULT_LIMIT_BYTES)
     args = parser.parse_args()
 
     build_dir = args.build_dir.resolve()
@@ -32,7 +32,7 @@ def main() -> None:
         fail(f"missing exported HTML: {index_path}")
 
     html = index_path.read_text(encoding="utf-8")
-    for required in ("/sdk.js", "YaGames.init()"):
+    for required in ("/sdk.js", "YaGames.init()", "game_api_pause", "game_api_resume"):
         if required not in html:
             fail(f"index.html is missing required Yandex bootstrap text: {required}")
 
@@ -48,7 +48,7 @@ def main() -> None:
             fail(f"file or folder name contains spaces or non-ASCII characters: {relative}")
 
     total_size = sum(path.stat().st_size for path in files)
-    max_size = int(args.max_size_mb * 1024 * 1024)
+    max_size = args.max_size_bytes
     if total_size > max_size:
         fail(f"uncompressed build is {total_size} bytes, above configured {max_size} byte limit")
 

@@ -88,6 +88,10 @@ var _developer_mode_active: bool = false
 var _lose_continue_ad_active := false
 var _lose_continue_ad_rewarded := false
 var _platform_paused := false
+var _pending_result_kind := ""
+var _pending_result_data: Dictionary = {}
+var _fullscreen_result_attempt_active := false
+var _fullscreen_result_attempted := false
 
 const REWARDED_AD_PLACEMENT_LOSE_CONTINUE := "lose_continue"
 
@@ -107,6 +111,7 @@ func _ready() -> void:
 	if localization_manager != null:
 		localization_manager.language_changed.connect(_localize_ui)
 	_connect_platform_rewarded_ad_signals()
+	_connect_platform_fullscreen_signals()
 
 
 ## Stage 69.2: LoseContinuePopup's "Watch Ad" continue routes through
@@ -127,6 +132,18 @@ func _connect_platform_rewarded_ad_signals() -> void:
 		platform.rewarded_ad_closed.connect(_on_platform_rewarded_ad_closed)
 	if not platform.rewarded_ad_error.is_connected(_on_platform_rewarded_ad_error):
 		platform.rewarded_ad_error.connect(_on_platform_rewarded_ad_error)
+
+
+func _connect_platform_fullscreen_signals() -> void:
+	var platform := get_node_or_null("/root/Platform")
+	if platform == null:
+		return
+	if not platform.fullscreen_ad_opened.is_connected(_on_platform_fullscreen_ad_opened):
+		platform.fullscreen_ad_opened.connect(_on_platform_fullscreen_ad_opened)
+	if not platform.fullscreen_ad_closed.is_connected(_on_platform_fullscreen_ad_closed):
+		platform.fullscreen_ad_closed.connect(_on_platform_fullscreen_ad_closed)
+	if not platform.fullscreen_ad_error.is_connected(_on_platform_fullscreen_ad_error):
+		platform.fullscreen_ad_error.connect(_on_platform_fullscreen_ad_error)
 
 
 ## Stage 64.16 v0.1: developer-only debug hotkeys, fully gated behind
@@ -387,6 +404,7 @@ func _setup_playable_battle() -> void:
 
 
 func _start_new_battle() -> void:
+	_reset_fullscreen_result_gate()
 	_force_cleanup_visual_state()
 	_pending_battle_status = -1
 	_feedback_active = false
@@ -592,7 +610,7 @@ func _show_battle_result(status: int) -> void:
 		_refresh_booster_inventory_ui()
 		_set_status(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_victory_message(_last_reward_amount, _last_stars_earned, get_node_or_null("/root/LocalizationManager")))
 		_force_cleanup_visual_state()
-		result_overlay.show_victory_result(_last_victory_result_data)
+		_queue_result_after_fullscreen("victory", _last_victory_result_data, "battle_victory_result")
 	elif status == BattleState.Status.DEFEAT:
 		_show_lose_continue_or_defeat()
 
@@ -621,7 +639,68 @@ func _finalize_defeat_result() -> void:
 	_play_defeat()
 	_set_status(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_defeat_message())
 	_force_cleanup_visual_state()
-	result_overlay.show_defeat_result(_build_defeat_result_data())
+	_queue_result_after_fullscreen("defeat", _build_defeat_result_data(), "battle_defeat_result")
+
+
+func _queue_result_after_fullscreen(result_kind: String, result_data: Dictionary, placement_id: String) -> void:
+	if _pending_result_kind != "" or _fullscreen_result_attempt_active:
+		return
+	_pending_result_kind = result_kind
+	_pending_result_data = result_data.duplicate(true)
+	if _fullscreen_result_attempted:
+		_show_pending_result()
+		return
+	_fullscreen_result_attempted = true
+	var platform := get_node_or_null("/root/Platform")
+	if platform == null or platform.is_ad_in_progress():
+		_show_pending_result()
+		return
+	_fullscreen_result_attempt_active = true
+	platform.show_fullscreen_ad(placement_id)
+
+
+func _on_platform_fullscreen_ad_opened() -> void:
+	if not _fullscreen_result_attempt_active:
+		return
+	var audio_manager = _get_audio_manager()
+	if audio_manager != null:
+		audio_manager.pause_audio("fullscreen_ad")
+
+
+func _on_platform_fullscreen_ad_closed(_was_shown: bool) -> void:
+	if not _fullscreen_result_attempt_active:
+		return
+	_finish_fullscreen_result_attempt()
+
+
+func _on_platform_fullscreen_ad_error(_message: String) -> void:
+	if not _fullscreen_result_attempt_active:
+		return
+	_finish_fullscreen_result_attempt()
+
+
+func _finish_fullscreen_result_attempt() -> void:
+	var audio_manager = _get_audio_manager()
+	if audio_manager != null:
+		audio_manager.resume_audio("fullscreen_ad")
+	_fullscreen_result_attempt_active = false
+	_show_pending_result()
+
+
+func _show_pending_result() -> void:
+	if _pending_result_kind == "victory":
+		result_overlay.show_victory_result(_pending_result_data)
+	elif _pending_result_kind == "defeat":
+		result_overlay.show_defeat_result(_pending_result_data)
+	_pending_result_kind = ""
+	_pending_result_data = {}
+
+
+func _reset_fullscreen_result_gate() -> void:
+	_pending_result_kind = ""
+	_pending_result_data = {}
+	_fullscreen_result_attempt_active = false
+	_fullscreen_result_attempted = false
 
 
 func _on_lose_continue_watch_ad_pressed() -> void:
@@ -1084,6 +1163,14 @@ func set_platform_paused(paused: bool) -> void:
 	if _platform_paused == paused:
 		return
 	_platform_paused = paused
+	if _board_animation_controller != null and _board_animation_controller.has_method("set_runtime_paused"):
+		_board_animation_controller.set_runtime_paused(paused)
+	if _animated_turn_flow != null and _animated_turn_flow.has_method("set_runtime_paused"):
+		_animated_turn_flow.set_runtime_paused(paused)
+	if _battle_effect_controller != null and _battle_effect_controller.has_method("set_runtime_paused"):
+		_battle_effect_controller.set_runtime_paused(paused)
+	if board_view != null and board_view.has_method("set_runtime_paused"):
+		board_view.set_runtime_paused(paused)
 	if _input_controller == null:
 		return
 	if paused:

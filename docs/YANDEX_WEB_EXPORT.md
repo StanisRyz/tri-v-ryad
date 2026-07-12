@@ -21,9 +21,15 @@ menu only on the canvas. Portrait enforcement remains in the game.
 5. In the draft, manually test ads, purchases, cloud save, tab switching, and
    reload. This Yandex-draft validation is Stage 69.6.
 
-The helper validates the SDK bootstrap, JavaScript/PCK/WASM export files,
-ASCII/no-space file names, and configurable uncompressed size (default 200
-MiB). Generated exports and ZIPs are ignored and are never committed.
+The helper validates the SDK bootstrap, early pause-buffer markers,
+JavaScript/PCK/WASM export files, ASCII/no-space file names, and configurable
+uncompressed size (default 100000000 bytes). Generated exports and ZIPs are
+ignored and are never committed.
+
+Stage 69.5.1 also uses `variant/thread_support=false`, freezes active gameplay
+timelines for runtime pause, and gates terminal results behind one fullscreen
+attempt per run. Draft/manual validation remains Stage 69.6; tests were not
+added, updated, touched, or run.
 
 ## Runtime readiness and pause behavior
 

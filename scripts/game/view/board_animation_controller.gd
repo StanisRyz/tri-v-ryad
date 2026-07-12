@@ -10,6 +10,7 @@ const REDUCED_MOTION_SCALE := 0.35
 var _animations_enabled := true
 var _reduced_motion_enabled := false
 var _playing := false
+var _runtime_paused := false
 var _playback_generation := 0
 var last_effective_duration := 0.0
 
@@ -21,6 +22,10 @@ func configure_settings(animations_enabled: bool, reduced_motion_enabled: bool) 
 
 func is_playing() -> bool:
 	return _playing
+
+
+func set_runtime_paused(paused: bool) -> void:
+	_runtime_paused = paused
 
 
 func clear_queue() -> void:
@@ -65,7 +70,7 @@ func _play_requests_async(requests: Array, board_view: Control, finished_callbac
 		var effective_duration := _get_effective_duration(request.duration)
 		last_effective_duration = effective_duration
 		_play_request(request, board_view, effective_duration)
-		await board_view.get_tree().create_timer(effective_duration).timeout
+		await _await_runtime_duration(board_view, effective_duration)
 
 		if request.animation_type == REQUEST_SCRIPT.TYPE_SWAP and board_view.has_method("finalize_pending_overlay_swap"):
 			board_view.finalize_pending_overlay_swap()
@@ -297,6 +302,14 @@ func _finish_immediately(finished_callback: Callable) -> void:
 	_playing = false
 	last_effective_duration = 0.0
 	_call_finished(finished_callback)
+
+
+func _await_runtime_duration(board_view: Control, duration: float) -> void:
+	var elapsed := 0.0
+	while elapsed < duration:
+		await board_view.get_tree().process_frame
+		if not _runtime_paused:
+			elapsed += board_view.get_process_delta_time()
 
 
 func _call_finished(finished_callback: Callable) -> void:
