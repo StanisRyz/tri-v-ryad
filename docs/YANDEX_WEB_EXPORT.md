@@ -33,6 +33,11 @@ added, updated, touched, or run.
 
 ## Runtime readiness and pause behavior
 
+Stage 69.5.2 requires the generated head include to guard absent `YaGames`,
+retain `window.__yandexSdkInitError`, and buffer `game_api_pause`/
+`game_api_resume` in `__yandexPlatformPaused` before Godot callbacks are
+registered. The packaging helper checks these exact bootstrap markers.
+
 `YandexBridge` is the only JavaScript bridge owner. It queues `game_ready()`
 until the SDK is ready and sends `LoadingAPI.ready()` once per session. It
 keeps only the latest desired GameplayAPI state, applying it after readiness.

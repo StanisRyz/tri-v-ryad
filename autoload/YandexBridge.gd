@@ -290,10 +290,12 @@ func show_rewarded_ad(_placement_id: String = "") -> void:
 
 
 func _on_rewarded_open(_args: Array) -> void:
+	_stop_rewarded_timeout()
 	rewarded_ad_opened.emit()
 
 
 func _on_rewarded_rewarded(_args: Array) -> void:
+	_stop_rewarded_timeout()
 	_rewarded_was_rewarded = true
 	rewarded_ad_rewarded.emit()
 
@@ -372,6 +374,7 @@ func show_fullscreen_ad(_placement_id: String = "") -> void:
 
 
 func _on_fullscreen_open(_args: Array) -> void:
+	_stop_fullscreen_timeout()
 	fullscreen_ad_opened.emit()
 
 
@@ -541,7 +544,14 @@ func load_payment_catalog() -> void:
 			window.ysdk.getPayments().then(function(payments){
 				return payments.getCatalog();
 			}).then(function(products){
-				window.__godot_catalog_success(JSON.stringify(products || []));
+				var normalized = (products || []).map(function(product) {
+					var price = String(product.price || '');
+					var value = String(product.priceValue || '');
+					var currency = String(product.priceCurrencyCode || '');
+					if (!price && value) price = currency ? value + ' ' + currency : value;
+					return { id: String(product.id || ''), title: String(product.title || ''), description: String(product.description || ''), price: price, priceValue: value, priceCurrencyCode: currency };
+				});
+				window.__godot_catalog_success(JSON.stringify(normalized));
 			}).catch(function(e){
 				window.__godot_catalog_error(String(e));
 			});
@@ -571,7 +581,6 @@ func _on_catalog_loaded(args: Array) -> void:
 			"price": _to_string_safe(product.get("price", "")),
 			"priceValue": _to_string_safe(product.get("priceValue", "")),
 			"priceCurrencyCode": _to_string_safe(product.get("priceCurrencyCode", "")),
-			"priceCurrencyImage": product.get("priceCurrencyImage", {}),
 		}
 	payment_catalog_loaded.emit(_payment_catalog_cache.values())
 

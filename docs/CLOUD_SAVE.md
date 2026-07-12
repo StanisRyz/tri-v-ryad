@@ -1,5 +1,11 @@
 # Cloud Save (Stage 69.4 Foundation)
 
+## Stage 69.5.2 preservation
+
+This release-blocker patch only hardens Web bootstrap, ad request timing, and
+catalog price display. Local-first save, cloud reconciliation, and purchase
+recovery ordering are unchanged.
+
 ## Stage 69.5.1 runtime pause scope
 
 Platform/browser pause freezes only active battle presentation and input; it

@@ -2,6 +2,13 @@
 
 ## Stage 69.5: Yandex Web Export, SDK Bootstrap and Browser Lifecycle v0.1
 
+Stage 69.5.2 hardens safe Yandex initialization and early pause buffering,
+makes ad timeouts pre-open only, and normalizes catalog price fields. External
+payment button text displays the formatted Yandex price and hides the separate
+price label; Watch Ad and local booster UI remain unchanged. No portal currency
+icon or image/network layer is used. Tests were not added, updated, touched,
+or run; Stage 69.6 remains manual validation.
+
 Stage 69.5.1 changes the release package limit to 100000000 bytes and uses
 the Web `variant/thread_support=false` setting. It pauses active board and
 effect timelines on platform/browser pause. Each terminal run now has one

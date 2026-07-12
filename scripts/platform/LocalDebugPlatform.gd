@@ -147,7 +147,6 @@ func _build_mock_payment_catalog() -> Dictionary:
 			"price": "Debug",
 			"priceValue": "0",
 			"priceCurrencyCode": "",
-			"priceCurrencyImage": {},
 		}
 	return catalog
 

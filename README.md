@@ -2404,6 +2404,15 @@ Stage 69.4 adds Yandex cloud synchronization for `PlayerProgress` with local sav
 
 ## Stage 69.5: Yandex Web Export, SDK Bootstrap and Browser Lifecycle v0.1
 
+Stage 69.5.2 makes Yandex bootstrap and storefront release blockers explicit:
+the Web shell buffers Game API pause/resume before Godot is ready, SDK init
+fails safely for local previews, and rewarded/fullscreen timers are pre-open
+request timeouts only. Catalog products are normalized to plain price fields;
+paid purchase buttons now show `product.price` (with value/currency fallback),
+while their duplicate price label is hidden. No currency icon, HTTP request,
+or portal image loading was added. Tests remain untouched; Stage 69.6 is the
+manual draft-validation stage.
+
 Stage 69.5.1 hardens the draft release gate: Yandex packaging now defaults to
 the 100,000,000-byte uncompressed limit and the Web preset uses
 `variant/thread_support=false`. Platform pause freezes active board/effect

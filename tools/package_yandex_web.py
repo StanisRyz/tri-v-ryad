@@ -32,7 +32,7 @@ def main() -> None:
         fail(f"missing exported HTML: {index_path}")
 
     html = index_path.read_text(encoding="utf-8")
-    for required in ("/sdk.js", "YaGames.init()", "game_api_pause", "game_api_resume"):
+    for required in ("/sdk.js", "YaGames.init()", "game_api_pause", "game_api_resume", "__yandexPlatformPaused", "__yandexPlatformEventsBound"):
         if required not in html:
             fail(f"index.html is missing required Yandex bootstrap text: {required}")
 

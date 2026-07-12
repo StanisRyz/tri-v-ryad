@@ -1,5 +1,16 @@
 # Yandex Platform Foundation
 
+## Stage 69.5.2 release blockers
+
+The Web head bootstrap safely resolves when `YaGames` is unavailable, buffers
+Game API pause/resume before Godot callbacks exist, and exposes the buffered
+state through YandexBridge diagnostics. Rewarded and fullscreen timeouts only
+cover the pre-open request interval. Payment catalog entries are plain
+serializable id/title/description/price/value/currency dictionaries; paid
+button text uses the formatted catalog price with no portal-currency image.
+Tests were not added, updated, touched, or run; Stage 69.6 is manual draft
+validation.
+
 ## Stage 69.5.1 release gate
 
 The Yandex Web release helper enforces a 100000000-byte uncompressed limit and

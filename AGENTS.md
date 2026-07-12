@@ -4,6 +4,8 @@ Stage 69.5: retain the Yandex Web export boundaries. `YandexBridge` is the sole 
 
 Stage 69.5.1: the Web release limit is 100000000 uncompressed bytes and the preset uses `variant/thread_support=false`. GameScreen owns one terminal fullscreen gate per run: victory (`battle_victory_result`) only after rewards/save; final defeat (`battle_defeat_result`) only after LoseContinue closes. Every fullscreen terminal path must present the result. Runtime pause must freeze active gameplay timelines without `SceneTree.paused`.
 
+Stage 69.5.2: Web bootstrap must safely handle a missing `YaGames`, buffer `game_api_pause`/`game_api_resume` before Godot callbacks exist, and never create duplicate SDK listeners. Rewarded/fullscreen timeouts are pre-open request timeouts. Paid tile button text comes only from normalized Yandex catalog `product.price` (fallback value/currency); hide the duplicate label and do not add portal-currency icons, image loading, or HTTP requests.
+
 This is a Godot match-3 battle project intended for Yandex Games. The default layout is vertical 9:16 portrait with a 720x1280 base resolution.
 
 

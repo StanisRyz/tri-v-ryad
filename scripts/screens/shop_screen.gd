@@ -309,7 +309,7 @@ func _add_product_tile(row: Node, item_id: String, icon_asset_key: String) -> vo
 	elif item.purchase_kind == SHOP_PURCHASE_KIND_SCRIPT.EXTERNAL_PAYMENT:
 		_payment_tiles[item_id] = tile
 		tile.set_buy_enabled(false)
-		tile.set_price_text(_localized_payment_feedback("ui.shop.price.loading", "..."))
+		tile.set_payment_button_text(_localized_payment_feedback("ui.shop.price.loading", "..."))
 
 
 func _on_boosters_tab_pressed() -> void:
@@ -499,19 +499,27 @@ func _refresh_payment_tile(item_id: String) -> void:
 		return
 
 	if not _payment_catalog_ready:
-		tile.set_price_text(_localized_payment_feedback("ui.shop.price.loading", "..."))
+		tile.set_payment_button_text(_localized_payment_feedback("ui.shop.price.loading", "..."))
 		tile.set_buy_enabled(false)
 		return
 
 	var platform_product_id: String = item.get_platform_product_id(PLATFORM_KEY_YANDEX)
 	var product: Dictionary = _payment_catalog.get(platform_product_id, {}) if platform_product_id != "" else {}
 	if product.is_empty():
-		tile.set_price_text(_localized_payment_feedback("ui.shop.price.unavailable", "Not available"))
+		tile.set_payment_button_text(_localized_payment_feedback("ui.shop.price.unavailable", "Not available"))
 		tile.set_buy_enabled(false)
 		return
 
-	var price_text := str(product.get("price", ""))
-	tile.set_price_text(price_text if price_text != "" else _localized_payment_feedback("ui.shop.price.unavailable", "Not available"))
+	var price_text := str(product.get("price", "")).strip_edges()
+	if price_text == "":
+		var price_value := str(product.get("priceValue", "")).strip_edges()
+		var currency_code := str(product.get("priceCurrencyCode", "")).strip_edges()
+		price_text = "%s %s" % [price_value, currency_code] if price_value != "" and currency_code != "" else price_value
+	if price_text == "":
+		tile.set_payment_button_text(_localized_payment_feedback("ui.shop.price.unavailable", "Not available"))
+		tile.set_buy_enabled(false)
+		return
+	tile.set_payment_button_text(price_text)
 	tile.set_buy_enabled(true)
 
 

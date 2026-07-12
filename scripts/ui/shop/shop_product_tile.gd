@@ -90,5 +90,13 @@ func set_price_text(text: String) -> void:
 	_price_label.visible = text != ""
 
 
+## Paid Yandex products place the portal-formatted price on the actual action
+## button. The separate label stays hidden to avoid showing the price twice.
+func set_payment_button_text(text: String) -> void:
+	if _buy_button != null:
+		_buy_button.set_button_text(text)
+	set_price_text("")
+
+
 func _on_buy_pressed() -> void:
 	buy_pressed.emit(_item_id)
