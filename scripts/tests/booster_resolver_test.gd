@@ -43,7 +43,7 @@ func _make_board() -> BoardModel:
 
 
 func _make_battle_state(board: BoardModel) -> BattleState:
-	var state := BattleState.new([], EnemyConfig.training_dummy().to_enemy_data(), EnemyConfig.training_dummy().to_enemy_intent(), 10)
+	var state := BattleState.new([], EnemyConfig.enemy_1().to_enemy_data(), EnemyConfig.enemy_1().to_enemy_intent(), 10)
 	state.board = board
 	state.get("booster_state").setup_from_catalog(BOOSTER_CATALOG_SCRIPT.new())
 	return state

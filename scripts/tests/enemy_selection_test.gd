@@ -54,7 +54,7 @@ func _test_seeded_rng_is_reproducible(resolver, catalog) -> void:
 func _test_empty_catalog_falls_back(resolver) -> void:
 	var selected = resolver.select_enemy(EmptyEnemyCatalog.new(), RandomNumberGenerator.new())
 	_expect_true(selected != null, "empty catalog returns fallback")
-	_expect_equal(selected.enemy_id, "training_dummy", "empty catalog fallback is safe default")
+	_expect_equal(selected.enemy_id, "enemy_1", "empty catalog fallback is safe default")
 	print("ok - empty catalog uses safe default")
 
 

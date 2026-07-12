@@ -33,7 +33,7 @@ func _test_hammer_produces_gravity_and_refill_data() -> void:
 		for x in range(BoardModel.DEFAULT_WIDTH):
 			board.set_tile(Vector2i(x, y), (x + y) % 5)
 
-	var battle_state := BattleState.new([], EnemyConfig.training_dummy().to_enemy_data(), EnemyConfig.training_dummy().to_enemy_intent(), 10)
+	var battle_state := BattleState.new([], EnemyConfig.enemy_1().to_enemy_data(), EnemyConfig.enemy_1().to_enemy_intent(), 10)
 	battle_state.board = board
 	battle_state.get("booster_state").setup_from_catalog(BOOSTER_CATALOG_SCRIPT.new())
 

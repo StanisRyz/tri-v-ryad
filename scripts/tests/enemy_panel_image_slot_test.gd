@@ -21,10 +21,10 @@ func _run() -> void:
 	_expect_equal(image_slot.mouse_filter, Control.MOUSE_FILTER_IGNORE, "EnemyImageSlot ignores input")
 	_expect_false(image_slot.has_texture(), "EnemyImageSlot starts without texture")
 
-	var enemy_config = ENEMY_CONFIG.goblin_scout()
+	var enemy_config = ENEMY_CONFIG.enemy_3()
 	panel.set_enemy_state(enemy_config.to_enemy_data(), enemy_config.to_enemy_intent())
 	await process_frame
-	_expect_equal(image_slot.get_asset_key(), "enemy_goblin_scout", "enemy id maps to expected asset key")
+	_expect_equal(image_slot.get_asset_key(), "enemy_3_normal", "enemy id maps to expected asset key")
 	_expect_false(image_slot.has_texture(), "missing enemy image stays placeholder")
 
 	panel.set_enemy_state(null, null)

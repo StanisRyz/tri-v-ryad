@@ -257,6 +257,19 @@ no longer plays a sound itself — it now only drives
 `EnemyPanel.play_damage_feedback()` (a separate damaged-sprite-texture swap),
 so a hit is never double-sounded.
 
+### Tile selection
+
+`GameScreen._on_selection_changed()` calls `play_button_click()` whenever
+`BoardInputController.selection_changed` fires in normal input mode — the
+first tap that selects a crystal, and re-tapping a different, non-adjacent
+crystal to switch the selection (`handle_tile_pressed()`'s two
+`selection_changed.emit(cell)` call sites). Tapping the already-selected
+crystal again (deselect, `selection_cleared`) plays no sound, and the guard
+at the top of the handler keeps this from firing during booster targeting —
+that mode drives its own `board_view.show_booster_target_preview()`
+feedback instead, tapping a neighbor to swap goes through the tile-swap sound
+below, not this one.
+
 ### Tile swap / invalid swap
 
 Accepted swaps play `play_tile_swap()` the instant the `TYPE_SWAP` request

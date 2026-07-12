@@ -3,16 +3,16 @@ extends SceneTree
 const ENEMY_CATALOG_SCRIPT := "res://scripts/game/config/enemy_catalog.gd"
 
 const EXPECTED_ENEMY_IDS := [
-	"training_dummy",
-	"small_slime",
-	"goblin_scout",
-	"goblin_fighter",
-	"armored_goblin",
-	"wild_wolf",
-	"bandit",
-	"orc_brute",
-	"cave_shaman",
-	"gatekeeper",
+	"enemy_1",
+	"enemy_2",
+	"enemy_3",
+	"enemy_4",
+	"enemy_5",
+	"enemy_6",
+	"enemy_7",
+	"enemy_8",
+	"enemy_9",
+	"enemy_10",
 ]
 
 var _failures := 0
@@ -61,12 +61,12 @@ func _test_enemy_configs_are_valid(catalog) -> void:
 
 
 func _test_get_enemy(catalog) -> void:
-	var slime = catalog.get_enemy("small_slime")
+	var slime = catalog.get_enemy("enemy_2")
 	_expect_true(slime != null, "get_enemy returns known enemy")
 	if slime != null:
-		_expect_equal(slime.display_name, "Small Slime", "known enemy keeps display name")
+		_expect_equal(slime.display_name, "Enemy 2", "known enemy keeps display name")
 	_expect_equal(catalog.get_enemy("missing_enemy"), null, "unknown enemy returns null")
-	_expect_equal(catalog.get_default_enemy().enemy_id, "training_dummy", "default enemy is training dummy")
+	_expect_equal(catalog.get_default_enemy().enemy_id, "enemy_1", "default enemy is enemy_1")
 	print("ok - get_enemy and default enemy are predictable")
 
 

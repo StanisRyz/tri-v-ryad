@@ -1890,7 +1890,7 @@ func _create_booster_target_preview(cell: Vector2i, color: Color) -> Control:
 
 	var tile := get_tile_view(cell)
 	var texture: Texture2D = tile.icon if tile != null else null
-	var preview: Control = _build_booster_target_texture_preview(rect, texture, color) if texture != null else _build_booster_preview_fallback(rect, color)
+	var preview: Control = (_build_booster_target_texture_preview(rect, texture, color) as Control) if texture != null else (_build_booster_preview_fallback(rect, color) as Control)
 	if preview == null:
 		return null
 

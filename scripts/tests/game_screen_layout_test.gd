@@ -83,7 +83,7 @@ func _run() -> void:
 	menu_button.pressed.emit()
 	_expect_equal(menu_signals.size(), 1, "menu button still emits back_pressed")
 
-	var enemy_config = load("res://scripts/game/config/enemy_config.gd").goblin_scout()
+	var enemy_config = load("res://scripts/game/config/enemy_config.gd").enemy_3()
 	var enemy_data = enemy_config.to_enemy_data()
 	var enemy_intent = enemy_config.to_enemy_intent()
 	enemy_panel.set_enemy_state(enemy_data, enemy_intent)
@@ -93,7 +93,7 @@ func _run() -> void:
 	var enemy_hp_bar := enemy_panel.get_node("%EnemyHpBar") as ProgressBar
 	var enemy_intent_label := enemy_panel.get_node("%EnemyIntentLabel") as Label
 	var enemy_target_label := enemy_panel.get_node("%EnemyTargetLabel") as Label
-	_expect_equal(enemy_name_label.text, "Goblin Scout", "enemy panel shows enemy name")
+	_expect_equal(enemy_name_label.text, "Enemy 3", "enemy panel shows enemy name")
 	_expect_true(enemy_hp_label.text.find(str(enemy_data.max_hp)) != -1, "enemy panel shows HP text")
 	_expect_equal(enemy_hp_bar.value, 1.0, "enemy panel HP bar reflects full health")
 	_expect_equal(enemy_intent_label.text, "Goal: defeat enemy | Enemy does not attack", "enemy panel shows direct-mode enemy copy")

@@ -37,7 +37,7 @@ func _test_hero_systems_frozen() -> void:
 func _test_scaled_hp_is_fixed_baseline() -> void:
 	var resolver = load(ENEMY_SCALING_RESOLVER_SCRIPT).new()
 	var catalog = load(ENEMY_CATALOG_SCRIPT).new()
-	var base_enemy = catalog.get_enemy("gatekeeper")
+	var base_enemy = catalog.get_enemy("enemy_10")
 	var fixed_hp: int = load(DIRECT_BATTLE_BALANCE_SCRIPT).FIXED_ENEMY_HP
 
 	for level_number in [1, 10, 50, 100]:
@@ -60,8 +60,8 @@ func _test_scaled_hp_positive_for_all_roster_enemies() -> void:
 func _test_enemy_roster_unchanged() -> void:
 	var catalog = load(ENEMY_CATALOG_SCRIPT).new()
 	var expected_ids := [
-		"training_dummy", "small_slime", "goblin_scout", "goblin_fighter", "armored_goblin",
-		"wild_wolf", "bandit", "orc_brute", "cave_shaman", "gatekeeper",
+		"enemy_1", "enemy_2", "enemy_3", "enemy_4", "enemy_5",
+		"enemy_6", "enemy_7", "enemy_8", "enemy_9", "enemy_10",
 	]
 	_expect_equal(catalog.get_all_enemies().size(), expected_ids.size(), "enemy roster size is unchanged")
 	for enemy_id in expected_ids:
@@ -72,7 +72,7 @@ func _test_enemy_roster_unchanged() -> void:
 func _test_enemy_catalog_base_stats_not_mutated() -> void:
 	var resolver = load(ENEMY_SCALING_RESOLVER_SCRIPT).new()
 	var catalog = load(ENEMY_CATALOG_SCRIPT).new()
-	var base_enemy = catalog.get_enemy("training_dummy")
+	var base_enemy = catalog.get_enemy("enemy_1")
 	var original_hp: int = base_enemy.max_hp
 	var original_attack: int = base_enemy.attack
 

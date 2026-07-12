@@ -750,6 +750,7 @@ func _is_zone_unlocked_for_level(level_id: String) -> bool:
 func _on_selection_changed(cell: Vector2i) -> void:
 	if _input_mode == "booster_targeting":
 		return
+	_play_button_click()
 	board_view.set_selected_cell(cell)
 	_set_status("Choose a neighboring tile")
 

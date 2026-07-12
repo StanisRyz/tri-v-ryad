@@ -17,7 +17,7 @@ func _initialize() -> void:
 	board.set_tile(Vector2i(3, 4), TileType.RED)
 	board.set_tile(Vector2i(5, 4), TileType.RED)
 
-	var state := BattleState.new([], EnemyConfig.training_dummy().to_enemy_data(), EnemyConfig.training_dummy().to_enemy_intent(), 10)
+	var state := BattleState.new([], EnemyConfig.enemy_1().to_enemy_data(), EnemyConfig.enemy_1().to_enemy_intent(), 10)
 	state.enemy.current_hp = 100
 	state.enemy.max_hp = 100
 	state.board = board
@@ -34,7 +34,7 @@ func _initialize() -> void:
 		rocket_board.set_tile(cell, TileType.GREEN)
 	rocket_board.set_tile(Vector2i(0, 0), TileType.RED)
 	rocket_board.set_tile(Vector2i(1, 0), TileType.RED)
-	var rocket_state := BattleState.new([], EnemyConfig.training_dummy().to_enemy_data(), EnemyConfig.training_dummy().to_enemy_intent(), 10)
+	var rocket_state := BattleState.new([], EnemyConfig.enemy_1().to_enemy_data(), EnemyConfig.enemy_1().to_enemy_intent(), 10)
 	rocket_state.enemy.current_hp = 100
 	rocket_state.enemy.max_hp = 100
 	rocket_state.board = rocket_board

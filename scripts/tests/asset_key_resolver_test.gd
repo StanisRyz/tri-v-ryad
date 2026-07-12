@@ -5,16 +5,16 @@ const GAME_ASSET_CATALOG := preload("res://scripts/game/config/game_asset_catalo
 
 const BACKGROUND_IDS := ["background_1", "background_2", "background_3", "background_4", "background_5"]
 const ENEMY_ID_TO_KEY := {
-	"training_dummy": "enemy_training_dummy",
-	"small_slime": "enemy_small_slime",
-	"goblin_scout": "enemy_goblin_scout",
-	"goblin_fighter": "enemy_goblin_fighter",
-	"armored_goblin": "enemy_armored_goblin",
-	"wild_wolf": "enemy_wild_wolf",
-	"bandit": "enemy_bandit",
-	"orc_brute": "enemy_orc_brute",
-	"cave_shaman": "enemy_cave_shaman",
-	"gatekeeper": "enemy_gatekeeper",
+	"enemy_1": "enemy_1_normal",
+	"enemy_2": "enemy_2_normal",
+	"enemy_3": "enemy_3_normal",
+	"enemy_4": "enemy_4_normal",
+	"enemy_5": "enemy_5_normal",
+	"enemy_6": "enemy_6_normal",
+	"enemy_7": "enemy_7_normal",
+	"enemy_8": "enemy_8_normal",
+	"enemy_9": "enemy_9_normal",
+	"enemy_10": "enemy_10_normal",
 }
 const TILE_TYPE_TO_KEY := {
 	TileType.RED: "tile_red",

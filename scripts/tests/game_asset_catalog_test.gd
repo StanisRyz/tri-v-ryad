@@ -4,16 +4,16 @@ const GAME_ASSET_CATALOG := preload("res://scripts/game/config/game_asset_catalo
 
 const BACKGROUND_KEYS := ["background_1", "background_2", "background_3", "background_4", "background_5"]
 const ENEMY_KEYS := [
-	"enemy_training_dummy",
-	"enemy_small_slime",
-	"enemy_goblin_scout",
-	"enemy_goblin_fighter",
-	"enemy_armored_goblin",
-	"enemy_wild_wolf",
-	"enemy_bandit",
-	"enemy_orc_brute",
-	"enemy_cave_shaman",
-	"enemy_gatekeeper",
+	"enemy_1_normal",
+	"enemy_2_normal",
+	"enemy_3_normal",
+	"enemy_4_normal",
+	"enemy_5_normal",
+	"enemy_6_normal",
+	"enemy_7_normal",
+	"enemy_8_normal",
+	"enemy_9_normal",
+	"enemy_10_normal",
 ]
 const TILE_KEYS := ["tile_red", "tile_blue", "tile_green", "tile_yellow", "tile_purple"]
 const SPECIAL_TILE_KEYS := ["tile_special_horizontal", "tile_special_vertical", "tile_color_bomb"]
@@ -88,7 +88,7 @@ func _test_known_keys_exist() -> void:
 
 func _test_expected_paths() -> void:
 	_expect_equal(GAME_ASSET_CATALOG.get_asset_path("background_1"), "res://assets/images/backgrounds/background_1.png", "background_1 path")
-	_expect_equal(GAME_ASSET_CATALOG.get_asset_path("enemy_small_slime"), "res://assets/images/enemies/enemy_small_slime.png", "enemy path")
+	_expect_equal(GAME_ASSET_CATALOG.get_asset_path("enemy_2_normal"), "res://assets/images/ui/game/enemies/enemy_2_normal.png", "enemy path")
 	_expect_equal(GAME_ASSET_CATALOG.get_asset_path("tile_red"), "res://assets/images/tiles/tile_red.png", "tile path")
 	_expect_equal(GAME_ASSET_CATALOG.get_asset_path("tile_color_bomb"), "res://assets/images/tiles/tile_color_bomb.png", "color bomb path")
 	_expect_equal(GAME_ASSET_CATALOG.get_asset_path("ui_enemy_panel"), "res://assets/images/ui/enemy_panel.png", "ui path")
@@ -108,7 +108,7 @@ func _test_unknown_key_is_safe() -> void:
 
 func _test_missing_files_return_null() -> void:
 	_expect_equal(GAME_ASSET_CATALOG.try_load_texture("background_1"), null, "missing background texture returns null")
-	_expect_equal(GAME_ASSET_CATALOG.try_load_texture("enemy_small_slime"), null, "missing enemy texture returns null")
+	_expect_equal(GAME_ASSET_CATALOG.try_load_texture("enemy_2_normal"), null, "missing enemy texture returns null")
 	print("ok - missing optional files return null")
 
 
@@ -116,7 +116,7 @@ func _test_cached_loading_is_safe() -> void:
 	GAME_ASSET_CATALOG.clear_texture_cache()
 	_expect_equal(GAME_ASSET_CATALOG.try_load_texture_cached("missing_key"), null, "cached unknown key returns null")
 	_expect_equal(GAME_ASSET_CATALOG.try_load_texture_cached("background_1"), null, "cached missing background returns null")
-	_expect_equal(GAME_ASSET_CATALOG.try_load_texture_cached("enemy_small_slime"), null, "cached missing enemy returns null")
+	_expect_equal(GAME_ASSET_CATALOG.try_load_texture_cached("enemy_2_normal"), null, "cached missing enemy returns null")
 	print("ok - cached loading is safe for missing assets")
 
 
