@@ -19,40 +19,40 @@ const DEFAULT_STYLE := {
 
 const STYLES := {
 	# Global/common
-	"global.label": {"font_size": 22, "outline_size": 4},
-	"global.button": {"font_size": 24, "outline_size": 4},
-	"global.popup_title": {"font_size": 30, "outline_size": 5},
-	"global.popup_body": {"font_size": 18, "outline_size": 3},
-	"global.small_hint": {"font_size": 14, "outline_size": 2},
+	"global.label": {"font_size": 20, "outline_size": 4},
+	"global.button": {"font_size": 22, "outline_size": 4},
+	"global.popup_title": {"font_size": 28, "outline_size": 5},
+	"global.popup_body": {"font_size": 16, "outline_size": 3},
+	"global.small_hint": {"font_size": 12, "outline_size": 2},
 
 	# Main menu
-	"main_menu.title": {"font_size": 36, "outline_size": 5},
-	"main_menu.button": {"font_size": 65, "outline_size": 7},
+	"main_menu.title": {"font_size": 34, "outline_size": 5},
+	"main_menu.button": {"font_size": 62, "outline_size": 7},
 	"main_menu.currency": {"font_size": 35, "outline_size": 5},
 
 	# Settings
-	"settings.title": {"font_size": 50, "outline_size": 7},
-	"settings.option_label": {"font_size": 40, "outline_size": 7},
-	"settings.option_value": {"font_size": 40, "outline_size": 7},
-	"settings.button": {"font_size": 50, "outline_size": 7},
+	"settings.title": {"font_size": 48, "outline_size": 7},
+	"settings.option_label": {"font_size": 38, "outline_size": 7},
+	"settings.option_value": {"font_size": 38, "outline_size": 7},
+	"settings.button": {"font_size": 48, "outline_size": 7},
 
 	# Shop
 	"shop.wallet": {"font_size": 35, "outline_size": 5},
-	"shop.tab": {"font_size": 30, "outline_size": 5},
+	"shop.tab": {"font_size": 28, "outline_size": 5},
 	"shop.tile_quantity": {"font_size": 18, "outline_size": 3},
-	"shop.tile_price_button": {"font_size": 28, "outline_size": 5},
-	"shop.tile_product_button": {"font_size": 23, "outline_size": 5},
+	"shop.tile_price_button": {"font_size": 26, "outline_size": 5},
+	"shop.tile_product_button": {"font_size": 22, "outline_size": 5},
 	"shop.tile_product_price": {"font_size": 18, "outline_size": 3},
 	"shop.feedback": {"font_size": 22, "outline_size": 5},
 	"shop.offer_placeholder": {"font_size": 18, "outline_size": 3},
 
 	# Level select
-	"level_select.zone_dropdown": {"font_size": 26, "outline_size": 5},
-	"level_select.level_button": {"font_size": 26, "outline_size": 4},
-	"level_select.back_button": {"font_size": 40, "outline_size": 7},
-	"level_select.popup_title": {"font_size": 50, "outline_size": 7},
-	"level_select.popup_stars": {"font_size": 22, "outline_size": 3},
-	"level_select.popup_button": {"font_size": 30, "outline_size": 7},
+	"level_select.zone_dropdown": {"font_size": 24, "outline_size": 5},
+	"level_select.level_button": {"font_size": 24, "outline_size": 4},
+	"level_select.back_button": {"font_size": 38, "outline_size": 7},
+	"level_select.popup_title": {"font_size": 48, "outline_size": 7},
+	"level_select.popup_stars": {"font_size": 20, "outline_size": 3},
+	"level_select.popup_button": {"font_size": 28, "outline_size": 7},
 
 	# Game HUD
 	"game_hud.level": {"font_size": 35, "outline_size": 7},
@@ -63,17 +63,17 @@ const STYLES := {
 	"game_hud.booster_count": {"font_size": 25, "outline_size": 5},
 
 	# Result UI
-	"result.title": {"font_size": 32, "outline_size": 5},
-	"result.reward": {"font_size": 25, "outline_size": 7},
-	"result.reward_gold": {"font_size": 25, "outline_size": 7},
-	"result.button": {"font_size": 35, "outline_size": 7},
+	"result.title": {"font_size": 30, "outline_size": 5},
+	"result.reward": {"font_size": 24, "outline_size": 7},
+	"result.reward_gold": {"font_size": 24, "outline_size": 7},
+	"result.button": {"font_size": 34, "outline_size": 7},
 
 	# Lose continue popup
-	"lose_continue.title": {"font_size": 35, "outline_size": 7},
+	"lose_continue.title": {"font_size": 34, "outline_size": 7},
 	"lose_continue.description": {"font_size": 16, "outline_size": 2},
-	"lose_continue.button": {"font_size": 30, "outline_size": 5},
-	"lose_continue.feedback": {"font_size": 30, "outline_size": 5},
-	"lose_continue.gem_cost": {"font_size": 30, "outline_size": 5},
+	"lose_continue.button": {"font_size": 28, "outline_size": 5},
+	"lose_continue.feedback": {"font_size": 28, "outline_size": 5},
+	"lose_continue.gem_cost": {"font_size": 28, "outline_size": 5},
 
 	# Stage 67.2: shared inline currency-amount styles (icon + number pairs),
 	# reused wherever a standalone gold/gems amount needs its own font size

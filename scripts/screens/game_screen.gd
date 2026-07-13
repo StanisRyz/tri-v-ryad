@@ -155,7 +155,9 @@ func _connect_platform_fullscreen_signals() -> void:
 ## path (same guards, same _show_battle_result() routing) so a defeat can be
 ## triggered on demand to exercise LoseContinuePopup.
 func _unhandled_input(event: InputEvent) -> void:
-	if not FeatureFlags.DEBUG_MODE_ENABLED:
+	# Defense in depth: feature flags allow local debug work, but production
+	# exports never process developer hotkeys.
+	if not OS.is_debug_build() or not FeatureFlags.DEBUG_MODE_ENABLED:
 		return
 	if not (event is InputEventKey) or not event.pressed or event.echo:
 		return

@@ -1,8 +1,8 @@
 extends Control
 
-## Stage 69.0: portrait-only orientation policy. Shows a full-screen
-## rotate-device overlay whenever the viewport is wider than it is tall,
-## and blocks input underneath it while visible.
+## Stage 69.5.3: Yandex Games owns Web mobile orientation. This internal
+## guard therefore applies only to native mobile builds, never a wide desktop
+## browser window.
 
 const TEXT_STYLE_APPLIER_SCRIPT := preload("res://scripts/ui/text/text_style_applier.gd")
 const MESSAGE_STYLE_ID := "orientation_guard.message"
@@ -36,12 +36,19 @@ func _refresh_message() -> void:
 		_message_label.text = localization_manager.tr_key(MESSAGE_KEY)
 
 
-func _is_landscape() -> bool:
+
+func _should_show_orientation_guard() -> bool:
+	# A desktop browser is normally wider than tall; Yandex Games handles the
+	# opposite mobile orientation for Web builds.
+	if OS.has_feature("web"):
+		return false
+	if not OS.has_feature("mobile"):
+		return false
 	var viewport_size := get_viewport().get_visible_rect().size
 	return viewport_size.x > viewport_size.y
 
 
 func _update_visibility() -> void:
-	var landscape := _is_landscape()
-	visible = landscape
-	mouse_filter = Control.MOUSE_FILTER_STOP if landscape else Control.MOUSE_FILTER_IGNORE
+	var should_show := _should_show_orientation_guard()
+	visible = should_show
+	mouse_filter = Control.MOUSE_FILTER_STOP if should_show else Control.MOUSE_FILTER_IGNORE

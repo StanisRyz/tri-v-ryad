@@ -6,6 +6,6 @@ class_name FeatureFlags
 static var HERO_SYSTEMS_ENABLED := false
 static var DIRECT_MATCH_DAMAGE_ENABLED := true
 
-## Stage 64.16: gates the F12/F1/F2 developer debug hotkeys (see GameScreen).
-## Leave false for production builds; flip to true only for local dev/testing.
-static var DEBUG_MODE_ENABLED := true
+## Stage 69.5.3: F12/F1/F2/F3 are editor/debug-build tooling only. A release
+## export must never enable them merely because a source flag was left on.
+static var DEBUG_MODE_ENABLED := OS.is_debug_build()

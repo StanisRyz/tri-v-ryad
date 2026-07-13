@@ -9,7 +9,7 @@ signal language_changed
 const LOCALIZATION_DATA_SCRIPT := preload("res://scripts/game/localization/localization_data.gd")
 
 const CSV_PATH := "res://localization/game_text.csv"
-const DEFAULT_LANGUAGE := "en"
+const DEFAULT_LANGUAGE := "ru"
 const SUPPORTED_LANGUAGES: Array[String] = ["en", "ru"]
 
 const CSV_COLUMN_KEY := 0
@@ -77,7 +77,7 @@ func has_loaded_translations() -> bool:
 	return _csv_loaded
 
 
-func get_loaded_translation_count(language_code: String = "en") -> int:
+func get_loaded_translation_count(language_code: String = DEFAULT_LANGUAGE) -> int:
 	var normalized: String = normalize_supported_language(language_code)
 	var table: Dictionary = _translations.get(normalized, {})
 	return table.size()
@@ -112,7 +112,7 @@ func _load_csv_override() -> void:
 			continue
 		var en_text: String = String(row[CSV_COLUMN_EN])
 		if not en_text.is_empty():
-			_translations[DEFAULT_LANGUAGE][key] = en_text
+			_translations["en"][key] = en_text
 		if row.size() > CSV_COLUMN_RU:
 			var ru_text: String = String(row[CSV_COLUMN_RU])
 			if not ru_text.is_empty():
