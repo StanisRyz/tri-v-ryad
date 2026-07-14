@@ -11,10 +11,12 @@ or run; Stage 69.6 remains manual validation.
 
 Stage 69.5.1 changes the release package limit to 100000000 bytes and uses
 the Web `variant/thread_support=false` setting. It pauses active board and
-effect timelines on platform/browser pause. Each terminal run now has one
-fullscreen gate: saved victory precedes `battle_victory_result`; declined
-LoseContinue precedes `battle_defeat_result`; every ad terminal failure still
-shows the prepared result. No fullscreen follows a successful continue.
+effect timelines on platform/browser pause. Saved victory and declined
+LoseContinue immediately show their Stars result. Each terminal run has one
+post-result fullscreen gate: `battle_victory_result` or `battle_defeat_result`
+is requested only after the player closes that result through Retry, Next, or
+Menu; close, skipped, timeout, error, and unavailable paths execute the
+chosen action. No fullscreen follows a successful continue.
 
 The Yandex Web preset exports `builds/yandex/index.html` using `/sdk.js` and `YaGames.init()` in the standard shell head include. SDK lifecycle calls are readiness-safe, cloud reconciliation has one bounded Web wait, and platform/browser pause reasons block only active GameScreen interaction while AudioManager tracks independent mute reasons. `tools/package_yandex_web.py` creates a flat validated release ZIP. Existing platform, economy, gameplay, save, localization, audio, portrait-only, and debug behavior remains unchanged; no new placements, authorization, leaderboards, or products were added. Tests were not touched or run; Yandex-draft validation is Stage 69.6.
 

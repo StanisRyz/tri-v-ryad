@@ -88,10 +88,10 @@ var _developer_mode_active: bool = false
 var _lose_continue_ad_active := false
 var _lose_continue_ad_rewarded := false
 var _platform_paused := false
-var _pending_result_kind := ""
-var _pending_result_data: Dictionary = {}
-var _fullscreen_result_attempt_active := false
-var _fullscreen_result_attempted := false
+var _current_result_kind := ""
+var _pending_post_result_action := ""
+var _post_result_fullscreen_active := false
+var _post_result_fullscreen_attempted := false
 
 const REWARDED_AD_PLACEMENT_LOSE_CONTINUE := "lose_continue"
 
@@ -394,9 +394,9 @@ func _setup_playable_battle() -> void:
 	_turn_feedback_presenter.feedback_finished.connect(_on_feedback_finished)
 	_ability_feedback_presenter.feedback_finished.connect(_on_feedback_finished)
 
-	result_overlay.restart_pressed.connect(_on_restart_pressed)
-	result_overlay.next_level_pressed.connect(_on_next_level_pressed)
-	result_overlay.menu_pressed.connect(_on_menu_button_pressed)
+	result_overlay.restart_pressed.connect(_on_result_restart_pressed)
+	result_overlay.next_level_pressed.connect(_on_result_next_pressed)
+	result_overlay.menu_pressed.connect(_on_result_menu_pressed)
 
 	lose_continue_popup.watch_ad_pressed.connect(_on_lose_continue_watch_ad_pressed)
 	lose_continue_popup.buy_moves_pressed.connect(_on_lose_continue_buy_moves_pressed)
@@ -406,7 +406,7 @@ func _setup_playable_battle() -> void:
 
 
 func _start_new_battle() -> void:
-	_reset_fullscreen_result_gate()
+	_reset_post_result_fullscreen_gate()
 	_force_cleanup_visual_state()
 	_pending_battle_status = -1
 	_feedback_active = false
@@ -612,7 +612,8 @@ func _show_battle_result(status: int) -> void:
 		_refresh_booster_inventory_ui()
 		_set_status(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_victory_message(_last_reward_amount, _last_stars_earned, get_node_or_null("/root/LocalizationManager")))
 		_force_cleanup_visual_state()
-		_queue_result_after_fullscreen("victory", _last_victory_result_data, "battle_victory_result")
+		_current_result_kind = "victory"
+		result_overlay.show_victory_result(_last_victory_result_data)
 	elif status == BattleState.Status.DEFEAT:
 		_show_lose_continue_or_defeat()
 
@@ -641,28 +642,33 @@ func _finalize_defeat_result() -> void:
 	_play_defeat()
 	_set_status(BATTLE_MESSAGE_FORMATTER_SCRIPT.format_defeat_message())
 	_force_cleanup_visual_state()
-	_queue_result_after_fullscreen("defeat", _build_defeat_result_data(), "battle_defeat_result")
+	_current_result_kind = "defeat"
+	result_overlay.show_defeat_result(_build_defeat_result_data())
 
 
-func _queue_result_after_fullscreen(result_kind: String, result_data: Dictionary, placement_id: String) -> void:
-	if _pending_result_kind != "" or _fullscreen_result_attempt_active:
+func _request_post_result_action(action: String) -> void:
+	if _pending_post_result_action != "":
 		return
-	_pending_result_kind = result_kind
-	_pending_result_data = result_data.duplicate(true)
-	if _fullscreen_result_attempted:
-		_show_pending_result()
+
+	_pending_post_result_action = action
+	result_overlay.hide_result()
+	if _post_result_fullscreen_attempted:
+		_execute_pending_post_result_action()
 		return
-	_fullscreen_result_attempted = true
+
+	_post_result_fullscreen_attempted = true
 	var platform := get_node_or_null("/root/Platform")
 	if platform == null or platform.is_ad_in_progress():
-		_show_pending_result()
+		_execute_pending_post_result_action()
 		return
-	_fullscreen_result_attempt_active = true
+
+	_post_result_fullscreen_active = true
+	var placement_id := "battle_victory_result" if _current_result_kind == "victory" else "battle_defeat_result"
 	platform.show_fullscreen_ad(placement_id)
 
 
 func _on_platform_fullscreen_ad_opened() -> void:
-	if not _fullscreen_result_attempt_active:
+	if not _post_result_fullscreen_active:
 		return
 	var audio_manager = _get_audio_manager()
 	if audio_manager != null:
@@ -670,39 +676,43 @@ func _on_platform_fullscreen_ad_opened() -> void:
 
 
 func _on_platform_fullscreen_ad_closed(_was_shown: bool) -> void:
-	if not _fullscreen_result_attempt_active:
+	if not _post_result_fullscreen_active:
 		return
-	_finish_fullscreen_result_attempt()
+	_finish_post_result_fullscreen()
 
 
 func _on_platform_fullscreen_ad_error(_message: String) -> void:
-	if not _fullscreen_result_attempt_active:
+	if not _post_result_fullscreen_active:
 		return
-	_finish_fullscreen_result_attempt()
+	_finish_post_result_fullscreen()
 
 
-func _finish_fullscreen_result_attempt() -> void:
+func _finish_post_result_fullscreen() -> void:
 	var audio_manager = _get_audio_manager()
 	if audio_manager != null:
 		audio_manager.resume_audio("fullscreen_ad")
-	_fullscreen_result_attempt_active = false
-	_show_pending_result()
+	_post_result_fullscreen_active = false
+	_execute_pending_post_result_action()
 
 
-func _show_pending_result() -> void:
-	if _pending_result_kind == "victory":
-		result_overlay.show_victory_result(_pending_result_data)
-	elif _pending_result_kind == "defeat":
-		result_overlay.show_defeat_result(_pending_result_data)
-	_pending_result_kind = ""
-	_pending_result_data = {}
+func _execute_pending_post_result_action() -> void:
+	var action := _pending_post_result_action
+	_pending_post_result_action = ""
+	match action:
+		"restart":
+			_start_new_battle()
+		"next_level":
+			_start_next_level_after_result()
+		"menu":
+			_force_cleanup_visual_state()
+			back_pressed.emit()
 
 
-func _reset_fullscreen_result_gate() -> void:
-	_pending_result_kind = ""
-	_pending_result_data = {}
-	_fullscreen_result_attempt_active = false
-	_fullscreen_result_attempted = false
+func _reset_post_result_fullscreen_gate() -> void:
+	_current_result_kind = ""
+	_pending_post_result_action = ""
+	_post_result_fullscreen_active = false
+	_post_result_fullscreen_attempted = false
 
 
 func _on_lose_continue_watch_ad_pressed() -> void:
@@ -1124,15 +1134,31 @@ func _finish_booster_resolution(result) -> void:
 		_input_controller.set_input_enabled(not _platform_paused)
 
 
-func _on_restart_pressed() -> void:
+func _on_result_restart_pressed() -> void:
+	if _pending_post_result_action != "":
+		return
 	_play_button_click()
-	_start_new_battle()
+	_request_post_result_action("restart")
 
 
-func _on_next_level_pressed() -> void:
+func _on_result_next_pressed() -> void:
+	if _pending_post_result_action != "":
+		return
 	_play_button_click()
+	_request_post_result_action("next_level")
+
+
+func _on_result_menu_pressed() -> void:
+	if _pending_post_result_action != "":
+		return
+	_play_button_click()
+	_request_post_result_action("menu")
+
+
+func _start_next_level_after_result() -> void:
 	var next_level_id := str(_last_victory_result_data.get("next_level_id", ""))
 	if next_level_id == "" or _progress_manager == null or not _progress_manager.is_level_unlocked(_level_catalog, next_level_id):
+		back_pressed.emit()
 		return
 
 	_current_level_id = next_level_id

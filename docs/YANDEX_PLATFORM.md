@@ -16,10 +16,11 @@ validation.
 The Yandex Web release helper enforces a 100000000-byte uncompressed limit and
 the preset disables Web thread support with `variant/thread_support=false`.
 Terminal battle placements are `battle_victory_result` and
-`battle_defeat_result`: saved victory or final declined LoseContinue attempts
-one fullscreen ad, then always shows the prepared result on every terminal ad
-path. Runtime pause freezes active gameplay timelines without pausing
-Platform callbacks. Tests were not added, updated, touched, or run.
+`battle_defeat_result`: saved victory and final declined LoseContinue show the
+prepared result immediately, then its Retry/Next/Menu choice requests one
+fullscreen ad before the chosen action executes. Every terminal ad path still
+executes that action. Runtime pause freezes active gameplay timelines without
+pausing Platform callbacks. Tests were not added, updated, touched, or run.
 
 Stage 69.1 adds a safe platform foundation for future Yandex Games SDK
 integration. This document describes the architecture, what each piece is
